@@ -2,6 +2,11 @@
   text-align: center;
 }
 
+.fieldCanvas {
+  border: 1px solid hwb(0 0% 100%);
+  float: left;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
