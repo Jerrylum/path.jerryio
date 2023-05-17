@@ -63,11 +63,11 @@ export class SplineControlPointHitBox implements HitBox {
     entity: SplineEntity;
     control_point: Vertex
 
-    constructor(entity: SplineEntity, control_point: Vertex) {
+    constructor(entity: SplineEntity, controlPoint: Vertex) {
         this.entity = entity;
-        this.control_point = control_point;
-        let radius = entity.cc.pixel_width / 40;
-        this.shape = new Circle(control_point, radius, "#0000ff0f");
+        this.control_point = controlPoint;
+        let radius = entity.cc.pixelWidth / 40;
+        this.shape = new Circle(controlPoint, radius, "#0000ff0f");
     }
 
     mouseDown(pos: Vertex): boolean { return false; }

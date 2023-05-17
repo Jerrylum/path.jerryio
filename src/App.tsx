@@ -1,10 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import logo from './logo.svg';
 import './App.css';
 
 import { Spline, EdgeList, Vertex } from './math/path';
-import { CanvasConfig, Circle, Shape, Text } from './math/shape';
 import { Entity, SplineEntity } from './math/entity';
+import { CanvasConfig } from './math/shape';
+import Konva from 'konva';
+import { Circle, Layer, Rect, Stage, Image } from 'react-konva';
+
+import fieldImageUrl from './static/field2023.png'
+import useImage from 'use-image';
 
 function useTimer(ms: number) {
   const [time, setTime] = useState(Date.now());
@@ -19,119 +23,86 @@ function useTimer(ms: number) {
   return time;
 }
 
-function handleInterfaceEvents(entityList: Entity[], eventName: string, pos: Vertex) {
-  for (let entity of entityList) {
-    if (eventName === "mouseDown") {
-      if (entity.mouseDown(pos)) {
-        break;
-      }
-    } else if (eventName === "mouseUp") {
-      if (entity.mouseUp(pos)) {
-        break;
-      }
-    } else if (eventName === "mouseHover") {
-      if (entity.mouseHover(pos)) {
-        break;
-      }
-    } else if (eventName === "mouseDrag") {
-      if (entity.mouseDrag(pos)) {
-        break;
-      }
-    }
+function SplineControlPointElement(props: { cp: Vertex, cc: CanvasConfig }) {
+  function onDragControlPoint(event: Konva.KonvaEventObject<DragEvent>) {
+    let evt = event.evt;
+
+    event.target.x(evt.clientX);
+    event.target.y(evt.clientY);
+
+    let cpInPx = new Vertex(evt.clientX, evt.clientY);
+    let cpInCm = props.cc.toCm(cpInPx);
+    props.cp.x = cpInCm.x;
+    props.cp.y = cpInCm.y;
   }
+
+  const cp_radius = props.cc.pixelWidth / 40;
+  let cp_in_px = props.cc.toPx(props.cp);
+
+  return (
+    <Circle x={cp_in_px.x} y={cp_in_px.y} radius={cp_radius} fill="#0000ff2f" draggable onDragMove={onDragControlPoint} />
+  )
+}
+
+function SplineElement(props: { edge: Spline, edgeList: EdgeList, cc: CanvasConfig }) {
+  let isFirst = props.edgeList.edges[0] === props.edge;
+
+  let knot_radius = props.cc.pixelWidth / 320;
+
+  return (
+    <>
+      {props.edge.calculateKnots(props.cc).map((knot_in_cm, index) => {
+        let knot_in_px = props.cc.toPx(knot_in_cm);
+        return (
+          <Circle x={knot_in_px.x} y={knot_in_px.y} radius={knot_radius} fill="#00ff00ff" />
+        )
+      })}
+      {props.edge.control_points.map((cp_in_cm, index) => {
+        if (!isFirst && index === 0) return null;
+        return (
+          <SplineControlPointElement cp={cp_in_cm} cc={props.cc} />
+        )
+      })}
+    </>
+  )
 }
 
 function App() {
-  useTimer(1000);
+  useTimer(1000 / 30);
 
-  const edgeList = useMemo(() => new EdgeList(new Spline([new Vertex(-50, -50), new Vertex(-50, -50)])), []);
+  const edgeList = useMemo(() => new EdgeList(new Spline([new Vertex(-60, -60), new Vertex(60, 60)])), []);
 
   const fieldCanvas = useRef<HTMLCanvasElement>(null);
 
   const [entityList,] = useState<Entity[]>([]);
 
-  // const [shapeList,] = useState<Shape[]>([new Text("Hello", new Vertex(50, 50))]);
+  const [fieldImage] = useImage(fieldImageUrl);
 
+  const cc = new CanvasConfig(window.innerHeight, window.innerHeight, 365.76, 365.76, 0.25);
 
-  // remove all shapes
-  // while (shapeList.length > 0) {
-  //   shapeList.pop();
-  // }
-
-  // for (let edge of edgeList.edges) {
-  //   for (let knot of edge.calculateKnots()) {
-  //     shapeList.push(new Circle(knot, 2, "black"));
-  //   }
-
-  // }
-
-
-  // add mouse listener
-  useEffect(() => {
-    const canvas = fieldCanvas.current;
-
-    if (canvas) {
-      const ctx = fieldCanvas.current?.getContext('2d');
-
-      if (ctx instanceof CanvasRenderingContext2D) {
-        canvas.addEventListener('mousedown', (e) => {
-          const rect = canvas.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          const pos = new Vertex(x, y);
-          handleInterfaceEvents(entityList, "mouseDown", pos);
-        });
-      }
-    }
-  }, [fieldCanvas.current]);
-
-  //remove entity
-
-
-  const canvas = fieldCanvas.current;
-
-  if (canvas) {
-    const ctx = fieldCanvas.current?.getContext('2d');
-
-    if (ctx instanceof CanvasRenderingContext2D) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const cc = new CanvasConfig(canvas.width, canvas.height, 365, 365);
-
-      while (entityList.length > 0) {
-        entityList.pop();
-      }
-
-      for (let edge of edgeList.edges) {
-        if (edge instanceof Spline)
-          entityList.push(new SplineEntity(cc, edge));
-      }
-
-
-      for (let entity of entityList) {
-        entity.render(ctx);
-      }
-    }
+  function onClickFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
+    let evt = event.evt;
+    console.log("Clicked", evt.clientX, evt.clientY);
+    edgeList.addLine(cc.toCm(new Vertex(evt.clientX, evt.clientY)));
   }
 
-
   return (
-    <div className="App">
-      <canvas id="fieldCanvas" className="fieldCanvas" ref={fieldCanvas} width="693" height="693"></canvas>
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Stage width={cc.pixelWidth} height={cc.pixelHeight}>
+      <Layer>
+        <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight} onClick={onClickFieldImage} />
+        <Rect width={50} height={50} fill="red" />
+        <Circle x={200} y={200} stroke="black" radius={50} />
+        {edgeList.edges.map((edge) => {
+          if (edge instanceof Spline) {
+            return (
+              <SplineElement edge={edge} edgeList={edgeList} cc={cc} />
+            )
+          } else {
+            return null;
+          }
+        })}
+      </Layer>
+    </Stage>
   );
 }
 

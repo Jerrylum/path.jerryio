@@ -1,34 +1,36 @@
 import { Vertex } from "./path";
 
 export class CanvasConfig {
-    public pixel_width: number; // in pixel
-    public pixel_height: number; // in pixel
-    public field_width: number; // in cm
-    public field_height: number; // in cm
+    public pixelWidth: number; // in pixel
+    public pixelHeight: number; // in pixel
+    public fieldWidth: number; // in cm
+    public fieldHeight: number; // in cm
+    public knotPerCm: number;
 
     // calculated
-    public pixel_width_half: number;
-    public pixel_height_half: number;
-    public cm_to_pixel: number; // in pixel/cm
-    public pixel_to_cm: number; // in cm/pixel
+    public pixelWidthHalf: number;
+    public pixelHeightHalf: number;
+    public cm2pixel: number; // in pixel/cm
+    public pixel2cm: number; // in cm/pixel
 
-    constructor(pixel_width: number, pixel_height: number, field_width: number, field_height: number) {
-        this.pixel_width = pixel_width;
-        this.pixel_height = pixel_height;
-        this.field_width = field_width;
-        this.field_height = field_height;
-        this.pixel_width_half = pixel_width / 2;
-        this.pixel_height_half = pixel_height / 2;
-        this.cm_to_pixel = pixel_width / field_width;
-        this.pixel_to_cm = field_width / pixel_width;
+    constructor(pixel_width: number, pixel_height: number, field_width: number, field_height: number, knotPerCm: number) {
+        this.pixelWidth = pixel_width;
+        this.pixelHeight = pixel_height;
+        this.fieldWidth = field_width;
+        this.fieldHeight = field_height;
+        this.knotPerCm = knotPerCm;
+        this.pixelWidthHalf = pixel_width / 2;
+        this.pixelHeightHalf = pixel_height / 2;
+        this.cm2pixel = pixel_width / field_width;
+        this.pixel2cm = field_width / pixel_width;
     }
 
     toPx(inCM: Vertex): Vertex {
-        return new Vertex(inCM.x * this.cm_to_pixel + this.pixel_width_half, inCM.y * this.cm_to_pixel + this.pixel_height_half);
+        return new Vertex(inCM.x * this.cm2pixel + this.pixelWidthHalf, -inCM.y * this.cm2pixel + this.pixelHeightHalf);
     }
 
     toCm(inPx: Vertex): Vertex {
-        return new Vertex((inPx.x - this.pixel_width_half) * this.pixel_to_cm, (inPx.y - this.pixel_height_half) * this.pixel_to_cm);
+        return new Vertex((inPx.x - this.pixelWidthHalf) * this.pixel2cm, -(inPx.y - this.pixelHeightHalf) * this.pixel2cm);
     }
 }
 

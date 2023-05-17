@@ -1,3 +1,4 @@
+import { CanvasConfig } from "./shape";
 
 export class Vertex {
 
@@ -40,7 +41,7 @@ export class Vertex {
 
 export abstract class Edge {
 
-    abstract calculateKnots(): Vertex[];
+    abstract calculateKnots(cc: CanvasConfig): Vertex[];
 
     abstract first(): Vertex;
 
@@ -56,12 +57,15 @@ export class Spline extends Edge {
         this.control_points = control_points;
     }
 
-    calculateKnots(): Vertex[] {
+    calculateKnots(cc: CanvasConfig): Vertex[] {
         let knots: Vertex[] = [];
+
+        let distance = this.first().distance(this.last());
+        let step = 1 / (distance * cc.knotPerCm);
 
         // Bezier curve implementation
         const n = this.control_points.length - 1;
-        for (let t = 0; t <= 1; t += 0.01) {
+        for (let t = 0; t <= 1; t += step) { // 0.01
             let point = new Vertex(0, 0);
             for (let i = 0; i <= n; i++) {
                 const bernstein = this.bernstein(n, i, t);
@@ -106,18 +110,35 @@ export class EdgeList {
     }
 
     addLine(end: Vertex): void {
-        const last = this.edges[this.edges.length - 1];
-        const spline = new Spline([last.last(), end]);
+        if (this.edges.length === 0) {
+            var spline = new Spline([new Vertex(0, 0), end]);
+        } else {
+            const last = this.edges[this.edges.length - 1];
+            var spline = new Spline([last.last(), end]);
+        }
         this.edges.push(spline);
     }
 
     add4PointsSpline(p3: Vertex): void {
-        const last = this.edges[this.edges.length - 1];
-        let p0 = last.last();
-        let c = last instanceof Spline ? last.control_points[2] : last.first();
-        let p1 = c.interpolate(p0, c.distance(p0) * 2);
-        let p2 = new Vertex(p3.x, p3.y - 24);
-        const spline = new Spline([p0, p1, p2, p3]);
+        if (this.edges.length === 0) {
+            let p0 = new Vertex(0, 0);
+            let p1 = new Vertex(p0.x, p0.y + 24);
+            let p2 = new Vertex(p3.x, p3.y - 24);
+            var spline = new Spline([p0, p1, p2, p3]);
+        } else {
+            const last = this.edges[this.edges.length - 1];
+            let p0 = last.last();
+            let c = last instanceof Spline ? last.control_points[2] : last.first();
+            let p1 = c.interpolate(p0, c.distance(p0) * 2);
+            let p2 = new Vertex(p3.x, p3.y - 24);
+            var spline = new Spline([p0, p1, p2, p3]);
+        }
         this.edges.push(spline);
+    }
+
+    removeFirstOrLastControlPoint(point: Vertex): void {
+        // found it, remove, and merge if needed
+
+
     }
 }
