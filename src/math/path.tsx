@@ -34,23 +34,52 @@ export class Vertex {
         return Math.sqrt(Math.pow(this.x - vector.x, 2) + Math.pow(this.y - vector.y, 2));
     }
 
-    // interpolate(vector: Vertex, t: number): Vertex {
-    //     return new Vertex(this.x + (vector.x - this.x) * t, this.y + (vector.y - this.y) * t);
-    // }
-
     mirror(other: Vertex): Vertex {
         // this as the center
         return new Vertex(this.x + (this.x - other.x), this.y + (this.y - other.y));
     }
+
+    clone(): Vertex {
+        return new Vertex(this.x, this.y);
+    }
+}
+
+export interface Position extends Vertex {
+    heading: number;
+
+    headingInRadian(): number;
+
+    clone(): Position;
+}
+
+export class Control extends Vertex {
+
+}
+
+export class EndPointControl extends Control implements Position {
+    heading: number;
+
+    constructor(x: number, y: number, heading: number) {
+        super(x, y);
+        this.heading = heading;
+    }
+
+    headingInRadian(): number {
+        return this.heading * Math.PI / 180;
+    }
+
+    clone(): EndPointControl {
+        return new EndPointControl(this.x, this.y, this.heading);
+    }
 }
 
 export class Spline {
-    public control_points: Vertex[];
+    public control_points: (EndPointControl | Control)[];
     public uid: number;
 
-    constructor(control_points: Vertex[]) {
+    constructor(start: EndPointControl, middle: Control[], end: EndPointControl) {
         // XXX: check if control_points.length >= 2
-        this.control_points = control_points;
+        this.control_points = [start, ...middle, end];
         this.uid = Math.random();
     }
 
@@ -95,19 +124,19 @@ export class Spline {
         return knots;
     }
 
-    first(): Vertex {
-        return this.control_points[0];
+    first(): EndPointControl {
+        return this.control_points[0] as EndPointControl;
     }
 
-    setFirst(point: Vertex): void {
+    setFirst(point: EndPointControl): void {
         this.control_points[0] = point;
     }
 
-    last(): Vertex {
-        return this.control_points[this.control_points.length - 1];
+    last(): EndPointControl {
+        return this.control_points[this.control_points.length - 1] as EndPointControl;
     }
 
-    setLast(point: Vertex): void {
+    setLast(point: EndPointControl): void {
         this.control_points[this.control_points.length - 1] = point;
     }
 
@@ -134,24 +163,24 @@ export class SplineList {
         this.splines = [first_spline];
     }
 
-    addLine(end: Vertex): void {
+    addLine(end: EndPointControl): void {
         let spline;
         if (this.splines.length === 0) {
-            spline = new Spline([new Vertex(0, 0), end]);
+            spline = new Spline(new EndPointControl(0, 0, 0), [], end);
         } else {
             const last = this.splines[this.splines.length - 1];
-            spline = new Spline([last.last(), end]);
+            spline = new Spline(last.last(), [], end);
         }
         this.splines.push(spline);
     }
 
-    add4PointsSpline(p3: Vertex): void {
+    add4PointsSpline(p3: EndPointControl): void {
         let spline;
         if (this.splines.length === 0) {
-            let p0 = new Vertex(0, 0);
+            let p0 = new EndPointControl(0, 0, 0);
             let p1 = new Vertex(p0.x, p0.y + 24);
             let p2 = new Vertex(p3.x, p3.y - 24);
-            spline = new Spline([p0, p1, p2, p3]);
+            spline = new Spline(p0, [p1, p2], p3);
         } else {
             const last = this.splines[this.splines.length - 1];
             let p0 = last.last();
@@ -161,16 +190,59 @@ export class SplineList {
             } else {
                 c = last.control_points[2];
             }
-            
+
             let p1 = p0.mirror(c);
             let p2 = p0.divide(new Vertex(2, 2)).add(p3.divide(new Vertex(2, 2)));
-            
-            spline = new Spline([p0, p1, p2, p3]);
+
+            spline = new Spline(p0, [p1, p2], p3);
         }
         this.splines.push(spline);
     }
 
-    removeSplineByFirstOrLastControlPoint(point: Vertex): void {
+    changeToCurve(spline: Spline) {
+        let index = this.splines.indexOf(spline);
+        let found = index !== -1;
+        if (!found) return;
+
+        let prev: Spline | null = null;
+        if (index > 0) {
+            prev = this.splines[index - 1];
+        }
+
+        let next: Spline | null = null;
+        if (index + 1 < this.splines.length) {
+            next = this.splines[index + 1];
+        }
+
+        let p0 = spline.first();
+        let p3 = spline.last();
+
+        let p1: Control;
+        if (prev !== null) {
+            p1 = p0.mirror(prev.control_points[prev.control_points.length - 2]);
+        } else {
+            p1 = p0.divide(new Vertex(2, 2)).add(p3.divide(new Vertex(2, 2)));
+        }
+
+        let p2;
+        if (next !== null) {
+            p2 = p3.mirror(next.control_points[1]);
+        } else {
+            p2 = p0.divide(new Vertex(2, 2)).add(p3.divide(new Vertex(2, 2)));
+        }
+
+        spline.control_points = [p0, p1, p2, p3];
+    }
+
+    changeToLine(spline: Spline) {
+        spline.control_points.splice(1, spline.control_points.length - 2);
+    }
+
+    splitSpline(spline: Spline, point: EndPointControl): void {
+        // TODO
+    }
+
+    removeSplineByFirstOrLastControlPoint(point: EndPointControl): void {
         // found it, remove, and merge if needed
 
         for (let i = 0; i < this.splines.length; i++) {
