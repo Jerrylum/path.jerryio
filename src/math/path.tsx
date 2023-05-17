@@ -239,12 +239,32 @@ export class SplineList {
     }
 
     splitSpline(spline: Spline, point: EndPointControl): void {
-        // TODO
+        let index = this.splines.indexOf(spline);
+        let found = index !== -1;
+        if (!found) return;
+
+        let cp_count = spline.control_points.length;
+        if (cp_count === 2) {
+            let last = spline.last();
+            spline.setLast(point);
+            let new_spline = new Spline(point, [], last);
+            this.splines.splice(index + 1, 0, new_spline);
+        } else if (cp_count === 4) {
+            let p0 = spline.control_points[0] as EndPointControl;
+            let p1 = spline.control_points[1];
+            let p2 = spline.control_points[2];
+            let p3 = spline.control_points[3] as EndPointControl;
+
+            let a = p1.divide(new Vertex(2, 2)).add(point.divide(new Vertex(2, 2)));
+            let b = point;
+            let c = p2.divide(new Vertex(2, 2)).add(point.divide(new Vertex(2, 2)));
+            spline.control_points = [p0, p1, a, b];
+            let new_spline = new Spline(b, [c, p2], p3);
+            this.splines.splice(index + 1, 0, new_spline);
+        }
     }
 
     removeSplineByFirstOrLastControlPoint(point: EndPointControl): void {
-        // found it, remove, and merge if needed
-
         for (let i = 0; i < this.splines.length; i++) {
             let spline = this.splines[i];
             if (spline.first() === point) { // pointer comparison

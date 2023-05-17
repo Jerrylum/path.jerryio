@@ -9,6 +9,13 @@ import { Circle, Layer, Rect, Stage, Image, Line } from 'react-konva';
 import fieldImageUrl from './static/field2023.png'
 import useImage from 'use-image';
 
+class UserControl {
+  public isPressingCtrl: boolean = false;
+  public isPressingShift: boolean = false;
+  public mouseX: number = 0;
+  public mouseY: number = 0;
+}
+
 function useTimer(ms: number) {
   const [time, setTime] = useState(Date.now());
 
@@ -65,17 +72,69 @@ function SplineKnotsHitBoxElement(props: { spline: Spline, splineList: SplineLis
   )
 }
 
-function SplineControlPointElement(props: { cp: Control, spline: Spline, splineList: SplineList, cc: CanvasConfig, isFirstOrLast: boolean }) {
+function SplineControlPointElement(props: { cp: Control, spline: Spline, splineList: SplineList, cc: CanvasConfig, uc: UserControl, isFirstOrLast: boolean }) {
   function onDragControlPoint(event: Konva.KonvaEventObject<DragEvent>) {
-    let evt = event.evt;
+    const evt = event.evt;
 
-    event.target.x(evt.clientX);
-    event.target.y(evt.clientY);
+    const oldCpInCm = props.cp.clone();
 
     let cpInPx = new Vertex(evt.clientX, evt.clientY);
     let cpInCm = props.cc.toCm(cpInPx);
     props.cp.x = cpInCm.x;
     props.cp.y = cpInCm.y;
+
+    if (props.uc.isPressingShift) {
+      let magnetX = cpInCm.x;
+      let magnetXDistance = Infinity;
+      let magnetY = cpInCm.y;
+      let magnetYDistance = Infinity;
+
+      for (let spline of props.splineList.splines) {
+        for (let cp of spline.control_points) {
+          if (cp === props.cp) continue;
+
+          let distance = cp.distance(cpInCm);
+          if (Math.abs(cp.x - cpInCm.x) < props.cc.controlPointMagnetDistance && distance < magnetXDistance) {
+            magnetX = cp.x;
+            magnetXDistance = distance;
+          } else if (Math.abs(cp.y - cpInCm.y) < props.cc.controlPointMagnetDistance && distance < magnetYDistance) {
+            magnetY = cp.y;
+            magnetYDistance = distance;
+          }
+        }
+      }
+
+      cpInCm.x = magnetX;
+      cpInCm.y = magnetY;
+    }
+
+    // CP 1 should follow CP 0, CP 2 should follow CP 3
+    const shouldFollow = props.isFirstOrLast && !props.uc.isPressingCtrl;
+    const index = props.splineList.splines.indexOf(props.spline);
+    const isLastOne = index + 1 === props.splineList.splines.length;
+    const isCurve = props.spline.control_points.length === 4;
+    const isFirstCp = props.spline.first() === props.cp;
+    if (isCurve && shouldFollow) {
+      const partner = isFirstCp ? props.spline.control_points[1] : props.spline.control_points[2];
+      const newPartner = cpInCm.add(partner.subtract(oldCpInCm));
+      partner.x = newPartner.x;
+      partner.y = newPartner.y;
+    }
+    if (!isLastOne && !isFirstCp && shouldFollow) {
+      const nextSpline = props.splineList.splines[index + 1];
+      if (nextSpline.control_points.length === 4) {
+        const partner = nextSpline.control_points[1];
+        const newPartner = cpInCm.add(partner.subtract(oldCpInCm));
+        partner.x = newPartner.x;
+        partner.y = newPartner.y;
+      }
+    }
+
+    props.cp.x = cpInCm.x;
+    props.cp.y = cpInCm.y;
+    cpInPx = props.cc.toPx(cpInCm);
+    event.target.x(cpInPx.x);
+    event.target.y(cpInPx.y);
   }
 
   function onWheel(event: Konva.KonvaEventObject<WheelEvent>) {
@@ -122,7 +181,7 @@ function SplineControlPointElement(props: { cp: Control, spline: Spline, splineL
   )
 }
 
-function SplineElement(props: { spline: Spline, splineList: SplineList, cc: CanvasConfig }) {
+function SplineElement(props: { spline: Spline, splineList: SplineList, cc: CanvasConfig, uc: UserControl }) {
   let isFirst = props.splineList.splines[0] === props.spline;
 
   let knot_radius = props.cc.pixelWidth / 320;
@@ -132,7 +191,7 @@ function SplineElement(props: { spline: Spline, splineList: SplineList, cc: Canv
       {props.spline.calculateKnots(props.cc).map((knot_in_cm, index) => {
         let knot_in_px = props.cc.toPx(knot_in_cm);
         return (
-          <Circle x={knot_in_px.x} y={knot_in_px.y} radius={knot_radius} fill="#00ff00ff" />
+          <Circle key={index} x={knot_in_px.x} y={knot_in_px.y} radius={knot_radius} fill="#00ff00ff" />
         )
       })}
       {
@@ -147,7 +206,8 @@ function SplineElement(props: { spline: Spline, splineList: SplineList, cc: Canv
       {props.spline.control_points.map((cp_in_cm, index) => {
         if (!isFirst && index === 0) return null;
         return (
-          <SplineControlPointElement cp={cp_in_cm} spline={props.spline} splineList={props.splineList} cc={props.cc}
+          <SplineControlPointElement key={index}
+            cp={cp_in_cm} spline={props.spline} splineList={props.splineList} cc={props.cc} uc={props.uc}
             isFirstOrLast={cp_in_cm === props.spline.first() || cp_in_cm === props.spline.last()} />
         )
       })}
@@ -160,11 +220,11 @@ function App() {
 
   const splineList = useMemo(() => new SplineList(new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0))), []);
 
-  const fieldCanvas = useRef<HTMLCanvasElement>(null);
+  const [userControl, setUserControl] = useState(new UserControl());
 
   const [fieldImage] = useImage(fieldImageUrl);
 
-  const cc = new CanvasConfig(window.innerHeight, window.innerHeight, 365.76, 365.76, 0.25);
+  const cc = new CanvasConfig(window.innerHeight, window.innerHeight, 365.76, 365.76);
 
   function onClickFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
     let evt = event.evt;
@@ -176,17 +236,36 @@ function App() {
     }
   }
 
+  function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    let isCtrl = event.ctrlKey || event.metaKey;
+    let isShift = event.shiftKey;
+    setUserControl({ ...userControl, isPressingCtrl: isCtrl, isPressingShift: isShift });
+
+  }
+
+  function onKeyUp(event: React.KeyboardEvent<HTMLDivElement>) {
+    let isCtrl = event.ctrlKey || event.metaKey;
+    let isShift = event.shiftKey;
+    setUserControl({ ...userControl, isPressingCtrl: isCtrl, isPressingShift: isShift });
+  }
+
+  function onMouseMove(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    // setUserControl({ ...userControl, mouseX: event.clientX, mouseY: event.clientY });
+  }
+
   return (
-    <Stage width={cc.pixelWidth} height={cc.pixelHeight} onContextMenu={(e) => e.evt.preventDefault()}>
-      <Layer>
-        <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight} onClick={onClickFieldImage} />
-        {splineList.splines.map((spline) => {
-          return (
-            <SplineElement key={spline.uid} spline={spline} splineList={splineList} cc={cc} />
-          )
-        })}
-      </Layer>
-    </Stage>
+    <div tabIndex={1} onKeyDown={onKeyDown} onKeyUp={onKeyUp} onMouseMove={onMouseMove}>
+      <Stage width={cc.pixelWidth} height={cc.pixelHeight} onContextMenu={(e) => e.evt.preventDefault()}>
+        <Layer>
+          <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight} onClick={onClickFieldImage} />
+          {splineList.splines.map((spline) => {
+            return (
+              <SplineElement key={spline.uid} spline={spline} splineList={splineList} cc={cc} uc={userControl} />
+            )
+          })}
+        </Layer>
+      </Stage>
+    </div>
   );
 }
 

@@ -5,7 +5,8 @@ export class CanvasConfig {
     public pixelHeight: number; // in pixel
     public fieldWidth: number; // in cm
     public fieldHeight: number; // in cm
-    public knotPerCm: number;
+    public knotPerCm: number = 0.25;
+    public controlPointMagnetDistance: number = 5; // in cm
 
     // calculated
     public pixelWidthHalf: number;
@@ -13,12 +14,11 @@ export class CanvasConfig {
     public cm2pixel: number; // in pixel/cm
     public pixel2cm: number; // in cm/pixel
 
-    constructor(pixel_width: number, pixel_height: number, field_width: number, field_height: number, knotPerCm: number) {
+    constructor(pixel_width: number, pixel_height: number, field_width: number, field_height: number) {
         this.pixelWidth = pixel_width;
         this.pixelHeight = pixel_height;
         this.fieldWidth = field_width;
         this.fieldHeight = field_height;
-        this.knotPerCm = knotPerCm;
         this.pixelWidthHalf = pixel_width / 2;
         this.pixelHeightHalf = pixel_height / 2;
         this.cm2pixel = pixel_width / field_width;
