@@ -34,33 +34,50 @@ export class Vertex {
         return Math.sqrt(Math.pow(this.x - vector.x, 2) + Math.pow(this.y - vector.y, 2));
     }
 
-    interpolate(vector: Vertex, t: number): Vertex {
-        return new Vertex(this.x + (vector.x - this.x) * t, this.y + (vector.y - this.y) * t);
+    // interpolate(vector: Vertex, t: number): Vertex {
+    //     return new Vertex(this.x + (vector.x - this.x) * t, this.y + (vector.y - this.y) * t);
+    // }
+
+    mirror(other: Vertex): Vertex {
+        // this as the center
+        return new Vertex(this.x + (this.x - other.x), this.y + (this.y - other.y));
     }
 }
 
-export abstract class Edge {
-
-    abstract calculateKnots(cc: CanvasConfig): Vertex[];
-
-    abstract first(): Vertex;
-
-    abstract last(): Vertex;
-}
-
-export class Spline extends Edge {
+export class Spline {
     public control_points: Vertex[];
+    public uid: number;
 
     constructor(control_points: Vertex[]) {
-        super();
         // XXX: check if control_points.length >= 2
         this.control_points = control_points;
+        this.uid = Math.random();
+    }
+
+    distance(): number {
+        let rtn = 0;
+
+        const n = this.control_points.length - 1;
+        let prev = this.control_points[0];
+        for (let t = 0; t <= 1; t += 0.05) {
+            let point = new Vertex(0, 0);
+            for (let i = 0; i <= n; i++) {
+                const bernstein = this.bernstein(n, i, t);
+                const controlPoint = this.control_points[i];
+                point = point.add(new Vertex(controlPoint.x * bernstein, controlPoint.y * bernstein));
+            }
+            rtn += point.distance(prev);
+            prev = point;
+        }
+
+        return rtn;
     }
 
     calculateKnots(cc: CanvasConfig): Vertex[] {
         let knots: Vertex[] = [];
 
-        let distance = this.first().distance(this.last());
+        let distance = this.distance();
+
         let step = 1 / (distance * cc.knotPerCm);
 
         // Bezier curve implementation
@@ -82,8 +99,16 @@ export class Spline extends Edge {
         return this.control_points[0];
     }
 
+    setFirst(point: Vertex): void {
+        this.control_points[0] = point;
+    }
+
     last(): Vertex {
         return this.control_points[this.control_points.length - 1];
+    }
+
+    setLast(point: Vertex): void {
+        this.control_points[this.control_points.length - 1] = point;
     }
 
     private bernstein(n: number, i: number, t: number): number {
@@ -102,43 +127,65 @@ export class Spline extends Edge {
     }
 }
 
-export class EdgeList {
-    public edges: Edge[];
+export class SplineList {
+    public splines: Spline[];
 
-    constructor(first_edge: Edge) {
-        this.edges = [first_edge];
+    constructor(first_spline: Spline) {
+        this.splines = [first_spline];
     }
 
     addLine(end: Vertex): void {
-        if (this.edges.length === 0) {
-            var spline = new Spline([new Vertex(0, 0), end]);
+        let spline;
+        if (this.splines.length === 0) {
+            spline = new Spline([new Vertex(0, 0), end]);
         } else {
-            const last = this.edges[this.edges.length - 1];
-            var spline = new Spline([last.last(), end]);
+            const last = this.splines[this.splines.length - 1];
+            spline = new Spline([last.last(), end]);
         }
-        this.edges.push(spline);
+        this.splines.push(spline);
     }
 
     add4PointsSpline(p3: Vertex): void {
-        if (this.edges.length === 0) {
+        let spline;
+        if (this.splines.length === 0) {
             let p0 = new Vertex(0, 0);
             let p1 = new Vertex(p0.x, p0.y + 24);
             let p2 = new Vertex(p3.x, p3.y - 24);
-            var spline = new Spline([p0, p1, p2, p3]);
+            spline = new Spline([p0, p1, p2, p3]);
         } else {
-            const last = this.edges[this.edges.length - 1];
+            const last = this.splines[this.splines.length - 1];
             let p0 = last.last();
-            let c = last instanceof Spline ? last.control_points[2] : last.first();
-            let p1 = c.interpolate(p0, c.distance(p0) * 2);
-            let p2 = new Vertex(p3.x, p3.y - 24);
-            var spline = new Spline([p0, p1, p2, p3]);
+            let c;
+            if (last.control_points.length < 4) {
+                c = last.control_points[0];
+            } else {
+                c = last.control_points[2];
+            }
+            
+            let p1 = p0.mirror(c);
+            let p2 = p0.divide(new Vertex(2, 2)).add(p3.divide(new Vertex(2, 2)));
+            
+            spline = new Spline([p0, p1, p2, p3]);
         }
-        this.edges.push(spline);
+        this.splines.push(spline);
     }
 
-    removeFirstOrLastControlPoint(point: Vertex): void {
+    removeSplineByFirstOrLastControlPoint(point: Vertex): void {
         // found it, remove, and merge if needed
 
-
+        for (let i = 0; i < this.splines.length; i++) {
+            let spline = this.splines[i];
+            if (spline.first() === point) { // pointer comparison
+                if (i > 0) {
+                    let prev = this.splines[i - 1];
+                    prev.setLast(spline.last()); // pointer assignment
+                }
+                this.splines.splice(i, 1);
+                return;
+            } else if (i + 1 === this.splines.length && spline.last() === point) { // pointer comparison
+                this.splines.splice(i, 1);
+                return;
+            }
+        }
     }
 }
