@@ -83,6 +83,26 @@ function SplineControlPointElement(props: { cp: Control, spline: Spline, splineL
     props.cp.x = cpInCm.x;
     props.cp.y = cpInCm.y;
 
+    // CP 1 should follow CP 0, CP 2 should follow CP 3
+    const shouldFollow = props.isFirstOrLast && !props.uc.isPressingCtrl;
+    const index = props.splineList.splines.indexOf(props.spline);
+    const isLastOne = index + 1 === props.splineList.splines.length;
+    const isCurve = props.spline.control_points.length === 4;
+    const isFirstCp = props.spline.first() === props.cp;
+
+    let partner0: Vertex | null = null;
+    let partner1: Vertex | null = null;
+    if (isCurve && shouldFollow) {
+      partner0 = isFirstCp ? props.spline.control_points[1] : props.spline.control_points[2];
+      
+    }
+    if (!isLastOne && !isFirstCp && shouldFollow) {
+      const nextSpline = props.splineList.splines[index + 1];
+      if (nextSpline.control_points.length === 4) {
+        partner1 = nextSpline.control_points[1];
+      }
+    }
+
     if (props.uc.isPressingShift) {
       let magnetX = cpInCm.x;
       let magnetXDistance = Infinity;
@@ -91,13 +111,14 @@ function SplineControlPointElement(props: { cp: Control, spline: Spline, splineL
 
       for (let spline of props.splineList.splines) {
         for (let cp of spline.control_points) {
-          if (cp === props.cp) continue;
+          if (cp === props.cp || cp === partner0 || cp === partner1) continue;
 
           let distance = cp.distance(cpInCm);
           if (Math.abs(cp.x - cpInCm.x) < props.cc.controlPointMagnetDistance && distance < magnetXDistance) {
             magnetX = cp.x;
             magnetXDistance = distance;
-          } else if (Math.abs(cp.y - cpInCm.y) < props.cc.controlPointMagnetDistance && distance < magnetYDistance) {
+          }
+          if (Math.abs(cp.y - cpInCm.y) < props.cc.controlPointMagnetDistance && distance < magnetYDistance) {
             magnetY = cp.y;
             magnetYDistance = distance;
           }
@@ -108,26 +129,15 @@ function SplineControlPointElement(props: { cp: Control, spline: Spline, splineL
       cpInCm.y = magnetY;
     }
 
-    // CP 1 should follow CP 0, CP 2 should follow CP 3
-    const shouldFollow = props.isFirstOrLast && !props.uc.isPressingCtrl;
-    const index = props.splineList.splines.indexOf(props.spline);
-    const isLastOne = index + 1 === props.splineList.splines.length;
-    const isCurve = props.spline.control_points.length === 4;
-    const isFirstCp = props.spline.first() === props.cp;
-    if (isCurve && shouldFollow) {
-      const partner = isFirstCp ? props.spline.control_points[1] : props.spline.control_points[2];
-      const newPartner = cpInCm.add(partner.subtract(oldCpInCm));
-      partner.x = newPartner.x;
-      partner.y = newPartner.y;
+    if (partner0) {
+      const newPartner = cpInCm.add(partner0.subtract(oldCpInCm));
+      partner0.x = newPartner.x;
+      partner0.y = newPartner.y;
     }
-    if (!isLastOne && !isFirstCp && shouldFollow) {
-      const nextSpline = props.splineList.splines[index + 1];
-      if (nextSpline.control_points.length === 4) {
-        const partner = nextSpline.control_points[1];
-        const newPartner = cpInCm.add(partner.subtract(oldCpInCm));
-        partner.x = newPartner.x;
-        partner.y = newPartner.y;
-      }
+    if (partner1) {
+      const newPartner = cpInCm.add(partner1.subtract(oldCpInCm));
+      partner1.x = newPartner.x;
+      partner1.y = newPartner.y;
     }
 
     props.cp.x = cpInCm.x;
