@@ -42,6 +42,19 @@ interface SplineControlElementProps extends SplineElementProps {
   cp: EndPointControl | Control;
 }
 
+async function addSelected(props: SplineControlElementProps, uid: string) {
+  return new Promise<boolean>((resolve, reject) => {
+    props.setSelected((selected) => {
+      if (selected.includes(uid)) {
+        resolve(false);
+        return selected;
+      } else {
+        resolve(true);
+        return [...selected, uid];
+      }
+    });
+  });
+}
 
 function useTimer(ms: number) {
   const [time, setTime] = useState(Date.now());
@@ -106,14 +119,13 @@ function SplineControlElement(props: SplineControlElementProps) {
     const evt = event.evt;
     if (evt.button === 0) { // left click
       setJustSelected(false);
+      console.log("mouse down", props.uc.isPressingShift);
+      
       if (props.uc.isPressingShift) {
         // add if not
-        props.setSelected((selected) => {
-          if (selected.includes(props.cp.uid)) {
-            return selected;
-          } else {
+        addSelected(props, props.cp.uid).then((added) => {
+          if (added) {
             setJustSelected(true);
-            return [...selected, props.cp.uid];
           }
         });
       } else {
@@ -151,22 +163,40 @@ function SplineControlElement(props: SplineControlElementProps) {
 
     // CP 1 should follow CP 0, CP 2 should follow CP 3
     const isMainControl = props.cp instanceof EndPointControl;
-    const shouldFollow = isMainControl && !props.uc.isPressingCtrl;
+    const shouldControlFollow = !props.uc.isPressingCtrl;
+    // const shouldFollow = isMainControl && !props.uc.isPressingCtrl;
     const index = props.path.splines.indexOf(props.spline);
     const isLastOne = index + 1 === props.path.splines.length;
     const isCurve = props.spline.controls.length === 4;
     const isFirstCp = props.spline.first() === props.cp;
 
-    let partner0: Vertex | null = null;
-    let partner1: Vertex | null = null;
-    if (isCurve && shouldFollow) {
-      partner0 = isFirstCp ? props.spline.controls[1] : props.spline.controls[2];
-
+    const controls = props.path.getControlsSet();
+    let followers: Control[] = [];
+    let others: Control[] = [];
+    for (let control of controls) {
+      if (control === props.cp) continue;
+      if (
+        (!(control instanceof EndPointControl) && !shouldControlFollow) ||
+        (!props.selected.includes(control.uid))
+      ) {
+        others.push(control);
+      } else {
+        followers.push(control);
+      }
     }
-    if (!isLastOne && !isFirstCp && shouldFollow) {
+
+    if (isMainControl && shouldControlFollow) {
+      if (isCurve) {
+        let control = isFirstCp ? props.spline.controls[1] : props.spline.controls[2];
+        addSelected(props, control.uid);
+        if (!followers.includes(control)) followers.push(control);
+      }
+
       const nextSpline = props.path.splines[index + 1];
-      if (nextSpline.controls.length === 4) {
-        partner1 = nextSpline.controls[1];
+      if (!isLastOne && !isFirstCp && nextSpline !== undefined && nextSpline.controls.length === 4) {
+        let control = nextSpline.controls[1];
+        addSelected(props, control.uid);
+        if (!followers.includes(control)) followers.push(control);
       }
     }
 
@@ -176,19 +206,16 @@ function SplineControlElement(props: SplineControlElementProps) {
       let magnetY = cpInCm.y;
       let magnetYDistance = Infinity;
 
-      for (let spline of props.path.splines) {
-        for (let cp of spline.controls) {
-          if (cp === props.cp || cp === partner0 || cp === partner1) continue;
+      for (let cp of others) {
 
-          let distance = cp.distance(cpInCm);
-          if (Math.abs(cp.x - cpInCm.x) < props.cc.controlPointMagnetDistance && distance < magnetXDistance) {
-            magnetX = cp.x;
-            magnetXDistance = distance;
-          }
-          if (Math.abs(cp.y - cpInCm.y) < props.cc.controlPointMagnetDistance && distance < magnetYDistance) {
-            magnetY = cp.y;
-            magnetYDistance = distance;
-          }
+        let distance = cp.distance(cpInCm);
+        if (Math.abs(cp.x - cpInCm.x) < props.cc.controlPointMagnetDistance && distance < magnetXDistance) {
+          magnetX = cp.x;
+          magnetXDistance = distance;
+        }
+        if (Math.abs(cp.y - cpInCm.y) < props.cc.controlPointMagnetDistance && distance < magnetYDistance) {
+          magnetY = cp.y;
+          magnetYDistance = distance;
         }
       }
 
@@ -196,15 +223,10 @@ function SplineControlElement(props: SplineControlElementProps) {
       cpInCm.y = magnetY;
     }
 
-    if (partner0) {
-      const newPartner = cpInCm.add(partner0.subtract(oldCpInCm));
-      partner0.x = newPartner.x;
-      partner0.y = newPartner.y;
-    }
-    if (partner1) {
-      const newPartner = cpInCm.add(partner1.subtract(oldCpInCm));
-      partner1.x = newPartner.x;
-      partner1.y = newPartner.y;
+    for (let cp of followers) {
+      const newPos = cpInCm.add(cp.subtract(oldCpInCm));
+      cp.x = newPos.x;
+      cp.y = newPos.y;
     }
 
     props.cp.x = cpInCm.x;
