@@ -1,10 +1,46 @@
 .App {
-  text-align: center;
+  display:flex;
+  width: 100vw;
+  height: 100vh;
+  padding: 1vh;
+  box-sizing: border-box;
 }
 
-.fieldCanvas {
-  border: 1px solid hwb(0 0% 100%);
+.App > * {
+  box-sizing: border-box;
+  margin: 1vh;
+}
+
+.field-container {
+  width: 96vh;
+  height: 96vh;
+  padding: 1vh;
+  overflow: hidden;
+}
+
+.editor-container {
+  /* background-color: #EEE; */
   float: left;
+  flex-grow: 1;
+  max-width: 25vw;
+  margin: calc(1vh - 4px);
+  padding-top: 4px;
+  font-family: Consolas;
+  font-size: 1.5vh;
+  overflow-y: scroll;
+}
+
+.editor-container::-webkit-scrollbar {
+  width: 0;
+}
+
+.editor-container > * {
+  margin: 0 4px !important;
+}
+
+.editor-container h3 {
+  margin: 0;
+  font-weight: 100;
 }
 
 .App-logo {

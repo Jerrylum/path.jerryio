@@ -35,7 +35,7 @@ export class Vertex {
     }
 
     mirror(other: Vertex): Vertex {
-        // this as the center
+        // "this" as the center
         return new Vertex(this.x + (this.x - other.x), this.y + (this.y - other.y));
     }
 
@@ -78,7 +78,6 @@ export class Spline {
     public uid: number;
 
     constructor(start: EndPointControl, middle: Control[], end: EndPointControl) {
-        // XXX: check if control_points.length >= 2
         this.control_points = [start, ...middle, end];
         this.uid = Math.random();
     }
@@ -156,11 +155,24 @@ export class Spline {
     }
 }
 
-export class SplineList {
+export class Path {
     public splines: Spline[];
+    public name: string = "Path";
 
     constructor(first_spline: Spline) {
         this.splines = [first_spline];
+    }
+
+    getControlsSet(): (EndPointControl | Control)[] {
+        let rtn: (EndPointControl | Control)[] = [];
+        for (let i = 0; i < this.splines.length; i++) {
+            let spline = this.splines[i];
+            if (i === 0) rtn.push(spline.first());
+            for (let j = 1; j < spline.control_points.length; j++) {
+                rtn.push(spline.control_points[j]);
+            }
+        }
+        return rtn;
     }
 
     addLine(end: EndPointControl): void {
@@ -174,7 +186,7 @@ export class SplineList {
         this.splines.push(spline);
     }
 
-    add4PointsSpline(p3: EndPointControl): void {
+    add4ControlsCurve(p3: EndPointControl): void {
         let spline;
         if (this.splines.length === 0) {
             let p0 = new EndPointControl(0, 0, 0);
@@ -199,7 +211,7 @@ export class SplineList {
         this.splines.push(spline);
     }
 
-    changeToCurve(spline: Spline) {
+    changeTo4ControlsCurve(spline: Spline) {
         let index = this.splines.indexOf(spline);
         let found = index !== -1;
         if (!found) return;

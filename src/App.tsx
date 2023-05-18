@@ -1,13 +1,27 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 
-import { Control, EndPointControl, Spline, SplineList, Vertex } from './math/path';
+import Card from '@mui/material/Card';
+
+import { Control, EndPointControl, Spline, Path, Vertex } from './math/path';
 import { CanvasConfig } from './math/shape';
 import Konva from 'konva';
 import { Circle, Layer, Rect, Stage, Image, Line } from 'react-konva';
 
 import fieldImageUrl from './static/field2023.png'
 import useImage from 'use-image';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import Typography from '@mui/material/Typography';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import TextField from '@mui/material/TextField';
+import TreeView from '@mui/lab/TreeView';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import TreeItem from '@mui/lab/TreeItem';
+
+import { Input } from '@mui/icons-material';
+import ContentEditable, { ContentEditableEvent } from 'react-contenteditable';
 
 class UserControl {
   public isPressingCtrl: boolean = false;
@@ -40,20 +54,20 @@ function SplineControlPointVisualLineElement(props: { start: Vertex, end: Vertex
   )
 }
 
-function SplineKnotsHitBoxElement(props: { spline: Spline, splineList: SplineList, cc: CanvasConfig }) {
+function SplineKnotsHitBoxElement(props: { spline: Spline, path: Path, cc: CanvasConfig }) {
   function onLineClick(event: Konva.KonvaEventObject<MouseEvent>) {
     let evt = event.evt;
 
-    let cpInPx = new EndPointControl(evt.clientX, evt.clientY, 0);
+    let cpInPx = new EndPointControl(evt.offsetX, evt.offsetY, 0);
     let cpInCm = props.cc.toCm(cpInPx);
 
     if (evt.button === 2) { // click
-      props.splineList.splitSpline(props.spline, cpInCm);
+      props.path.splitSpline(props.spline, cpInCm);
     } else {
       if (props.spline.control_points.length === 2)
-        props.splineList.changeToCurve(props.spline);
+        props.path.changeTo4ControlsCurve(props.spline);
       else
-        props.splineList.changeToLine(props.spline);
+        props.path.changeToLine(props.spline);
     }
   }
 
@@ -72,21 +86,21 @@ function SplineKnotsHitBoxElement(props: { spline: Spline, splineList: SplineLis
   )
 }
 
-function SplineControlPointElement(props: { cp: Control, spline: Spline, splineList: SplineList, cc: CanvasConfig, uc: UserControl, isFirstOrLast: boolean }) {
+function SplineControlPointElement(props: { cp: Control, spline: Spline, path: Path, cc: CanvasConfig, uc: UserControl, isFirstOrLast: boolean }) {
   function onDragControlPoint(event: Konva.KonvaEventObject<DragEvent>) {
     const evt = event.evt;
 
     const oldCpInCm = props.cp.clone();
 
-    let cpInPx = new Vertex(evt.clientX, evt.clientY);
+    let cpInPx = new Vertex(evt.offsetX, evt.offsetY);
     let cpInCm = props.cc.toCm(cpInPx);
     props.cp.x = cpInCm.x;
     props.cp.y = cpInCm.y;
 
     // CP 1 should follow CP 0, CP 2 should follow CP 3
     const shouldFollow = props.isFirstOrLast && !props.uc.isPressingCtrl;
-    const index = props.splineList.splines.indexOf(props.spline);
-    const isLastOne = index + 1 === props.splineList.splines.length;
+    const index = props.path.splines.indexOf(props.spline);
+    const isLastOne = index + 1 === props.path.splines.length;
     const isCurve = props.spline.control_points.length === 4;
     const isFirstCp = props.spline.first() === props.cp;
 
@@ -94,10 +108,10 @@ function SplineControlPointElement(props: { cp: Control, spline: Spline, splineL
     let partner1: Vertex | null = null;
     if (isCurve && shouldFollow) {
       partner0 = isFirstCp ? props.spline.control_points[1] : props.spline.control_points[2];
-      
+
     }
     if (!isLastOne && !isFirstCp && shouldFollow) {
-      const nextSpline = props.splineList.splines[index + 1];
+      const nextSpline = props.path.splines[index + 1];
       if (nextSpline.control_points.length === 4) {
         partner1 = nextSpline.control_points[1];
       }
@@ -109,7 +123,7 @@ function SplineControlPointElement(props: { cp: Control, spline: Spline, splineL
       let magnetY = cpInCm.y;
       let magnetYDistance = Infinity;
 
-      for (let spline of props.splineList.splines) {
+      for (let spline of props.path.splines) {
         for (let cp of spline.control_points) {
           if (cp === props.cp || cp === partner0 || cp === partner1) continue;
 
@@ -164,7 +178,7 @@ function SplineControlPointElement(props: { cp: Control, spline: Spline, splineL
     let evt = event.evt;
 
     if (evt.button === 2) { // right click
-      props.splineList.removeSplineByFirstOrLastControlPoint(props.cp as EndPointControl);
+      props.path.removeSplineByFirstOrLastControlPoint(props.cp as EndPointControl);
     }
   }
 
@@ -191,8 +205,8 @@ function SplineControlPointElement(props: { cp: Control, spline: Spline, splineL
   )
 }
 
-function SplineElement(props: { spline: Spline, splineList: SplineList, cc: CanvasConfig, uc: UserControl }) {
-  let isFirst = props.splineList.splines[0] === props.spline;
+function SplineElement(props: { spline: Spline, path: Path, cc: CanvasConfig, uc: UserControl }) {
+  let isFirst = props.path.splines[0] === props.spline;
 
   let knot_radius = props.cc.pixelWidth / 320;
 
@@ -212,12 +226,12 @@ function SplineElement(props: { spline: Spline, splineList: SplineList, cc: Canv
           </>
         ) : null
       }
-      <SplineKnotsHitBoxElement spline={props.spline} splineList={props.splineList} cc={props.cc} />
+      <SplineKnotsHitBoxElement spline={props.spline} path={props.path} cc={props.cc} />
       {props.spline.control_points.map((cp_in_cm, index) => {
         if (!isFirst && index === 0) return null;
         return (
           <SplineControlPointElement key={index}
-            cp={cp_in_cm} spline={props.spline} splineList={props.splineList} cc={props.cc} uc={props.uc}
+            cp={cp_in_cm} spline={props.spline} path={props.path} cc={props.cc} uc={props.uc}
             isFirstOrLast={cp_in_cm === props.spline.first() || cp_in_cm === props.spline.last()} />
         )
       })}
@@ -228,21 +242,23 @@ function SplineElement(props: { spline: Spline, splineList: SplineList, cc: Canv
 function App() {
   useTimer(1000 / 30);
 
-  const splineList = useMemo(() => new SplineList(new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0))), []);
+  const selectedPath = 0;
+
+  const paths = useMemo(() => [new Path(new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)))], []);
 
   const [userControl, setUserControl] = useState(new UserControl());
 
   const [fieldImage] = useImage(fieldImageUrl);
 
-  const cc = new CanvasConfig(window.innerHeight, window.innerHeight, 365.76, 365.76);
+  const cc = new CanvasConfig(window.innerHeight * 0.94, window.innerHeight * 0.94, 365.76, 365.76);
 
   function onClickFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
     let evt = event.evt;
 
     if (evt.button === 2) { // click
-      splineList.addLine(cc.toCm(new EndPointControl(evt.clientX, evt.clientY, 0)));
+      paths[0].addLine(cc.toCm(new EndPointControl(evt.offsetX, evt.offsetY, 0)));
     } else {
-      splineList.add4PointsSpline(cc.toCm(new EndPointControl(evt.clientX, evt.clientY, 0)));
+      paths[0].add4ControlsCurve(cc.toCm(new EndPointControl(evt.offsetX, evt.offsetY, 0)));
     }
   }
 
@@ -260,21 +276,110 @@ function App() {
   }
 
   function onMouseMove(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-    // setUserControl({ ...userControl, mouseX: event.clientX, mouseY: event.clientY });
+    // setUserControl({ ...userControl, mouseX: event.offsetX, mouseY: event.offsetY });
+  }
+
+  function onPathNameChange(event: React.ChangeEvent<HTMLInputElement>) {
+    // paths[selectedPath].name = event.target.innerText;
   }
 
   return (
-    <div tabIndex={1} onKeyDown={onKeyDown} onKeyUp={onKeyUp} onMouseMove={onMouseMove}>
-      <Stage width={cc.pixelWidth} height={cc.pixelHeight} onContextMenu={(e) => e.evt.preventDefault()}>
-        <Layer>
-          <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight} onClick={onClickFieldImage} />
-          {splineList.splines.map((spline) => {
-            return (
-              <SplineElement key={spline.uid} spline={spline} splineList={splineList} cc={cc} uc={userControl} />
-            )
-          })}
-        </Layer>
-      </Stage>
+    <div className='App'>
+      <Card className='field-container' tabIndex={1} onKeyDown={onKeyDown} onKeyUp={onKeyUp} onMouseMove={onMouseMove}>
+        <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight} onContextMenu={(e) => e.evt.preventDefault()}>
+          <Layer>
+            <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight} onClick={onClickFieldImage} />
+            {
+              paths.map((path, index) => {
+                return (
+                  <React.Fragment key={index}>
+                    {path.splines.map((spline) => {
+                      return (
+                        <SplineElement key={spline.uid} spline={spline} path={path} cc={cc} uc={userControl} />
+                      )
+                    })}
+                  </React.Fragment>
+                )
+              })
+            }
+          </Layer>
+        </Stage>
+      </Card>
+
+      <div className='editor-container'>
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Robot Configuration</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <TextField
+              label="Width"
+              id="outlined-size-small"
+              defaultValue="30"
+              size="small"
+              sx={{marginBottom: "1vh"}}
+            />
+            <TextField
+              label="Height"
+              id="outlined-size-small"
+              defaultValue="30"
+              size="small"
+            />
+          </AccordionDetails>
+        </Accordion>
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>File</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            
+          </AccordionDetails>
+        </Accordion>
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Paths</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <TreeView
+              defaultCollapseIcon={<ExpandMoreIcon />}
+              defaultExpandIcon={<ChevronRightIcon />}
+              multiSelect
+              sx={{ flexGrow: 1, maxWidth: "100%", overflowX: 'hidden', overflowY: 'auto', marginBottom: "2vh" }}
+            >
+              {
+                paths.map((path, pathIdx) => {
+                  return (
+                    <TreeItem nodeId={pathIdx + ""} label={
+                      <>
+                        {/* <ContentEditable style={{display:'inline-block'}} onChange={onPathNameChange} html={path.name}></ContentEditable>
+                         */}
+                         <span contentEditable
+                          style={{display:'inline-block'}}
+                          onInput={onPathNameChange}
+                          suppressContentEditableWarning={true}
+                         >{path.name}</span>
+                      </>
+                    } >
+                      {
+                        path.getControlsSet().map((control, controlIdx) => {
+                          return (
+                            <TreeItem nodeId={pathIdx + "," + controlIdx} label={control instanceof EndPointControl ? "End Point Control" : "Control"} />
+                          )
+                        })
+                      }
+                    </TreeItem>
+                  )
+                })
+              }
+            </TreeView>
+
+            <Typography>
+              TODO
+              
+            </Typography>
+          </AccordionDetails>
+        </Accordion>
+      </div>
     </div>
   );
 }
