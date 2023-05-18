@@ -1,5 +1,17 @@
 import { CanvasConfig } from "./shape";
 
+function makeId(length : number) {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < length) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      counter += 1;
+    }
+    return result;
+}
+
 export class Vertex {
 
     public x: number;
@@ -10,20 +22,32 @@ export class Vertex {
         this.y = y;
     }
 
-    add(vector: Vertex): Vertex {
-        return new Vertex(this.x + vector.x, this.y + vector.y);
+    add<T extends Vertex>(vector: T): T {
+        let rtn = vector.clone() as T;
+        rtn.x += this.x;
+        rtn.y += this.y;
+        return rtn;
     }
 
-    subtract(vector: Vertex): Vertex {
-        return new Vertex(this.x - vector.x, this.y - vector.y);
+    subtract<T extends Vertex>(vector: T): T {
+        let rtn = vector.clone() as T;
+        rtn.x = this.x - rtn.x;
+        rtn.y = this.y - rtn.y;
+        return rtn;
     }
 
-    multiply(vector: Vertex): Vertex {
-        return new Vertex(this.x * vector.x, this.y * vector.y);
+    multiply<T extends Vertex>(vector: T): T {
+        let rtn = vector.clone() as T;
+        rtn.x *= this.x;
+        rtn.y *= this.y;
+        return rtn;
     }
 
-    divide(vector: Vertex): Vertex {
-        return new Vertex(this.x / vector.x, this.y / vector.y);
+    divide<T extends Vertex>(vector: T): T {
+        let rtn = vector.clone() as T;
+        rtn.x = this.x / rtn.x;
+        rtn.y = this.y / rtn.y;
+        return rtn;
     }
 
     dot(vector: Vertex): number {
@@ -34,9 +58,12 @@ export class Vertex {
         return Math.sqrt(Math.pow(this.x - vector.x, 2) + Math.pow(this.y - vector.y, 2));
     }
 
-    mirror(other: Vertex): Vertex {
+    mirror<T extends Vertex>(other: T): T {
         // "this" as the center
-        return new Vertex(this.x + (this.x - other.x), this.y + (this.y - other.y));
+        let rtn = other.clone() as T;
+        rtn.x = 2 * this.x - other.x;
+        rtn.y = 2 * this.y - other.y;
+        return rtn;
     }
 
     clone(): Vertex {
@@ -53,7 +80,16 @@ export interface Position extends Vertex {
 }
 
 export class Control extends Vertex {
+    public uid: string;
 
+    constructor(x: number, y: number) {
+        super(x, y);
+        this.uid = makeId(10);
+    }
+
+    clone(): Control {
+        return new Control(this.x, this.y);
+    }
 }
 
 export class EndPointControl extends Control implements Position {
@@ -75,18 +111,18 @@ export class EndPointControl extends Control implements Position {
 
 export class Spline {
     public control_points: (EndPointControl | Control)[];
-    public uid: number;
+    public uid: string;
 
     constructor(start: EndPointControl, middle: Control[], end: EndPointControl) {
         this.control_points = [start, ...middle, end];
-        this.uid = Math.random();
+        this.uid = makeId(10);
     }
 
     distance(): number {
         let rtn = 0;
 
         const n = this.control_points.length - 1;
-        let prev = this.control_points[0];
+        let prev: Vertex = this.control_points[0];
         for (let t = 0; t <= 1; t += 0.05) {
             let point = new Vertex(0, 0);
             for (let i = 0; i <= n; i++) {
@@ -158,9 +194,11 @@ export class Spline {
 export class Path {
     public splines: Spline[];
     public name: string = "Path";
+    public uid: string;
 
     constructor(first_spline: Spline) {
         this.splines = [first_spline];
+        this.uid = makeId(10);
     }
 
     getControlsSet(): (EndPointControl | Control)[] {
@@ -190,8 +228,8 @@ export class Path {
         let spline;
         if (this.splines.length === 0) {
             let p0 = new EndPointControl(0, 0, 0);
-            let p1 = new Vertex(p0.x, p0.y + 24);
-            let p2 = new Vertex(p3.x, p3.y - 24);
+            let p1 = new Control(p0.x, p0.y + 24);
+            let p2 = new Control(p3.x, p3.y - 24);
             spline = new Spline(p0, [p1, p2], p3);
         } else {
             const last = this.splines[this.splines.length - 1];
@@ -204,7 +242,7 @@ export class Path {
             }
 
             let p1 = p0.mirror(c);
-            let p2 = p0.divide(new Vertex(2, 2)).add(p3.divide(new Vertex(2, 2)));
+            let p2 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
 
             spline = new Spline(p0, [p1, p2], p3);
         }
@@ -233,14 +271,14 @@ export class Path {
         if (prev !== null) {
             p1 = p0.mirror(prev.control_points[prev.control_points.length - 2]);
         } else {
-            p1 = p0.divide(new Vertex(2, 2)).add(p3.divide(new Vertex(2, 2)));
+            p1 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
         }
 
         let p2;
         if (next !== null) {
             p2 = p3.mirror(next.control_points[1]);
         } else {
-            p2 = p0.divide(new Vertex(2, 2)).add(p3.divide(new Vertex(2, 2)));
+            p2 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
         }
 
         spline.control_points = [p0, p1, p2, p3];
@@ -267,9 +305,9 @@ export class Path {
             let p2 = spline.control_points[2];
             let p3 = spline.control_points[3] as EndPointControl;
 
-            let a = p1.divide(new Vertex(2, 2)).add(point.divide(new Vertex(2, 2)));
+            let a = p1.divide(new Control(2, 2)).add(point.divide(new Control(2, 2)));
             let b = point;
-            let c = p2.divide(new Vertex(2, 2)).add(point.divide(new Vertex(2, 2)));
+            let c = p2.divide(new Control(2, 2)).add(point.divide(new Control(2, 2)));
             spline.control_points = [p0, p1, a, b];
             let new_spline = new Spline(b, [c, p2], p3);
             this.splines.splice(index + 1, 0, new_spline);

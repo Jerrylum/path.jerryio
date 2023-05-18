@@ -21,7 +21,6 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import TreeItem from '@mui/lab/TreeItem';
 
 import { Input } from '@mui/icons-material';
-import ContentEditable, { ContentEditableEvent } from 'react-contenteditable';
 
 class UserControl {
   public isPressingCtrl: boolean = false;
@@ -242,8 +241,6 @@ function SplineElement(props: { spline: Spline, path: Path, cc: CanvasConfig, uc
 function App() {
   useTimer(1000 / 30);
 
-  const selectedPath = 0;
-
   const paths = useMemo(() => [new Path(new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)))], []);
 
   const [userControl, setUserControl] = useState(new UserControl());
@@ -349,10 +346,8 @@ function App() {
               {
                 paths.map((path, pathIdx) => {
                   return (
-                    <TreeItem nodeId={pathIdx + ""} label={
+                    <TreeItem nodeId={path.uid} key={path.uid} label={
                       <>
-                        {/* <ContentEditable style={{display:'inline-block'}} onChange={onPathNameChange} html={path.name}></ContentEditable>
-                         */}
                          <span contentEditable
                           style={{display:'inline-block'}}
                           onInput={onPathNameChange}
@@ -363,7 +358,7 @@ function App() {
                       {
                         path.getControlsSet().map((control, controlIdx) => {
                           return (
-                            <TreeItem nodeId={pathIdx + "," + controlIdx} label={control instanceof EndPointControl ? "End Point Control" : "Control"} />
+                            <TreeItem nodeId={control.uid} key={control.uid} label={control instanceof EndPointControl ? "End Point Control" : "Control"} />
                           )
                         })
                       }
