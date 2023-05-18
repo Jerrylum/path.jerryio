@@ -85,7 +85,51 @@ function SplineKnotsHitBoxElement(props: { spline: Spline, path: Path, cc: Canva
   )
 }
 
-function SplineControlPointElement(props: { cp: Control, spline: Spline, path: Path, cc: CanvasConfig, uc: UserControl, isFirstOrLast: boolean }) {
+function SplineControlPointElement(props: {
+  cp: Control, spline: Spline, path: Path,
+  cc: CanvasConfig, uc: UserControl,
+  selected: string[], setSelected: React.Dispatch<React.SetStateAction<string[]>>,
+  isFirstOrLast: boolean
+}) {
+  const [justSelected, setJustSelected] = useState(false);
+
+  function onMouseDownControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
+    const evt = event.evt;
+    if (evt.button === 0) { // left click
+      setJustSelected(false);
+      if (props.uc.isPressingShift) {
+        // add if not
+        props.setSelected((selected) => {
+          if (selected.includes(props.cp.uid)) {
+            return selected;
+          } else {
+            setJustSelected(true);
+            return [...selected, props.cp.uid];
+          }
+        });
+      } else {
+        // set selection to this control point
+        props.setSelected([props.cp.uid]);
+      }
+    }
+  }
+
+  function onClickControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
+    const evt = event.evt;
+    if (evt.button === 0) { // left click
+      if (props.uc.isPressingShift) {
+        // remove if already selected and it is not being added recently
+        props.setSelected((selected) => {
+          if (selected.includes(props.cp.uid) && !justSelected) {
+            return selected.filter((uid) => uid !== props.cp.uid);
+          } else {
+            return selected;
+          }
+        });
+      }
+    }
+  }
+
   function onDragControlPoint(event: Konva.KonvaEventObject<DragEvent>) {
     const evt = event.evt;
 
@@ -169,13 +213,15 @@ function SplineControlPointElement(props: { cp: Control, spline: Spline, path: P
     if (epc.heading < 0) epc.heading += 360;
   }
 
-  const line_width = props.cc.pixelWidth / 600;
-  const cp_radius = props.cc.pixelWidth / 40;
-  const cp_in_px = props.cc.toPx(props.cp);
+  const lineWidth = props.cc.pixelWidth / 600;
+  const cpRadius = props.cc.pixelWidth / 40;
+  const cpInPx = props.cc.toPx(props.cp);
+  const fillColor = props.selected.includes(props.cp.uid) ? "#0000ff4f" : "#0000ff2f";
 
   function onClickFirstOrLastControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     let evt = event.evt;
 
+    onClickControlPoint(event);
     if (evt.button === 2) { // right click
       props.path.removeSplineByFirstOrLastControlPoint(props.cp as EndPointControl);
     }
@@ -187,16 +233,16 @@ function SplineControlPointElement(props: { cp: Control, spline: Spline, path: P
         props.isFirstOrLast ? (
           <>
             <Line points={[
-              cp_in_px.x, cp_in_px.y,
-              cp_in_px.x + Math.sin(-((cp_in_px as EndPointControl).headingInRadian() - Math.PI)) * cp_radius,
-              cp_in_px.y + Math.cos(-((cp_in_px as EndPointControl).headingInRadian() - Math.PI)) * cp_radius
-            ]} stroke="ffffff" strokeWidth={line_width} />
-            <Circle x={cp_in_px.x} y={cp_in_px.y} radius={props.isFirstOrLast ? cp_radius : cp_radius / 2} fill="#0000ff2f"
-              draggable onDragMove={onDragControlPoint} onWheel={onWheel} onClick={onClickFirstOrLastControlPoint} />
+              cpInPx.x, cpInPx.y,
+              cpInPx.x + Math.sin(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius,
+              cpInPx.y + Math.cos(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius
+            ]} stroke="ffffff" strokeWidth={lineWidth} />
+            <Circle x={cpInPx.x} y={cpInPx.y} radius={props.isFirstOrLast ? cpRadius : cpRadius / 2} fill={fillColor}
+              draggable onDragMove={onDragControlPoint} onMouseDown={onMouseDownControlPoint} onWheel={onWheel} onClick={onClickFirstOrLastControlPoint} />
           </>
         ) : (
-          <Circle x={cp_in_px.x} y={cp_in_px.y} radius={props.isFirstOrLast ? cp_radius : cp_radius / 2} fill="#0000ff2f"
-            draggable onDragMove={onDragControlPoint} />
+          <Circle x={cpInPx.x} y={cpInPx.y} radius={props.isFirstOrLast ? cpRadius : cpRadius / 2} fill={fillColor}
+            draggable onDragMove={onDragControlPoint} onMouseDown={onMouseDownControlPoint} />
         )
       }
 
@@ -204,7 +250,7 @@ function SplineControlPointElement(props: { cp: Control, spline: Spline, path: P
   )
 }
 
-function SplineElement(props: { spline: Spline, path: Path, cc: CanvasConfig, uc: UserControl }) {
+function SplineElement(props: { spline: Spline, path: Path, cc: CanvasConfig, uc: UserControl, selected: string[], setSelected: React.Dispatch<React.SetStateAction<string[]>> }) {
   let isFirst = props.path.splines[0] === props.spline;
 
   let knot_radius = props.cc.pixelWidth / 320;
@@ -230,7 +276,9 @@ function SplineElement(props: { spline: Spline, path: Path, cc: CanvasConfig, uc
         if (!isFirst && index === 0) return null;
         return (
           <SplineControlPointElement key={index}
-            cp={cp_in_cm} spline={props.spline} path={props.path} cc={props.cc} uc={props.uc}
+            cp={cp_in_cm} spline={props.spline} path={props.path}
+            cc={props.cc} uc={props.uc}
+            selected={props.selected} setSelected={props.setSelected}
             isFirstOrLast={cp_in_cm === props.spline.first() || cp_in_cm === props.spline.last()} />
         )
       })}
@@ -244,6 +292,8 @@ function App() {
   const paths = useMemo(() => [new Path(new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)))], []);
 
   const [userControl, setUserControl] = useState(new UserControl());
+
+  const [selected, setSelected] = useState<string[]>([]);
 
   const [fieldImage] = useImage(fieldImageUrl);
 
@@ -292,7 +342,7 @@ function App() {
                   <React.Fragment key={index}>
                     {path.splines.map((spline) => {
                       return (
-                        <SplineElement key={spline.uid} spline={spline} path={path} cc={cc} uc={userControl} />
+                        <SplineElement key={spline.uid} spline={spline} path={path} cc={cc} uc={userControl} selected={selected} setSelected={setSelected} />
                       )
                     })}
                   </React.Fragment>
@@ -314,7 +364,7 @@ function App() {
               id="outlined-size-small"
               defaultValue="30"
               size="small"
-              sx={{marginBottom: "1vh"}}
+              sx={{ marginBottom: "1vh" }}
             />
             <TextField
               label="Height"
@@ -329,7 +379,7 @@ function App() {
             <Typography>File</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            
+
           </AccordionDetails>
         </Accordion>
         <Accordion defaultExpanded>
@@ -341,6 +391,8 @@ function App() {
               defaultCollapseIcon={<ExpandMoreIcon />}
               defaultExpandIcon={<ChevronRightIcon />}
               multiSelect
+              selected={selected}
+              onNodeSelect={(event, nodeIds) => setSelected(nodeIds)}
               sx={{ flexGrow: 1, maxWidth: "100%", overflowX: 'hidden', overflowY: 'auto', marginBottom: "2vh" }}
             >
               {
@@ -348,11 +400,11 @@ function App() {
                   return (
                     <TreeItem nodeId={path.uid} key={path.uid} label={
                       <>
-                         <span contentEditable
-                          style={{display:'inline-block'}}
+                        <span contentEditable
+                          style={{ display: 'inline-block' }}
                           onInput={onPathNameChange}
                           suppressContentEditableWarning={true}
-                         >{path.name}</span>
+                        >{path.name}</span>
                       </>
                     } >
                       {
@@ -370,7 +422,7 @@ function App() {
 
             <Typography>
               TODO
-              
+
             </Typography>
           </AccordionDetails>
         </Accordion>
