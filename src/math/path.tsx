@@ -110,24 +110,24 @@ export class EndPointControl extends Control implements Position {
 }
 
 export class Spline {
-    public control_points: (EndPointControl | Control)[];
+    public controls: (EndPointControl | Control)[];
     public uid: string;
 
     constructor(start: EndPointControl, middle: Control[], end: EndPointControl) {
-        this.control_points = [start, ...middle, end];
+        this.controls = [start, ...middle, end];
         this.uid = makeId(10);
     }
 
     distance(): number {
         let rtn = 0;
 
-        const n = this.control_points.length - 1;
-        let prev: Vertex = this.control_points[0];
+        const n = this.controls.length - 1;
+        let prev: Vertex = this.controls[0];
         for (let t = 0; t <= 1; t += 0.05) {
             let point = new Vertex(0, 0);
             for (let i = 0; i <= n; i++) {
                 const bernstein = this.bernstein(n, i, t);
-                const controlPoint = this.control_points[i];
+                const controlPoint = this.controls[i];
                 point = point.add(new Vertex(controlPoint.x * bernstein, controlPoint.y * bernstein));
             }
             rtn += point.distance(prev);
@@ -145,12 +145,12 @@ export class Spline {
         let step = 1 / (distance * cc.knotPerCm);
 
         // Bezier curve implementation
-        const n = this.control_points.length - 1;
+        const n = this.controls.length - 1;
         for (let t = 0; t <= 1; t += step) { // 0.01
             let point = new Vertex(0, 0);
             for (let i = 0; i <= n; i++) {
                 const bernstein = this.bernstein(n, i, t);
-                const controlPoint = this.control_points[i];
+                const controlPoint = this.controls[i];
                 point = point.add(new Vertex(controlPoint.x * bernstein, controlPoint.y * bernstein));
             }
             knots.push(point);
@@ -160,19 +160,19 @@ export class Spline {
     }
 
     first(): EndPointControl {
-        return this.control_points[0] as EndPointControl;
+        return this.controls[0] as EndPointControl;
     }
 
     setFirst(point: EndPointControl): void {
-        this.control_points[0] = point;
+        this.controls[0] = point;
     }
 
     last(): EndPointControl {
-        return this.control_points[this.control_points.length - 1] as EndPointControl;
+        return this.controls[this.controls.length - 1] as EndPointControl;
     }
 
     setLast(point: EndPointControl): void {
-        this.control_points[this.control_points.length - 1] = point;
+        this.controls[this.controls.length - 1] = point;
     }
 
     private bernstein(n: number, i: number, t: number): number {
@@ -206,8 +206,8 @@ export class Path {
         for (let i = 0; i < this.splines.length; i++) {
             let spline = this.splines[i];
             if (i === 0) rtn.push(spline.first());
-            for (let j = 1; j < spline.control_points.length; j++) {
-                rtn.push(spline.control_points[j]);
+            for (let j = 1; j < spline.controls.length; j++) {
+                rtn.push(spline.controls[j]);
             }
         }
         return rtn;
@@ -234,14 +234,8 @@ export class Path {
         } else {
             const last = this.splines[this.splines.length - 1];
             let p0 = last.last();
-            let c;
-            if (last.control_points.length < 4) {
-                c = last.control_points[0];
-            } else {
-                c = last.control_points[2];
-            }
-
-            let p1 = p0.mirror(c);
+            let c = last.controls.length < 4 ? last.controls[0] : last.controls[2];
+            let p1 = p0.mirror(new Control(c.x, c.y));
             let p2 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
 
             spline = new Spline(p0, [p1, p2], p3);
@@ -269,23 +263,25 @@ export class Path {
 
         let p1: Control;
         if (prev !== null) {
-            p1 = p0.mirror(prev.control_points[prev.control_points.length - 2]);
+            p1 = p0.mirror(prev.controls[prev.controls.length - 2]);
+            // ensure is a control point (not an end point)
+            p1 = new Control(p1.x, p1.y);
         } else {
             p1 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
         }
 
         let p2;
         if (next !== null) {
-            p2 = p3.mirror(next.control_points[1]);
+            p2 = p3.mirror(next.controls[1]);
         } else {
             p2 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
         }
 
-        spline.control_points = [p0, p1, p2, p3];
+        spline.controls = [p0, p1, p2, p3];
     }
 
     changeToLine(spline: Spline) {
-        spline.control_points.splice(1, spline.control_points.length - 2);
+        spline.controls.splice(1, spline.controls.length - 2);
     }
 
     splitSpline(spline: Spline, point: EndPointControl): void {
@@ -293,22 +289,22 @@ export class Path {
         let found = index !== -1;
         if (!found) return;
 
-        let cp_count = spline.control_points.length;
+        let cp_count = spline.controls.length;
         if (cp_count === 2) {
             let last = spline.last();
             spline.setLast(point);
             let new_spline = new Spline(point, [], last);
             this.splines.splice(index + 1, 0, new_spline);
         } else if (cp_count === 4) {
-            let p0 = spline.control_points[0] as EndPointControl;
-            let p1 = spline.control_points[1];
-            let p2 = spline.control_points[2];
-            let p3 = spline.control_points[3] as EndPointControl;
+            let p0 = spline.controls[0] as EndPointControl;
+            let p1 = spline.controls[1];
+            let p2 = spline.controls[2];
+            let p3 = spline.controls[3] as EndPointControl;
 
             let a = p1.divide(new Control(2, 2)).add(point.divide(new Control(2, 2)));
             let b = point;
             let c = p2.divide(new Control(2, 2)).add(point.divide(new Control(2, 2)));
-            spline.control_points = [p0, p1, a, b];
+            spline.controls = [p0, p1, a, b];
             let new_spline = new Spline(b, [c, p2], p3);
             this.splines.splice(index + 1, 0, new_spline);
         }

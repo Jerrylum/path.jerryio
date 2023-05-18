@@ -29,6 +29,20 @@ class UserControl {
   public mouseY: number = 0;
 }
 
+interface SplineElementProps {
+  spline: Spline;
+  path: Path;
+  cc: CanvasConfig;
+  uc: UserControl;
+  selected: string[];
+  setSelected: React.Dispatch<React.SetStateAction<string[]>>;
+}
+
+interface SplineControlElementProps extends SplineElementProps {
+  cp: EndPointControl | Control;
+}
+
+
 function useTimer(ms: number) {
   const [time, setTime] = useState(Date.now());
 
@@ -42,18 +56,18 @@ function useTimer(ms: number) {
   return time;
 }
 
-function SplineControlPointVisualLineElement(props: { start: Vertex, end: Vertex, cc: CanvasConfig }) {
-  const start_in_px = props.cc.toPx(props.start);
-  const end_in_px = props.cc.toPx(props.end);
+function SplineControlVisualLineElement(props: { start: Vertex, end: Vertex, cc: CanvasConfig }) {
+  const startInPx = props.cc.toPx(props.start);
+  const endInPx = props.cc.toPx(props.end);
 
   const line_width = props.cc.pixelWidth / 600;
 
   return (
-    <Line points={[start_in_px.x, start_in_px.y, end_in_px.x, end_in_px.y]} stroke="ffffff" strokeWidth={line_width} opacity={0.25} />
+    <Line points={[startInPx.x, startInPx.y, endInPx.x, endInPx.y]} stroke="ffffff" strokeWidth={line_width} opacity={0.25} />
   )
 }
 
-function SplineKnotsHitBoxElement(props: { spline: Spline, path: Path, cc: CanvasConfig }) {
+function SplineKnotsHitBoxElement(props: SplineElementProps) {
   function onLineClick(event: Konva.KonvaEventObject<MouseEvent>) {
     let evt = event.evt;
 
@@ -63,7 +77,7 @@ function SplineKnotsHitBoxElement(props: { spline: Spline, path: Path, cc: Canva
     if (evt.button === 2) { // click
       props.path.splitSpline(props.spline, cpInCm);
     } else {
-      if (props.spline.control_points.length === 2)
+      if (props.spline.controls.length === 2)
         props.path.changeTo4ControlsCurve(props.spline);
       else
         props.path.changeToLine(props.spline);
@@ -72,25 +86,20 @@ function SplineKnotsHitBoxElement(props: { spline: Spline, path: Path, cc: Canva
 
   let points: number[] = [];
 
-  for (let v of props.spline.control_points) {
-    let v_in_px = props.cc.toPx(v);
-    points.push(v_in_px.x);
-    points.push(v_in_px.y);
+  for (let cp of props.spline.controls) {
+    let cpInPx = props.cc.toPx(cp);
+    points.push(cpInPx.x);
+    points.push(cpInPx.y);
   }
 
   const knot_width = props.cc.pixelWidth / 320 * 2.5;
 
   return (
-    <Line points={points} strokeWidth={knot_width} stroke={"red"} opacity={0} bezier={props.spline.control_points.length > 2} onClick={onLineClick} />
+    <Line points={points} strokeWidth={knot_width} stroke={"red"} opacity={0} bezier={props.spline.controls.length > 2} onClick={onLineClick} />
   )
 }
 
-function SplineControlPointElement(props: {
-  cp: Control, spline: Spline, path: Path,
-  cc: CanvasConfig, uc: UserControl,
-  selected: string[], setSelected: React.Dispatch<React.SetStateAction<string[]>>,
-  isFirstOrLast: boolean
-}) {
+function SplineControlElement(props: SplineControlElementProps) {
   const [justSelected, setJustSelected] = useState(false);
 
   function onMouseDownControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -141,22 +150,23 @@ function SplineControlPointElement(props: {
     props.cp.y = cpInCm.y;
 
     // CP 1 should follow CP 0, CP 2 should follow CP 3
-    const shouldFollow = props.isFirstOrLast && !props.uc.isPressingCtrl;
+    const isMainControl = props.cp instanceof EndPointControl;
+    const shouldFollow = isMainControl && !props.uc.isPressingCtrl;
     const index = props.path.splines.indexOf(props.spline);
     const isLastOne = index + 1 === props.path.splines.length;
-    const isCurve = props.spline.control_points.length === 4;
+    const isCurve = props.spline.controls.length === 4;
     const isFirstCp = props.spline.first() === props.cp;
 
     let partner0: Vertex | null = null;
     let partner1: Vertex | null = null;
     if (isCurve && shouldFollow) {
-      partner0 = isFirstCp ? props.spline.control_points[1] : props.spline.control_points[2];
+      partner0 = isFirstCp ? props.spline.controls[1] : props.spline.controls[2];
 
     }
     if (!isLastOne && !isFirstCp && shouldFollow) {
       const nextSpline = props.path.splines[index + 1];
-      if (nextSpline.control_points.length === 4) {
-        partner1 = nextSpline.control_points[1];
+      if (nextSpline.controls.length === 4) {
+        partner1 = nextSpline.controls[1];
       }
     }
 
@@ -167,7 +177,7 @@ function SplineControlPointElement(props: {
       let magnetYDistance = Infinity;
 
       for (let spline of props.path.splines) {
-        for (let cp of spline.control_points) {
+        for (let cp of spline.controls) {
           if (cp === props.cp || cp === partner0 || cp === partner1) continue;
 
           let distance = cp.distance(cpInCm);
@@ -217,6 +227,7 @@ function SplineControlPointElement(props: {
   const cpRadius = props.cc.pixelWidth / 40;
   const cpInPx = props.cc.toPx(props.cp);
   const fillColor = props.selected.includes(props.cp.uid) ? "#0000ff4f" : "#0000ff2f";
+  const isMainControl = props.cp instanceof EndPointControl;
 
   function onClickFirstOrLastControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     let evt = event.evt;
@@ -230,18 +241,18 @@ function SplineControlPointElement(props: {
   return (
     <>
       {
-        props.isFirstOrLast ? (
+        isMainControl ? (
           <>
             <Line points={[
               cpInPx.x, cpInPx.y,
               cpInPx.x + Math.sin(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius,
               cpInPx.y + Math.cos(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius
             ]} stroke="ffffff" strokeWidth={lineWidth} />
-            <Circle x={cpInPx.x} y={cpInPx.y} radius={props.isFirstOrLast ? cpRadius : cpRadius / 2} fill={fillColor}
+            <Circle x={cpInPx.x} y={cpInPx.y} radius={cpRadius} fill={fillColor}
               draggable onDragMove={onDragControlPoint} onMouseDown={onMouseDownControlPoint} onWheel={onWheel} onClick={onClickFirstOrLastControlPoint} />
           </>
         ) : (
-          <Circle x={cpInPx.x} y={cpInPx.y} radius={props.isFirstOrLast ? cpRadius : cpRadius / 2} fill={fillColor}
+          <Circle x={cpInPx.x} y={cpInPx.y} radius={cpRadius / 2} fill={fillColor}
             draggable onDragMove={onDragControlPoint} onMouseDown={onMouseDownControlPoint} />
         )
       }
@@ -250,36 +261,32 @@ function SplineControlPointElement(props: {
   )
 }
 
-function SplineElement(props: { spline: Spline, path: Path, cc: CanvasConfig, uc: UserControl, selected: string[], setSelected: React.Dispatch<React.SetStateAction<string[]>> }) {
-  let isFirst = props.path.splines[0] === props.spline;
+function SplineElement(props: SplineElementProps) {
+  let isFirstSpline = props.path.splines[0] === props.spline;
 
-  let knot_radius = props.cc.pixelWidth / 320;
+  let knotRadius = props.cc.pixelWidth / 320;
 
   return (
     <>
-      {props.spline.calculateKnots(props.cc).map((knot_in_cm, index) => {
-        let knot_in_px = props.cc.toPx(knot_in_cm);
+      {props.spline.calculateKnots(props.cc).map((knotInCm, index) => {
+        let knotInPx = props.cc.toPx(knotInCm);
         return (
-          <Circle key={index} x={knot_in_px.x} y={knot_in_px.y} radius={knot_radius} fill="#00ff00ff" />
+          <Circle key={index} x={knotInPx.x} y={knotInPx.y} radius={knotRadius} fill="#00ff00ff" />
         )
       })}
       {
-        props.spline.control_points.length === 4 ? (
+        props.spline.controls.length === 4 ? (
           <>
-            <SplineControlPointVisualLineElement start={props.spline.control_points[0]} end={props.spline.control_points[1]} cc={props.cc} />
-            <SplineControlPointVisualLineElement start={props.spline.control_points[2]} end={props.spline.control_points[3]} cc={props.cc} />
+            <SplineControlVisualLineElement start={props.spline.controls[0]} end={props.spline.controls[1]} cc={props.cc} />
+            <SplineControlVisualLineElement start={props.spline.controls[2]} end={props.spline.controls[3]} cc={props.cc} />
           </>
         ) : null
       }
-      <SplineKnotsHitBoxElement spline={props.spline} path={props.path} cc={props.cc} />
-      {props.spline.control_points.map((cp_in_cm, index) => {
-        if (!isFirst && index === 0) return null;
+      <SplineKnotsHitBoxElement {...props} />
+      {props.spline.controls.map((cpInCm, index) => {
+        if (!isFirstSpline && index === 0) return null;
         return (
-          <SplineControlPointElement key={index}
-            cp={cp_in_cm} spline={props.spline} path={props.path}
-            cc={props.cc} uc={props.uc}
-            selected={props.selected} setSelected={props.setSelected}
-            isFirstOrLast={cp_in_cm === props.spline.first() || cp_in_cm === props.spline.last()} />
+          <SplineControlElement key={index} {...props} cp={cpInCm} />
         )
       })}
     </>
@@ -342,7 +349,7 @@ function App() {
                   <React.Fragment key={index}>
                     {path.splines.map((spline) => {
                       return (
-                        <SplineElement key={spline.uid} spline={spline} path={path} cc={cc} uc={userControl} selected={selected} setSelected={setSelected} />
+                        <SplineElement key={spline.uid} {...{spline, path, cc, uc: userControl, selected, setSelected}} />
                       )
                     })}
                   </React.Fragment>
@@ -364,7 +371,7 @@ function App() {
               id="outlined-size-small"
               defaultValue="30"
               size="small"
-              sx={{ marginBottom: "1vh" }}
+              sx={{ marginBottom: "1vh", marginRight: "1vh" }}
             />
             <TextField
               label="Height"
@@ -376,7 +383,7 @@ function App() {
         </Accordion>
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>File</Typography>
+            <Typography>Output</Typography>
           </AccordionSummary>
           <AccordionDetails>
 
