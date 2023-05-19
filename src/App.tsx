@@ -15,13 +15,17 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import DeleteIcon from '@mui/icons-material/Delete';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import FiberManualRecordOutlinedIcon from '@mui/icons-material/FiberManualRecordOutlined';
 import TextField from '@mui/material/TextField';
 import TreeView from '@mui/lab/TreeView';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import TreeItem from '@mui/lab/TreeItem';
 
 import { Input } from '@mui/icons-material';
-import { Container } from '@mui/material';
+import { Button, Container } from '@mui/material';
 
 class UserControl {
   public isPressingCtrl: boolean = false;
@@ -195,9 +199,9 @@ function SplineKnotsHitBoxElement(props: SplineElementProps) {
       props.path.splitSpline(props.spline, cpInCm);
     } else {
       if (props.spline.controls.length === 2)
-        props.path.changeTo4ControlsCurve(props.spline);
+        props.path.convertTo4ControlsCurve(props.spline);
       else
-        props.path.changeToLine(props.spline);
+        props.path.convertToLine(props.spline);
     }
   }
 
@@ -355,7 +359,7 @@ function SplineControlElement(props: SplineControlElementProps) {
 
     onClickControlPoint(event);
     if (evt.button === 2) { // right click
-      let removedControls = props.path.removeSplineByFirstOrLastControlPoint(props.cp as EndPointControl);
+      let removedControls = props.path.removeSpline(props.cp as EndPointControl);
       let removed = removedControls.map((control) => control.uid);
 
       props.setSelected((selected) => selected.filter((uid) => !removed.includes(uid)));
@@ -468,20 +472,35 @@ function PathTreeItemElement(props: { path: Path }) {
 
   return (
     <TreeItem nodeId={path.uid} label={
-      <>
+      <div className='tree-node-func-icon-parent'>
         <span contentEditable
           style={{ display: 'inline-block' }}
           onInput={(e) => onPathNameChange(e, path)}
-          // onLoad={(e) => e.currentTarget.innerText = path.name}
           suppressContentEditableWarning={true}
           dangerouslySetInnerHTML={{ __html: defaultValue.current }} // XXX
+          onClick={(e) => e.preventDefault()}
         />
-      </>
+        <span style={{ display: "inline-block", marginRight: "1em" }}></span>
+        <VisibilityIcon className='tree-node-func-icon' />
+        <LockOpenIcon className='tree-node-func-icon' />
+        <DeleteIcon className='tree-node-func-icon' />
+      </div>
     } >
       {
         path.getControlsSet().map((control, controlIdx) => {
           return (
-            <TreeItem nodeId={control.uid} key={control.uid} label={control instanceof EndPointControl ? "End Point Control" : "Control"} />
+            <TreeItem nodeId={control.uid} key={control.uid}
+              label={control instanceof EndPointControl
+                ? (
+                  <div className='tree-node-func-icon-parent'>
+                    <span>End Point Control</span>
+                    <span style={{ display: "inline-block", marginRight: "1em" }}></span>
+                    <VisibilityIcon className='tree-node-func-icon' />
+                    <FiberManualRecordOutlinedIcon className='tree-node-func-icon' />
+                    <DeleteIcon className='tree-node-func-icon' />
+                  </div>
+                )
+                : "Control"} />
           )
         })
       }
@@ -498,6 +517,8 @@ function App() {
   ], []);
 
   const [userControl, setUserControl] = useState(new UserControl());
+
+  const [expanded, setExpanded] = useState<string[]>([]);
 
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -523,6 +544,14 @@ function App() {
 
   function onMouseMove(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     // setUserControl({ ...userControl, mouseX: event.offsetX, mouseY: event.offsetY });
+  }
+
+  function onAddPathClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    paths.push(new Path(new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0))));
+  }
+
+  function onExpandAllClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    setExpanded((expanded) => expanded.length !== paths.length ? paths.map((path) => path.uid) : []);
   }
 
   useEffect(() => {
@@ -557,10 +586,25 @@ function App() {
         headingHide = true;
       }
     }
+  } else {
+    currentCED.setSelected(undefined);
   }
 
   function onControlEditorInputConfirm(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.code === "Enter" || event.code === "NumpadEnter") controlEditor.current.writeBack();
+  }
+
+  function onControlEditorInputTabConfirm(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.code === "Tab") controlEditor.current.writeBack();
+  }
+
+  function onTreeViewNodeToggle(event: React.SyntheticEvent, nodeIds: string[]) {
+    event.persist()
+    // only expand if icon was clicked
+    let iconClicked = (event.target as HTMLElement).closest(".MuiTreeItem-iconContainer")
+    if (iconClicked) {
+      setExpanded(nodeIds);
+    }
   }
 
   return (
@@ -604,11 +648,11 @@ function App() {
             <Typography>Paths</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <div style={{ textAlign: "left", marginBottom: "3vh" }}>
+            <div className='path-editor' onKeyDown={onControlEditorInputTabConfirm}>
               <TextField
                 label="X"
                 id="outlined-size-small"
-                defaultValue={" "}
+                InputLabelProps={{ shrink: true }}
                 size="small"
                 sx={{ width: "calc(33.3% - 0.67vh)", marginRight: "0.5vh" }}
                 inputRef={controlEditor.current.xInputRef}
@@ -618,7 +662,7 @@ function App() {
               <TextField
                 label="Y"
                 id="outlined-size-small"
-                defaultValue={" "}
+                InputLabelProps={{ shrink: true }}
                 size="small"
                 sx={{ width: "calc(33.3% - 0.67vh)", marginLeft: "0.5vh", marginRight: "0.5vh" }}
                 inputRef={controlEditor.current.yInputRef}
@@ -628,21 +672,27 @@ function App() {
               <TextField
                 label="Heading"
                 id="outlined-size-small"
-                defaultValue={" "}
+                InputLabelProps={{ shrink: true }}
                 size="small"
                 sx={{ width: "calc(33.3% - 0.67vh)", marginLeft: "0.5vh", display: headingHide ? "none" : "" }}
                 inputRef={controlEditor.current.headingInputRef}
                 onKeyUp={onControlEditorInputConfirm}
                 disabled={headingDisabled}
               />
+              <div style={{ marginTop: "1vh" }}>
+                <Button variant="text" onClick={onAddPathClick}>Add Path</Button>
+                <Button variant="text" onClick={onExpandAllClick}>{expanded.length !== paths.length ? "Expand All" : "Collapse All"}</Button>
+              </div>
             </div>
             <TreeView
               defaultCollapseIcon={<ExpandMoreIcon />}
               defaultExpandIcon={<ChevronRightIcon />}
               multiSelect
+              expanded={expanded}
               selected={selected}
               onNodeSelect={(event, nodeIds) => setSelected(nodeIds)}
-              sx={{ flexGrow: 1, maxWidth: "100%", overflowX: 'hidden', overflowY: 'auto', marginBottom: "2vh" }}
+              onNodeToggle={onTreeViewNodeToggle}
+              sx={{ flexGrow: 1, maxWidth: "100%", overflowX: 'hidden', overflowY: 'auto', margin: "1vh 0 0" }}
             >
               {
                 paths.map((path, pathIdx) => {

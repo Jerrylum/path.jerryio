@@ -255,7 +255,7 @@ export class Path {
         this.splines.push(spline);
     }
 
-    changeTo4ControlsCurve(spline: Spline) {
+    convertTo4ControlsCurve(spline: Spline) {
         let index = this.splines.indexOf(spline);
         let found = index !== -1;
         if (!found) return;
@@ -292,7 +292,7 @@ export class Path {
         spline.controls = [p0, p1, p2, p3];
     }
 
-    changeToLine(spline: Spline) {
+    convertToLine(spline: Spline) {
         spline.controls.splice(1, spline.controls.length - 2);
     }
 
@@ -322,7 +322,7 @@ export class Path {
         }
     }
 
-    removeSplineByFirstOrLastControlPoint(point: EndPointControl): (EndPointControl | Control)[] {
+    removeSpline(point: EndPointControl): (EndPointControl | Control)[] {
         for (let i = 0; i < this.splines.length; i++) {
             let spline = this.splines[i];
             if (spline.first() === point) { // pointer comparison
