@@ -47,6 +47,105 @@ interface SplineControlElementProps extends SplineElementProps {
   cp: EndPointControl | Control;
 }
 
+class ControlEditorData {
+  static readonly MultiSelect: unique symbol = Symbol("multi select");
+
+  private xInput: string = "";
+  private yInput: string = "";
+  private headingInput: string = "";
+  private selected: EndPointControl | Control | Symbol | undefined;
+
+  public xInputRef = useRef<HTMLInputElement>(null);
+  public yInputRef = useRef<HTMLInputElement>(null);
+  public headingInputRef = useRef<HTMLInputElement>(null);
+
+  constructor(xInputRef: React.RefObject<HTMLInputElement>, yInputRef: React.RefObject<HTMLInputElement>, headingInputRef: React.RefObject<HTMLInputElement>) {
+    this.xInputRef = xInputRef;
+    this.yInputRef = yInputRef;
+    this.headingInputRef = headingInputRef;
+  }
+
+  getSelected() {
+    return this.selected;
+  }
+
+  setSelected(selected: EndPointControl | Control | Symbol | undefined) {
+    if (selected !== this.selected) {
+      this.selected = selected;
+      if (selected instanceof Control) {
+        this.xInput = selected.x.toString();
+        this.yInput = selected.y.toString();
+        if (selected instanceof EndPointControl) {
+          this.headingInput = selected.heading.toString();
+        } else {
+          this.headingInput = "";
+        }
+      } else if (selected === undefined) {
+        this.xInput = "";
+        this.yInput = "";
+        this.headingInput = "";
+      } else {
+        this.xInput = "(mixed)";
+        this.yInput = "(mixed)";
+        this.headingInput = "(mixed)";
+      }
+      this.xInputRef.current!.value = this.xInput;
+      this.yInputRef.current!.value = this.yInput;
+      this.headingInputRef.current!.value = this.headingInput;
+    }
+  }
+
+  setXInput(x: string) {
+    if (x !== this.xInput) {
+      this.xInput = x;
+      this.xInputRef.current!.value = x;
+    }
+  }
+
+  setYInput(y: string) {
+    if (y !== this.yInput) {
+      this.yInput = y;
+      this.yInputRef.current!.value = y;
+    }
+  }
+
+  setHeadingInput(heading: string) {
+    if (heading !== this.headingInput) {
+      this.headingInput = heading;
+      this.headingInputRef.current!.value = heading;
+    }
+  }
+
+  writeBack() {
+    if (!(this.selected instanceof Control)) return;
+
+    let x = parseFloat(this.xInputRef.current!.value);
+    let y = parseFloat(this.yInputRef.current!.value);
+    let heading = parseFloat(this.headingInputRef.current!.value);
+
+    if (!isNaN(x)) {
+      this.selected.x = x;
+      this.xInputRef.current!.value = x.toString();
+    } else {
+      this.xInputRef.current!.value = this.selected.x.toString();
+    }
+    if (!isNaN(y)) {
+      this.selected.y = y;
+      this.yInputRef.current!.value = y.toString();
+    } else {
+      this.yInputRef.current!.value = this.selected.y.toString();
+    }
+    if (this.selected instanceof EndPointControl) {
+      if (!isNaN(heading)) {
+        this.selected.heading = heading;
+        this.headingInputRef.current!.value = heading.toString();
+      } else {
+        this.headingInputRef.current!.value = this.selected.heading.toString();
+      }
+    }
+  }
+}
+
 async function addSelected(props: SplineControlElementProps, uid: string) {
   return new Promise<boolean>((resolve, reject) => {
     props.setSelected((selected) => {
@@ -402,6 +501,12 @@ function App() {
 
   const [selected, setSelected] = useState<string[]>([]);
 
+  const controlEditor = useRef<ControlEditorData>(new ControlEditorData(
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null)
+  ));
+
   const cc = new CanvasConfig(window.innerHeight * 0.94, window.innerHeight * 0.94, 365.76, 365.76);
 
   function onKeyDown(event: KeyboardEvent) {
@@ -430,30 +535,32 @@ function App() {
     }
   }, []);
 
-  const multiSelect = selected.length !== 1;
-  let xInput = "", yInput = "", headingInput = "";
   let xDisabled = true, yDisabled = true, headingDisabled = true, headingHide = false;
+  let currentCED = controlEditor.current;
+
   if (selected.length > 1) {
-    xInput = "(mixed)";
-    yInput = "(mixed)";
-    headingInput = "(mixed)";
+    currentCED.setSelected(ControlEditorData.MultiSelect);
   } else if (selected.length === 1) {
-    // let selectedControl = paths[0].getControlsSet().find((control) => control.uid === selected[0]);
-    let selectedControl = paths.map(
+    let firstSelected = paths.map(
       (path) => path.getControlsSet().find((control) => control.uid === selected[0])
     ).find((control) => control !== undefined);
-    if (selectedControl !== undefined) {
-      xInput = selectedControl.x.toString();
-      yInput = selectedControl.y.toString();
+    currentCED.setSelected(firstSelected);
+    if (firstSelected !== undefined) {
+      currentCED.setXInput(firstSelected.x.toString());
+      currentCED.setYInput(firstSelected.y.toString());
       xDisabled = false;
       yDisabled = false;
-      if (selectedControl instanceof EndPointControl) {
-        headingInput = selectedControl.heading.toString();
+      if (firstSelected instanceof EndPointControl) {
+        currentCED.setHeadingInput((firstSelected as EndPointControl).heading.toString());
         headingDisabled = false;
       } else {
         headingHide = true;
       }
     }
+  }
+
+  function onControlEditorInputConfirm(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.code === "Enter" || event.code === "NumpadEnter") controlEditor.current.writeBack();
   }
 
   return (
@@ -501,30 +608,32 @@ function App() {
               <TextField
                 label="X"
                 id="outlined-size-small"
-                defaultValue=""
+                defaultValue={" "}
                 size="small"
-                sx={{ width: "calc(33.3% - 1vh)", marginRight: "1vh" }}
-                value={xInput}
+                sx={{ width: "calc(33.3% - 0.67vh)", marginRight: "0.5vh" }}
+                inputRef={controlEditor.current.xInputRef}
+                onKeyUp={onControlEditorInputConfirm}
                 disabled={xDisabled}
               />
               <TextField
                 label="Y"
                 id="outlined-size-small"
-                defaultValue=""
+                defaultValue={" "}
                 size="small"
-                sx={{ width: "calc(33.3% - 1vh)", marginRight: "1vh" }}
-                value={yInput}
+                sx={{ width: "calc(33.3% - 0.67vh)", marginLeft: "0.5vh", marginRight: "0.5vh" }}
+                inputRef={controlEditor.current.yInputRef}
+                onKeyUp={onControlEditorInputConfirm}
                 disabled={yDisabled}
               />
               <TextField
                 label="Heading"
                 id="outlined-size-small"
-                defaultValue=""
+                defaultValue={" "}
                 size="small"
-                sx={{ width: "calc(33.3% - 1vh)", marginRight: "1vh" }}
-                value={headingInput}
+                sx={{ width: "calc(33.3% - 0.67vh)", marginLeft: "0.5vh", display: headingHide ? "none" : "" }}
+                inputRef={controlEditor.current.headingInputRef}
+                onKeyUp={onControlEditorInputConfirm}
                 disabled={headingDisabled}
-                style={{ display: headingHide ? "none" : "" }}
               />
             </div>
             <TreeView
