@@ -27,7 +27,7 @@ import TreeItem from '@mui/lab/TreeItem';
 import { Input } from '@mui/icons-material';
 import { Button, Container } from '@mui/material';
 
-class UserControl {
+class UserBehavior {
   public isPressingCtrl: boolean = false;
   public isPressingShift: boolean = false;
   public mouseX: number = 0;
@@ -37,9 +37,11 @@ class UserControl {
 interface AppProps {
   paths: Path[];
   cc: CanvasConfig;
-  uc: UserControl;
+  ub: UserBehavior;
   selected: string[];
   setSelected: React.Dispatch<React.SetStateAction<string[]>>;
+  magnet: Vertex;
+  setMagnet: React.Dispatch<React.SetStateAction<Vertex>>;
 }
 
 interface SplineElementProps extends AppProps {
@@ -147,6 +149,7 @@ class ControlEditorData {
         this.headingInputRef.current!.value = this.selected.heading.toString();
       }
     }
+    this.selected.fixPrecision();
   }
 }
 
@@ -181,10 +184,10 @@ function SplineControlVisualLineElement(props: { start: Vertex, end: Vertex, cc:
   const startInPx = props.cc.toPx(props.start);
   const endInPx = props.cc.toPx(props.end);
 
-  const line_width = props.cc.pixelWidth / 600;
+  const lineWidth = props.cc.pixelWidth / 600;
 
   return (
-    <Line points={[startInPx.x, startInPx.y, endInPx.x, endInPx.y]} stroke="ffffff" strokeWidth={line_width} opacity={0.25} />
+    <Line points={[startInPx.x, startInPx.y, endInPx.x, endInPx.y]} stroke="ffffff" strokeWidth={lineWidth} opacity={0.25} />
   )
 }
 
@@ -222,13 +225,15 @@ function SplineKnotsHitBoxElement(props: SplineElementProps) {
 
 function SplineControlElement(props: SplineControlElementProps) {
   const [justSelected, setJustSelected] = useState(false);
+  const [posBeforeDrag, setPosBeforeDrag] = useState(new Vertex(0, 0));
 
   function onMouseDownControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
     if (evt.button === 0) { // left click
       setJustSelected(false);
+      setPosBeforeDrag(props.cp.clone());
 
-      if (props.uc.isPressingShift) {
+      if (props.ub.isPressingShift) {
         // add if not
         addSelected(props, props.cp.uid).then((added) => {
           if (added) {
@@ -245,7 +250,7 @@ function SplineControlElement(props: SplineControlElementProps) {
   function onClickControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
     if (evt.button === 0) { // left click
-      if (props.uc.isPressingShift) {
+      if (props.ub.isPressingShift) {
         // remove if already selected and it is not being added recently
         props.setSelected((selected) => {
           if (selected.includes(props.cp.uid) && !justSelected) {
@@ -271,24 +276,27 @@ function SplineControlElement(props: SplineControlElementProps) {
 
     // CP 1 should follow CP 0, CP 2 should follow CP 3
     const isMainControl = props.cp instanceof EndPointControl;
-    const shouldControlFollow = !props.uc.isPressingCtrl;
+    const shouldControlFollow = !props.ub.isPressingCtrl;
     const index = props.path.splines.indexOf(props.spline);
     const isLastOne = index + 1 === props.path.splines.length;
     const isCurve = props.spline.controls.length === 4;
     const isFirstCp = props.spline.first() === props.cp;
 
-    const controls = props.path.getControlsSet();
     let followers: Control[] = [];
     let others: Control[] = [];
-    for (let control of controls) {
-      if (control === props.cp) continue;
-      if (
-        (!(control instanceof EndPointControl) && !shouldControlFollow) ||
-        (!props.selected.includes(control.uid))
-      ) {
-        others.push(control);
-      } else {
-        followers.push(control);
+    for (let path of props.paths) {
+      for (let control of path.getControlsSet()) {
+        if (control === props.cp) continue;
+        if (control.visible === false || path.visible === false) continue;
+        if (
+          (!(control instanceof EndPointControl) && !shouldControlFollow) ||
+          (!props.selected.includes(control.uid)) ||
+          (control.lock || path.lock)
+        ) {
+          others.push(control);
+        } else {
+          followers.push(control);
+        }
       }
     }
 
@@ -307,11 +315,15 @@ function SplineControlElement(props: SplineControlElementProps) {
       }
     }
 
-    if (props.uc.isPressingShift) {
+    if (props.ub.isPressingShift) {
       let magnetX = cpInCm.x;
       let magnetXDistance = Infinity;
       let magnetY = cpInCm.y;
       let magnetYDistance = Infinity;
+
+      // align to old control points
+      others.push(posBeforeDrag.add(new Control(1000, 0)));
+      others.push(posBeforeDrag.add(new Control(0, 1000)));
 
       for (let cp of others) {
         let distance = cp.distance(cpInCm);
@@ -325,8 +337,15 @@ function SplineControlElement(props: SplineControlElementProps) {
         }
       }
 
+      let magnetGuide = new Vertex(Infinity, Infinity);
+      if (cpInCm.x !== magnetX) magnetGuide.x = magnetX;
+      if (cpInCm.y !== magnetY) magnetGuide.y = magnetY;
+      props.setMagnet(magnetGuide);
+
       cpInCm.x = magnetX;
       cpInCm.y = magnetY;
+    } else {
+      props.setMagnet(new Vertex(Infinity, Infinity));
     }
 
     for (let cp of followers) {
@@ -337,6 +356,10 @@ function SplineControlElement(props: SplineControlElementProps) {
     cpInPx = props.cc.toPx(cpInCm);
     event.target.x(cpInPx.x);
     event.target.y(cpInPx.y);
+  }
+
+  function onMouseUpControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
+    props.setMagnet(new Vertex(Infinity, Infinity));
   }
 
   function onWheel(event: Konva.KonvaEventObject<WheelEvent>) {
@@ -351,7 +374,7 @@ function SplineControlElement(props: SplineControlElementProps) {
   const lineWidth = props.cc.pixelWidth / 600;
   const cpRadius = props.cc.pixelWidth / 40;
   const cpInPx = props.cc.toPx(props.cp);
-  const fillColor = props.selected.includes(props.cp.uid) ? "#0000ff4f" : "#0000ff2f";
+  const fillColor = props.selected.includes(props.cp.uid) ? "#0000ff8f" : "#0000ff2f";
   const isMainControl = props.cp instanceof EndPointControl;
 
   function onClickFirstOrLastControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -377,11 +400,11 @@ function SplineControlElement(props: SplineControlElementProps) {
               cpInPx.y + Math.cos(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius
             ]} stroke="ffffff" strokeWidth={lineWidth} />
             <Circle x={cpInPx.x} y={cpInPx.y} radius={cpRadius} fill={fillColor}
-              draggable onDragMove={onDragControlPoint} onMouseDown={onMouseDownControlPoint} onWheel={onWheel} onClick={onClickFirstOrLastControlPoint} />
+              draggable onDragMove={onDragControlPoint} onMouseDown={onMouseDownControlPoint} onMouseUp={onMouseUpControlPoint} onWheel={onWheel} onClick={onClickFirstOrLastControlPoint} />
           </>
         ) : (
           <Circle x={cpInPx.x} y={cpInPx.y} radius={cpRadius / 2} fill={fillColor}
-            draggable onDragMove={onDragControlPoint} onMouseDown={onMouseDownControlPoint} />
+            draggable onDragMove={onDragControlPoint} onMouseDown={onMouseDownControlPoint} onMouseUp={onMouseUpControlPoint} />
         )
       }
 
@@ -432,17 +455,33 @@ function FieldCanvasElement(props: AppProps) {
   function onClickFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
     let evt = event.evt;
 
+    let targetPath = paths.find((path) => props.selected.includes(path.uid));
+    if (targetPath === undefined) targetPath = paths[0];
+
     if (evt.button === 2) { // click
-      paths[0].addLine(cc.toCm(new EndPointControl(evt.offsetX, evt.offsetY, 0)));
+      targetPath.addLine(cc.toCm(new EndPointControl(evt.offsetX, evt.offsetY, 0)));
     } else {
-      paths[0].add4ControlsCurve(cc.toCm(new EndPointControl(evt.offsetX, evt.offsetY, 0)));
+      targetPath.add4ControlsCurve(cc.toCm(new EndPointControl(evt.offsetX, evt.offsetY, 0)));
     }
   }
+
+  const lineWidth = 0.5;
+  const magnetInPx = cc.toPx(props.magnet);
 
   return (
     <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight} onContextMenu={(e) => e.evt.preventDefault()}>
       <Layer>
         <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight} onClick={onClickFieldImage} />
+        {
+          magnetInPx.x !== Infinity ? (
+            <Line points={[magnetInPx.x, 0, magnetInPx.x, cc.pixelHeight]} stroke="red" strokeWidth={lineWidth}/>
+          ) : null
+        }
+        {
+          magnetInPx.y !== Infinity ? (
+            <Line points={[0, magnetInPx.y, cc.pixelHeight, magnetInPx.y]} stroke="red" strokeWidth={lineWidth}/>
+          ) : null
+        }
         {
           paths.map((path, index) => {
             return (
@@ -516,11 +555,13 @@ function App() {
     new Path(new Spline(new EndPointControl(60, -60, 0), [], new EndPointControl(60, 60, 0)))
   ], []);
 
-  const [userControl, setUserControl] = useState(new UserControl());
+  const [userControl, setUserControl] = useState(new UserBehavior());
 
   const [expanded, setExpanded] = useState<string[]>([]);
 
   const [selected, setSelected] = useState<string[]>([]);
+
+  const [magnet, setMagnet] = useState<Vertex>(new Vertex(80, 0));
 
   const controlEditor = useRef<ControlEditorData>(new ControlEditorData(
     useRef<HTMLInputElement>(null),
@@ -610,7 +651,7 @@ function App() {
   return (
     <div className='App'>
       <Card className='field-container' onMouseMove={onMouseMove}>
-        <FieldCanvasElement {...{ paths, cc, uc: userControl, selected, setSelected }} />
+        <FieldCanvasElement {...{ paths, cc, ub: userControl, selected, setSelected, magnet, setMagnet }} />
       </Card>
 
       <div className='editor-container'>

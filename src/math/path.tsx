@@ -88,11 +88,15 @@ export interface Position extends Vertex {
 
     headingInRadian(): number;
 
+    fixPrecision(p: number): Position;
+
     clone(): Position;
 }
 
 export class Control extends Vertex {
     public uid: string;
+    public lock: boolean = false;
+    public visible: boolean = true;
 
     constructor(x: number, y: number) {
         super(x, y);
@@ -114,6 +118,14 @@ export class EndPointControl extends Control implements Position {
 
     headingInRadian(): number {
         return this.heading * Math.PI / 180;
+    }
+
+    fixPrecision(p = 2): EndPointControl {
+        super.fixPrecision(p);
+        this.heading %= 360;
+        if (this.heading < 0) this.heading += 360;
+        this.heading = parseFloat(this.heading.toFixed(p));
+        return this;
     }
 
     clone(): EndPointControl {
@@ -207,6 +219,8 @@ export class Path {
     public splines: Spline[];
     public name: string = "Path";
     public uid: string;
+    public lock: boolean = false;
+    public visible: boolean = true;
 
     constructor(first_spline: Spline) {
         this.splines = [first_spline];
