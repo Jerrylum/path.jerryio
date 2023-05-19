@@ -26,28 +26,28 @@ export class Vertex {
         let rtn = vector.clone() as T;
         rtn.x += this.x;
         rtn.y += this.y;
-        return rtn;
+        return rtn.fixPrecision() as T;
     }
 
     subtract<T extends Vertex>(vector: T): T {
         let rtn = vector.clone() as T;
         rtn.x = this.x - rtn.x;
         rtn.y = this.y - rtn.y;
-        return rtn;
+        return rtn.fixPrecision() as T;
     }
 
     multiply<T extends Vertex>(vector: T): T {
         let rtn = vector.clone() as T;
         rtn.x *= this.x;
         rtn.y *= this.y;
-        return rtn;
+        return rtn.fixPrecision() as T;
     }
 
     divide<T extends Vertex>(vector: T): T {
         let rtn = vector.clone() as T;
         rtn.x = this.x / rtn.x;
         rtn.y = this.y / rtn.y;
-        return rtn;
+        return rtn.fixPrecision() as T;
     }
 
     dot(vector: Vertex): number {
@@ -63,7 +63,19 @@ export class Vertex {
         let rtn = other.clone() as T;
         rtn.x = 2 * this.x - other.x;
         rtn.y = 2 * this.y - other.y;
-        return rtn;
+        return rtn.fixPrecision() as T;
+    }
+
+    setXY(other: Vertex): void {
+        this.x = other.x;
+        this.y = other.y;
+        this.fixPrecision();
+    }
+
+    fixPrecision(p = 2): Vertex {
+        this.x = parseFloat(this.x.toFixed(p));
+        this.y = parseFloat(this.y.toFixed(p));
+        return this;
     }
 
     clone(): Vertex {
@@ -310,7 +322,7 @@ export class Path {
         }
     }
 
-    removeSplineByFirstOrLastControlPoint(point: EndPointControl): void {
+    removeSplineByFirstOrLastControlPoint(point: EndPointControl): (EndPointControl | Control)[] {
         for (let i = 0; i < this.splines.length; i++) {
             let spline = this.splines[i];
             if (spline.first() === point) { // pointer comparison
@@ -319,11 +331,21 @@ export class Path {
                     prev.setLast(spline.last()); // pointer assignment
                 }
                 this.splines.splice(i, 1);
-                return;
             } else if (i + 1 === this.splines.length && spline.last() === point) { // pointer comparison
                 this.splines.splice(i, 1);
-                return;
+            } else {
+                continue;
             }
+
+            let removedControls = [...spline.controls];
+            if (i > 0) {
+                removedControls.splice(0, 1); // keep the first control
+            }
+            if (i + 1 < this.splines.length) {
+                removedControls.splice(removedControls.length - 1, 1); // keep the last control
+            }
+            return removedControls;
         }
+        return [];
     }
 }

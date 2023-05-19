@@ -6,7 +6,7 @@ export class CanvasConfig {
     public fieldWidth: number; // in cm
     public fieldHeight: number; // in cm
     public knotPerCm: number = 0.25;
-    public controlPointMagnetDistance: number = 5; // in cm
+    public controlMagnetDistance: number = 5; // in cm
 
     // calculated
     public pixelWidthHalf: number;
@@ -38,6 +38,6 @@ export class CanvasConfig {
         let rtn = inPx.clone() as T;
         rtn.x = (inPx.x - this.pixelWidthHalf) * this.pixel2cm;
         rtn.y = -(inPx.y - this.pixelHeightHalf) * this.pixel2cm;
-        return rtn;
+        return rtn.fixPrecision() as T;
     }
 }

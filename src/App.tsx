@@ -21,6 +21,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import TreeItem from '@mui/lab/TreeItem';
 
 import { Input } from '@mui/icons-material';
+import { Container } from '@mui/material';
 
 class UserControl {
   public isPressingCtrl: boolean = false;
@@ -29,13 +30,17 @@ class UserControl {
   public mouseY: number = 0;
 }
 
-interface SplineElementProps {
-  spline: Spline;
-  path: Path;
+interface AppProps {
+  paths: Path[];
   cc: CanvasConfig;
   uc: UserControl;
   selected: string[];
   setSelected: React.Dispatch<React.SetStateAction<string[]>>;
+}
+
+interface SplineElementProps extends AppProps {
+  spline: Spline;
+  path: Path;
 }
 
 interface SplineControlElementProps extends SplineElementProps {
@@ -119,8 +124,7 @@ function SplineControlElement(props: SplineControlElementProps) {
     const evt = event.evt;
     if (evt.button === 0) { // left click
       setJustSelected(false);
-      console.log("mouse down", props.uc.isPressingShift);
-      
+
       if (props.uc.isPressingShift) {
         // add if not
         addSelected(props, props.cp.uid).then((added) => {
@@ -158,13 +162,13 @@ function SplineControlElement(props: SplineControlElementProps) {
 
     let cpInPx = new Vertex(evt.offsetX, evt.offsetY);
     let cpInCm = props.cc.toCm(cpInPx);
-    props.cp.x = cpInCm.x;
-    props.cp.y = cpInCm.y;
+    cpInCm.fixPrecision();
+    // first set the position of the control point so we can calculate the position of the follower control points
+    props.cp.setXY(cpInCm);
 
     // CP 1 should follow CP 0, CP 2 should follow CP 3
     const isMainControl = props.cp instanceof EndPointControl;
     const shouldControlFollow = !props.uc.isPressingCtrl;
-    // const shouldFollow = isMainControl && !props.uc.isPressingCtrl;
     const index = props.path.splines.indexOf(props.spline);
     const isLastOne = index + 1 === props.path.splines.length;
     const isCurve = props.spline.controls.length === 4;
@@ -207,13 +211,12 @@ function SplineControlElement(props: SplineControlElementProps) {
       let magnetYDistance = Infinity;
 
       for (let cp of others) {
-
         let distance = cp.distance(cpInCm);
-        if (Math.abs(cp.x - cpInCm.x) < props.cc.controlPointMagnetDistance && distance < magnetXDistance) {
+        if (Math.abs(cp.x - cpInCm.x) < props.cc.controlMagnetDistance && distance < magnetXDistance) {
           magnetX = cp.x;
           magnetXDistance = distance;
         }
-        if (Math.abs(cp.y - cpInCm.y) < props.cc.controlPointMagnetDistance && distance < magnetYDistance) {
+        if (Math.abs(cp.y - cpInCm.y) < props.cc.controlMagnetDistance && distance < magnetYDistance) {
           magnetY = cp.y;
           magnetYDistance = distance;
         }
@@ -224,13 +227,10 @@ function SplineControlElement(props: SplineControlElementProps) {
     }
 
     for (let cp of followers) {
-      const newPos = cpInCm.add(cp.subtract(oldCpInCm));
-      cp.x = newPos.x;
-      cp.y = newPos.y;
+      cp.setXY(cpInCm.add(cp.subtract(oldCpInCm)));
     }
 
-    props.cp.x = cpInCm.x;
-    props.cp.y = cpInCm.y;
+    props.cp.setXY(cpInCm);
     cpInPx = props.cc.toPx(cpInCm);
     event.target.x(cpInPx.x);
     event.target.y(cpInPx.y);
@@ -256,7 +256,10 @@ function SplineControlElement(props: SplineControlElementProps) {
 
     onClickControlPoint(event);
     if (evt.button === 2) { // right click
-      props.path.removeSplineByFirstOrLastControlPoint(props.cp as EndPointControl);
+      let removedControls = props.path.removeSplineByFirstOrLastControlPoint(props.cp as EndPointControl);
+      let removed = removedControls.map((control) => control.uid);
+
+      props.setSelected((selected) => selected.filter((uid) => !removed.includes(uid)));
     }
   }
 
@@ -315,18 +318,13 @@ function SplineElement(props: SplineElementProps) {
   )
 }
 
-function App() {
-  useTimer(1000 / 30);
+function FieldCanvasElement(props: AppProps) {
+  // useTimer(1000 / 30);
 
-  const paths = useMemo(() => [new Path(new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)))], []);
-
-  const [userControl, setUserControl] = useState(new UserControl());
-
-  const [selected, setSelected] = useState<string[]>([]);
+  const cc = props.cc;
+  const paths = props.paths;
 
   const [fieldImage] = useImage(fieldImageUrl);
-
-  const cc = new CanvasConfig(window.innerHeight * 0.94, window.innerHeight * 0.94, 365.76, 365.76);
 
   function onClickFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
     let evt = event.evt;
@@ -338,48 +336,130 @@ function App() {
     }
   }
 
-  function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    let isCtrl = event.ctrlKey || event.metaKey;
-    let isShift = event.shiftKey;
-    setUserControl({ ...userControl, isPressingCtrl: isCtrl, isPressingShift: isShift });
+  return (
+    <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight} onContextMenu={(e) => e.evt.preventDefault()}>
+      <Layer>
+        <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight} onClick={onClickFieldImage} />
+        {
+          paths.map((path, index) => {
+            return (
+              <React.Fragment key={index}>
+                {path.splines.map((spline) => {
+                  return (
+                    <SplineElement key={spline.uid} {...{ spline, path, ...props }} />
+                  )
+                })}
+              </React.Fragment>
+            )
+          })
+        }
+      </Layer>
+    </Stage>
+  )
+}
 
+function PathTreeItemElement(props: { path: Path }) {
+  const path = props.path;
+
+  const defaultValue = useRef(path.name);
+
+  function onPathNameChange(event: React.FormEvent<HTMLSpanElement>, path: Path) {
+    path.name = event.currentTarget.innerText;
   }
 
-  function onKeyUp(event: React.KeyboardEvent<HTMLDivElement>) {
+  return (
+    <TreeItem nodeId={path.uid} label={
+      <>
+        <span contentEditable
+          style={{ display: 'inline-block' }}
+          onInput={(e) => onPathNameChange(e, path)}
+          // onLoad={(e) => e.currentTarget.innerText = path.name}
+          suppressContentEditableWarning={true}
+          dangerouslySetInnerHTML={{ __html: defaultValue.current }} // XXX
+        />
+      </>
+    } >
+      {
+        path.getControlsSet().map((control, controlIdx) => {
+          return (
+            <TreeItem nodeId={control.uid} key={control.uid} label={control instanceof EndPointControl ? "End Point Control" : "Control"} />
+          )
+        })
+      }
+    </TreeItem>
+  )
+}
+
+function App() {
+  useTimer(1000 / 30);
+
+  const paths = useMemo(() => [
+    new Path(new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0))),
+    new Path(new Spline(new EndPointControl(60, -60, 0), [], new EndPointControl(60, 60, 0)))
+  ], []);
+
+  const [userControl, setUserControl] = useState(new UserControl());
+
+  const [selected, setSelected] = useState<string[]>([]);
+
+  const cc = new CanvasConfig(window.innerHeight * 0.94, window.innerHeight * 0.94, 365.76, 365.76);
+
+  function onKeyDown(event: KeyboardEvent) {
     let isCtrl = event.ctrlKey || event.metaKey;
     let isShift = event.shiftKey;
-    setUserControl({ ...userControl, isPressingCtrl: isCtrl, isPressingShift: isShift });
+    setUserControl((uc) => ({ ...uc, isPressingCtrl: isCtrl, isPressingShift: isShift }));
+  }
+
+  function onKeyUp(event: KeyboardEvent) {
+    let isCtrl = event.ctrlKey || event.metaKey;
+    let isShift = event.shiftKey;
+    setUserControl((uc) => ({ ...uc, isPressingCtrl: isCtrl, isPressingShift: isShift }));
   }
 
   function onMouseMove(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     // setUserControl({ ...userControl, mouseX: event.offsetX, mouseY: event.offsetY });
   }
 
-  function onPathNameChange(event: React.ChangeEvent<HTMLInputElement>) {
-    // paths[selectedPath].name = event.target.innerText;
+  useEffect(() => {
+    document.body.addEventListener('keydown', onKeyDown);
+    document.body.addEventListener('keyup', onKeyUp);
+
+    return () => {
+      document.body.removeEventListener('keydown', onKeyDown);
+      document.body.removeEventListener('keyup', onKeyUp);
+    }
+  }, []);
+
+  const multiSelect = selected.length !== 1;
+  let xInput = "", yInput = "", headingInput = "";
+  let xDisabled = true, yDisabled = true, headingDisabled = true, headingHide = false;
+  if (selected.length > 1) {
+    xInput = "(mixed)";
+    yInput = "(mixed)";
+    headingInput = "(mixed)";
+  } else if (selected.length === 1) {
+    // let selectedControl = paths[0].getControlsSet().find((control) => control.uid === selected[0]);
+    let selectedControl = paths.map(
+      (path) => path.getControlsSet().find((control) => control.uid === selected[0])
+    ).find((control) => control !== undefined);
+    if (selectedControl !== undefined) {
+      xInput = selectedControl.x.toString();
+      yInput = selectedControl.y.toString();
+      xDisabled = false;
+      yDisabled = false;
+      if (selectedControl instanceof EndPointControl) {
+        headingInput = selectedControl.heading.toString();
+        headingDisabled = false;
+      } else {
+        headingHide = true;
+      }
+    }
   }
 
   return (
     <div className='App'>
-      <Card className='field-container' tabIndex={1} onKeyDown={onKeyDown} onKeyUp={onKeyUp} onMouseMove={onMouseMove}>
-        <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight} onContextMenu={(e) => e.evt.preventDefault()}>
-          <Layer>
-            <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight} onClick={onClickFieldImage} />
-            {
-              paths.map((path, index) => {
-                return (
-                  <React.Fragment key={index}>
-                    {path.splines.map((spline) => {
-                      return (
-                        <SplineElement key={spline.uid} {...{spline, path, cc, uc: userControl, selected, setSelected}} />
-                      )
-                    })}
-                  </React.Fragment>
-                )
-              })
-            }
-          </Layer>
-        </Stage>
+      <Card className='field-container' onMouseMove={onMouseMove}>
+        <FieldCanvasElement {...{ paths, cc, uc: userControl, selected, setSelected }} />
       </Card>
 
       <div className='editor-container'>
@@ -400,6 +480,7 @@ function App() {
               id="outlined-size-small"
               defaultValue="30"
               size="small"
+              sx={{ marginBottom: "1vh", marginRight: "1vh" }}
             />
           </AccordionDetails>
         </Accordion>
@@ -416,6 +497,36 @@ function App() {
             <Typography>Paths</Typography>
           </AccordionSummary>
           <AccordionDetails>
+            <div style={{ textAlign: "left", marginBottom: "3vh" }}>
+              <TextField
+                label="X"
+                id="outlined-size-small"
+                defaultValue=""
+                size="small"
+                sx={{ width: "calc(33.3% - 1vh)", marginRight: "1vh" }}
+                value={xInput}
+                disabled={xDisabled}
+              />
+              <TextField
+                label="Y"
+                id="outlined-size-small"
+                defaultValue=""
+                size="small"
+                sx={{ width: "calc(33.3% - 1vh)", marginRight: "1vh" }}
+                value={yInput}
+                disabled={yDisabled}
+              />
+              <TextField
+                label="Heading"
+                id="outlined-size-small"
+                defaultValue=""
+                size="small"
+                sx={{ width: "calc(33.3% - 1vh)", marginRight: "1vh" }}
+                value={headingInput}
+                disabled={headingDisabled}
+                style={{ display: headingHide ? "none" : "" }}
+              />
+            </div>
             <TreeView
               defaultCollapseIcon={<ExpandMoreIcon />}
               defaultExpandIcon={<ChevronRightIcon />}
@@ -427,32 +538,11 @@ function App() {
               {
                 paths.map((path, pathIdx) => {
                   return (
-                    <TreeItem nodeId={path.uid} key={path.uid} label={
-                      <>
-                        <span contentEditable
-                          style={{ display: 'inline-block' }}
-                          onInput={onPathNameChange}
-                          suppressContentEditableWarning={true}
-                        >{path.name}</span>
-                      </>
-                    } >
-                      {
-                        path.getControlsSet().map((control, controlIdx) => {
-                          return (
-                            <TreeItem nodeId={control.uid} key={control.uid} label={control instanceof EndPointControl ? "End Point Control" : "Control"} />
-                          )
-                        })
-                      }
-                    </TreeItem>
+                    <PathTreeItemElement key={path.uid} path={path} />
                   )
                 })
               }
             </TreeView>
-
-            <Typography>
-              TODO
-
-            </Typography>
           </AccordionDetails>
         </Accordion>
       </div>
