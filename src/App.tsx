@@ -3,7 +3,7 @@ import './App.css';
 
 import Card from '@mui/material/Card';
 
-import { Control, EndPointControl, Spline, Path, Vertex } from './math/path';
+import { Control, EndPointControl, Spline, Path, Vertex, InteractiveEntity } from './math/path';
 import { CanvasConfig } from './math/shape';
 import Konva from 'konva';
 import { Circle, Layer, Rect, Stage, Image, Line } from 'react-konva';
@@ -17,7 +17,9 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import FiberManualRecordOutlinedIcon from '@mui/icons-material/FiberManualRecordOutlined';
 import TextField from '@mui/material/TextField';
 import TreeView from '@mui/lab/TreeView';
@@ -193,7 +195,7 @@ function SplineControlVisualLineElement(props: { start: Vertex, end: Vertex, cc:
 
 function SplineKnotsHitBoxElement(props: SplineElementProps) {
   function onLineClick(event: Konva.KonvaEventObject<MouseEvent>) {
-    let evt = event.evt;
+    const evt = event.evt;
 
     let cpInPx = new EndPointControl(evt.offsetX, evt.offsetY, 0);
     let cpInCm = props.cc.toCm(cpInPx);
@@ -229,6 +231,12 @@ function SplineControlElement(props: SplineControlElementProps) {
 
   function onMouseDownControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
+
+    if (props.cp.lock || props.path.lock) {
+      evt.preventDefault();
+      return;
+    }
+
     if (evt.button === 0) { // left click
       setJustSelected(false);
       setPosBeforeDrag(props.cp.clone());
@@ -249,6 +257,12 @@ function SplineControlElement(props: SplineControlElementProps) {
 
   function onClickControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
+
+    if (props.cp.lock || props.path.lock) {
+      evt.preventDefault();
+      return;
+    }
+
     if (evt.button === 0) { // left click
       if (props.ub.isPressingShift) {
         // remove if already selected and it is not being added recently
@@ -265,6 +279,17 @@ function SplineControlElement(props: SplineControlElementProps) {
 
   function onDragControlPoint(event: Konva.KonvaEventObject<DragEvent>) {
     const evt = event.evt;
+
+    if (props.cp.lock || props.path.lock) {
+      evt.preventDefault();
+
+      const cpInCm = props.cp.clone();
+      const cpInPx = props.cc.toPx(cpInCm);
+
+      event.target.x(cpInPx.x);
+      event.target.y(cpInPx.y);
+      return;
+    }
 
     const oldCpInCm = props.cp.clone();
 
@@ -359,13 +384,25 @@ function SplineControlElement(props: SplineControlElementProps) {
   }
 
   function onMouseUpControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
+    const evt = event.evt;
+
+    if (props.cp.lock || props.path.lock) {
+      evt.preventDefault();
+      return;
+    }
+
     props.setMagnet(new Vertex(Infinity, Infinity));
   }
 
   function onWheel(event: Konva.KonvaEventObject<WheelEvent>) {
-    let evt = event.evt;
+    const evt = event.evt;
 
-    let epc = props.cp as EndPointControl;
+    if (props.cp.lock || props.path.lock) {
+      evt.preventDefault();
+      return;
+    }
+
+    const epc = props.cp as EndPointControl;
     epc.heading += evt.deltaY / 10;
     epc.heading %= 360;
     if (epc.heading < 0) epc.heading += 360;
@@ -378,7 +415,7 @@ function SplineControlElement(props: SplineControlElementProps) {
   const isMainControl = props.cp instanceof EndPointControl;
 
   function onClickFirstOrLastControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
-    let evt = event.evt;
+    const evt = event.evt;
 
     onClickControlPoint(event);
     if (evt.button === 2) { // right click
@@ -453,7 +490,7 @@ function FieldCanvasElement(props: AppProps) {
   const [fieldImage] = useImage(fieldImageUrl);
 
   function onClickFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
-    let evt = event.evt;
+    const evt = event.evt;
 
     let targetPath = paths.find((path) => props.selected.includes(path.uid));
     if (targetPath === undefined) targetPath = paths[0];
@@ -465,7 +502,7 @@ function FieldCanvasElement(props: AppProps) {
     }
   }
 
-  const lineWidth = 0.5;
+  const lineWidth = 1;
   const magnetInPx = cc.toPx(props.magnet);
 
   return (
@@ -474,12 +511,12 @@ function FieldCanvasElement(props: AppProps) {
         <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight} onClick={onClickFieldImage} />
         {
           magnetInPx.x !== Infinity ? (
-            <Line points={[magnetInPx.x, 0, magnetInPx.x, cc.pixelHeight]} stroke="red" strokeWidth={lineWidth}/>
+            <Line points={[magnetInPx.x, 0, magnetInPx.x, cc.pixelHeight]} stroke="red" strokeWidth={lineWidth} />
           ) : null
         }
         {
           magnetInPx.y !== Infinity ? (
-            <Line points={[0, magnetInPx.y, cc.pixelHeight, magnetInPx.y]} stroke="red" strokeWidth={lineWidth}/>
+            <Line points={[0, magnetInPx.y, cc.pixelHeight, magnetInPx.y]} stroke="red" strokeWidth={lineWidth} />
           ) : null
         }
         {
@@ -500,7 +537,48 @@ function FieldCanvasElement(props: AppProps) {
   )
 }
 
-function PathTreeItemElement(props: { path: Path }) {
+function TreeItemLabelElement(props: { entity: InteractiveEntity, parent?: InteractiveEntity, onDelete?: () => void, children?: React.ReactNode }) {
+  const entity = props.entity;
+  const parent = props.parent;
+
+  function onVisibleClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
+    entity.visible = !entity.visible;
+  }
+
+  function onLockClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
+    entity.lock = !entity.lock;
+  }
+
+  return (
+    <div className='tree-node-label'>
+      {props.children}
+      <span style={{ display: "inline-block", marginRight: "1em" }}></span>
+      {
+        entity.visible
+          ? (
+            parent !== undefined && parent.visible === false
+              ? <FiberManualRecordOutlinedIcon className='tree-node-func-icon show' onClick={onVisibleClick} />
+              : <VisibilityIcon className='tree-node-func-icon' onClick={onVisibleClick} />
+          )
+          : <VisibilityOffOutlinedIcon className='tree-node-func-icon show' onClick={onVisibleClick} />
+      }
+      {
+        entity.lock === false
+          ? (
+            parent !== undefined && parent.lock === true
+              ? <FiberManualRecordOutlinedIcon className='tree-node-func-icon show' onClick={onLockClick} />
+              : <LockOpenIcon className='tree-node-func-icon' onClick={onLockClick} />
+          )
+          : <LockOutlinedIcon className='tree-node-func-icon show' onClick={onLockClick} />
+      }
+      {
+        props.onDelete ? <DeleteIcon className='tree-node-func-icon' onClick={props.onDelete} /> : null
+      }
+    </div>
+  )
+}
+
+function PathTreeItemElement(props: { path: Path, paths: Path[] }) {
   const path = props.path;
 
   const defaultValue = useRef(path.name);
@@ -511,7 +589,7 @@ function PathTreeItemElement(props: { path: Path }) {
 
   return (
     <TreeItem nodeId={path.uid} label={
-      <div className='tree-node-func-icon-parent'>
+      <TreeItemLabelElement entity={path} onDelete={() => props.paths.splice(props.paths.indexOf(path), 1)}>
         <span contentEditable
           style={{ display: 'inline-block' }}
           onInput={(e) => onPathNameChange(e, path)}
@@ -519,27 +597,19 @@ function PathTreeItemElement(props: { path: Path }) {
           dangerouslySetInnerHTML={{ __html: defaultValue.current }} // XXX
           onClick={(e) => e.preventDefault()}
         />
-        <span style={{ display: "inline-block", marginRight: "1em" }}></span>
-        <VisibilityIcon className='tree-node-func-icon' />
-        <LockOpenIcon className='tree-node-func-icon' />
-        <DeleteIcon className='tree-node-func-icon' />
-      </div>
+      </TreeItemLabelElement>
     } >
       {
         path.getControlsSet().map((control, controlIdx) => {
           return (
             <TreeItem nodeId={control.uid} key={control.uid}
               label={control instanceof EndPointControl
-                ? (
-                  <div className='tree-node-func-icon-parent'>
+                ? <TreeItemLabelElement entity={control} parent={path} onDelete={() => path.removeSpline(control)}>
                     <span>End Point Control</span>
-                    <span style={{ display: "inline-block", marginRight: "1em" }}></span>
-                    <VisibilityIcon className='tree-node-func-icon' />
-                    <FiberManualRecordOutlinedIcon className='tree-node-func-icon' />
-                    <DeleteIcon className='tree-node-func-icon' />
-                  </div>
-                )
-                : "Control"} />
+                  </TreeItemLabelElement>
+                : <TreeItemLabelElement entity={control} parent={path}>
+                    <span>Control</span>
+                  </TreeItemLabelElement>} />
           )
         })
       }
@@ -555,13 +625,13 @@ function App() {
     new Path(new Spline(new EndPointControl(60, -60, 0), [], new EndPointControl(60, 60, 0)))
   ], []);
 
-  const [userControl, setUserControl] = useState(new UserBehavior());
+  const [userBehavior, setUserBehavior] = useState(new UserBehavior());
 
   const [expanded, setExpanded] = useState<string[]>([]);
 
   const [selected, setSelected] = useState<string[]>([]);
 
-  const [magnet, setMagnet] = useState<Vertex>(new Vertex(80, 0));
+  const [magnet, setMagnet] = useState<Vertex>(new Vertex(Infinity, Infinity));
 
   const controlEditor = useRef<ControlEditorData>(new ControlEditorData(
     useRef<HTMLInputElement>(null),
@@ -574,13 +644,13 @@ function App() {
   function onKeyDown(event: KeyboardEvent) {
     let isCtrl = event.ctrlKey || event.metaKey;
     let isShift = event.shiftKey;
-    setUserControl((uc) => ({ ...uc, isPressingCtrl: isCtrl, isPressingShift: isShift }));
+    setUserBehavior((ub) => ({ ...ub, isPressingCtrl: isCtrl, isPressingShift: isShift }));
   }
 
   function onKeyUp(event: KeyboardEvent) {
     let isCtrl = event.ctrlKey || event.metaKey;
     let isShift = event.shiftKey;
-    setUserControl((uc) => ({ ...uc, isPressingCtrl: isCtrl, isPressingShift: isShift }));
+    setUserBehavior((ub) => ({ ...ub, isPressingCtrl: isCtrl, isPressingShift: isShift }));
   }
 
   function onMouseMove(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -651,7 +721,7 @@ function App() {
   return (
     <div className='App'>
       <Card className='field-container' onMouseMove={onMouseMove}>
-        <FieldCanvasElement {...{ paths, cc, ub: userControl, selected, setSelected, magnet, setMagnet }} />
+        <FieldCanvasElement {...{ paths, cc, ub: userBehavior, selected, setSelected, magnet, setMagnet }} />
       </Card>
 
       <div className='editor-container'>
@@ -738,7 +808,7 @@ function App() {
               {
                 paths.map((path, pathIdx) => {
                   return (
-                    <PathTreeItemElement key={path.uid} path={path} />
+                    <PathTreeItemElement key={path.uid} path={path} paths={paths} />
                   )
                 })
               }

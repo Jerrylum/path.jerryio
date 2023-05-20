@@ -19,13 +19,11 @@
 }
 
 .editor-container {
-  /* background-color: #EEE; */
   float: left;
   flex-grow: 1;
   max-width: 25vw;
   margin: calc(1vh - 4px);
   padding-top: 4px;
-  font-family: Consolas;
   font-size: 1.5vh;
   overflow-y: scroll;
 }
@@ -53,11 +51,11 @@
   padding-top: 1vh;
 }
 
-.tree-node-func-icon-parent:hover > .tree-node-func-icon {
-  display: block !important;
+.tree-node-label:hover > .tree-node-func-icon {
+  visibility: visible;
 }
 
-.tree-node-func-icon-parent {
+.tree-node-label {
   padding-right: 0.4em;
 }
 
@@ -66,5 +64,9 @@
   vertical-align: middle;
   float: right;
   margin-top: calc(1em * 0.15);
-  display: none !important;
+  visibility: hidden;
+}
+
+.tree-node-func-icon.show {
+  visibility: visible;
 }

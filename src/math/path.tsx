@@ -93,7 +93,16 @@ export interface Position extends Vertex {
     clone(): Position;
 }
 
-export class Control extends Vertex {
+export interface CanvasEntity {
+    uid: string;
+}
+
+export interface InteractiveEntity extends CanvasEntity {
+    lock: boolean;
+    visible: boolean;
+}
+
+export class Control extends Vertex implements InteractiveEntity {
     public uid: string;
     public lock: boolean = false;
     public visible: boolean = true;
@@ -133,7 +142,7 @@ export class EndPointControl extends Control implements Position {
     }
 }
 
-export class Spline {
+export class Spline implements CanvasEntity {
     public controls: (EndPointControl | Control)[];
     public uid: string;
 
@@ -215,7 +224,7 @@ export class Spline {
     }
 }
 
-export class Path {
+export class Path implements InteractiveEntity {
     public splines: Spline[];
     public name: string = "Path";
     public uid: string;
