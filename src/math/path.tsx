@@ -1,13 +1,13 @@
 import { CanvasConfig } from "./shape";
 
-function makeId(length : number) {
+function makeId(length: number) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
     let counter = 0;
     while (counter < length) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-      counter += 1;
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        counter += 1;
     }
     return result;
 }
@@ -206,6 +206,15 @@ export class Spline implements CanvasEntity {
 
     setLast(point: EndPointControl): void {
         this.controls[this.controls.length - 1] = point;
+    }
+
+    isLocked(): boolean {
+        return this.controls.some((cp) => cp.lock);
+    }
+
+    isVisible(): boolean {
+        // return this.controls.every((cp) => cp.visible);
+        return this.controls.some((cp) => cp.visible);
     }
 
     private bernstein(n: number, i: number, t: number): number {

@@ -27,7 +27,11 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import TreeItem from '@mui/lab/TreeItem';
 
 import { Input } from '@mui/icons-material';
-import { Button, Container } from '@mui/material';
+import { Button, Checkbox, Container, FormControlLabel } from '@mui/material';
+
+function getPathNameRegex() {
+  return new RegExp(/^[^<>\r\n]+$/g); /* eslint-disable-line */
+}
 
 class UserBehavior {
   public isPressingCtrl: boolean = false;
@@ -42,8 +46,21 @@ interface AppProps {
   ub: UserBehavior;
   selected: string[];
   setSelected: React.Dispatch<React.SetStateAction<string[]>>;
+  expanded: string[];
+  setExpanded: React.Dispatch<React.SetStateAction<string[]>>;
   magnet: Vertex;
   setMagnet: React.Dispatch<React.SetStateAction<Vertex>>;
+}
+
+interface PathTreeProps extends AppProps {
+  path: Path;
+}
+
+interface PathTreeItemLabel extends PathTreeProps {
+  entity: InteractiveEntity;
+  parent?: InteractiveEntity;
+  onDelete?: () => void;
+  children?: React.ReactNode;
 }
 
 interface SplineElementProps extends AppProps {
@@ -196,6 +213,12 @@ function SplineControlVisualLineElement(props: { start: Vertex, end: Vertex, cc:
 function SplineKnotsHitBoxElement(props: SplineElementProps) {
   function onLineClick(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
+
+    const isLocked = props.spline.isLocked() || props.path.lock;
+    if (isLocked) {
+      evt.preventDefault();
+      return;
+    }
 
     let cpInPx = new EndPointControl(evt.offsetX, evt.offsetY, 0);
     let cpInCm = props.cc.toCm(cpInPx);
@@ -423,6 +446,7 @@ function SplineControlElement(props: SplineControlElementProps) {
       let removed = removedControls.map((control) => control.uid);
 
       props.setSelected((selected) => selected.filter((uid) => !removed.includes(uid)));
+      props.setExpanded((expanded) => expanded.filter((uid) => !removed.includes(uid))); // might not be necessary
     }
   }
 
@@ -465,16 +489,17 @@ function SplineElement(props: SplineElementProps) {
       {
         props.spline.controls.length === 4 ? (
           <>
-            <SplineControlVisualLineElement start={props.spline.controls[0]} end={props.spline.controls[1]} cc={props.cc} />
-            <SplineControlVisualLineElement start={props.spline.controls[2]} end={props.spline.controls[3]} cc={props.cc} />
+            {props.spline.controls[1].visible ? <SplineControlVisualLineElement start={props.spline.controls[0]} end={props.spline.controls[1]} cc={props.cc} /> : null}
+            {props.spline.controls[2].visible ? <SplineControlVisualLineElement start={props.spline.controls[2]} end={props.spline.controls[3]} cc={props.cc} /> : null}
           </>
         ) : null
       }
       <SplineKnotsHitBoxElement {...props} />
-      {props.spline.controls.map((cpInCm, index) => {
-        if (!isFirstSpline && index === 0) return null;
+      {props.spline.controls.map((cpInCm, cpIdx) => {
+        if (!isFirstSpline && cpIdx === 0) return null;
+        if (!cpInCm.visible) return null;
         return (
-          <SplineControlElement key={index} {...props} cp={cpInCm} />
+          <SplineControlElement key={cpIdx} {...props} cp={cpInCm} />
         )
       })}
     </>
@@ -492,14 +517,27 @@ function FieldCanvasElement(props: AppProps) {
   function onClickFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
-    let targetPath = paths.find((path) => props.selected.includes(path.uid));
+    let targetPath: Path | undefined;
+    if (props.selected.length !== 0) {
+      targetPath = paths.find((path) => props.selected.includes(path.uid));
+      if (targetPath === undefined) targetPath = paths.find((path) => path.getControlsSet().some((control) => props.selected.includes(control.uid)));
+    }
     if (targetPath === undefined) targetPath = paths[0];
 
-    if (evt.button === 2) { // click
-      targetPath.addLine(cc.toCm(new EndPointControl(evt.offsetX, evt.offsetY, 0)));
+
+    let cpInCm = cc.toCm(new EndPointControl(evt.offsetX, evt.offsetY, 0));
+
+    if (targetPath === undefined) {
+      targetPath = new Path(new Spline(new EndPointControl(0, 0, 0), [], cpInCm));
+      paths.push(targetPath);
     } else {
-      targetPath.add4ControlsCurve(cc.toCm(new EndPointControl(evt.offsetX, evt.offsetY, 0)));
+      if (evt.button === 2) { // click
+        targetPath.addLine(cpInCm);
+      } else {
+        targetPath.add4ControlsCurve(cpInCm);
+      }
     }
+
   }
 
   const lineWidth = 1;
@@ -510,43 +548,55 @@ function FieldCanvasElement(props: AppProps) {
       <Layer>
         <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight} onClick={onClickFieldImage} />
         {
-          magnetInPx.x !== Infinity ? (
+          props.magnet.x !== Infinity ? (
             <Line points={[magnetInPx.x, 0, magnetInPx.x, cc.pixelHeight]} stroke="red" strokeWidth={lineWidth} />
           ) : null
         }
         {
-          magnetInPx.y !== Infinity ? (
+          props.magnet.y !== Infinity ? (
             <Line points={[0, magnetInPx.y, cc.pixelHeight, magnetInPx.y]} stroke="red" strokeWidth={lineWidth} />
           ) : null
         }
         {
-          paths.map((path, index) => {
-            return (
+          paths.map((path, index) => path.visible
+            ? (
               <React.Fragment key={index}>
-                {path.splines.map((spline) => {
-                  return (
-                    <SplineElement key={spline.uid} {...{ spline, path, ...props }} />
-                  )
-                })}
+                {path.splines.map((spline) => spline.isVisible() ? <SplineElement key={spline.uid} {...{ spline, path, ...props }} /> : null)}
               </React.Fragment>
             )
-          })
+            : null)
         }
       </Layer>
     </Stage>
   )
 }
 
-function TreeItemLabelElement(props: { entity: InteractiveEntity, parent?: InteractiveEntity, onDelete?: () => void, children?: React.ReactNode }) {
+function TreeItemLabelElement(props: PathTreeItemLabel) {
   const entity = props.entity;
   const parent = props.parent;
 
   function onVisibleClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
-    entity.visible = !entity.visible;
+    const setTo = !entity.visible;
+
+    for (let path of props.paths) {
+      for (let control of path.getControlsSet()) {
+        if (props.selected.includes(control.uid)) control.visible = setTo;
+      }
+    }
+
+    entity.visible = setTo;
   }
 
   function onLockClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
-    entity.lock = !entity.lock;
+    const setTo = !entity.lock;
+
+    for (let path of props.paths) {
+      for (let control of path.getControlsSet()) {
+        if (props.selected.includes(control.uid)) control.lock = setTo;
+      }
+    }
+
+    entity.lock = setTo;
   }
 
   return (
@@ -578,21 +628,48 @@ function TreeItemLabelElement(props: { entity: InteractiveEntity, parent?: Inter
   )
 }
 
-function PathTreeItemElement(props: { path: Path, paths: Path[] }) {
+function PathTreeItemElement(props: PathTreeProps) {
   const path = props.path;
 
   const defaultValue = useRef(path.name);
+  const lastValidName = useRef(path.name);
 
   function onPathNameChange(event: React.FormEvent<HTMLSpanElement>, path: Path) {
-    path.name = event.currentTarget.innerText;
+    const candidate = event.currentTarget.innerText;
+    if (!getPathNameRegex().test(candidate) && candidate.length !== 0) {
+      console.log("invalid path name", event.currentTarget.innerText);
+
+      event.preventDefault();
+
+      event.currentTarget.innerText = lastValidName.current;
+    } else {
+      lastValidName.current = event.currentTarget.innerText;
+    }
+  }
+
+  function onPathNameKeyDown(event: React.KeyboardEvent<HTMLSpanElement>, path: Path) {
+    if (event.code === "Enter" || event.code === "NumpadEnter") {
+      event.preventDefault();
+      event.currentTarget.blur();
+
+      if (event.currentTarget.innerText === "") event.currentTarget.innerText = defaultValue.current;
+      path.name = event.currentTarget.innerText;
+    }
+  }
+
+  function onPathDeleteClick() {
+    props.paths.splice(props.paths.indexOf(path), 1);
+
+    props.setExpanded((expanded) => expanded.filter((uid) => uid !== path.uid));
   }
 
   return (
     <TreeItem nodeId={path.uid} label={
-      <TreeItemLabelElement entity={path} onDelete={() => props.paths.splice(props.paths.indexOf(path), 1)}>
+      <TreeItemLabelElement entity={path} onDelete={onPathDeleteClick} {...props}>
         <span contentEditable
           style={{ display: 'inline-block' }}
           onInput={(e) => onPathNameChange(e, path)}
+          onKeyDown={(e) => onPathNameKeyDown(e, path)}
           suppressContentEditableWarning={true}
           dangerouslySetInnerHTML={{ __html: defaultValue.current }} // XXX
           onClick={(e) => e.preventDefault()}
@@ -604,12 +681,12 @@ function PathTreeItemElement(props: { path: Path, paths: Path[] }) {
           return (
             <TreeItem nodeId={control.uid} key={control.uid}
               label={control instanceof EndPointControl
-                ? <TreeItemLabelElement entity={control} parent={path} onDelete={() => path.removeSpline(control)}>
-                    <span>End Point Control</span>
-                  </TreeItemLabelElement>
-                : <TreeItemLabelElement entity={control} parent={path}>
-                    <span>Control</span>
-                  </TreeItemLabelElement>} />
+                ? <TreeItemLabelElement entity={control} parent={path} onDelete={() => path.removeSpline(control)} {...props}>
+                  <span>End Point Control</span>
+                </TreeItemLabelElement>
+                : <TreeItemLabelElement entity={control} parent={path} {...props}>
+                  <span>Control</span>
+                </TreeItemLabelElement>} />
           )
         })
       }
@@ -620,10 +697,7 @@ function PathTreeItemElement(props: { path: Path, paths: Path[] }) {
 function App() {
   useTimer(1000 / 30);
 
-  const paths = useMemo(() => [
-    new Path(new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0))),
-    new Path(new Spline(new EndPointControl(60, -60, 0), [], new EndPointControl(60, 60, 0)))
-  ], []);
+  const paths = useMemo<Path[]>(() => [], []);
 
   const [userBehavior, setUserBehavior] = useState(new UserBehavior());
 
@@ -721,13 +795,13 @@ function App() {
   return (
     <div className='App'>
       <Card className='field-container' onMouseMove={onMouseMove}>
-        <FieldCanvasElement {...{ paths, cc, ub: userBehavior, selected, setSelected, magnet, setMagnet }} />
+        <FieldCanvasElement {...{ paths, cc, ub: userBehavior, selected, setSelected, expanded, setExpanded, magnet, setMagnet }} />
       </Card>
 
       <div className='editor-container'>
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>Robot Configuration</Typography>
+            <Typography>Configuration</Typography>
           </AccordionSummary>
           <AccordionDetails>
             <TextField
@@ -735,15 +809,16 @@ function App() {
               id="outlined-size-small"
               defaultValue="30"
               size="small"
-              sx={{ marginBottom: "1vh", marginRight: "1vh" }}
+              sx={{ marginBottom: "1vh", marginRight: "1vh", width: "33%" }}
             />
             <TextField
               label="Height"
               id="outlined-size-small"
               defaultValue="30"
               size="small"
-              sx={{ marginBottom: "1vh", marginRight: "1vh" }}
+              sx={{ marginBottom: "1vh", marginRight: "1vh", width: "33%" }}
             />
+            <FormControlLabel control={<Checkbox defaultChecked />} label="Show Robot" />
           </AccordionDetails>
         </Accordion>
         <Accordion defaultExpanded>
@@ -792,7 +867,11 @@ function App() {
               />
               <div style={{ marginTop: "1vh" }}>
                 <Button variant="text" onClick={onAddPathClick}>Add Path</Button>
-                <Button variant="text" onClick={onExpandAllClick}>{expanded.length !== paths.length ? "Expand All" : "Collapse All"}</Button>
+                {
+                  paths.length > 0
+                    ? <Button variant="text" onClick={onExpandAllClick}>{expanded.length !== paths.length ? "Expand All" : "Collapse All"}</Button>
+                    : null
+                }
               </div>
             </div>
             <TreeView
@@ -806,9 +885,9 @@ function App() {
               sx={{ flexGrow: 1, maxWidth: "100%", overflowX: 'hidden', overflowY: 'auto', margin: "1vh 0 0" }}
             >
               {
-                paths.map((path, pathIdx) => {
+                paths.sort((a, b) => (a.name < b.name ? -1 : 1)).map((path, pathIdx) => {
                   return (
-                    <PathTreeItemElement key={path.uid} path={path} paths={paths} />
+                    <PathTreeItemElement key={path.uid} path={path} {...{ paths, cc, ub: userBehavior, selected, setSelected, expanded, setExpanded, magnet, setMagnet }} />
                   )
                 })
               }
