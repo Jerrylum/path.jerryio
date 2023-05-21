@@ -72,7 +72,7 @@ export class Vertex {
         this.fixPrecision();
     }
 
-    fixPrecision(p = 2): Vertex {
+    fixPrecision(p = 3): Vertex {
         this.x = parseFloat(this.x.toFixed(p));
         this.y = parseFloat(this.y.toFixed(p));
         return this;

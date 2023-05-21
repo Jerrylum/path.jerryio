@@ -95,14 +95,12 @@ const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
 const PathTreeItem = observer((props: PathTreeProps) => {
   const path = props.path;
 
-  const defaultValue = useRef(path.name);
+  const initialValue = useRef(path.name);
   const lastValidName = useRef(path.name);
 
-  function onPathNameChange(event: React.FormEvent<HTMLSpanElement>, path: Path) {
+  function onPathNameChange(event: React.FormEvent<HTMLSpanElement>) {
     const candidate = event.currentTarget.innerText;
     if (!getPathNameRegex().test(candidate) && candidate.length !== 0) {
-      console.log("invalid path name", event.currentTarget.innerText);
-
       event.preventDefault();
 
       event.currentTarget.innerText = lastValidName.current;
@@ -111,14 +109,18 @@ const PathTreeItem = observer((props: PathTreeProps) => {
     }
   }
 
-  function onPathNameKeyDown(event: React.KeyboardEvent<HTMLSpanElement>, path: Path) {
+  function onPathNameKeyDown(event: React.KeyboardEvent<HTMLSpanElement>) {
     if (event.code === "Enter" || event.code === "NumpadEnter") {
       event.preventDefault();
       event.currentTarget.blur();
 
-      if (event.currentTarget.innerText === "") event.currentTarget.innerText = defaultValue.current;
-      path.name = event.currentTarget.innerText;
+      onPathNameConfirm(event);
     }
+  }
+
+  function onPathNameConfirm(event: React.SyntheticEvent<HTMLSpanElement, Event>) {
+    if (event.currentTarget.innerText === "") event.currentTarget.innerText = initialValue.current;
+    path.name = initialValue.current = lastValidName.current = event.currentTarget.innerText;
   }
 
   function onPathDeleteClick() {
@@ -132,10 +134,11 @@ const PathTreeItem = observer((props: PathTreeProps) => {
       <PathTreeItemLabel entity={path} onDelete={onPathDeleteClick} {...props}>
         <span contentEditable
           style={{ display: 'inline-block' }}
-          onInput={(e) => onPathNameChange(e, path)}
-          onKeyDown={(e) => onPathNameKeyDown(e, path)}
+          onInput={(e) => onPathNameChange(e)}
+          onKeyDown={(e) => onPathNameKeyDown(e)}
+          onBlur={(e) => onPathNameConfirm(e)}
           suppressContentEditableWarning={true}
-          dangerouslySetInnerHTML={{ __html: defaultValue.current }} // XXX
+          dangerouslySetInnerHTML={{ __html: initialValue.current }} // XXX
           onClick={(e) => e.preventDefault()}
         />
       </PathTreeItemLabel>

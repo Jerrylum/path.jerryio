@@ -73,6 +73,10 @@
   padding-right: 0.4em;
 }
 
+.panel-box {
+  margin-top: 1vh;
+}
+
 .tree-node-func-icon {
   height: calc(1em * 0.7) !important;
   vertical-align: middle;

@@ -15,7 +15,7 @@ export interface NumberRange {
   to: number;
 }
 
-const RangeSlider = observer((props: { range: NumberRange }) => {
+const RangeSlider = observer((props: { range: NumberRange, inverted?: boolean }) => {
   const range = props.range;
 
   return (
@@ -36,6 +36,7 @@ const RangeSlider = observer((props: { range: NumberRange }) => {
           range.to = value[1];
         });
       }}
+      { ...(props.inverted ? {track: "inverted"} : {})}
     />
   )
 });

@@ -1,17 +1,18 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from "@mui/material";
 import { runInAction, makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
 
 import { NumberRange, RangeSlider } from "./RangeSlider";
 
+// observable class
 export class SpeedConfig {
   speedLimit: NumberRange = {
     minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 127, label: "127" },
+    maxLimit: { value: 600, label: "600" },
     step: 1,
-    from: 20,
-    to: 100,
+    from: 40,
+    to: 120,
   };
   applicationRange: NumberRange = {
     minLimit: { value: 0, label: "0" },
@@ -28,12 +29,31 @@ export class SpeedConfig {
     to: 0.95,
   };
 
+  getConfigPanel() {
+    return (
+      <>
+        <Box className="panel-box">
+          <Typography>Min/Max Speed</Typography>
+          <RangeSlider range={this.speedLimit} />
+        </Box>
+        <Box className="panel-box">
+          <Typography>Application Range</Typography>
+          <RangeSlider range={this.applicationRange} />
+        </Box>
+        <Box className="panel-box">
+          <Typography>Acceleration/Deceleration</Typography>
+          <RangeSlider range={this.transitionRange} inverted />
+        </Box>
+      </>
+    )
+  }
+
   constructor() {
     makeAutoObservable(this);
   }
 }
 
-const SpeedControlAccordion = observer((props: { sc: SpeedConfig }) => {
+const SpeedConfigAccordion = observer((props: { sc: SpeedConfig }) => {
   const sc = props.sc;
   return (
     <Accordion defaultExpanded>
@@ -41,21 +61,10 @@ const SpeedControlAccordion = observer((props: { sc: SpeedConfig }) => {
         <Typography>Speed Control</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <div style={{ marginTop: "1vh" }}>
-          <Typography id="input-slider">Min/Max Speed</Typography>
-          <RangeSlider range={sc.speedLimit} />
-        </div>
-        <div style={{ marginTop: "1vh" }}>
-          <Typography id="input-slider">Application Range</Typography>
-          <RangeSlider range={sc.applicationRange} />
-        </div>
-        <div style={{ marginTop: "1vh" }}>
-          <Typography id="input-slider">Acceleration/Deceleration</Typography>
-          <RangeSlider range={sc.transitionRange} />
-        </div>
+        {sc.getConfigPanel()}
       </AccordionDetails>
     </Accordion>
   )
 });
 
-export { SpeedControlAccordion };
+export { SpeedConfigAccordion };
