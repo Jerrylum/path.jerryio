@@ -4,7 +4,7 @@ import { Vertex } from '../math/path';
 import { CanvasConfig } from '../math/shape';
 import { Line } from 'react-konva';
 
-export function SplineControlVisualLineElement(props: { start: Vertex, end: Vertex, cc: CanvasConfig }) {
+const SplineControlVisualLineElement = observer((props: { start: Vertex, end: Vertex, cc: CanvasConfig }) => {
   const startInPx = props.cc.toPx(props.start);
   const endInPx = props.cc.toPx(props.end);
 
@@ -13,4 +13,6 @@ export function SplineControlVisualLineElement(props: { start: Vertex, end: Vert
   return (
     <Line points={[startInPx.x, startInPx.y, endInPx.x, endInPx.y]} stroke="ffffff" strokeWidth={lineWidth} opacity={0.25} />
   )
-}
+});
+
+export { SplineControlVisualLineElement };

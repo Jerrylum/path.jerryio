@@ -47,17 +47,16 @@ export interface AppProps {
 }
 
 let app = observable({
-  general: new GeneralConfig(), // a.k.a Configuration
-  speed: new SpeedConfig(), // a.k.a Speed Control
+  gc: new GeneralConfig(), // a.k.a Configuration
+  sc: new SpeedConfig(), // a.k.a Speed Control
+
+  paths: [] as Path[],
 })
 
 const App = observer(() => {
   useTimer(1000 / 30);
 
   const [format, setFormat] = useState<Format>(new PathDotJerryioFormatV0_1());
-
-
-  const paths = useMemo<Path[]>(() => [], []);
 
   const [userBehavior, setUserBehavior] = useState(new UserBehavior());
 
@@ -86,15 +85,12 @@ const App = observer(() => {
   }
 
   function initFormat() {
-    console.log("format changed", format);
-
     if (format.isInit) return;
 
     format.init();
 
-    app.general = format.buildGeneralConfig();
-    app.speed = format.buildSpeedConfig();
-
+    app.gc = format.buildGeneralConfig();
+    app.sc = format.buildSpeedConfig();
   }
 
   useEffect(action(() => {
@@ -110,14 +106,16 @@ const App = observer(() => {
   useEffect(action(() => {
     initFormat();
 
-    const disposer = reaction(() => app.general.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
+    const disposer = reaction(() => app.gc.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
       const con = new UnitConverter(oldUOL, newUOL);
 
-      app.general.robotWidth = con.fromAtoB(app.general.robotWidth);
-      app.general.robotHeight = con.fromAtoB(app.general.robotHeight);
+      setSelected([]);
+      setExpanded([]);
 
-      console.log(app.general.robotHeight);
+      app.gc.robotWidth = con.fromAtoB(app.gc.robotWidth);
+      app.gc.robotHeight = con.fromAtoB(app.gc.robotHeight);
 
+      // TODO convert all paths
     }));
 
     return () => {
@@ -127,18 +125,18 @@ const App = observer(() => {
 
   useEffect(action(initFormat), [format]);
 
-  const appProps: AppProps = { paths, cc, ub: userBehavior, selected, setSelected, expanded, setExpanded, magnet, setMagnet };
+  const appProps: AppProps = { paths: app.paths, cc, ub: userBehavior, selected, setSelected, expanded, setExpanded, magnet, setMagnet };
 
-  // XXX: set key so that the component will be re-set when format is changed or app.general.uol is changed
+  // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
-    <div className='App' key={format.uid + "-" + app.general.uol}>
+    <div className='App' key={format.uid + "-" + app.gc.uol}>
       <Card className='field-container' onMouseMove={onMouseMove}>
         <FieldCanvasElement {...appProps} />
       </Card>
 
       <Box className='editor-container'>
-        <GeneralConfigAccordion gc={app.general} format={format} setFormat={setFormat} />
-        <SpeedConfigAccordion sc={app.speed} />
+        <GeneralConfigAccordion gc={app.gc} format={format} setFormat={setFormat} />
+        <SpeedConfigAccordion sc={app.sc} />
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Output</Typography>

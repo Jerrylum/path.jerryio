@@ -16,7 +16,7 @@ export interface SplineElementProps extends AppProps {
   path: Path;
 }
 
-export function SplineElement(props: SplineElementProps) {
+const SplineElement = observer((props: SplineElementProps) => {
   const isFirstSpline = props.path.splines[0] === props.spline;
 
   const knotRadius = props.cc.pixelWidth / 320;
@@ -47,4 +47,6 @@ export function SplineElement(props: SplineElementProps) {
       })}
     </>
   )
-}
+});
+
+export { SplineElement };

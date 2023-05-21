@@ -51,9 +51,9 @@ export class ControlEditorData {
         this.yInput = "(mixed)";
         this.headingInput = "(mixed)";
       }
-      this.xInputRef.current!.value = this.xInput;
-      this.yInputRef.current!.value = this.yInput;
-      this.headingInputRef.current!.value = this.headingInput;
+      if (this.xInputRef.current) this.xInputRef.current.value = this.xInput;
+      if (this.yInputRef.current) this.yInputRef.current.value = this.yInput;
+      if (this.headingInputRef.current) this.headingInputRef.current.value = this.headingInput;
     }
   }
 
@@ -224,7 +224,7 @@ const PathsAccordion = observer((props: AppProps) => {
           sx={{ flexGrow: 1, maxWidth: "100%", overflowX: 'hidden', overflowY: 'auto', margin: "1vh 0 0" }}
         >
           {
-            props.paths.sort((a, b) => (a.name < b.name ? -1 : 1)).map((path, pathIdx) => {
+            props.paths.slice().sort((a, b) => (a.name < b.name ? -1 : 1)).map((path, pathIdx) => {
               return (
                 <PathTreeItem key={path.uid} path={path} {...props} />
               )

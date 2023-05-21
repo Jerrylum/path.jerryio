@@ -80,9 +80,7 @@ export class UnitConverter {
     return this.betaUOL;
   }
 
-  fromAtoB(a: number): number {
-    console.log(a, this.aRatio, this.bRatio);
-    
+  fromAtoB(a: number): number {   
     return this.fixPrecision(a * this.aRatio / this.bRatio);
   }
 
@@ -105,9 +103,6 @@ const GeneralConfigAccordion = observer((props: {
     new LemLibFormatV0_4(),
     new PathDotJerryioFormatV0_1(),
   ];
-
-  console.log(props.gc.robotHeight);
-  
 
   return (
     <Accordion defaultExpanded>

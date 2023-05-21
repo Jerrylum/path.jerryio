@@ -25,7 +25,7 @@ export async function addSelected(props: SplineControlElementProps, uid: string)
   });
 }
 
-export function SplineControlElement(props: SplineControlElementProps) {
+const SplineControlElement = observer((props: SplineControlElementProps) => {
   const [justSelected, setJustSelected] = useState(false);
   const [posBeforeDrag, setPosBeforeDrag] = useState(new Vertex(0, 0));
 
@@ -248,4 +248,6 @@ export function SplineControlElement(props: SplineControlElementProps) {
 
     </>
   )
-}
+});
+
+export { SplineControlElement };
