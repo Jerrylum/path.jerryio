@@ -171,23 +171,10 @@ export class Spline implements CanvasEntity {
     }
 
     calculateKnots(cc: CanvasConfig): Vertex[] {
-        let knots: Vertex[] = [];
+        // The density of knots is NOT uniform along the curve
 
-        let distance = this.distance();
+        let knots: Vertex[] = this.calculateBezierCurveKnots();
 
-        let step = 1 / (distance * cc.knotPerCm);
-
-        // Bezier curve implementation
-        const n = this.controls.length - 1;
-        for (let t = 0; t <= 1; t += step) { // 0.01
-            let point = new Vertex(0, 0);
-            for (let i = 0; i <= n; i++) {
-                const bernstein = this.bernstein(n, i, t);
-                const controlPoint = this.controls[i];
-                point = point.add(new Vertex(controlPoint.x * bernstein, controlPoint.y * bernstein));
-            }
-            knots.push(point);
-        }
 
         return knots;
     }
@@ -215,6 +202,24 @@ export class Spline implements CanvasEntity {
     isVisible(): boolean {
         // return this.controls.every((cp) => cp.visible);
         return this.controls.some((cp) => cp.visible);
+    }
+
+    private calculateBezierCurveKnots(interval: number = 0.01): Vertex[] {
+        let knots: Vertex[] = [];
+
+        // Bezier curve implementation
+        const n = this.controls.length - 1;
+        for (let t = 0; t <= 1; t += interval) { // 0.01
+            let point = new Vertex(0, 0);
+            for (let i = 0; i <= n; i++) {
+                const bernstein = this.bernstein(n, i, t);
+                const controlPoint = this.controls[i];
+                point = point.add(new Vertex(controlPoint.x * bernstein, controlPoint.y * bernstein));
+            }
+            knots.push(point);
+        }
+
+        return knots;
     }
 
     private bernstein(n: number, i: number, t: number): number {

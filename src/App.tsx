@@ -13,6 +13,7 @@ import useImage from 'use-image';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import Typography from '@mui/material/Typography';
+import InputLabel from '@mui/material/InputLabel';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -27,7 +28,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import TreeItem from '@mui/lab/TreeItem';
 
 import { Input } from '@mui/icons-material';
-import { Button, Checkbox, Container, FormControlLabel } from '@mui/material';
+import { Button, Checkbox, Container, Divider, FormControlLabel, MenuItem, Select, Slider } from '@mui/material';
 
 function getPathNameRegex() {
   return new RegExp(/^[^<>\r\n]+$/g); /* eslint-disable-line */
@@ -804,21 +805,82 @@ function App() {
             <Typography>Configuration</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <TextField
-              label="Width"
-              id="outlined-size-small"
-              defaultValue="30"
-              size="small"
-              sx={{ marginBottom: "1vh", marginRight: "1vh", width: "33%" }}
-            />
-            <TextField
-              label="Height"
-              id="outlined-size-small"
-              defaultValue="30"
-              size="small"
-              sx={{ marginBottom: "1vh", marginRight: "1vh", width: "33%" }}
-            />
-            <FormControlLabel control={<Checkbox defaultChecked />} label="Show Robot" />
+            <Typography gutterBottom>Format</Typography>
+            <div style={{ marginTop: "1vh" }}>
+              <Select size="small" defaultValue={1} sx={{maxWidth: "100%"}}>
+                <MenuItem value={1}>LemLib v0.4.x (inch, voltage)</MenuItem>
+                <MenuItem value={2}>path.jerryio v0.1.x (cm, rpm)</MenuItem>
+              </Select>
+            </div>
+            <Typography sx={{ marginTop: "2vh" }} gutterBottom>Robot Visualize</Typography>
+            <div className='flex-editor-panel'>
+              <TextField
+                label="Width"
+                id="outlined-size-small"
+                defaultValue="30"
+                size="small"
+              // sx={{ marginBottom: "1vh", marginRight: "1vh", width: "25%" }}
+              />
+              <TextField
+                label="Height"
+                id="outlined-size-small"
+                defaultValue="30"
+                size="small"
+              // sx={{ marginBottom: "1vh", marginRight: "1vh", width: "25%" }}
+              />
+              <FormControlLabel control={<Checkbox defaultChecked />} label="Show Robot" sx={{ whiteSpace: "nowrap" }} />
+            </div>
+            <Typography sx={{ marginTop: "2vh" }}>Unit of Length</Typography>
+            <div>
+              <Select size="small" defaultValue={2}>
+                <MenuItem value={1}>Millimeter</MenuItem>
+                <MenuItem value={2}>Centimeter</MenuItem>
+                <MenuItem value={3}>Meter</MenuItem>
+                <MenuItem value={4}>Inch</MenuItem>
+                <MenuItem value={5}>Feet</MenuItem>
+              </Select>
+            </div>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography>Speed Control</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <div style={{ marginTop: "1vh" }}>
+              <Typography id="input-slider">Min/Max Speed</Typography>
+              <Slider
+                step={10}
+                marks={[{ value: 0, label: "0" }, { value: 600, label: "600" }]}
+                valueLabelDisplay="auto"
+                value={[20, 150]}
+                min={0}
+                max={600}
+              />
+            </div>
+            <div style={{ marginTop: "1vh" }}>
+              <Typography id="input-slider">Application Range</Typography>
+              <Slider
+                step={0.01}
+                marks={[{ value: 0, label: "0" }, { value: 1, label: "1" }]}
+                valueLabelDisplay="auto"
+                value={[0.4, 0.6]}
+                min={0}
+                max={1}
+              />
+            </div>
+            <div style={{ marginTop: "1vh" }}>
+              <Typography id="input-slider">Acceleration/Deceleration</Typography>
+              <Slider
+                step={0.01}
+                marks={[{ value: 0, label: "0%" }, { value: 1, label: "100%" }]}
+                valueLabelDisplay="auto"
+                value={[0, 0.95]}
+                track="inverted"
+                min={0}
+                max={1}
+              />
+            </div>
           </AccordionDetails>
         </Accordion>
         <Accordion defaultExpanded>
@@ -826,7 +888,12 @@ function App() {
             <Typography>Output</Typography>
           </AccordionSummary>
           <AccordionDetails>
-
+            <div>
+              <Button variant="text">Save</Button>
+              <Button variant="text">Save As</Button>
+              <Button variant="text">Open</Button>
+              <Button variant="text">Download</Button>
+            </div>
           </AccordionDetails>
         </Accordion>
         <Accordion defaultExpanded>
@@ -835,36 +902,36 @@ function App() {
           </AccordionSummary>
           <AccordionDetails>
             <div className='path-editor' onKeyDown={onControlEditorInputTabConfirm}>
-              <TextField
-                label="X"
-                id="outlined-size-small"
-                InputLabelProps={{ shrink: true }}
-                size="small"
-                sx={{ width: "calc(33.3% - 0.67vh)", marginRight: "0.5vh" }}
-                inputRef={controlEditor.current.xInputRef}
-                onKeyUp={onControlEditorInputConfirm}
-                disabled={xDisabled}
-              />
-              <TextField
-                label="Y"
-                id="outlined-size-small"
-                InputLabelProps={{ shrink: true }}
-                size="small"
-                sx={{ width: "calc(33.3% - 0.67vh)", marginLeft: "0.5vh", marginRight: "0.5vh" }}
-                inputRef={controlEditor.current.yInputRef}
-                onKeyUp={onControlEditorInputConfirm}
-                disabled={yDisabled}
-              />
-              <TextField
-                label="Heading"
-                id="outlined-size-small"
-                InputLabelProps={{ shrink: true }}
-                size="small"
-                sx={{ width: "calc(33.3% - 0.67vh)", marginLeft: "0.5vh", display: headingHide ? "none" : "" }}
-                inputRef={controlEditor.current.headingInputRef}
-                onKeyUp={onControlEditorInputConfirm}
-                disabled={headingDisabled}
-              />
+              <div className='flex-editor-panel'>
+                <TextField
+                  label="X"
+                  id="outlined-size-small"
+                  InputLabelProps={{ shrink: true }}
+                  size="small"
+                  inputRef={controlEditor.current.xInputRef}
+                  onKeyUp={onControlEditorInputConfirm}
+                  disabled={xDisabled}
+                />
+                <TextField
+                  label="Y"
+                  id="outlined-size-small"
+                  InputLabelProps={{ shrink: true }}
+                  size="small"
+                  inputRef={controlEditor.current.yInputRef}
+                  onKeyUp={onControlEditorInputConfirm}
+                  disabled={yDisabled}
+                />
+                <TextField
+                  label="Heading"
+                  id="outlined-size-small"
+                  InputLabelProps={{ shrink: true }}
+                  size="small"
+                  sx={{ display: headingHide ? "none" : "" }}
+                  inputRef={controlEditor.current.headingInputRef}
+                  onKeyUp={onControlEditorInputConfirm}
+                  disabled={headingDisabled}
+                />
+              </div>
               <div style={{ marginTop: "1vh" }}>
                 <Button variant="text" onClick={onAddPathClick}>Add Path</Button>
                 {

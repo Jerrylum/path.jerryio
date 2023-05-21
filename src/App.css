@@ -21,7 +21,8 @@
 .editor-container {
   float: left;
   flex-grow: 1;
-  max-width: 25vw;
+  min-width: 22rem;
+  max-width: 22rem;
   margin: calc(1vh - 4px);
   padding-top: 4px;
   font-size: 1.5vh;
@@ -39,6 +40,19 @@
 .editor-container h3 {
   margin: 0;
   font-weight: 100;
+}
+
+.editor-container > *::before {
+  background-color: transparent !important;
+}
+
+.flex-editor-panel {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 1vh;
 }
 
 .path-editor {
