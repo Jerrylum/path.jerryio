@@ -1,0 +1,161 @@
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import FiberManualRecordOutlinedIcon from '@mui/icons-material/FiberManualRecordOutlined';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+
+import { Accordion, AccordionDetails, AccordionSummary, Button, Slider, TextField, Typography } from "@mui/material";
+import { runInAction, makeAutoObservable } from "mobx"
+import { observer } from "mobx-react-lite";
+import { TreeItem, TreeView } from '@mui/lab';
+import { AppProps } from '../App';
+import { Control, EndPointControl, InteractiveEntity, Path, Spline } from '../math/path';
+import { useRef } from 'react';
+
+export interface PathTreeProps extends AppProps {
+  path: Path;
+}
+
+export interface PathTreeItemLabelProps extends PathTreeProps {
+  entity: InteractiveEntity;
+  parent?: InteractiveEntity;
+  onDelete?: () => void;
+  children?: React.ReactNode;
+}
+
+export function getPathNameRegex() {
+  return new RegExp(/^[^<>\r\n]+$/g); /* eslint-disable-line */
+}
+
+const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
+  const entity = props.entity;
+  const parent = props.parent;
+
+  function onVisibleClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
+    const setTo = !entity.visible;
+
+    if (props.selected.includes(entity.uid)) { // UX: batch operation only if the entity is selected
+      for (let path of props.paths) {
+        for (let control of path.getControlsSet()) {
+          if (props.selected.includes(control.uid)) control.visible = setTo;
+        }
+      }
+    }
+
+
+    entity.visible = setTo;
+  }
+
+  function onLockClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
+    const setTo = !entity.lock;
+
+    if (props.selected.includes(entity.uid)) { // UX: batch operation only if the entity is selected
+      for (let path of props.paths) {
+        for (let control of path.getControlsSet()) {
+          if (props.selected.includes(control.uid)) control.lock = setTo;
+        }
+      }
+    }
+
+    entity.lock = setTo;
+  }
+
+  return (
+    <div className='tree-node-label'>
+      {props.children}
+      <span style={{ display: "inline-block", marginRight: "1em" }}></span>
+      {
+        entity.visible
+          ? (
+            parent !== undefined && parent.visible === false
+              ? <FiberManualRecordOutlinedIcon className='tree-node-func-icon show' onClick={onVisibleClick} />
+              : <VisibilityIcon className='tree-node-func-icon' onClick={onVisibleClick} />
+          )
+          : <VisibilityOffOutlinedIcon className='tree-node-func-icon show' onClick={onVisibleClick} />
+      }
+      {
+        entity.lock === false
+          ? (
+            parent !== undefined && parent.lock === true
+              ? <FiberManualRecordOutlinedIcon className='tree-node-func-icon show' onClick={onLockClick} />
+              : <LockOpenIcon className='tree-node-func-icon' onClick={onLockClick} />
+          )
+          : <LockOutlinedIcon className='tree-node-func-icon show' onClick={onLockClick} />
+      }
+      {
+        props.onDelete ? <DeleteIcon className='tree-node-func-icon' onClick={props.onDelete} /> : null
+      }
+    </div>
+  )
+});
+
+const PathTreeItem = observer((props: PathTreeProps) => {
+  const path = props.path;
+
+  const defaultValue = useRef(path.name);
+  const lastValidName = useRef(path.name);
+
+  function onPathNameChange(event: React.FormEvent<HTMLSpanElement>, path: Path) {
+    const candidate = event.currentTarget.innerText;
+    if (!getPathNameRegex().test(candidate) && candidate.length !== 0) {
+      console.log("invalid path name", event.currentTarget.innerText);
+
+      event.preventDefault();
+
+      event.currentTarget.innerText = lastValidName.current;
+    } else {
+      lastValidName.current = event.currentTarget.innerText;
+    }
+  }
+
+  function onPathNameKeyDown(event: React.KeyboardEvent<HTMLSpanElement>, path: Path) {
+    if (event.code === "Enter" || event.code === "NumpadEnter") {
+      event.preventDefault();
+      event.currentTarget.blur();
+
+      if (event.currentTarget.innerText === "") event.currentTarget.innerText = defaultValue.current;
+      path.name = event.currentTarget.innerText;
+    }
+  }
+
+  function onPathDeleteClick() {
+    props.paths.splice(props.paths.indexOf(path), 1);
+
+    props.setExpanded((expanded) => expanded.filter((uid) => uid !== path.uid));
+  }
+
+  return (
+    <TreeItem nodeId={path.uid} label={
+      <PathTreeItemLabel entity={path} onDelete={onPathDeleteClick} {...props}>
+        <span contentEditable
+          style={{ display: 'inline-block' }}
+          onInput={(e) => onPathNameChange(e, path)}
+          onKeyDown={(e) => onPathNameKeyDown(e, path)}
+          suppressContentEditableWarning={true}
+          dangerouslySetInnerHTML={{ __html: defaultValue.current }} // XXX
+          onClick={(e) => e.preventDefault()}
+        />
+      </PathTreeItemLabel>
+    } >
+      {
+        path.getControlsSet().map((control, controlIdx) => {
+          return (
+            <TreeItem nodeId={control.uid} key={control.uid}
+              label={control instanceof EndPointControl
+                ? <PathTreeItemLabel entity={control} parent={path} onDelete={() => path.removeSpline(control)} {...props}>
+                  <span>End Point Control</span>
+                </PathTreeItemLabel>
+                : <PathTreeItemLabel entity={control} parent={path} {...props}>
+                  <span>Control</span>
+                </PathTreeItemLabel>} />
+          )
+        })
+      }
+    </TreeItem>
+  )
+});
+
+export { PathTreeItem };

@@ -1,38 +1,44 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './App.css';
 
-import Card from '@mui/material/Card';
-
 import { Control, EndPointControl, Spline, Path, Vertex, InteractiveEntity } from './math/path';
 import { CanvasConfig } from './math/shape';
 import Konva from 'konva';
 import { Circle, Layer, Rect, Stage, Image, Line } from 'react-konva';
 
+import { runInAction, makeAutoObservable } from "mobx"
+                  
+import { observer } from "mobx-react-lite"
+
 import fieldImageUrl from './static/field2023.png'
 import useImage from 'use-image';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
+import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import InputLabel from '@mui/material/InputLabel';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import DeleteIcon from '@mui/icons-material/Delete';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
-import FiberManualRecordOutlinedIcon from '@mui/icons-material/FiberManualRecordOutlined';
 import TextField from '@mui/material/TextField';
-import TreeView from '@mui/lab/TreeView';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import TreeItem from '@mui/lab/TreeItem';
 
-import { Input } from '@mui/icons-material';
-import { Button, Checkbox, Container, Divider, FormControlLabel, MenuItem, Select, Slider } from '@mui/material';
+import { Button, Checkbox, FormControlLabel, MenuItem, Select, Slider } from '@mui/material';
+import { SpeedConfig, SpeedControlAccordion } from './app/SpeedControlAccordion';
+import { PathsAccordion } from './app/PathsAccordion';
 
-function getPathNameRegex() {
-  return new RegExp(/^[^<>\r\n]+$/g); /* eslint-disable-line */
+
+enum UnitOfLength {
+  Millimeter,
+  Centimeter, // default
+  Meter,
+  Inch,
+  Foot,
 }
+
+const ratioCentimeter = 1;
+const ratioMillimeter = ratioCentimeter / 10;
+const ratioMeter = 100 * ratioCentimeter; // SI base unit
+const ratioInch = 2.54 * ratioCentimeter;
+const ratioFoot = 12 * ratioInch;
 
 class UserBehavior {
   public isPressingCtrl: boolean = false;
@@ -41,7 +47,7 @@ class UserBehavior {
   public mouseY: number = 0;
 }
 
-interface AppProps {
+export interface AppProps {
   paths: Path[];
   cc: CanvasConfig;
   ub: UserBehavior;
@@ -53,16 +59,9 @@ interface AppProps {
   setMagnet: React.Dispatch<React.SetStateAction<Vertex>>;
 }
 
-interface PathTreeProps extends AppProps {
-  path: Path;
-}
 
-interface PathTreeItemLabel extends PathTreeProps {
-  entity: InteractiveEntity;
-  parent?: InteractiveEntity;
-  onDelete?: () => void;
-  children?: React.ReactNode;
-}
+const gbSpeed = new SpeedConfig();
+
 
 interface SplineElementProps extends AppProps {
   spline: Spline;
@@ -71,106 +70,6 @@ interface SplineElementProps extends AppProps {
 
 interface SplineControlElementProps extends SplineElementProps {
   cp: EndPointControl | Control;
-}
-
-class ControlEditorData {
-  static readonly MultiSelect: unique symbol = Symbol("multi select");
-
-  private xInput: string = "";
-  private yInput: string = "";
-  private headingInput: string = "";
-  private selected: EndPointControl | Control | Symbol | undefined;
-
-  public xInputRef = useRef<HTMLInputElement>(null);
-  public yInputRef = useRef<HTMLInputElement>(null);
-  public headingInputRef = useRef<HTMLInputElement>(null);
-
-  constructor(xInputRef: React.RefObject<HTMLInputElement>, yInputRef: React.RefObject<HTMLInputElement>, headingInputRef: React.RefObject<HTMLInputElement>) {
-    this.xInputRef = xInputRef;
-    this.yInputRef = yInputRef;
-    this.headingInputRef = headingInputRef;
-  }
-
-  getSelected() {
-    return this.selected;
-  }
-
-  setSelected(selected: EndPointControl | Control | Symbol | undefined) {
-    if (selected !== this.selected) {
-      this.selected = selected;
-      if (selected instanceof Control) {
-        this.xInput = selected.x.toString();
-        this.yInput = selected.y.toString();
-        if (selected instanceof EndPointControl) {
-          this.headingInput = selected.heading.toString();
-        } else {
-          this.headingInput = "";
-        }
-      } else if (selected === undefined) {
-        this.xInput = "";
-        this.yInput = "";
-        this.headingInput = "";
-      } else {
-        this.xInput = "(mixed)";
-        this.yInput = "(mixed)";
-        this.headingInput = "(mixed)";
-      }
-      this.xInputRef.current!.value = this.xInput;
-      this.yInputRef.current!.value = this.yInput;
-      this.headingInputRef.current!.value = this.headingInput;
-    }
-  }
-
-  setXInput(x: string) {
-    if (x !== this.xInput) {
-      this.xInput = x;
-      this.xInputRef.current!.value = x;
-    }
-  }
-
-  setYInput(y: string) {
-    if (y !== this.yInput) {
-      this.yInput = y;
-      this.yInputRef.current!.value = y;
-    }
-  }
-
-  setHeadingInput(heading: string) {
-    if (heading !== this.headingInput) {
-      this.headingInput = heading;
-      this.headingInputRef.current!.value = heading;
-    }
-  }
-
-  writeBack() {
-    if (!(this.selected instanceof Control)) return;
-
-    let x = parseFloat(this.xInputRef.current!.value);
-    let y = parseFloat(this.yInputRef.current!.value);
-    let heading = parseFloat(this.headingInputRef.current!.value);
-
-    if (!isNaN(x)) {
-      this.selected.x = x;
-      this.xInputRef.current!.value = x.toString();
-    } else {
-      this.xInputRef.current!.value = this.selected.x.toString();
-    }
-    if (!isNaN(y)) {
-      this.selected.y = y;
-      this.yInputRef.current!.value = y.toString();
-    } else {
-      this.yInputRef.current!.value = this.selected.y.toString();
-    }
-    if (this.selected instanceof EndPointControl) {
-      if (!isNaN(heading)) {
-        this.selected.heading = heading;
-        this.headingInputRef.current!.value = heading.toString();
-      } else {
-        this.headingInputRef.current!.value = this.selected.heading.toString();
-      }
-    }
-    this.selected.fixPrecision();
-  }
 }
 
 async function addSelected(props: SplineControlElementProps, uid: string) {
@@ -572,130 +471,7 @@ function FieldCanvasElement(props: AppProps) {
   )
 }
 
-function TreeItemLabelElement(props: PathTreeItemLabel) {
-  const entity = props.entity;
-  const parent = props.parent;
-
-  function onVisibleClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
-    const setTo = !entity.visible;
-
-    for (let path of props.paths) {
-      for (let control of path.getControlsSet()) {
-        if (props.selected.includes(control.uid)) control.visible = setTo;
-      }
-    }
-
-    entity.visible = setTo;
-  }
-
-  function onLockClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
-    const setTo = !entity.lock;
-
-    for (let path of props.paths) {
-      for (let control of path.getControlsSet()) {
-        if (props.selected.includes(control.uid)) control.lock = setTo;
-      }
-    }
-
-    entity.lock = setTo;
-  }
-
-  return (
-    <div className='tree-node-label'>
-      {props.children}
-      <span style={{ display: "inline-block", marginRight: "1em" }}></span>
-      {
-        entity.visible
-          ? (
-            parent !== undefined && parent.visible === false
-              ? <FiberManualRecordOutlinedIcon className='tree-node-func-icon show' onClick={onVisibleClick} />
-              : <VisibilityIcon className='tree-node-func-icon' onClick={onVisibleClick} />
-          )
-          : <VisibilityOffOutlinedIcon className='tree-node-func-icon show' onClick={onVisibleClick} />
-      }
-      {
-        entity.lock === false
-          ? (
-            parent !== undefined && parent.lock === true
-              ? <FiberManualRecordOutlinedIcon className='tree-node-func-icon show' onClick={onLockClick} />
-              : <LockOpenIcon className='tree-node-func-icon' onClick={onLockClick} />
-          )
-          : <LockOutlinedIcon className='tree-node-func-icon show' onClick={onLockClick} />
-      }
-      {
-        props.onDelete ? <DeleteIcon className='tree-node-func-icon' onClick={props.onDelete} /> : null
-      }
-    </div>
-  )
-}
-
-function PathTreeItemElement(props: PathTreeProps) {
-  const path = props.path;
-
-  const defaultValue = useRef(path.name);
-  const lastValidName = useRef(path.name);
-
-  function onPathNameChange(event: React.FormEvent<HTMLSpanElement>, path: Path) {
-    const candidate = event.currentTarget.innerText;
-    if (!getPathNameRegex().test(candidate) && candidate.length !== 0) {
-      console.log("invalid path name", event.currentTarget.innerText);
-
-      event.preventDefault();
-
-      event.currentTarget.innerText = lastValidName.current;
-    } else {
-      lastValidName.current = event.currentTarget.innerText;
-    }
-  }
-
-  function onPathNameKeyDown(event: React.KeyboardEvent<HTMLSpanElement>, path: Path) {
-    if (event.code === "Enter" || event.code === "NumpadEnter") {
-      event.preventDefault();
-      event.currentTarget.blur();
-
-      if (event.currentTarget.innerText === "") event.currentTarget.innerText = defaultValue.current;
-      path.name = event.currentTarget.innerText;
-    }
-  }
-
-  function onPathDeleteClick() {
-    props.paths.splice(props.paths.indexOf(path), 1);
-
-    props.setExpanded((expanded) => expanded.filter((uid) => uid !== path.uid));
-  }
-
-  return (
-    <TreeItem nodeId={path.uid} label={
-      <TreeItemLabelElement entity={path} onDelete={onPathDeleteClick} {...props}>
-        <span contentEditable
-          style={{ display: 'inline-block' }}
-          onInput={(e) => onPathNameChange(e, path)}
-          onKeyDown={(e) => onPathNameKeyDown(e, path)}
-          suppressContentEditableWarning={true}
-          dangerouslySetInnerHTML={{ __html: defaultValue.current }} // XXX
-          onClick={(e) => e.preventDefault()}
-        />
-      </TreeItemLabelElement>
-    } >
-      {
-        path.getControlsSet().map((control, controlIdx) => {
-          return (
-            <TreeItem nodeId={control.uid} key={control.uid}
-              label={control instanceof EndPointControl
-                ? <TreeItemLabelElement entity={control} parent={path} onDelete={() => path.removeSpline(control)} {...props}>
-                  <span>End Point Control</span>
-                </TreeItemLabelElement>
-                : <TreeItemLabelElement entity={control} parent={path} {...props}>
-                  <span>Control</span>
-                </TreeItemLabelElement>} />
-          )
-        })
-      }
-    </TreeItem>
-  )
-}
-
-function App() {
+const App = observer(() => {
   useTimer(1000 / 30);
 
   const paths = useMemo<Path[]>(() => [], []);
@@ -707,12 +483,6 @@ function App() {
   const [selected, setSelected] = useState<string[]>([]);
 
   const [magnet, setMagnet] = useState<Vertex>(new Vertex(Infinity, Infinity));
-
-  const controlEditor = useRef<ControlEditorData>(new ControlEditorData(
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null)
-  ));
 
   const cc = new CanvasConfig(window.innerHeight * 0.94, window.innerHeight * 0.94, 365.76, 365.76);
 
@@ -732,14 +502,6 @@ function App() {
     // setUserControl({ ...userControl, mouseX: event.offsetX, mouseY: event.offsetY });
   }
 
-  function onAddPathClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    paths.push(new Path(new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0))));
-  }
-
-  function onExpandAllClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    setExpanded((expanded) => expanded.length !== paths.length ? paths.map((path) => path.uid) : []);
-  }
-
   useEffect(() => {
     document.body.addEventListener('keydown', onKeyDown);
     document.body.addEventListener('keyup', onKeyUp);
@@ -750,53 +512,12 @@ function App() {
     }
   }, []);
 
-  let xDisabled = true, yDisabled = true, headingDisabled = true, headingHide = false;
-  let currentCED = controlEditor.current;
-
-  if (selected.length > 1) {
-    currentCED.setSelected(ControlEditorData.MultiSelect);
-  } else if (selected.length === 1) {
-    let firstSelected = paths.map(
-      (path) => path.getControlsSet().find((control) => control.uid === selected[0])
-    ).find((control) => control !== undefined);
-    currentCED.setSelected(firstSelected);
-    if (firstSelected !== undefined) {
-      currentCED.setXInput(firstSelected.x.toString());
-      currentCED.setYInput(firstSelected.y.toString());
-      xDisabled = false;
-      yDisabled = false;
-      if (firstSelected instanceof EndPointControl) {
-        currentCED.setHeadingInput((firstSelected as EndPointControl).heading.toString());
-        headingDisabled = false;
-      } else {
-        headingHide = true;
-      }
-    }
-  } else {
-    currentCED.setSelected(undefined);
-  }
-
-  function onControlEditorInputConfirm(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.code === "Enter" || event.code === "NumpadEnter") controlEditor.current.writeBack();
-  }
-
-  function onControlEditorInputTabConfirm(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.code === "Tab") controlEditor.current.writeBack();
-  }
-
-  function onTreeViewNodeToggle(event: React.SyntheticEvent, nodeIds: string[]) {
-    event.persist()
-    // only expand if icon was clicked
-    let iconClicked = (event.target as HTMLElement).closest(".MuiTreeItem-iconContainer")
-    if (iconClicked) {
-      setExpanded(nodeIds);
-    }
-  }
+  const appProps: AppProps = { paths, cc, ub: userBehavior, selected, setSelected, expanded, setExpanded, magnet, setMagnet };
 
   return (
     <div className='App'>
       <Card className='field-container' onMouseMove={onMouseMove}>
-        <FieldCanvasElement {...{ paths, cc, ub: userBehavior, selected, setSelected, expanded, setExpanded, magnet, setMagnet }} />
+        <FieldCanvasElement {...appProps} />
       </Card>
 
       <div className='editor-container'>
@@ -808,7 +529,7 @@ function App() {
             <Typography gutterBottom>Format</Typography>
             <div style={{ marginTop: "1vh" }}>
               <Select size="small" defaultValue={1} sx={{maxWidth: "100%"}}>
-                <MenuItem value={1}>LemLib v0.4.x (inch, voltage)</MenuItem>
+                <MenuItem value={1}>LemLib v0.4.x (inch, byte-voltage)</MenuItem>
                 <MenuItem value={2}>path.jerryio v0.1.x (cm, rpm)</MenuItem>
               </Select>
             </div>
@@ -842,47 +563,7 @@ function App() {
             </div>
           </AccordionDetails>
         </Accordion>
-        <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>Speed Control</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <div style={{ marginTop: "1vh" }}>
-              <Typography id="input-slider">Min/Max Speed</Typography>
-              <Slider
-                step={10}
-                marks={[{ value: 0, label: "0" }, { value: 600, label: "600" }]}
-                valueLabelDisplay="auto"
-                value={[20, 150]}
-                min={0}
-                max={600}
-              />
-            </div>
-            <div style={{ marginTop: "1vh" }}>
-              <Typography id="input-slider">Application Range</Typography>
-              <Slider
-                step={0.01}
-                marks={[{ value: 0, label: "0" }, { value: 1, label: "1" }]}
-                valueLabelDisplay="auto"
-                value={[0.4, 0.6]}
-                min={0}
-                max={1}
-              />
-            </div>
-            <div style={{ marginTop: "1vh" }}>
-              <Typography id="input-slider">Acceleration/Deceleration</Typography>
-              <Slider
-                step={0.01}
-                marks={[{ value: 0, label: "0%" }, { value: 1, label: "100%" }]}
-                valueLabelDisplay="auto"
-                value={[0, 0.95]}
-                track="inverted"
-                min={0}
-                max={1}
-              />
-            </div>
-          </AccordionDetails>
-        </Accordion>
+        <SpeedControlAccordion sc={gbSpeed} />
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Output</Typography>
@@ -896,74 +577,10 @@ function App() {
             </div>
           </AccordionDetails>
         </Accordion>
-        <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>Paths</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <div className='path-editor' onKeyDown={onControlEditorInputTabConfirm}>
-              <div className='flex-editor-panel'>
-                <TextField
-                  label="X"
-                  id="outlined-size-small"
-                  InputLabelProps={{ shrink: true }}
-                  size="small"
-                  inputRef={controlEditor.current.xInputRef}
-                  onKeyUp={onControlEditorInputConfirm}
-                  disabled={xDisabled}
-                />
-                <TextField
-                  label="Y"
-                  id="outlined-size-small"
-                  InputLabelProps={{ shrink: true }}
-                  size="small"
-                  inputRef={controlEditor.current.yInputRef}
-                  onKeyUp={onControlEditorInputConfirm}
-                  disabled={yDisabled}
-                />
-                <TextField
-                  label="Heading"
-                  id="outlined-size-small"
-                  InputLabelProps={{ shrink: true }}
-                  size="small"
-                  sx={{ display: headingHide ? "none" : "" }}
-                  inputRef={controlEditor.current.headingInputRef}
-                  onKeyUp={onControlEditorInputConfirm}
-                  disabled={headingDisabled}
-                />
-              </div>
-              <div style={{ marginTop: "1vh" }}>
-                <Button variant="text" onClick={onAddPathClick}>Add Path</Button>
-                {
-                  paths.length > 0
-                    ? <Button variant="text" onClick={onExpandAllClick}>{expanded.length !== paths.length ? "Expand All" : "Collapse All"}</Button>
-                    : null
-                }
-              </div>
-            </div>
-            <TreeView
-              defaultCollapseIcon={<ExpandMoreIcon />}
-              defaultExpandIcon={<ChevronRightIcon />}
-              multiSelect
-              expanded={expanded}
-              selected={selected}
-              onNodeSelect={(event, nodeIds) => setSelected(nodeIds)}
-              onNodeToggle={onTreeViewNodeToggle}
-              sx={{ flexGrow: 1, maxWidth: "100%", overflowX: 'hidden', overflowY: 'auto', margin: "1vh 0 0" }}
-            >
-              {
-                paths.sort((a, b) => (a.name < b.name ? -1 : 1)).map((path, pathIdx) => {
-                  return (
-                    <PathTreeItemElement key={path.uid} path={path} {...{ paths, cc, ub: userBehavior, selected, setSelected, expanded, setExpanded, magnet, setMagnet }} />
-                  )
-                })
-              }
-            </TreeView>
-          </AccordionDetails>
-        </Accordion>
+        <PathsAccordion {...appProps} />
       </div>
     </div>
   );
-}
+});
 
 export default App;
