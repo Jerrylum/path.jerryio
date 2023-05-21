@@ -1,5 +1,5 @@
 import { TextField, TextFieldProps } from "@mui/material";
-import { reaction, runInAction } from "mobx"
+import { reaction, action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useRef } from "react";
 
@@ -18,7 +18,7 @@ const ObserverInput = observer((props: TextFieldProps & {
   const memoInitialValue = useMemo(() => getValue(), []);
   const inputRef = useRef<HTMLInputElement>(null);
   const initialValue = useRef(memoInitialValue);
-  const lastValidValue = useRef(memoInitialValue);
+  const lastValidIntermediate = useRef(memoInitialValue);
 
   function onChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const element = (event.nativeEvent.target as HTMLInputElement);
@@ -27,9 +27,9 @@ const ObserverInput = observer((props: TextFieldProps & {
     if (!isValidIntermediate(candidate)) {
       event.preventDefault();
 
-      element.value = lastValidValue.current;
+      element.value = lastValidIntermediate.current;
     } else {
-      lastValidValue.current = candidate;
+      lastValidIntermediate.current = candidate;
     }
   }
 
@@ -54,18 +54,20 @@ const ObserverInput = observer((props: TextFieldProps & {
       rtn = candidate;
     }
     
-    runInAction(() => setValue(initialValue.current = lastValidValue.current = rtn));
-    inputRef.current!.value = getValue();
+    setValue(rtn);
+    inputRef.current!.value = initialValue.current = lastValidIntermediate.current = getValue();
   }
 
   useEffect(() => {
-    reaction(getValue, (value) => {
+    const disposer = reaction(getValue, (value) => {
       if (value !== initialValue.current) {
         initialValue.current = value;
-        lastValidValue.current = value;
+        lastValidIntermediate.current = value;
         inputRef.current!.value = value;
       }
     });
+
+    return () => disposer();
   }, []);
 
   return (
@@ -76,8 +78,8 @@ const ObserverInput = observer((props: TextFieldProps & {
       size="small"
       defaultValue={memoInitialValue}
       onChange={onChange}
-      onKeyDown={onInputConfirm}
-      onBlur={onConfirm}
+      onKeyDown={action(onInputConfirm)}
+      onBlur={action(onConfirm)}
       {...rest}
     />
   );

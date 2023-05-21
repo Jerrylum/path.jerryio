@@ -3,6 +3,7 @@ import { SpeedConfig } from "../app/SpeedControlAccordion";
 
 export interface Format {
     isInit: boolean;
+    uid: string;
 
     getName(): string;
 

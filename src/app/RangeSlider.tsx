@@ -1,5 +1,5 @@
 import { Slider } from "@mui/material";
-import { runInAction, makeAutoObservable } from "mobx"
+import { action, makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
 
 export interface Mark {
@@ -26,16 +26,14 @@ const RangeSlider = observer((props: { range: NumberRange, inverted?: boolean })
       value={[range.from, range.to]}
       min={range.minLimit.value}
       max={range.maxLimit.value}
-      onChange={(event, value) => {
+      onChange={action((event, value) => {
         if (!Array.isArray(value)) return;
 
         if (value[0] > value[1]) value[0] = value[1];
 
-        runInAction(() => {
-          range.from = value[0];
-          range.to = value[1];
-        });
-      }}
+        range.from = value[0];
+        range.to = value[1];
+      })}
       { ...(props.inverted ? {track: "inverted"} : {})}
     />
   )

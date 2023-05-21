@@ -4,8 +4,8 @@ import './App.css';
 import { Control, EndPointControl, Spline, Path, Vertex, InteractiveEntity } from './math/path';
 import { CanvasConfig } from './math/shape';
 
-import { reaction, runInAction, makeAutoObservable } from "mobx"
-                  
+import { reaction, action, observable, makeAutoObservable } from "mobx"
+
 import { observer } from "mobx-react-lite"
 
 import Accordion from '@mui/material/Accordion';
@@ -22,7 +22,10 @@ import { SpeedConfig, SpeedConfigAccordion } from './app/SpeedControlAccordion';
 import { PathsAccordion } from './app/PathsAccordion';
 import { FieldCanvasElement } from './app/FieldCanvasElement';
 import { useTimer } from './app/Util';
-import { GeneralConfig, GeneralConfigAccordion } from './app/GeneralConfigAccordion';
+import { GeneralConfig, GeneralConfigAccordion, UnitConverter, UnitOfLength } from './app/GeneralConfigAccordion';
+import { LemLibFormatV0_4 } from './math/LemLibFormatV0_4';
+import { Format } from './math/format';
+import { PathDotJerryioFormatV0_1 } from './math/PathDotJerryioFormatV0_1';
 
 class UserBehavior {
   public isPressingCtrl: boolean = false;
@@ -43,11 +46,16 @@ export interface AppProps {
   setMagnet: React.Dispatch<React.SetStateAction<Vertex>>;
 }
 
-const gbGeneral = new GeneralConfig(); // a.k.a Configuration
-const gbSpeed = new SpeedConfig(); // a.k.a Speed Control
+let app = observable({
+  general: new GeneralConfig(), // a.k.a Configuration
+  speed: new SpeedConfig(), // a.k.a Speed Control
+})
 
 const App = observer(() => {
   useTimer(1000 / 30);
+
+  const [format, setFormat] = useState<Format>(new PathDotJerryioFormatV0_1());
+
 
   const paths = useMemo<Path[]>(() => [], []);
 
@@ -77,7 +85,19 @@ const App = observer(() => {
     // setUserControl({ ...userControl, mouseX: event.offsetX, mouseY: event.offsetY });
   }
 
-  useEffect(() => {
+  function initFormat() {
+    console.log("format changed", format);
+
+    if (format.isInit) return;
+
+    format.init();
+
+    app.general = format.buildGeneralConfig();
+    app.speed = format.buildSpeedConfig();
+
+  }
+
+  useEffect(action(() => {
     document.body.addEventListener('keydown', onKeyDown);
     document.body.addEventListener('keyup', onKeyUp);
 
@@ -85,26 +105,40 @@ const App = observer(() => {
       document.body.removeEventListener('keydown', onKeyDown);
       document.body.removeEventListener('keyup', onKeyUp);
     }
-  }, []);
+  }), []);
 
-  useEffect(() => {
-    reaction(() => gbGeneral.format, (format) => {
-      console.log(format.getName());
-      
-    });
-  }, []);
+  useEffect(action(() => {
+    initFormat();
+
+    const disposer = reaction(() => app.general.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
+      const con = new UnitConverter(oldUOL, newUOL);
+
+      app.general.robotWidth = con.fromAtoB(app.general.robotWidth);
+      app.general.robotHeight = con.fromAtoB(app.general.robotHeight);
+
+      console.log(app.general.robotHeight);
+
+    }));
+
+    return () => {
+      disposer();
+    }
+  }), [format]);
+
+  useEffect(action(initFormat), [format]);
 
   const appProps: AppProps = { paths, cc, ub: userBehavior, selected, setSelected, expanded, setExpanded, magnet, setMagnet };
 
+  // XXX: set key so that the component will be re-set when format is changed or app.general.uol is changed
   return (
-    <div className='App'>
+    <div className='App' key={format.uid + "-" + app.general.uol}>
       <Card className='field-container' onMouseMove={onMouseMove}>
         <FieldCanvasElement {...appProps} />
       </Card>
 
       <Box className='editor-container'>
-        <GeneralConfigAccordion gc={gbGeneral} />
-        <SpeedConfigAccordion sc={gbSpeed} />
+        <GeneralConfigAccordion gc={app.general} format={format} setFormat={setFormat} />
+        <SpeedConfigAccordion sc={app.speed} />
         <Accordion defaultExpanded>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography>Output</Typography>

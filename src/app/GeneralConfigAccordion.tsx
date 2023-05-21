@@ -1,6 +1,6 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Checkbox, FormControlLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
-import { runInAction, makeAutoObservable } from "mobx"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Checkbox, FormControlLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
+import { action, runInAction, makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
 import { Format } from '../math/format';
 import { LemLibFormatV0_4 } from '../math/LemLibFormatV0_4';
@@ -25,7 +25,6 @@ const ratioFoot = 12 * ratioInch;
 
 // observable class
 export class GeneralConfig {
-  format: Format = new LemLibFormatV0_4();
   robotWidth: number = 30;
   robotHeight: number = 30;
   showRobot: boolean = true;
@@ -34,14 +33,81 @@ export class GeneralConfig {
   constructor() {
     makeAutoObservable(this);
   }
+
+  getConfigPanel() {
+    return <></>
+  }
+
 }
 
-const GeneralConfigAccordion = observer((props: { gc: GeneralConfig }) => {
+export class UnitConverter {
+  private alphaUOL: UnitOfLength;
+  private betaUOL: UnitOfLength;
+  private aRatio: number;
+  private bRatio: number;
+  private precision: number = 3;
+
+  constructor(alphaUOL: UnitOfLength, betaUOL: UnitOfLength, precision?: number) {
+    this.alphaUOL = alphaUOL;
+    this.betaUOL = betaUOL;
+    this.aRatio = UnitConverter.getRatio(alphaUOL);
+    this.bRatio = UnitConverter.getRatio(betaUOL);
+    if (precision !== undefined) this.precision = precision;
+  }
+
+  static getRatio(UOL: number): number {
+    switch (UOL) {
+      case UnitOfLength.Millimeter:
+        return ratioMillimeter;
+      case UnitOfLength.Centimeter:
+        return ratioCentimeter;
+      case UnitOfLength.Meter:
+        return ratioMeter;
+      case UnitOfLength.Inch:
+        return ratioInch;
+      case UnitOfLength.Foot:
+        return ratioFoot;
+      default:
+        return 1;
+    }
+  }
+
+  getAlphaUOL(): UnitOfLength {
+    return this.alphaUOL;
+  }
+
+  getBetaUOL(): UnitOfLength {
+    return this.betaUOL;
+  }
+
+  fromAtoB(a: number): number {
+    console.log(a, this.aRatio, this.bRatio);
+    
+    return this.fixPrecision(a * this.aRatio / this.bRatio);
+  }
+
+  fromBtoA(b: number): number {
+    return this.fixPrecision(b * this.bRatio / this.aRatio);
+  }
+
+  fixPrecision(some: number): number {
+    return parseFloat(some.toFixed(this.precision));
+  }
+
+}
+
+const GeneralConfigAccordion = observer((props: {
+  gc: GeneralConfig,
+  format: Format, setFormat: React.Dispatch<React.SetStateAction<Format>>
+}) => {
 
   const formats: Format[] = [
     new LemLibFormatV0_4(),
     new PathDotJerryioFormatV0_1(),
-  ]
+  ];
+
+  console.log(props.gc.robotHeight);
+  
 
   return (
     <Accordion defaultExpanded>
@@ -49,11 +115,11 @@ const GeneralConfigAccordion = observer((props: { gc: GeneralConfig }) => {
         <Typography>Configuration</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <Typography gutterBottom>Format</Typography>
+        <Typography gutterBottom>Format {props.gc.robotHeight}</Typography>
         <Box className="panel-box">
           <Select size="small" sx={{ maxWidth: "100%" }}
-            value={formats.findIndex((x) => x.getName() === props.gc.format.getName())}
-            onChange={(e) => runInAction(() => props.gc.format = formats[parseInt(e.target.value + "")])}>
+            value={formats.findIndex((x) => x.getName() === props.format.getName())}
+            onChange={(e) => props.setFormat(formats[parseInt(e.target.value + "")])}>
             {
               formats.map((x, i) => {
                 return <MenuItem key={i} value={i}>{x.getName()}</MenuItem>
@@ -78,16 +144,12 @@ const GeneralConfigAccordion = observer((props: { gc: GeneralConfig }) => {
             isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
           />
           <FormControlLabel control={
-            <Checkbox checked={props.gc.showRobot} onChange={(e, c) => {
-              runInAction(() => props.gc.showRobot = c);
-            }} />
+            <Checkbox checked={props.gc.showRobot} onChange={action((e, c) => props.gc.showRobot = c)} />
           } label="Show Robot" sx={{ whiteSpace: "nowrap" }} />
         </Box>
         <Typography sx={{ marginTop: "2vh" }}>Unit of Length</Typography>
         <Box>
-          <Select size="small" value={props.gc.uol} onChange={(e) => {
-            runInAction(() => props.gc.uol = e.target.value as UnitOfLength);
-          }}>
+          <Select size="small" value={props.gc.uol} onChange={action((e: SelectChangeEvent<UnitOfLength>) => props.gc.uol = e.target.value as UnitOfLength)}>
             {
               Object.keys(UnitOfLength).filter((x) => !isNaN(parseInt(x))).map((x) => {
                 return <MenuItem key={x} value={parseInt(x)}>{UnitOfLength[parseInt(x)]}
@@ -96,6 +158,7 @@ const GeneralConfigAccordion = observer((props: { gc: GeneralConfig }) => {
             }
           </Select>
         </Box>
+        {props.gc.getConfigPanel()}
       </AccordionDetails>
     </Accordion>
   )
