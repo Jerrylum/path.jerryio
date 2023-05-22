@@ -29,7 +29,7 @@ export class PathDotJerryioFormatV0_1 implements Format {
     return new SpeedConfig();
   }
 
-  exportPathFile(paths: Path[], gc: GeneralConfig, sc: SpeedConfig): string {
+  exportPathFile(paths: Path[], gc: GeneralConfig, sc: SpeedConfig): string | undefined {
     let rtn = "";
 
     for (const path of paths) {
@@ -44,8 +44,7 @@ export class PathDotJerryioFormatV0_1 implements Format {
       }
 
       rtn += `#PATH-KNOTS-END\n`;
-      rtn += `#PATH-EDITOR ${path.name}\n`;
-
+      rtn += `#PATH-EDITOR ${path.name}\n`; // TODO
     }
     return rtn;
   }

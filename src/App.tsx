@@ -141,7 +141,7 @@ const App = observer(() => {
     app.gc.robotHeight = robotHeight;
   }
 
-  useEffect(action(() => {
+  useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
     document.body.addEventListener('keydown', onKeyDown);
     document.body.addEventListener('keyup', onKeyUp);
 
@@ -151,7 +151,7 @@ const App = observer(() => {
     }
   }), []);
 
-  useEffect(action(() => {
+  useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
     initFormat();
 
     const disposer = reaction(() => app.gc.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
@@ -176,7 +176,7 @@ const App = observer(() => {
     }
   }), []);
 
-  useEffect(action(initFormat), [format]);
+  useEffect(action(initFormat), [format]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const appProps: AppProps = { paths: app.paths, cc, ub, app };
 

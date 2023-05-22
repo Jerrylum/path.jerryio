@@ -14,5 +14,5 @@ export interface Format {
     
     buildSpeedConfig(): SpeedConfig;
 
-    exportPathFile(paths: Path[], gc: GeneralConfig, sc: SpeedConfig): string;
+    exportPathFile(paths: Path[], gc: GeneralConfig, sc: SpeedConfig): string | undefined;
 }
