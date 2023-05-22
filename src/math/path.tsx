@@ -416,7 +416,8 @@ export class Path implements InteractiveEntity {
         if (gen1.length < 2) return gen1;
 
         const speedDiff = sc.speedLimit.to - sc.speedLimit.from;
-        const applicationDiff = sc.applicationRange.to - sc.applicationRange.from
+        const applicationDiff = sc.applicationRange.to - sc.applicationRange.from;
+        const useRatio = speedDiff !== 0 && applicationDiff !== 0;
         const ratio = speedDiff / applicationDiff;
         const accelThreshold = sc.transitionRange.from * pathTTD;
         const decThreshold = sc.transitionRange.to * pathTTD;
@@ -429,15 +430,17 @@ export class Path implements InteractiveEntity {
 
         function calculateSpeed(p3: Knot) {
             // ALGO: Scale the speed according to the application range
-            if (p3.delta < sc.applicationRange.from) p3.speed = sc.speedLimit.from;
+            // ALGO: the first knot has delta 0, but it should have the highest speed
+            if (p3.delta < sc.applicationRange.from && p3.delta !== 0) p3.speed = sc.speedLimit.from;
             else if (p3.delta > sc.applicationRange.to) p3.speed = sc.speedLimit.to;
-            else if (applicationDiff !== 0) p3.speed = sc.speedLimit.from + (p3.delta - sc.applicationRange.from) * ratio;
+            else if (useRatio && p3.delta !== 0) p3.speed = sc.speedLimit.from + (p3.delta - sc.applicationRange.from) * ratio;
             else p3.speed = sc.speedLimit.to;
 
             // ALGO: Acceleration/Deceleration
+            // ALGO: Speed never exceeds the speed limit, except for the final knot
             // (p3.integral / totalDistance) / sc.transitionRange.from * speedScale
-            if (p3.integral < accelThreshold) p3.speed = Math.min(p3.speed, (p3.integral / pathTTD) * accelSpeedScale);
-            else if (p3.integral > decThreshold) p3.speed = Math.min(p3.speed, (1 - p3.integral / pathTTD) * decSpeedScale);
+            if (p3.integral < accelThreshold) p3.speed = Math.min(sc.speedLimit.from, (p3.integral / pathTTD) * accelSpeedScale);
+            else if (p3.integral > decThreshold) p3.speed = Math.min(sc.speedLimit.from, (1 - p3.integral / pathTTD) * decSpeedScale);
 
             return p3;
         }
