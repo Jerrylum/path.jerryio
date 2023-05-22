@@ -404,53 +404,80 @@ export class Path implements InteractiveEntity {
     }
 
     calculateKnots(gc: GeneralConfig, sc: SpeedConfig): Knot[] {
-        // The density of knots is NOT uniform along the curve
-        let gen1: Knot[] = [];
+        // ALGO: The density of knots is NOT uniform along the curve, and we are using this to decelerate the robot
+        const gen1: Knot[] = [];
         let pathTTD = 0; // total travel distance
         for (let spline of this.splines) {
             gen1.push(...spline.calculateKnots(gc, sc, pathTTD));
             pathTTD = gen1[gen1.length - 1].integral;
         }
 
-        const speedScale = sc.speedLimit.to - sc.speedLimit.from;
-        const applicationScale = sc.applicationRange.to - sc.applicationRange.from
-        const ratio = speedScale / applicationScale;
-        const accelRatio = sc.transitionRange.from * pathTTD;
-        const decRatio = sc.transitionRange.to * pathTTD;
-        const accelSpeedRatio = speedScale / sc.transitionRange.from;
-        const decSpeedRatio = speedScale / (1 - sc.transitionRange.to);
+        // ALGO: gen1 must have at least 2 knots, if not return gen1 with no knot at all, or 1 knot with speed 0 and heading
+        if (gen1.length < 2) return gen1;
+
+        const speedDiff = sc.speedLimit.to - sc.speedLimit.from;
+        const applicationDiff = sc.applicationRange.to - sc.applicationRange.from
+        const ratio = speedDiff / applicationDiff;
+        const accelThreshold = sc.transitionRange.from * pathTTD;
+        const decThreshold = sc.transitionRange.to * pathTTD;
+        // ALGO: accelSpeedScale can be Infinity if sc.transitionRange.from is 0, but it is ok
+        const accelSpeedScale = speedDiff / sc.transitionRange.from;
+        // ALGO: Same with above
+        const decSpeedScale = speedDiff / (1 - sc.transitionRange.to);
 
         const targetInterval = 1 / (pathTTD / new UnitConverter(UnitOfLength.Centimeter, gc.uol).fromAtoB(2)); // TODO: editable
 
-        // space points evenly
-        let gen2: Knot[] = [];
-        let closestIdx = 1;
-        for (let t = 0; t < 1; t += targetInterval) {
-            const u = t * pathTTD;
+        function calculateSpeed(p3: Knot) {
+            // ALGO: Scale the speed according to the application range
+            if (p3.delta < sc.applicationRange.from) p3.speed = sc.speedLimit.from;
+            else if (p3.delta > sc.applicationRange.to) p3.speed = sc.speedLimit.to;
+            else if (applicationDiff !== 0) p3.speed = sc.speedLimit.from + (p3.delta - sc.applicationRange.from) * ratio;
+            else p3.speed = sc.speedLimit.to;
 
-            while (gen1[closestIdx].integral < u) closestIdx++;
+            // ALGO: Acceleration/Deceleration
+            // (p3.integral / totalDistance) / sc.transitionRange.from * speedScale
+            if (p3.integral < accelThreshold) p3.speed = Math.min(p3.speed, (p3.integral / pathTTD) * accelSpeedScale);
+            else if (p3.integral > decThreshold) p3.speed = Math.min(p3.speed, (1 - p3.integral / pathTTD) * decSpeedScale);
+
+            return p3;
+        }
+
+        // ALGO: Space points evenly
+        const gen2: Knot[] = [];
+        let closestIdx = 1;
+
+        for (let t = 0; t < 1; t += targetInterval) {
+            const integral = t * pathTTD;
+
+            let heading: number | undefined;
+            while (gen1[closestIdx].integral < integral) { // ALGO: ClosestIdx never exceeds the array length
+                // ALGO: Obtain the heading value if it is available
+                if (gen1[closestIdx].heading !== undefined) heading = gen1[closestIdx].heading;
+                closestIdx++;
+            }
 
             const p1 = gen1[closestIdx - 1];
             const p2 = gen1[closestIdx];
-            const pRatio = (u - p1.integral) / (p2.integral - p1.integral);
+            const pRatio = (integral - p1.integral) / (p2.integral - p1.integral);
             const p3X = p1.x + (p2.x - p1.x) * pRatio;
             const p3Y = p1.y + (p2.y - p1.y) * pRatio;
             const p3Delta = p1.delta + (p2.delta - p1.delta) * pRatio;
-            const p3 = new Knot(p3X, p3Y, p3Delta, u);
+            const p3 = new Knot(p3X, p3Y, p3Delta, integral, 0, heading);
 
-            // calculate the speed
-            if (p3.delta < sc.applicationRange.from) p3.speed = sc.speedLimit.from;
-            else if (p3.delta > sc.applicationRange.to) p3.speed = sc.speedLimit.to;
-            else if (applicationScale !== 0) p3.speed = sc.speedLimit.from + (p3.delta - sc.applicationRange.from) * ratio;
-            else p3.speed = sc.speedLimit.from;
-
-            // transition:acceleration/deceleration
-            // (p3.integral / totalDistance) / sc.transitionRange.from * speedScale
-            if (p3.integral < accelRatio) p3.speed = Math.min(p3.speed, (p3.integral / pathTTD) * accelSpeedRatio);
-            else if (p3.integral > decRatio) p3.speed = Math.min(p3.speed, (1 - p3.integral / pathTTD) * decSpeedRatio);
-
-            gen2.push(p3);
+            gen2.push(calculateSpeed(p3));
         }
+
+        // ALGO: gen2 must have at least 1 knots
+        // ALGO: The first should have heading information
+        gen2[0].heading = gen1[0].heading;
+
+        // ALGO: The final knot should be the last end control point in the path
+        // ALGO: At this point, we know splines has at least 1 spline
+        const lastControl = this.splines[this.splines.length - 1].last();
+        // ALGO: No need to calculate delta and integral for the final knot, it is always 0
+        const finalKnot = new Knot(lastControl.x, lastControl.y, 0, 0, 0, lastControl.heading);
+        // ALGO: No need to calculate speed for the final knot, it is always 0
+        gen2.push(finalKnot);
 
         return gen2;
     }

@@ -180,6 +180,15 @@ const App = observer(() => {
 
   const appProps: AppProps = { paths: app.paths, cc, ub, app };
 
+  function onDownload() {
+    console.log(format.exportPathFile(app.paths, app.gc, app.sc));    
+    // const a = document.createElement("a");
+    // const file = new Blob([format.exportPathFile(app.paths, app.gc, app.sc)], { type: "text/plain" });
+    // a.href = URL.createObjectURL(file);
+    // a.download = "path.jerryio.txt";
+    // a.click();
+  }
+
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
     <div className='App' key={format.uid + "-" + app.gc.uol}>
@@ -199,7 +208,7 @@ const App = observer(() => {
               <Button variant="text">Save</Button>
               <Button variant="text">Save As</Button>
               <Button variant="text">Open</Button>
-              <Button variant="text">Download</Button>
+              <Button variant="text" onClick={onDownload}>Download</Button>
             </Box>
           </AccordionDetails>
         </Accordion>

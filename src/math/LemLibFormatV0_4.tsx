@@ -1,6 +1,7 @@
 import { GeneralConfig, UnitOfLength } from "../app/GeneralConfigAccordion";
 import { SpeedConfig } from "../app/SpeedControlAccordion";
 import { Format } from "./format";
+import { Path } from "./path";
 import { makeId } from "./shape";
 
 export class LemLibFormatV0_4 implements Format {
@@ -53,5 +54,9 @@ export class LemLibFormatV0_4 implements Format {
       to: 0.95,
     };
     return rtn;
+  }
+
+  exportPathFile(paths: Path[], gc: GeneralConfig, sc: SpeedConfig): string {
+    return "";
   }
 }

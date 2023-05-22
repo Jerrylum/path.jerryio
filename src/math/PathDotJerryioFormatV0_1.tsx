@@ -1,6 +1,7 @@
 import { GeneralConfig } from "../app/GeneralConfigAccordion";
 import { SpeedConfig } from "../app/SpeedControlAccordion";
 import { Format } from "./format";
+import { Path } from "./path";
 import { makeId } from "./shape";
 
 export class PathDotJerryioFormatV0_1 implements Format {
@@ -26,5 +27,26 @@ export class PathDotJerryioFormatV0_1 implements Format {
 
   buildSpeedConfig(): SpeedConfig {
     return new SpeedConfig();
+  }
+
+  exportPathFile(paths: Path[], gc: GeneralConfig, sc: SpeedConfig): string {
+    let rtn = "";
+
+    for (const path of paths) {
+      rtn += `#PATH-KNOTS-START ${path.name}\n`;
+
+      const knots = path.calculateKnots(gc, sc);
+      for (const knot of knots) {
+        if (knot.heading !== undefined)
+          rtn += `${knot.x.toFixed(3)},${knot.y.toFixed(3)},${knot.speed.toFixed(3)},${knot.heading}\n`;
+        else
+          rtn += `${knot.x.toFixed(3)},${knot.y.toFixed(3)},${knot.speed.toFixed(3)}\n`;
+      }
+
+      rtn += `#PATH-KNOTS-END\n`;
+      rtn += `#PATH-EDITOR ${path.name}\n`;
+
+    }
+    return rtn;
   }
 }
