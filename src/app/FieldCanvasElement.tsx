@@ -2,7 +2,7 @@ import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { EndPointControl, Path, Spline } from '../math/path';
 import Konva from 'konva';
-import { Image, Layer, Line, Stage } from 'react-konva';
+import { Circle, Image, Layer, Line, Stage } from 'react-konva';
 import { SplineElement } from "./SplineElement";
 import { AppProps } from "../App";
 import React from "react";
@@ -55,6 +55,11 @@ const FieldCanvasElement = observer((props: AppProps) => {
   const magnetInPx = cc.toPx(props.app.magnet);
   const visiblePaths = paths.filter((path) => path.visible);
 
+  const knotRadius = props.cc.pixelWidth / 320;
+
+  const speedFrom = props.app.sc.speedLimit.from;
+  const speedTo = props.app.sc.speedLimit.to;
+
   return (
     <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight} onContextMenu={(e) => e.evt.preventDefault()}>
       <Layer>
@@ -68,6 +73,21 @@ const FieldCanvasElement = observer((props: AppProps) => {
           props.app.magnet.y !== Infinity ? (
             <Line points={[0, magnetInPx.y, cc.pixelHeight, magnetInPx.y]} stroke="red" strokeWidth={lineWidth} />
           ) : null
+        }
+        {
+          visiblePaths.map((path, index) => (
+            <React.Fragment key={index}>
+              {
+                path.calculateKnots(props.app.gc, props.app.sc).map((knotInUOL, index) => {
+                  let knotInPx = props.cc.toPx(knotInUOL);
+
+                  let percentage = (knotInUOL.speed - speedFrom) / (speedTo - speedFrom);
+                  let color = `rgb(${255 - percentage * 255}, ${percentage * 255}, 0)`; // red = min speed, green = max speed
+                  return <Circle key={index} x={knotInPx.x} y={knotInPx.y} radius={knotRadius} fill={color} />
+                })
+              }
+            </React.Fragment>
+          ))
         }
         {
           visiblePaths.map((path, index) => (

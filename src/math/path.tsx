@@ -75,14 +75,16 @@ export class Vertex {
 
 export class Knot extends Vertex {
     delta: number; // distance to the previous knot
-    integralDistance: number; // integral distance from the first knot
+    integral: number; // integral distance from the first knot
     speed: number;
+    heading?: number;
 
-    constructor(x: number, y: number, delta: number, integralDistance: number, speed: number = 0) {
+    constructor(x: number, y: number, delta: number, integralDistance: number, speed: number = 0, heading?: number) {
         super(x, y);
         this.delta = delta;
-        this.integralDistance = integralDistance;
+        this.integral = integralDistance;
         this.speed = speed;
+        this.heading = heading;
     }
 }
 
@@ -175,53 +177,17 @@ export class Spline implements CanvasEntity {
         return rtn;
     }
 
-    calculateKnots(gc: GeneralConfig, sc: SpeedConfig): Knot[] {
+    calculateKnots(gc: GeneralConfig, sc: SpeedConfig, integral = 0): Knot[] {
         const distance = this.distance();
-        const targetInterval = 1 / (distance / new UnitConverter(UnitOfLength.Inch, gc.uol).fromAtoB(2)); // TODO: editable
+        const targetInterval = 1 / (distance / new UnitConverter(UnitOfLength.Centimeter, gc.uol).fromAtoB(2)); // TODO: editable
 
         // The density of knots is NOT uniform along the curve
-        let points: Knot[] = this.calculateBezierCurveKnots(targetInterval);
+        let points: Knot[] = this.calculateBezierCurveKnots(targetInterval, integral);
 
-        const speedScale = sc.speedLimit.to - sc.speedLimit.from;
-        const applicationScale = sc.applicationRange.to - sc.applicationRange.from
-        const ratio = speedScale / applicationScale;
-        const totalDistance = points[points.length - 1].integralDistance;
-        const accelRatio = sc.transitionRange.from * totalDistance;
-        const decRatio = sc.transitionRange.to * totalDistance;
-        const accelSpeedRatio = speedScale / sc.transitionRange.from;
-        const decSpeedRatio = speedScale / (1 - sc.transitionRange.to);
-        
-        for (let point of points) {
-            // calculate the speed
-            if (point.delta < sc.applicationRange.from) point.speed = sc.speedLimit.from;
-            else if (point.delta > sc.applicationRange.to) point.speed = sc.speedLimit.to;
-            else point.speed = sc.speedLimit.from + (point.delta - sc.applicationRange.from) * ratio;
+        if (points.length > 1) points[0].heading = this.first().heading;
+        if (points.length > 2) points[points.length - 1].heading = this.last().heading;
 
-            // transition:acceleration/deceleration
-            // (point.integralDistance / totalDistance) / sc.transitionRange.from * speedScale
-            if (point.integralDistance < accelRatio) point.speed = Math.min(point.speed, (point.integralDistance / totalDistance) * accelSpeedRatio);
-            else if (point.integralDistance > decRatio) point.speed = Math.min(point.speed, (1 - point.integralDistance / totalDistance) * decSpeedRatio);
-        }
-        
-        if (points.length < 2) return points;
-        
-        // space points evenly
-        let rtn: Knot[] = [];
-        let closestIdx = 1;
-        for (let t = 0; t < 1; t += targetInterval) {
-                const u = t * totalDistance;
-            
-            while (points[closestIdx].integralDistance < u) closestIdx++;
-
-            const p1 = points[closestIdx - 1];
-            const p2 = points[closestIdx];
-            const ratio = (u - p1.integralDistance) / (p2.integralDistance - p1.integralDistance);
-            const p3X = p1.x + (p2.x - p1.x) * ratio;
-            const p3Y = p1.y + (p2.y - p1.y) * ratio;
-            const p3Speed = p1.speed + (p2.speed - p1.speed) * ratio;
-            rtn.push(new Knot(p3X, p3Y, 0, u, p3Speed));
-        }
-        return rtn;
+        return points;
     }
 
     first(): EndPointControl {
@@ -248,11 +214,11 @@ export class Spline implements CanvasEntity {
         return this.controls.some((cp) => cp.visible);
     }
 
-    private calculateBezierCurveKnots(interval: number): Knot[] {
+    private calculateBezierCurveKnots(interval: number, integral = 0): Knot[] {
         let knots: Knot[] = [];
 
         // Bezier curve implementation
-        let totalDistance = 0;
+        let totalDistance = integral;
         let lastPoint: Vertex = this.controls[0];
 
         const n = this.controls.length - 1;
@@ -296,8 +262,8 @@ export class Path implements InteractiveEntity {
     public lock: boolean = false;
     public visible: boolean = true;
 
-    constructor(first_spline: Spline) {
-        this.splines = [first_spline];
+    constructor(firstSpline: Spline) {
+        this.splines = [firstSpline];
         this.uid = makeId(10);
     }
 
@@ -435,5 +401,57 @@ export class Path implements InteractiveEntity {
             return removedControls;
         }
         return [];
+    }
+
+    calculateKnots(gc: GeneralConfig, sc: SpeedConfig): Knot[] {
+        // The density of knots is NOT uniform along the curve
+        let gen1: Knot[] = [];
+        let pathTTD = 0; // total travel distance
+        for (let spline of this.splines) {
+            gen1.push(...spline.calculateKnots(gc, sc, pathTTD));
+            pathTTD = gen1[gen1.length - 1].integral;
+        }
+
+        const speedScale = sc.speedLimit.to - sc.speedLimit.from;
+        const applicationScale = sc.applicationRange.to - sc.applicationRange.from
+        const ratio = speedScale / applicationScale;
+        const accelRatio = sc.transitionRange.from * pathTTD;
+        const decRatio = sc.transitionRange.to * pathTTD;
+        const accelSpeedRatio = speedScale / sc.transitionRange.from;
+        const decSpeedRatio = speedScale / (1 - sc.transitionRange.to);
+
+        const targetInterval = 1 / (pathTTD / new UnitConverter(UnitOfLength.Centimeter, gc.uol).fromAtoB(2)); // TODO: editable
+
+        // space points evenly
+        let gen2: Knot[] = [];
+        let closestIdx = 1;
+        for (let t = 0; t < 1; t += targetInterval) {
+            const u = t * pathTTD;
+
+            while (gen1[closestIdx].integral < u) closestIdx++;
+
+            const p1 = gen1[closestIdx - 1];
+            const p2 = gen1[closestIdx];
+            const pRatio = (u - p1.integral) / (p2.integral - p1.integral);
+            const p3X = p1.x + (p2.x - p1.x) * pRatio;
+            const p3Y = p1.y + (p2.y - p1.y) * pRatio;
+            const p3Delta = p1.delta + (p2.delta - p1.delta) * pRatio;
+            const p3 = new Knot(p3X, p3Y, p3Delta, u);
+
+            // calculate the speed
+            if (p3.delta < sc.applicationRange.from) p3.speed = sc.speedLimit.from;
+            else if (p3.delta > sc.applicationRange.to) p3.speed = sc.speedLimit.to;
+            else if (applicationScale !== 0) p3.speed = sc.speedLimit.from + (p3.delta - sc.applicationRange.from) * ratio;
+            else p3.speed = sc.speedLimit.from;
+
+            // transition:acceleration/deceleration
+            // (p3.integral / totalDistance) / sc.transitionRange.from * speedScale
+            if (p3.integral < accelRatio) p3.speed = Math.min(p3.speed, (p3.integral / pathTTD) * accelSpeedRatio);
+            else if (p3.integral > decRatio) p3.speed = Math.min(p3.speed, (1 - p3.integral / pathTTD) * decSpeedRatio);
+
+            gen2.push(p3);
+        }
+
+        return gen2;
     }
 }
