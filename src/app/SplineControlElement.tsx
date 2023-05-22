@@ -134,11 +134,11 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
 
       for (let cp of others) {
         let distance = cp.distance(cpInUOL);
-        if (Math.abs(cp.x - cpInUOL.x) < props.cc.controlMagnetDistance && distance < magnetXDistance) {
+        if (Math.abs(cp.x - cpInUOL.x) < props.app.gc.controlMagnetDistance && distance < magnetXDistance) {
           magnetX = cp.x;
           magnetXDistance = distance;
         }
-        if (Math.abs(cp.y - cpInUOL.y) < props.cc.controlMagnetDistance && distance < magnetYDistance) {
+        if (Math.abs(cp.y - cpInUOL.y) < props.app.gc.controlMagnetDistance && distance < magnetYDistance) {
           magnetY = cp.y;
           magnetYDistance = distance;
         }

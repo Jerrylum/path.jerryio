@@ -17,7 +17,6 @@ export class CanvasConverter {
     public pixelHeight: number; // in pixel
     public fieldWidth: number; // in uol
     public fieldHeight: number; // in uol
-    public controlMagnetDistance: number = 0; // in uol
 
     // calculated
     public pixelWidthHalf: number;

@@ -29,6 +29,7 @@ export class GeneralConfig {
   robotHeight: number = 30;
   showRobot: boolean = true;
   uol: UnitOfLength = UnitOfLength.Centimeter;
+  controlMagnetDistance: number = 5;
 
   constructor() {
     makeAutoObservable(this);
@@ -110,7 +111,7 @@ const GeneralConfigAccordion = observer((props: {
         <Typography>Configuration</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <Typography gutterBottom>Format {props.gc.robotHeight}</Typography>
+        <Typography gutterBottom>Format</Typography>
         <Box className="panel-box">
           <Select size="small" sx={{ maxWidth: "100%" }}
             value={formats.findIndex((x) => x.getName() === props.format.getName())}

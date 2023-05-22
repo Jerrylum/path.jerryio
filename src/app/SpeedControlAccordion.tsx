@@ -16,10 +16,10 @@ export class SpeedConfig {
   };
   applicationRange: NumberRange = {
     minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 1, label: "1" },
+    maxLimit: { value: 4, label: "4" },
     step: 0.01,
-    from: 0,
-    to: 0.4,
+    from: 1.4,
+    to: 1.8,
   };
   transitionRange: NumberRange = {
     minLimit: { value: 0, label: "0" },
@@ -37,7 +37,7 @@ export class SpeedConfig {
           <RangeSlider range={this.speedLimit} />
         </Box>
         <Box className="panel-box">
-          <Typography>Application Range</Typography>
+          <Typography>Curve Deceleration Range</Typography>
           <RangeSlider range={this.applicationRange} />
         </Box>
         <Box className="panel-box">
