@@ -1,4 +1,4 @@
-import { runInAction, makeAutoObservable } from "mobx"
+import { action, runInAction, makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
 import { Control, EndPointControl, Path, Spline, Vertex } from '../math/path';
 import { CanvasConfig } from '../math/shape';
@@ -60,7 +60,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
   return (
     <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight} onContextMenu={(e) => e.evt.preventDefault()}>
       <Layer>
-        <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight} onClick={onClickFieldImage} />
+        <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight} onClick={action(onClickFieldImage)} />
         {
           props.app.magnet.x !== Infinity ? (
             <Line points={[magnetInPx.x, 0, magnetInPx.x, cc.pixelHeight]} stroke="red" strokeWidth={lineWidth} />

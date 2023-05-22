@@ -125,8 +125,8 @@ const PathTreeItem = observer((props: PathTreeProps) => {
 
   function onPathDeleteClick() {
     props.paths.splice(props.paths.indexOf(path), 1);
-    // TODO : remove from selected
-    props.app.expanded = props.app.expanded.filter((uid) => uid !== path.uid);
+    props.app.removeSelected(path.uid);
+    props.app.removeExpanded(path.uid);
   }
 
   return (
@@ -144,7 +144,7 @@ const PathTreeItem = observer((props: PathTreeProps) => {
       </PathTreeItemLabel>
     } >
       {
-        path.getControlsSet().map((control, controlIdx) => {
+        path.getControlsSet().map((control) => {
           return (
             <TreeItem nodeId={control.uid} key={control.uid}
               label={control instanceof EndPointControl

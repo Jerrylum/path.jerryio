@@ -27,23 +27,46 @@ import { LemLibFormatV0_4 } from './math/LemLibFormatV0_4';
 import { Format } from './math/format';
 import { PathDotJerryioFormatV0_1 } from './math/PathDotJerryioFormatV0_1';
 
+// observable class
 class UserBehavior {
   public isPressingCtrl: boolean = false;
   public isPressingShift: boolean = false;
   public mouseX: number = 0;
   public mouseY: number = 0;
+
+  constructor() {
+    makeAutoObservable(this);
+  }
 }
 
+function addToArray<T>(array: T[], item: T): boolean {
+  if (array.includes(item)) {
+    return false;
+  } else {
+    array.push(item);
+    return true;
+  }
+}
+
+function removeFromArray<T>(array: T[], item: T): boolean {
+  let index = array.indexOf(item);
+  if (index !== -1) {
+    array.splice(index, 1);
+    return true;
+  } else {
+    return false;
+  }
+}
 
 // observable class
 class MainApp {
-  gc: GeneralConfig = new GeneralConfig(); // a.k.a Configuration
-  sc: SpeedConfig = new SpeedConfig(); // a.k.a Speed Control
+  public gc: GeneralConfig = new GeneralConfig(); // a.k.a Configuration
+  public sc: SpeedConfig = new SpeedConfig(); // a.k.a Speed Control
 
-  paths: Path[] = [];
-  selected: string[] = [];
-  expanded: string[] = [];
-  magnet: Vertex = new Vertex(Infinity, Infinity);
+  public paths: Path[] = [];
+  public selected: string[] = [];
+  public expanded: string[] = [];
+  public magnet: Vertex = new Vertex(Infinity, Infinity);
 
   constructor() {
     makeAutoObservable(this);
@@ -54,32 +77,34 @@ class MainApp {
   }
 
   addSelected(x: InteractiveEntity | string): boolean {
-    if (this.isSelected(x)) {
-      return false;
-    } else {
-      this.selected.push(typeof x === "string" ? x : x.uid);
-      return true;
-    }
+    return addToArray(this.selected, typeof x === "string" ? x : x.uid);
   }
 
   removeSelected(x: InteractiveEntity | string): boolean {
-    let index = typeof x === "string" ? this.selected.indexOf(x) : this.selected.indexOf(x.uid);
-    if (index !== -1) {
-      this.selected.splice(index, 1);
-      return true;
-    } else {
-      return false;
-    }
+    return removeFromArray(this.selected, typeof x === "string" ? x : x.uid);
+  }
+
+  isExpanded(x: InteractiveEntity | string): boolean {
+    return typeof x === "string" ? this.expanded.includes(x) : this.expanded.includes(x.uid);
+  }
+
+  addExpanded(x: InteractiveEntity | string): boolean {
+    return addToArray(this.expanded, typeof x === "string" ? x : x.uid);
+  }
+
+  removeExpanded(x: InteractiveEntity | string): boolean {
+    return removeFromArray(this.expanded, typeof x === "string" ? x : x.uid);
   }
 }
 
+let ub = new UserBehavior();
 let app = new MainApp();
 
 export interface AppProps {
   paths: Path[];
+
   cc: CanvasConfig;
   ub: UserBehavior;
-
   app: MainApp;
 }
 
@@ -88,25 +113,17 @@ const App = observer(() => {
 
   const [format, setFormat] = useState<Format>(new PathDotJerryioFormatV0_1());
 
-  const [userBehavior, setUserBehavior] = useState(new UserBehavior());
-
   const cc = new CanvasConfig(window.innerHeight * 0.94, window.innerHeight * 0.94, 365.76, 365.76);
 
-  function onKeyDown(event: KeyboardEvent) {
-    let isCtrl = event.ctrlKey || event.metaKey;
-    let isShift = event.shiftKey;
-    setUserBehavior((ub) => ({ ...ub, isPressingCtrl: isCtrl, isPressingShift: isShift }));
-  }
+  const onKeyDown = action((event: KeyboardEvent) => {
+    ub.isPressingCtrl = event.ctrlKey || event.metaKey;
+    ub.isPressingShift = event.shiftKey;
+  });
 
-  function onKeyUp(event: KeyboardEvent) {
-    let isCtrl = event.ctrlKey || event.metaKey;
-    let isShift = event.shiftKey;
-    setUserBehavior((ub) => ({ ...ub, isPressingCtrl: isCtrl, isPressingShift: isShift }));
-  }
-
-  function onMouseMove(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-    // setUserControl({ ...userControl, mouseX: event.offsetX, mouseY: event.offsetY });
-  }
+  const onKeyUp = action((event: KeyboardEvent) => {
+    ub.isPressingCtrl = event.ctrlKey || event.metaKey;
+    ub.isPressingShift = event.shiftKey;
+  });
 
   function initFormat() {
     if (format.isInit) return;
@@ -156,12 +173,12 @@ const App = observer(() => {
 
   useEffect(action(initFormat), [format]);
 
-  const appProps: AppProps = { paths: app.paths, cc, ub: userBehavior, app };
+  const appProps: AppProps = { paths: app.paths, cc, ub, app };
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
     <div className='App' key={format.uid + "-" + app.gc.uol}>
-      <Card className='field-container' onMouseMove={onMouseMove}>
+      <Card className='field-container'>
         <FieldCanvasElement {...appProps} />
       </Card>
 

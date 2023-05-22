@@ -72,13 +72,17 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
 
     const oldCpInCm = props.cp.clone();
 
-    let cpInPx = new Vertex(evt.offsetX, evt.offsetY);
+    let canvasPos = event.target.getStage()?.container().getBoundingClientRect();
+    if (canvasPos === undefined) return;
+
+    // UX: Calculate the position of the control point by the client mouse position
+    let cpInPx = new Vertex(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top);
     let cpInCm = props.cc.toCm(cpInPx);
     cpInCm.fixPrecision();
     // first set the position of the control point so we can calculate the position of the follower control points
     props.cp.setXY(cpInCm);
 
-    // CP 1 should follow CP 0, CP 2 should follow CP 3
+    // UX: CP 1 should follow CP 0, CP 2 should follow CP 3
     const isMainControl = props.cp instanceof EndPointControl;
     const shouldControlFollow = !props.ub.isPressingCtrl;
     const index = props.path.splines.indexOf(props.spline);
@@ -205,7 +209,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
       const removedControls = props.path.removeSpline(props.cp as EndPointControl);
       for (const control of removedControls) {
         props.app.removeSelected(control.uid);
-        props.app.expanded = props.app.expanded.filter((x) => x !== control.uid);
+        props.app.removeExpanded(control.uid);
       }
     }
   }
