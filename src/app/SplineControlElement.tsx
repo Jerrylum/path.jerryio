@@ -1,7 +1,6 @@
-import { action, runInAction, makeAutoObservable } from "mobx"
+import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { Control, EndPointControl, Vertex } from '../math/path';
-import { CanvasConfig } from '../math/shape';
 import Konva from 'konva';
 import { Circle, Line } from 'react-konva';
 import { useState } from "react";
@@ -61,8 +60,8 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
     if (props.cp.lock || props.path.lock) {
       evt.preventDefault();
 
-      const cpInCm = props.cp.clone();
-      const cpInPx = props.cc.toPx(cpInCm);
+      const cpInUOL = props.cp.clone();
+      const cpInPx = props.cc.toPx(cpInUOL);
 
       // UX: Set the position of the control point back to the original position
       event.target.x(cpInPx.x);
@@ -70,17 +69,17 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
       return;
     }
 
-    const oldCpInCm = props.cp.clone();
+    const oldCpInUOL = props.cp.clone();
 
     let canvasPos = event.target.getStage()?.container().getBoundingClientRect();
     if (canvasPos === undefined) return;
 
     // UX: Calculate the position of the control point by the client mouse position
     let cpInPx = new Vertex(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top);
-    let cpInCm = props.cc.toCm(cpInPx);
-    cpInCm.fixPrecision();
+    let cpInUOL = props.cc.toUOL(cpInPx);
+    cpInUOL.fixPrecision();
     // first set the position of the control point so we can calculate the position of the follower control points
-    props.cp.setXY(cpInCm);
+    props.cp.setXY(cpInUOL);
 
     // UX: CP 1 should follow CP 0, CP 2 should follow CP 3
     const isMainControl = props.cp instanceof EndPointControl;
@@ -124,9 +123,9 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
     }
 
     if (props.ub.isPressingShift) {
-      let magnetX = cpInCm.x;
+      let magnetX = cpInUOL.x;
       let magnetXDistance = Infinity;
-      let magnetY = cpInCm.y;
+      let magnetY = cpInUOL.y;
       let magnetYDistance = Infinity;
 
       // align to old control points
@@ -134,34 +133,34 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
       others.push(posBeforeDrag.add(new Control(0, 1000)));
 
       for (let cp of others) {
-        let distance = cp.distance(cpInCm);
-        if (Math.abs(cp.x - cpInCm.x) < props.cc.controlMagnetDistance && distance < magnetXDistance) {
+        let distance = cp.distance(cpInUOL);
+        if (Math.abs(cp.x - cpInUOL.x) < props.cc.controlMagnetDistance && distance < magnetXDistance) {
           magnetX = cp.x;
           magnetXDistance = distance;
         }
-        if (Math.abs(cp.y - cpInCm.y) < props.cc.controlMagnetDistance && distance < magnetYDistance) {
+        if (Math.abs(cp.y - cpInUOL.y) < props.cc.controlMagnetDistance && distance < magnetYDistance) {
           magnetY = cp.y;
           magnetYDistance = distance;
         }
       }
 
       let magnetGuide = new Vertex(Infinity, Infinity);
-      if (cpInCm.x !== magnetX) magnetGuide.x = magnetX;
-      if (cpInCm.y !== magnetY) magnetGuide.y = magnetY;
+      if (cpInUOL.x !== magnetX) magnetGuide.x = magnetX;
+      if (cpInUOL.y !== magnetY) magnetGuide.y = magnetY;
       props.app.magnet = magnetGuide;
 
-      cpInCm.x = magnetX;
-      cpInCm.y = magnetY;
+      cpInUOL.x = magnetX;
+      cpInUOL.y = magnetY;
     } else {
       props.app.magnet = new Vertex(Infinity, Infinity);
     }
 
     for (let cp of followers) {
-      cp.setXY(cpInCm.add(cp.subtract(oldCpInCm)));
+      cp.setXY(cpInUOL.add(cp.subtract(oldCpInUOL)));
     }
 
-    props.cp.setXY(cpInCm);
-    cpInPx = props.cc.toPx(cpInCm);
+    props.cp.setXY(cpInUOL);
+    cpInPx = props.cc.toPx(cpInUOL);
     event.target.x(cpInPx.x);
     event.target.y(cpInPx.y);
   }

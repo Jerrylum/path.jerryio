@@ -1,7 +1,7 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { Accordion, AccordionDetails, AccordionSummary, Button, Slider, TextField, Typography } from "@mui/material";
-import { action, runInAction, makeAutoObservable } from "mobx"
+import { Accordion, AccordionDetails, AccordionSummary, Button, TextField, Typography } from "@mui/material";
+import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { TreeView } from '@mui/lab';
 import { AppProps } from '../App';

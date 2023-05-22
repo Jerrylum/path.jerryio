@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 
-import { Control, EndPointControl, Spline, Path, Vertex, InteractiveEntity } from './math/path';
-import { CanvasConfig } from './math/shape';
+import { Path, Vertex, InteractiveEntity } from './math/path';
+import { CanvasConverter } from './math/shape';
 
-import { reaction, action, observable, makeAutoObservable } from "mobx"
+import { reaction, action, makeAutoObservable } from "mobx"
 
 import { observer } from "mobx-react-lite"
 
@@ -12,18 +12,15 @@ import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
-import InputLabel from '@mui/material/InputLabel';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import TextField from '@mui/material/TextField';
 
-import { Box, Button, Checkbox, FormControlLabel, MenuItem, Select } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { SpeedConfig, SpeedConfigAccordion } from './app/SpeedControlAccordion';
 import { PathsAccordion } from './app/PathsAccordion';
 import { FieldCanvasElement } from './app/FieldCanvasElement';
 import { useTimer } from './app/Util';
 import { GeneralConfig, GeneralConfigAccordion, UnitConverter, UnitOfLength } from './app/GeneralConfigAccordion';
-import { LemLibFormatV0_4 } from './math/LemLibFormatV0_4';
 import { Format } from './math/format';
 import { PathDotJerryioFormatV0_1 } from './math/PathDotJerryioFormatV0_1';
 
@@ -103,7 +100,7 @@ let app = new MainApp();
 export interface AppProps {
   paths: Path[];
 
-  cc: CanvasConfig;
+  cc: CanvasConverter;
   ub: UserBehavior;
   app: MainApp;
 }
@@ -113,7 +110,10 @@ const App = observer(() => {
 
   const [format, setFormat] = useState<Format>(new PathDotJerryioFormatV0_1());
 
-  const cc = new CanvasConfig(window.innerHeight * 0.94, window.innerHeight * 0.94, 365.76, 365.76);
+  const uc = new UnitConverter(UnitOfLength.Foot, app.gc.uol);
+  const canvasSizeInPx = window.innerHeight * 0.94;
+  const canvasSizeInUOL = uc.fromAtoB(12);
+  const cc = new CanvasConverter(canvasSizeInPx, canvasSizeInPx, canvasSizeInUOL, canvasSizeInUOL);
 
   const onKeyDown = action((event: KeyboardEvent) => {
     ub.isPressingCtrl = event.ctrlKey || event.metaKey;
@@ -130,8 +130,15 @@ const App = observer(() => {
 
     format.init();
 
+    const robotWidth = app.gc.robotWidth;
+    const robotHeight = app.gc.robotHeight;
+
     app.gc = format.buildGeneralConfig();
     app.sc = format.buildSpeedConfig();
+
+    // UX: Keep robot width and height
+    app.gc.robotWidth = robotWidth;
+    app.gc.robotHeight = robotHeight;
   }
 
   useEffect(action(() => {
@@ -148,20 +155,18 @@ const App = observer(() => {
     initFormat();
 
     const disposer = reaction(() => app.gc.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
-      const con = new UnitConverter(oldUOL, newUOL);
+      const uc = new UnitConverter(oldUOL, newUOL);
 
       app.selected = [];
       app.expanded = [];
 
-      app.gc.robotWidth = con.fromAtoB(app.gc.robotWidth);
-      app.gc.robotHeight = con.fromAtoB(app.gc.robotHeight);
-
-      // TODO set more stuff?
+      app.gc.robotWidth = uc.fromAtoB(app.gc.robotWidth);
+      app.gc.robotHeight = uc.fromAtoB(app.gc.robotHeight);
 
       for (let path of app.paths) {
         for (let control of path.getControlsSet()) {
-          control.x = con.fromAtoB(control.x);
-          control.y = con.fromAtoB(control.y);
+          control.x = uc.fromAtoB(control.x);
+          control.y = uc.fromAtoB(control.y);
         }
       }
     }));
@@ -169,7 +174,7 @@ const App = observer(() => {
     return () => {
       disposer();
     }
-  }), [format]);
+  }), []);
 
   useEffect(action(initFormat), [format]);
 

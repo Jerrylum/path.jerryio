@@ -1,10 +1,9 @@
-import { runInAction, makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
 import { Vertex } from '../math/path';
-import { CanvasConfig } from '../math/shape';
+import { CanvasConverter } from '../math/shape';
 import { Line } from 'react-konva';
 
-const SplineControlVisualLineElement = observer((props: { start: Vertex, end: Vertex, cc: CanvasConfig }) => {
+const SplineControlVisualLineElement = observer((props: { start: Vertex, end: Vertex, cc: CanvasConverter }) => {
   const startInPx = props.cc.toPx(props.start);
   const endInPx = props.cc.toPx(props.end);
 

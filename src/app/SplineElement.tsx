@@ -1,12 +1,7 @@
-import { runInAction, makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
-import { Control, EndPointControl, Path, Spline, Vertex } from '../math/path';
-import { CanvasConfig } from '../math/shape';
-import Konva from 'konva';
-import { Circle, Line } from 'react-konva';
-import { useState } from "react";
+import { Path, Spline } from '../math/path';
+import { Circle } from 'react-konva';
 import { AppProps } from "../App";
-import { SplineControlElement } from "./SplineControlElement";
 import { SplineControlVisualLineElement } from "./SplineControlVisualLineElement";
 import { SplineKnotsHitBoxElement } from "./SplineKnotsHitBoxElement";
 
@@ -21,8 +16,8 @@ const SplineElement = observer((props: SplineElementProps) => {
 
   return (
     <>
-      {props.spline.calculateKnots(props.cc).map((knotInCm, index) => {
-        let knotInPx = props.cc.toPx(knotInCm);
+      {props.spline.calculateKnots(props.cc, props.app.sc).map((knotInUOL, index) => {
+        let knotInPx = props.cc.toPx(knotInUOL);
         return (
           <Circle key={index} x={knotInPx.x} y={knotInPx.y} radius={knotRadius} fill="#00ff00ff" />
         )

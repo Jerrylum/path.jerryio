@@ -1,4 +1,5 @@
-import { CanvasConfig, makeId } from "./shape";
+import { SpeedConfig } from "../app/SpeedControlAccordion";
+import { CanvasConverter, makeId } from "./shape";
 
 export class Vertex {
 
@@ -158,7 +159,7 @@ export class Spline implements CanvasEntity {
         return rtn;
     }
 
-    calculateKnots(cc: CanvasConfig): Vertex[] {
+    calculateKnots(cc: CanvasConverter, sc: SpeedConfig): Vertex[] {
         // The density of knots is NOT uniform along the curve
 
         let knots: Vertex[] = this.calculateBezierCurveKnots();

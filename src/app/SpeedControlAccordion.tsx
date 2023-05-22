@@ -1,6 +1,6 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from "@mui/material";
-import { runInAction, makeAutoObservable } from "mobx"
+import { makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
 
 import { NumberRange, RangeSlider } from "./RangeSlider";

@@ -1,11 +1,9 @@
-import { action, runInAction, makeAutoObservable } from "mobx"
+import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { Control, EndPointControl, Path, Spline, Vertex } from '../math/path';
-import { CanvasConfig } from '../math/shape';
+import { EndPointControl, Path, Spline } from '../math/path';
 import Konva from 'konva';
-import { Circle, Image, Layer, Line, Stage } from 'react-konva';
-import { useState } from "react";
-import { SplineElement, SplineElementProps } from "./SplineElement";
+import { Image, Layer, Line, Stage } from 'react-konva';
+import { SplineElement } from "./SplineElement";
 import { AppProps } from "../App";
 import React from "react";
 import useImage from "use-image";
@@ -34,21 +32,21 @@ const FieldCanvasElement = observer((props: AppProps) => {
     // UX: Set target path to the first path if: no path is selected
     if (targetPath === undefined) targetPath = paths[0];
 
-    let cpInCm = cc.toCm(new EndPointControl(evt.offsetX, evt.offsetY, 0));
+    let cpInUOL = cc.toUOL(new EndPointControl(evt.offsetX, evt.offsetY, 0));
 
     if (targetPath === undefined) {
       // UX: Create new path if: no path exists
       // UX: Use user mouse position as the last control point
-      targetPath = new Path(new Spline(new EndPointControl(0, 0, 0), [], cpInCm));
+      targetPath = new Path(new Spline(new EndPointControl(0, 0, 0), [], cpInUOL));
       paths.push(targetPath);
     } else if (targetPath.visible && !targetPath.lock) {
       // UX: Add control point if: path is selected and visible and not locked
       if (evt.button === 2) { // right click
         // UX: Add straight line if: right click
-        targetPath.addLine(cpInCm);
+        targetPath.addLine(cpInUOL);
       } else {
         // UX: Add 4-controls curve if: left click
-        targetPath.add4ControlsCurve(cpInCm);
+        targetPath.add4ControlsCurve(cpInUOL);
       }
     }
   }

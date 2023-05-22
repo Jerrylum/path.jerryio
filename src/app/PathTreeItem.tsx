@@ -1,18 +1,15 @@
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FiberManualRecordOutlinedIcon from '@mui/icons-material/FiberManualRecordOutlined';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 
-import { Accordion, AccordionDetails, AccordionSummary, Button, Slider, TextField, Typography } from "@mui/material";
-import { action, runInAction, makeAutoObservable } from "mobx"
+import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { TreeItem, TreeView } from '@mui/lab';
+import { TreeItem } from '@mui/lab';
 import { AppProps } from '../App';
-import { Control, EndPointControl, InteractiveEntity, Path, Spline } from '../math/path';
+import { EndPointControl, InteractiveEntity, Path } from '../math/path';
 import { useRef } from 'react';
 
 export interface PathTreeProps extends AppProps {

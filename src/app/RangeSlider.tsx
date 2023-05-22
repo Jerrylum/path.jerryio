@@ -1,5 +1,5 @@
 import { Slider } from "@mui/material";
-import { action, makeAutoObservable } from "mobx"
+import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 
 export interface Mark {

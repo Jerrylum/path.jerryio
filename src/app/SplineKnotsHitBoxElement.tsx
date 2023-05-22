@@ -1,7 +1,5 @@
-import { runInAction, makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
-import { EndPointControl, Vertex } from '../math/path';
-import { CanvasConfig } from '../math/shape';
+import { EndPointControl } from '../math/path';
 import Konva from 'konva';
 import { Line } from 'react-konva';
 import { SplineElementProps } from "./SplineElement";
@@ -18,11 +16,11 @@ const SplineKnotsHitBoxElement = observer((props: SplineElementProps) => {
     }
 
     let cpInPx = new EndPointControl(evt.offsetX, evt.offsetY, 0);
-    let cpInCm = props.cc.toCm(cpInPx);
+    let cpInUOL = props.cc.toUOL(cpInPx);
 
     if (evt.button === 2) { // right click
       // UX: Split spline if: right click
-      props.path.splitSpline(props.spline, cpInCm);
+      props.path.splitSpline(props.spline, cpInUOL);
     } else if (evt.button === 0) {
       // UX: Convert spline if: left click
       if (props.spline.controls.length === 2)

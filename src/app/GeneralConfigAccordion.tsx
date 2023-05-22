@@ -1,12 +1,11 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Checkbox, FormControlLabel, MenuItem, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
-import { action, runInAction, makeAutoObservable } from "mobx"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Checkbox, FormControlLabel, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
+import { action, makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
 import { Format } from '../math/format';
 import { LemLibFormatV0_4 } from '../math/LemLibFormatV0_4';
 import { PathDotJerryioFormatV0_1 } from '../math/PathDotJerryioFormatV0_1';
 import { ObserverInput } from './ObserverInput';
-import { Vertex } from '../math/path';
 
 
 export enum UnitOfLength {

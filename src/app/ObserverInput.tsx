@@ -15,7 +15,7 @@ const ObserverInput = observer((props: TextFieldProps & {
   // rest is used to send props to TextField without custom attributes
   const { getValue, setValue, isValidIntermediate, isValidValue, allowEmpty, ...rest } = props;
 
-  const memoInitialValue = useMemo(() => getValue(), []);
+  const memoInitialValue = useMemo(() => getValue(), []); // eslint-disable-line react-hooks/exhaustive-deps
   const inputRef = useRef<HTMLInputElement>(null);
   const initialValue = useRef(memoInitialValue);
   const lastValidIntermediate = useRef(memoInitialValue);
@@ -68,7 +68,7 @@ const ObserverInput = observer((props: TextFieldProps & {
     });
 
     return () => disposer();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <TextField
