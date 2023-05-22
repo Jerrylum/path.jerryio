@@ -1,7 +1,7 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { Accordion, AccordionDetails, AccordionSummary, Button, Slider, TextField, Typography } from "@mui/material";
-import { runInAction, makeAutoObservable } from "mobx"
+import { action, runInAction, makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
 import { TreeView } from '@mui/lab';
 import { AppProps } from '../App';
@@ -115,7 +115,7 @@ const PathsAccordion = observer((props: AppProps) => {
   }
 
   function onExpandAllClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    props.setExpanded((expanded) => expanded.length !== props.paths.length ? props.paths.map((path) => path.uid) : []);
+    props.app.expanded = props.app.expanded.length !== props.paths.length ? props.paths.map((path) => path.uid) : [];
   }
 
   function onControlEditorInputConfirm(event: React.KeyboardEvent<HTMLInputElement>) {
@@ -128,10 +128,10 @@ const PathsAccordion = observer((props: AppProps) => {
 
   function onTreeViewNodeToggle(event: React.SyntheticEvent, nodeIds: string[]) {
     event.persist()
-    // only expand if icon was clicked
+    // UX: Expand/Collapse if: the icon is clicked
     let iconClicked = (event.target as HTMLElement).closest(".MuiTreeItem-iconContainer")
     if (iconClicked) {
-      props.setExpanded(nodeIds);
+      props.app.expanded = nodeIds;
     }
   }
 
@@ -144,11 +144,11 @@ const PathsAccordion = observer((props: AppProps) => {
   let xDisabled = true, yDisabled = true, headingDisabled = true, headingHide = false;
   let currentCED = controlEditor.current;
 
-  if (props.selected.length > 1) {
+  if (props.app.selected.length > 1) {
     currentCED.setSelected(ControlEditorData.MultiSelect);
-  } else if (props.selected.length === 1) {
+  } else if (props.app.selected.length === 1) {
     let firstSelected = props.paths.map(
-      (path) => path.getControlsSet().find((control) => control.uid === props.selected[0])
+      (path) => path.getControlsSet().find((control) => control.uid === props.app.selected[0])
     ).find((control) => control !== undefined);
     currentCED.setSelected(firstSelected);
     if (firstSelected !== undefined) {
@@ -198,17 +198,17 @@ const PathsAccordion = observer((props: AppProps) => {
               id="outlined-size-small"
               InputLabelProps={{ shrink: true }}
               size="small"
-              sx={{ display: headingHide ? "none" : "" }}
+              sx={{ visibility: headingHide ? "hidden" : "" }}
               inputRef={controlEditor.current.headingInputRef}
               onKeyUp={onControlEditorInputConfirm}
               disabled={headingDisabled}
             />
           </div>
           <div style={{ marginTop: "1vh" }}>
-            <Button variant="text" onClick={onAddPathClick}>Add Path</Button>
+            <Button variant="text" onClick={action(onAddPathClick)}>Add Path</Button>
             {
               props.paths.length > 0
-                ? <Button variant="text" onClick={onExpandAllClick}>{props.expanded.length !== props.paths.length ? "Expand All" : "Collapse All"}</Button>
+                ? <Button variant="text" onClick={action(onExpandAllClick)}>{props.app.expanded.length !== props.paths.length ? "Expand All" : "Collapse All"}</Button>
                 : null
             }
           </div>
@@ -217,10 +217,10 @@ const PathsAccordion = observer((props: AppProps) => {
           defaultCollapseIcon={<ExpandMoreIcon />}
           defaultExpandIcon={<ChevronRightIcon />}
           multiSelect
-          expanded={props.expanded}
-          selected={props.selected}
-          onNodeSelect={(event, nodeIds) => props.setSelected(nodeIds)}
-          onNodeToggle={onTreeViewNodeToggle}
+          expanded={props.app.expanded}
+          selected={props.app.selected}
+          onNodeSelect={action((event, nodeIds) => props.app.selected = nodeIds)}
+          onNodeToggle={action(onTreeViewNodeToggle)}
           sx={{ flexGrow: 1, maxWidth: "100%", overflowX: 'hidden', overflowY: 'auto', margin: "1vh 0 0" }}
         >
           {

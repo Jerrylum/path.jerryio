@@ -34,24 +34,54 @@ class UserBehavior {
   public mouseY: number = 0;
 }
 
+
+// observable class
+class MainApp {
+  gc: GeneralConfig = new GeneralConfig(); // a.k.a Configuration
+  sc: SpeedConfig = new SpeedConfig(); // a.k.a Speed Control
+
+  paths: Path[] = [];
+  selected: string[] = [];
+  expanded: string[] = [];
+  magnet: Vertex = new Vertex(Infinity, Infinity);
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  isSelected(x: InteractiveEntity | string): boolean {
+    return typeof x === "string" ? this.selected.includes(x) : this.selected.includes(x.uid);
+  }
+
+  addSelected(x: InteractiveEntity | string): boolean {
+    if (this.isSelected(x)) {
+      return false;
+    } else {
+      this.selected.push(typeof x === "string" ? x : x.uid);
+      return true;
+    }
+  }
+
+  removeSelected(x: InteractiveEntity | string): boolean {
+    let index = typeof x === "string" ? this.selected.indexOf(x) : this.selected.indexOf(x.uid);
+    if (index !== -1) {
+      this.selected.splice(index, 1);
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+
+let app = new MainApp();
+
 export interface AppProps {
   paths: Path[];
   cc: CanvasConfig;
   ub: UserBehavior;
-  selected: string[];
-  setSelected: React.Dispatch<React.SetStateAction<string[]>>;
-  expanded: string[];
-  setExpanded: React.Dispatch<React.SetStateAction<string[]>>;
-  magnet: Vertex;
-  setMagnet: React.Dispatch<React.SetStateAction<Vertex>>;
+
+  app: MainApp;
 }
-
-let app = observable({
-  gc: new GeneralConfig(), // a.k.a Configuration
-  sc: new SpeedConfig(), // a.k.a Speed Control
-
-  paths: [] as Path[],
-})
 
 const App = observer(() => {
   useTimer(1000 / 30);
@@ -59,12 +89,6 @@ const App = observer(() => {
   const [format, setFormat] = useState<Format>(new PathDotJerryioFormatV0_1());
 
   const [userBehavior, setUserBehavior] = useState(new UserBehavior());
-
-  const [expanded, setExpanded] = useState<string[]>([]);
-
-  const [selected, setSelected] = useState<string[]>([]);
-
-  const [magnet, setMagnet] = useState<Vertex>(new Vertex(Infinity, Infinity));
 
   const cc = new CanvasConfig(window.innerHeight * 0.94, window.innerHeight * 0.94, 365.76, 365.76);
 
@@ -109,13 +133,20 @@ const App = observer(() => {
     const disposer = reaction(() => app.gc.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
       const con = new UnitConverter(oldUOL, newUOL);
 
-      setSelected([]);
-      setExpanded([]);
+      app.selected = [];
+      app.expanded = [];
 
       app.gc.robotWidth = con.fromAtoB(app.gc.robotWidth);
       app.gc.robotHeight = con.fromAtoB(app.gc.robotHeight);
 
-      // TODO convert all paths
+      // TODO set more stuff?
+
+      for (let path of app.paths) {
+        for (let control of path.getControlsSet()) {
+          control.x = con.fromAtoB(control.x);
+          control.y = con.fromAtoB(control.y);
+        }
+      }
     }));
 
     return () => {
@@ -125,7 +156,7 @@ const App = observer(() => {
 
   useEffect(action(initFormat), [format]);
 
-  const appProps: AppProps = { paths: app.paths, cc, ub: userBehavior, selected, setSelected, expanded, setExpanded, magnet, setMagnet };
+  const appProps: AppProps = { paths: app.paths, cc, ub: userBehavior, app };
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (

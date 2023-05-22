@@ -8,7 +8,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 
 import { Accordion, AccordionDetails, AccordionSummary, Button, Slider, TextField, Typography } from "@mui/material";
-import { runInAction, makeAutoObservable } from "mobx"
+import { action, runInAction, makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
 import { TreeItem, TreeView } from '@mui/lab';
 import { AppProps } from '../App';
@@ -37,10 +37,10 @@ const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
   function onVisibleClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
     const setTo = !entity.visible;
 
-    if (props.selected.includes(entity.uid)) { // UX: batch operation only if the entity is selected
+    if (props.app.isSelected(entity.uid)) { // UX: batch operation only if the entity is selected
       for (let path of props.paths) {
         for (let control of path.getControlsSet()) {
-          if (props.selected.includes(control.uid)) control.visible = setTo;
+          if (props.app.isSelected(control.uid)) control.visible = setTo;
         }
       }
     }
@@ -52,10 +52,10 @@ const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
   function onLockClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
     const setTo = !entity.lock;
 
-    if (props.selected.includes(entity.uid)) { // UX: batch operation only if the entity is selected
+    if (props.app.isSelected(entity.uid)) { // UX: batch operation only if the entity is selected
       for (let path of props.paths) {
         for (let control of path.getControlsSet()) {
-          if (props.selected.includes(control.uid)) control.lock = setTo;
+          if (props.app.isSelected(control.uid)) control.lock = setTo;
         }
       }
     }
@@ -125,13 +125,13 @@ const PathTreeItem = observer((props: PathTreeProps) => {
 
   function onPathDeleteClick() {
     props.paths.splice(props.paths.indexOf(path), 1);
-
-    props.setExpanded((expanded) => expanded.filter((uid) => uid !== path.uid));
+    // TODO : remove from selected
+    props.app.expanded = props.app.expanded.filter((uid) => uid !== path.uid);
   }
 
   return (
     <TreeItem nodeId={path.uid} label={
-      <PathTreeItemLabel entity={path} onDelete={onPathDeleteClick} {...props}>
+      <PathTreeItemLabel entity={path} onDelete={action(onPathDeleteClick)} {...props}>
         <span contentEditable
           style={{ display: 'inline-block' }}
           onInput={(e) => onPathNameChange(e)}

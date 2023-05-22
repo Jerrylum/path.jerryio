@@ -17,8 +17,6 @@ export interface SplineElementProps extends AppProps {
 }
 
 const SplineElement = observer((props: SplineElementProps) => {
-  const isFirstSpline = props.path.splines[0] === props.spline;
-
   const knotRadius = props.cc.pixelWidth / 320;
 
   return (
@@ -38,13 +36,7 @@ const SplineElement = observer((props: SplineElementProps) => {
         ) : null
       }
       <SplineKnotsHitBoxElement {...props} />
-      {props.spline.controls.map((cpInCm, cpIdx) => {
-        if (!isFirstSpline && cpIdx === 0) return null;
-        if (!cpInCm.visible) return null;
-        return (
-          <SplineControlElement key={cpIdx} {...props} cp={cpInCm} />
-        )
-      })}
+      {/* UX: Do not render control point here due to z-index */}
     </>
   )
 });

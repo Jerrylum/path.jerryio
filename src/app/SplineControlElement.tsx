@@ -1,4 +1,4 @@
-import { runInAction, makeAutoObservable } from "mobx"
+import { action, runInAction, makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
 import { Control, EndPointControl, Vertex } from '../math/path';
 import { CanvasConfig } from '../math/shape';
@@ -11,20 +11,6 @@ export interface SplineControlElementProps extends SplineElementProps {
   cp: EndPointControl | Control;
 }
 
-export async function addSelected(props: SplineControlElementProps, uid: string) {
-  return new Promise<boolean>((resolve, reject) => {
-    props.setSelected((selected) => {
-      if (selected.includes(uid)) {
-        resolve(false);
-        return selected;
-      } else {
-        resolve(true);
-        return [...selected, uid];
-      }
-    });
-  });
-}
-
 const SplineControlElement = observer((props: SplineControlElementProps) => {
   const [justSelected, setJustSelected] = useState(false);
   const [posBeforeDrag, setPosBeforeDrag] = useState(new Vertex(0, 0));
@@ -32,25 +18,23 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
   function onMouseDownControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
+    // UX: Do not interact with control points if itself or the path is locked
     if (props.cp.lock || props.path.lock) {
       evt.preventDefault();
       return;
     }
 
     if (evt.button === 0) { // left click
-      setJustSelected(false);
       setPosBeforeDrag(props.cp.clone());
 
       if (props.ub.isPressingShift) {
-        // add if not
-        addSelected(props, props.cp.uid).then((added) => {
-          if (added) {
-            setJustSelected(true);
-          }
-        });
+        // UX: Add selected control point if: left click + shift
+        // UX: Prevent the control point from being removed when the mouse is released at the same round it is added
+        setJustSelected(props.app.addSelected(props.cp.uid));
       } else {
-        // set selection to this control point
-        props.setSelected([props.cp.uid]);
+        // UX: Select one control point if: left click + not pressing shift
+        props.app.selected = [props.cp.uid];
+        setJustSelected(false);
       }
     }
   }
@@ -58,34 +42,29 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
   function onClickControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
+    // UX: Do not interact with control points if itself or the path is locked
     if (props.cp.lock || props.path.lock) {
       evt.preventDefault();
       return;
     }
 
-    if (evt.button === 0) { // left click
-      if (props.ub.isPressingShift) {
-        // remove if already selected and it is not being added recently
-        props.setSelected((selected) => {
-          if (selected.includes(props.cp.uid) && !justSelected) {
-            return selected.filter((uid) => uid !== props.cp.uid);
-          } else {
-            return selected;
-          }
-        });
-      }
+    // UX: Remove selected entity if: release left click + shift + not being added recently
+    if (evt.button === 0 && props.ub.isPressingShift && !justSelected) {
+      if (!justSelected) props.app.removeSelected(props.cp.uid);
     }
   }
 
   function onDragControlPoint(event: Konva.KonvaEventObject<DragEvent>) {
     const evt = event.evt;
 
+    // UX: Do not interact with control points if itself or the path is locked
     if (props.cp.lock || props.path.lock) {
       evt.preventDefault();
 
       const cpInCm = props.cp.clone();
       const cpInPx = props.cc.toPx(cpInCm);
 
+      // UX: Set the position of the control point back to the original position
       event.target.x(cpInPx.x);
       event.target.y(cpInPx.y);
       return;
@@ -115,7 +94,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
         if (control.visible === false || path.visible === false) continue;
         if (
           (!(control instanceof EndPointControl) && !shouldControlFollow) ||
-          (!props.selected.includes(control.uid)) ||
+          (!props.app.isSelected(control.uid)) ||
           (control.lock || path.lock)
         ) {
           others.push(control);
@@ -128,14 +107,14 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
     if (isMainControl && shouldControlFollow) {
       if (isCurve) {
         let control = isFirstCp ? props.spline.controls[1] : props.spline.controls[2];
-        addSelected(props, control.uid);
+        props.app.addSelected(control.uid);
         if (!followers.includes(control)) followers.push(control);
       }
 
       const nextSpline = props.path.splines[index + 1];
       if (!isLastOne && !isFirstCp && nextSpline !== undefined && nextSpline.controls.length === 4) {
         let control = nextSpline.controls[1];
-        addSelected(props, control.uid);
+        props.app.addSelected(control.uid);
         if (!followers.includes(control)) followers.push(control);
       }
     }
@@ -165,12 +144,12 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
       let magnetGuide = new Vertex(Infinity, Infinity);
       if (cpInCm.x !== magnetX) magnetGuide.x = magnetX;
       if (cpInCm.y !== magnetY) magnetGuide.y = magnetY;
-      props.setMagnet(magnetGuide);
+      props.app.magnet = magnetGuide;
 
       cpInCm.x = magnetX;
       cpInCm.y = magnetY;
     } else {
-      props.setMagnet(new Vertex(Infinity, Infinity));
+      props.app.magnet = new Vertex(Infinity, Infinity);
     }
 
     for (let cp of followers) {
@@ -186,17 +165,19 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
   function onMouseUpControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
+    // UX: Do not interact with control points if itself or the path is locked
     if (props.cp.lock || props.path.lock) {
       evt.preventDefault();
       return;
     }
 
-    props.setMagnet(new Vertex(Infinity, Infinity));
+    props.app.magnet = new Vertex(Infinity, Infinity);
   }
 
   function onWheel(event: Konva.KonvaEventObject<WheelEvent>) {
     const evt = event.evt;
 
+    // UX: Do not interact with control points if itself or the path is locked
     if (props.cp.lock || props.path.lock) {
       evt.preventDefault();
       return;
@@ -211,19 +192,21 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
   const lineWidth = props.cc.pixelWidth / 600;
   const cpRadius = props.cc.pixelWidth / 40;
   const cpInPx = props.cc.toPx(props.cp);
-  const fillColor = props.selected.includes(props.cp.uid) ? "#0000ff8f" : "#0000ff2f";
+  const fillColor = props.app.isSelected(props.cp.uid) ? "#0000ff8f" : "#0000ff2f";
   const isMainControl = props.cp instanceof EndPointControl;
 
   function onClickFirstOrLastControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
     onClickControlPoint(event);
-    if (evt.button === 2) { // right click
-      let removedControls = props.path.removeSpline(props.cp as EndPointControl);
-      let removed = removedControls.map((control) => control.uid);
 
-      props.setSelected((selected) => selected.filter((uid) => !removed.includes(uid)));
-      props.setExpanded((expanded) => expanded.filter((uid) => !removed.includes(uid))); // might not be necessary
+    // UX: Remove end point from the path, selected and expanded list if: right click
+    if (evt.button === 2) {
+      const removedControls = props.path.removeSpline(props.cp as EndPointControl);
+      for (const control of removedControls) {
+        props.app.removeSelected(control.uid);
+        props.app.expanded = props.app.expanded.filter((x) => x !== control.uid);
+      }
     }
   }
 
@@ -238,11 +221,17 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
               cpInPx.y + Math.cos(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius
             ]} stroke="ffffff" strokeWidth={lineWidth} />
             <Circle x={cpInPx.x} y={cpInPx.y} radius={cpRadius} fill={fillColor}
-              draggable onDragMove={onDragControlPoint} onMouseDown={onMouseDownControlPoint} onMouseUp={onMouseUpControlPoint} onWheel={onWheel} onClick={onClickFirstOrLastControlPoint} />
+              draggable onDragMove={action(onDragControlPoint)}
+              onMouseDown={action(onMouseDownControlPoint)}
+              onMouseUp={action(onMouseUpControlPoint)}
+              onWheel={onWheel}
+              onClick={action(onClickFirstOrLastControlPoint)} />
           </>
         ) : (
           <Circle x={cpInPx.x} y={cpInPx.y} radius={cpRadius / 2} fill={fillColor}
-            draggable onDragMove={onDragControlPoint} onMouseDown={onMouseDownControlPoint} onMouseUp={onMouseUpControlPoint} />
+            draggable onDragMove={action(onDragControlPoint)}
+            onMouseDown={action(onMouseDownControlPoint)}
+            onMouseUp={action(onMouseUpControlPoint)} />
         )
       }
 

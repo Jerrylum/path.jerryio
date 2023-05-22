@@ -188,7 +188,6 @@ export class Spline implements CanvasEntity {
     }
 
     isVisible(): boolean {
-        // return this.controls.every((cp) => cp.visible);
         return this.controls.some((cp) => cp.visible);
     }
 

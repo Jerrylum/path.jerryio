@@ -6,6 +6,7 @@ import { Format } from '../math/format';
 import { LemLibFormatV0_4 } from '../math/LemLibFormatV0_4';
 import { PathDotJerryioFormatV0_1 } from '../math/PathDotJerryioFormatV0_1';
 import { ObserverInput } from './ObserverInput';
+import { Vertex } from '../math/path';
 
 
 export enum UnitOfLength {
