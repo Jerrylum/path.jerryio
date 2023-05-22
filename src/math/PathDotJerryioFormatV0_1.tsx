@@ -1,4 +1,4 @@
-import { GeneralConfig } from "../app/GeneralConfigAccordion";
+import { GeneralConfig, UnitConverter, UnitOfLength } from "../app/GeneralConfigAccordion";
 import { SpeedConfig } from "../app/SpeedControlAccordion";
 import { Format } from "./format";
 import { Path } from "./path";
@@ -32,15 +32,19 @@ export class PathDotJerryioFormatV0_1 implements Format {
   exportPathFile(paths: Path[], gc: GeneralConfig, sc: SpeedConfig): string | undefined {
     let rtn = "";
 
+    const uc = new UnitConverter(gc.uol, UnitOfLength.Centimeter);
+
     for (const path of paths) {
       rtn += `#PATH-KNOTS-START ${path.name}\n`;
 
       const knots = path.calculateKnots(gc, sc);
       for (const knot of knots) {
+        const x = uc.fromAtoB(knot.x);
+        const y = uc.fromAtoB(knot.y);
         if (knot.heading !== undefined)
-          rtn += `${knot.x.toFixed(3)},${knot.y.toFixed(3)},${knot.speed.toFixed(3)},${knot.heading}\n`;
+          rtn += `${x},${y},${knot.speed.toFixed(3)},${knot.heading}\n`;
         else
-          rtn += `${knot.x.toFixed(3)},${knot.y.toFixed(3)},${knot.speed.toFixed(3)}\n`;
+          rtn += `${x},${y},${knot.speed.toFixed(3)}\n`;
       }
 
       rtn += `#PATH-KNOTS-END\n`;

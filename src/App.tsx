@@ -181,12 +181,16 @@ const App = observer(() => {
   const appProps: AppProps = { paths: app.paths, cc, ub, app };
 
   function onDownload() {
-    console.log(format.exportPathFile(app.paths, app.gc, app.sc));    
-    // const a = document.createElement("a");
-    // const file = new Blob([format.exportPathFile(app.paths, app.gc, app.sc)], { type: "text/plain" });
-    // a.href = URL.createObjectURL(file);
-    // a.download = "path.jerryio.txt";
-    // a.click();
+    const output = format.exportPathFile(app.paths, app.gc, app.sc);
+    if (output === undefined) {
+      alert("Error: Cannot export path file"); // TODO better error handling
+      return;
+    }
+    const a = document.createElement("a");
+    const file = new Blob([output], { type: "text/plain" });
+    a.href = URL.createObjectURL(file);
+    a.download = "path.jerryio.txt";
+    a.click();
   }
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed

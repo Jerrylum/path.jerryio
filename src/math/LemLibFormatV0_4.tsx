@@ -1,4 +1,4 @@
-import { GeneralConfig, UnitOfLength } from "../app/GeneralConfigAccordion";
+import { GeneralConfig, UnitConverter, UnitOfLength } from "../app/GeneralConfigAccordion";
 import { SpeedConfig } from "../app/SpeedControlAccordion";
 import { Format } from "./format";
 import { Path, Vertex } from "./path";
@@ -64,10 +64,14 @@ export class LemLibFormatV0_4 implements Format {
     const path = paths[0]; // TODO use selected path
     if (path.splines.length === 0) return;
 
+    const uc = new UnitConverter(gc.uol, UnitOfLength.Inch);
+
     const knots = path.calculateKnots(gc, sc);
     for (const knot of knots) {
       // ALGO: heading is not supported
-      rtn += `${knot.x.toFixed(3)}, ${knot.y.toFixed(3)}, ${knot.speed.toFixed(3)}\n`;
+      const x = uc.fromAtoB(knot.x);
+      const y = uc.fromAtoB(knot.y);
+      rtn += `${x}, ${y}, ${knot.speed.toFixed(3)}\n`;
     }
 
     rtn += `endData\n`;
