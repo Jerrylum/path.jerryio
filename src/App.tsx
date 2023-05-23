@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 
-import { Path, Vertex, InteractiveEntity } from './math/path';
-import { CanvasConverter } from './math/shape';
+import { Path, Vertex } from './math/path';
+import { CanvasConverter, InteractiveEntity } from './math/canvas';
 
 import { reaction, action, makeAutoObservable } from "mobx"
 
@@ -16,13 +16,15 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import { Box, Button } from '@mui/material';
-import { SpeedConfig, SpeedConfigAccordion } from './app/SpeedControlAccordion';
 import { PathsAccordion } from './app/PathsAccordion';
 import { FieldCanvasElement } from './app/FieldCanvasElement';
 import { useTimer } from './app/Util';
-import { GeneralConfig, GeneralConfigAccordion, UnitConverter, UnitOfLength } from './app/GeneralConfigAccordion';
-import { Format } from './math/format';
-import { PathDotJerryioFormatV0_1 } from './math/PathDotJerryioFormatV0_1';
+import { Format } from './format/format';
+import { GeneralConfigAccordion } from './app/GeneralConfigAccordion';
+import { SpeedConfigAccordion } from './app/SpeedControlAccordion';
+import { PathDotJerryioFormatV0_1 } from './format/PathDotJerryioFormatV0_1';
+import { GeneralConfig, SpeedConfig } from './format/config';
+import { UnitConverter, UnitOfLength } from './math/unit';
 
 // observable class
 class UserBehavior {

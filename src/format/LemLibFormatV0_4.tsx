@@ -1,8 +1,8 @@
-import { GeneralConfig, UnitConverter, UnitOfLength } from "../app/GeneralConfigAccordion";
-import { SpeedConfig } from "../app/SpeedControlAccordion";
+import { makeId } from "../app/Util";
+import { Path, Vertex } from "../math/path";
+import { UnitOfLength, UnitConverter } from "../math/unit";
+import { GeneralConfig, SpeedConfig } from "./config";
 import { Format } from "./format";
-import { Path, Vertex } from "./path";
-import { makeId } from "./shape";
 
 export class LemLibFormatV0_4 implements Format {
   isInit: boolean = false;
@@ -42,10 +42,10 @@ export class LemLibFormatV0_4 implements Format {
     };
     rtn.applicationRange = {
       minLimit: { value: 0, label: "0" },
-      maxLimit: { value: 1.6, label: "1.6" },
+      maxLimit: { value: 4, label: "4" },
       step: 0.01,
-      from: 0,
-      to: 0.4,
+      from: 1.4,
+      to: 1.8,
     };
     rtn.transitionRange = {
       minLimit: { value: 0, label: "0" },

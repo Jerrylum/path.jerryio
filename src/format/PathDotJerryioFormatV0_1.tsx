@@ -1,8 +1,8 @@
-import { GeneralConfig, UnitConverter, UnitOfLength } from "../app/GeneralConfigAccordion";
-import { SpeedConfig } from "../app/SpeedControlAccordion";
+import { makeId } from "../app/Util";
+import { Path } from "../math/path";
+import { UnitConverter, UnitOfLength } from "../math/unit";
+import { GeneralConfig, SpeedConfig } from "./config";
 import { Format } from "./format";
-import { Path } from "./path";
-import { makeId } from "./shape";
 
 export class PathDotJerryioFormatV0_1 implements Format {
   isInit: boolean = false;

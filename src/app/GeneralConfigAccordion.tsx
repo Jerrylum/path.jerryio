@@ -1,100 +1,13 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
-import { action, makeAutoObservable } from "mobx"
+import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { Format } from '../math/format';
-import { LemLibFormatV0_4 } from '../math/LemLibFormatV0_4';
-import { PathDotJerryioFormatV0_1 } from '../math/PathDotJerryioFormatV0_1';
+import { Format } from '../format/format';
 import { ObserverInput } from './ObserverInput';
-
-
-export enum UnitOfLength {
-  Millimeter = 1,
-  Centimeter, // default
-  Meter,
-  Inch,
-  Foot,
-}
-
-const ratioCentimeter = 1;
-const ratioMillimeter = ratioCentimeter / 10;
-const ratioMeter = 100 * ratioCentimeter; // SI base unit
-const ratioInch = 2.54 * ratioCentimeter;
-const ratioFoot = 12 * ratioInch;
-
-
-// observable class
-export class GeneralConfig {
-  robotWidth: number = 30;
-  robotHeight: number = 30;
-  showRobot: boolean = true;
-  uol: UnitOfLength = UnitOfLength.Centimeter;
-  knotDensity: number = 2;
-  controlMagnetDistance: number = 5;
-
-  constructor() {
-    makeAutoObservable(this);
-  }
-
-  getConfigPanel() {
-    return <></>
-  }
-
-}
-
-export class UnitConverter {
-  private alphaUOL: UnitOfLength;
-  private betaUOL: UnitOfLength;
-  private aRatio: number;
-  private bRatio: number;
-  private precision: number = 3;
-
-  constructor(alphaUOL: UnitOfLength, betaUOL: UnitOfLength, precision?: number) {
-    this.alphaUOL = alphaUOL;
-    this.betaUOL = betaUOL;
-    this.aRatio = UnitConverter.getRatio(alphaUOL);
-    this.bRatio = UnitConverter.getRatio(betaUOL);
-    if (precision !== undefined) this.precision = precision;
-  }
-
-  static getRatio(UOL: number): number {
-    switch (UOL) {
-      case UnitOfLength.Millimeter:
-        return ratioMillimeter;
-      case UnitOfLength.Centimeter:
-        return ratioCentimeter;
-      case UnitOfLength.Meter:
-        return ratioMeter;
-      case UnitOfLength.Inch:
-        return ratioInch;
-      case UnitOfLength.Foot:
-        return ratioFoot;
-      default:
-        return 1;
-    }
-  }
-
-  getAlphaUOL(): UnitOfLength {
-    return this.alphaUOL;
-  }
-
-  getBetaUOL(): UnitOfLength {
-    return this.betaUOL;
-  }
-
-  fromAtoB(a: number): number {
-    return this.fixPrecision(a * this.aRatio / this.bRatio);
-  }
-
-  fromBtoA(b: number): number {
-    return this.fixPrecision(b * this.bRatio / this.aRatio);
-  }
-
-  fixPrecision(some: number): number {
-    return parseFloat(some.toFixed(this.precision));
-  }
-
-}
+import { GeneralConfig } from '../format/config';
+import { LemLibFormatV0_4 } from '../format/LemLibFormatV0_4';
+import { PathDotJerryioFormatV0_1 } from '../format/PathDotJerryioFormatV0_1';
+import { UnitOfLength } from '../math/unit';
 
 const GeneralConfigAccordion = observer((props: {
   gc: GeneralConfig,

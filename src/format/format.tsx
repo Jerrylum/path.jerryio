@@ -1,6 +1,5 @@
-import { GeneralConfig } from "../app/GeneralConfigAccordion";
-import { SpeedConfig } from "../app/SpeedControlAccordion";
-import { Path } from "./path";
+import { Path } from "../math/path";
+import { GeneralConfig, SpeedConfig } from "./config";
 
 export interface Format {
     isInit: boolean;

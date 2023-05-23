@@ -1,15 +1,12 @@
 import { Vertex } from "./path";
 
-export function makeId(length: number) {
-    let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    let counter = 0;
-    while (counter < length) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-        counter += 1;
-    }
-    return result;
+export interface CanvasEntity {
+    uid: string;
+}
+
+export interface InteractiveEntity extends CanvasEntity {
+    lock: boolean;
+    visible: boolean;
 }
 
 export class CanvasConverter {
@@ -24,15 +21,15 @@ export class CanvasConverter {
     public uol2pixel: number; // in pixel/uol
     public pixel2uol: number; // in uol/pixel
 
-    constructor(pixel_width: number, pixel_height: number, field_width: number, field_height: number) {
-        this.pixelWidth = pixel_width;
-        this.pixelHeight = pixel_height;
-        this.fieldWidth = field_width;
-        this.fieldHeight = field_height;
-        this.pixelWidthHalf = pixel_width / 2;
-        this.pixelHeightHalf = pixel_height / 2;
-        this.uol2pixel = pixel_width / field_width;
-        this.pixel2uol = field_width / pixel_width;
+    constructor(pixelWidth: number, pixelHeight: number, fieldWidth: number, fieldHeight: number) {
+        this.pixelWidth = pixelWidth;
+        this.pixelHeight = pixelHeight;
+        this.fieldWidth = fieldWidth;
+        this.fieldHeight = fieldHeight;
+        this.pixelWidthHalf = pixelWidth / 2;
+        this.pixelHeightHalf = pixelHeight / 2;
+        this.uol2pixel = pixelWidth / fieldWidth;
+        this.pixel2uol = fieldWidth / pixelWidth;
     }
 
     toPx<T extends Vertex>(inUOL: T): T {

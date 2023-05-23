@@ -1,6 +1,6 @@
-import { GeneralConfig, UnitConverter, UnitOfLength } from "../app/GeneralConfigAccordion";
-import { SpeedConfig } from "../app/SpeedControlAccordion";
-import { CanvasConverter, makeId } from "./shape";
+import { makeId } from "../app/Util";
+import { GeneralConfig, SpeedConfig } from "../format/config";
+import { InteractiveEntity, CanvasEntity } from "./canvas";
 
 export class Vertex {
 
@@ -107,15 +107,6 @@ export interface Position extends Vertex {
     fixPrecision(p: number): Position;
 
     clone(): Position;
-}
-
-export interface CanvasEntity {
-    uid: string;
-}
-
-export interface InteractiveEntity extends CanvasEntity {
-    lock: boolean;
-    visible: boolean;
 }
 
 export class Control extends Vertex implements InteractiveEntity {
