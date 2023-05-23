@@ -48,6 +48,17 @@ export class Vertex {
         return Math.sqrt(Math.pow(this.x - vector.x, 2) + Math.pow(this.y - vector.y, 2));
     }
 
+    interpolate<T extends Vertex>(other: T, distance: number): T {
+        // "this" as the center
+        let rtn = other.clone() as T;
+        // use trig to find the angle between the two points
+        const angle = Math.atan2(rtn.y - this.y, rtn.x - this.x);
+        // use the angle to find the x and y components of the vector
+        rtn.x = this.x + distance * Math.cos(angle);
+        rtn.y = this.y + distance * Math.sin(angle);
+        return rtn.fixPrecision() as T;
+    }
+
     mirror<T extends Vertex>(other: T): T {
         // "this" as the center
         let rtn = other.clone() as T;

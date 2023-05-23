@@ -57,6 +57,8 @@ export class LemLibFormatV0_4 implements Format {
   }
 
   exportPathFile(paths: Path[], gc: GeneralConfig, sc: SpeedConfig): string | undefined {
+    // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.
+
     let rtn = "";
 
     if (paths.length === 0) return;
@@ -68,31 +70,55 @@ export class LemLibFormatV0_4 implements Format {
 
     const knots = path.calculateKnots(gc, sc);
     for (const knot of knots) {
-      // ALGO: heading is not supported
-      const x = uc.fromAtoB(knot.x);
-      const y = uc.fromAtoB(knot.y);
-      rtn += `${x}, ${y}, ${knot.speed.toFixed(3)}\n`;
+      // ALGO: heading is not supported in LemLib V0.4 format.
+      rtn += `${uc.fromAtoB(knot.x)}, ${uc.fromAtoB(knot.y)}, ${uc.fixPrecision(knot.speed)}\n`;
+    }
+
+    if (knots.length > 1) {
+      /*
+      Here is the original code of how the ghost knot is calculated:
+
+      ```cpp
+      // create a "ghost point" at the end of the path to make stopping nicer
+      const lastPoint = path.points[path.points.length-1];
+      const lastControl = path.splines[path.splines.length-1].p2;
+      const ghostPoint = Vector.interpolate(Vector.distance(lastControl, lastPoint) + 20, lastControl, lastPoint);
+      ```
+
+      Notice that the variable "lastControl" is not the last control point, but the second last control point.
+      This implementation is different from the original implementation by using the last knot and the second last knot.
+      */
+      const last2 = knots[knots.length - 2]; // second last knot, last knot by the calculation
+      const last1 = knots[knots.length - 1]; // last knot, also the last control point
+      // ALGO: The 20 inches constant is a constant value in the original LemLib-Path-Gen implementation.
+      const ghostKnot = last2.interpolate(last1, last2.distance(last1) + uc.fromBtoA(20));
+      rtn += `${uc.fromAtoB(ghostKnot.x)}, ${uc.fromAtoB(ghostKnot.y)}, 0\n`;
     }
 
     rtn += `endData\n`;
-    rtn += `0.1\n`; // Not supported
+    rtn += `200\n`; // Not supported
     rtn += `${sc.speedLimit.to}\n`;
-    rtn += `0.1\n`; // Not supported
+    rtn += `200\n`; // Not supported
+
+    function output(control: Vertex, postfix: string = ", ") {
+      rtn += `${uc.fromAtoB(control.x)}, ${uc.fromAtoB(control.y)}${postfix}`;
+    }
 
     for (const spline of path.splines) {
       if (spline.controls.length === 4) {
-        rtn += `${spline.controls[0].x.toFixed(3)}, ${spline.controls[0].y.toFixed(3)}, `;
-        rtn += `${spline.controls[1].x.toFixed(3)}, ${spline.controls[1].y.toFixed(3)}, `;
-        rtn += `${spline.controls[2].x.toFixed(3)}, ${spline.controls[2].y.toFixed(3)}, `;
-        rtn += `${spline.controls[3].x.toFixed(3)}, ${spline.controls[3].y.toFixed(3)}\n`;
+        output(spline.controls[0]);
+        output(spline.controls[1]);
+        output(spline.controls[2]);
+        output(spline.controls[3], "\n");
       } else if (spline.controls.length === 2) {
         const center = spline.controls[0].add(spline.controls[1]).divide(new Vertex(2, 2));
-        rtn += `${spline.controls[0].x.toFixed(3)}, ${spline.controls[0].y.toFixed(3)}, `;
-        rtn += `${center.x.toFixed(3)}, ${center.y.toFixed(3)}, `;
-        rtn += `${center.x.toFixed(3)}, ${center.y.toFixed(3)}, `;
-        rtn += `${spline.controls[1].x.toFixed(3)}, ${spline.controls[1].y.toFixed(3)}\n`;
+        output(spline.controls[0]);
+        output(center);
+        output(center);
+        output(spline.controls[1], "\n");
       }
     }
+
     return rtn;
   }
 }
