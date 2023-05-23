@@ -1,4 +1,4 @@
-import { MainApp } from "../App";
+import { MainApp } from '../app/MainApp';
 import { GeneralConfig, SpeedConfig } from "./config";
 
 export interface Format {

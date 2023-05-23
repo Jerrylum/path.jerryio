@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 
-import { Path, Vertex } from './math/path';
-import { CanvasConverter, InteractiveEntity } from './math/canvas';
+import { Path } from './math/path';
+import { CanvasConverter } from './math/canvas';
 
 import { reaction, action, makeAutoObservable } from "mobx"
 
@@ -13,14 +13,14 @@ import Card from '@mui/material/Card';
 import { Box } from '@mui/material';
 import { PathsAccordion } from './app/PathsAccordion';
 import { FieldCanvasElement } from './app/FieldCanvasElement';
-import { addToArray, removeFromArray, useTimer } from './app/Util';
+import { useTimer } from './app/Util';
 import { Format } from './format/format';
 import { GeneralConfigAccordion } from './app/GeneralConfigAccordion';
 import { SpeedConfigAccordion } from './app/SpeedControlAccordion';
 import { PathDotJerryioFormatV0_1 } from './format/PathDotJerryioFormatV0_1';
-import { GeneralConfig, OutputConfig, SpeedConfig } from './format/config';
 import { UnitConverter, UnitOfLength } from './math/unit';
 import { OutputConfigAccordion } from './app/OutputAccordion';
+import { MainApp } from './app/MainApp';
 
 // observable class
 class UserBehavior {
@@ -33,47 +33,6 @@ class UserBehavior {
     makeAutoObservable(this);
   }
 }
-
-// observable class
-export class MainApp {
-  public gc: GeneralConfig = new GeneralConfig(); // a.k.a Configuration
-  public sc: SpeedConfig = new SpeedConfig(); // a.k.a Speed Control
-  public oc: OutputConfig = new OutputConfig(); // a.k.a Output
-
-  public paths: Path[] = [];
-  public selected: string[] = [];
-  public expanded: string[] = [];
-  public magnet: Vertex = new Vertex(Infinity, Infinity);
-
-  constructor() {
-    makeAutoObservable(this);
-  }
-
-  isSelected(x: InteractiveEntity | string): boolean {
-    return typeof x === "string" ? this.selected.includes(x) : this.selected.includes(x.uid);
-  }
-
-  addSelected(x: InteractiveEntity | string): boolean {
-    return addToArray(this.selected, typeof x === "string" ? x : x.uid);
-  }
-
-  removeSelected(x: InteractiveEntity | string): boolean {
-    return removeFromArray(this.selected, typeof x === "string" ? x : x.uid);
-  }
-
-  isExpanded(x: InteractiveEntity | string): boolean {
-    return typeof x === "string" ? this.expanded.includes(x) : this.expanded.includes(x.uid);
-  }
-
-  addExpanded(x: InteractiveEntity | string): boolean {
-    return addToArray(this.expanded, typeof x === "string" ? x : x.uid);
-  }
-
-  removeExpanded(x: InteractiveEntity | string): boolean {
-    return removeFromArray(this.expanded, typeof x === "string" ? x : x.uid);
-  }
-}
-
 let ub = new UserBehavior();
 let app = new MainApp();
 
@@ -168,9 +127,9 @@ const App = observer(() => {
       </Card>
 
       <Box className='editor-container'>
-        <GeneralConfigAccordion gc={app.gc} {...{format, setFormat}} />
+        <GeneralConfigAccordion gc={app.gc} {...{ format, setFormat }} />
         <SpeedConfigAccordion sc={app.sc} />
-        <OutputConfigAccordion {...appProps} {...{format}} />
+        <OutputConfigAccordion {...appProps} {...{ format }} />
         <PathsAccordion {...appProps} />
       </Box>
     </div>

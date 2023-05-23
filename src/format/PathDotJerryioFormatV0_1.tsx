@@ -1,4 +1,4 @@
-import { MainApp } from "../App";
+import { MainApp } from '../app/MainApp';
 import { makeId } from "../app/Util";
 import { UnitConverter, UnitOfLength } from "../math/unit";
 import { GeneralConfig, SpeedConfig } from "./config";

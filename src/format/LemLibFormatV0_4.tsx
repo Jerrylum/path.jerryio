@@ -1,4 +1,4 @@
-import { MainApp } from "../App";
+import { MainApp } from '../app/MainApp';
 import { makeId } from "../app/Util";
 import { Path, Vertex } from "../math/path";
 import { UnitOfLength, UnitConverter } from "../math/unit";
