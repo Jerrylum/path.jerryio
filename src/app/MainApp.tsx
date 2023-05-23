@@ -12,9 +12,9 @@ import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 export class MainApp {
   public format: Format = new PathDotJerryioFormatV0_1();
 
-  public gc: GeneralConfig = new GeneralConfig(); // a.k.a Configuration
-  public sc: SpeedConfig = new SpeedConfig(); // a.k.a Speed Control
-  public oc: OutputConfig = new OutputConfig(); // a.k.a Output
+  public gc: GeneralConfig = this.format.buildGeneralConfig(); // a.k.a Configuration
+  public sc: SpeedConfig = this.format.buildSpeedConfig(); // a.k.a Speed Control
+  public oc: OutputConfig = this.format.buildOutputConfig(); // a.k.a Output
 
   public paths: Path[] = [];
   public selected: string[] = [];

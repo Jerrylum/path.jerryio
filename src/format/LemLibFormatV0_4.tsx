@@ -1,9 +1,90 @@
+import { makeAutoObservable } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { makeId } from "../app/Util";
 import { Path, Vertex } from "../math/path";
 import { UnitOfLength, UnitConverter } from "../math/unit";
-import { GeneralConfig, SpeedConfig } from "./config";
+import { GeneralConfig, OutputConfig, SpeedConfig } from "./config";
 import { Format } from "./format";
+import { Box, Typography } from "@mui/material";
+import { NumberRange, RangeSlider } from "../app/RangeSlider";
+
+// observable class
+class GeneralConfigImpl implements GeneralConfig {
+  robotWidth: number = 12;
+  robotHeight: number = 12;
+  showRobot: boolean = true;
+  uol: UnitOfLength = UnitOfLength.Inch;
+  knotDensity: number = 2; // inches
+  controlMagnetDistance: number = 5 / 2.54;
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  getConfigPanel() {
+    return <></>
+  }
+}
+
+// observable class
+class SpeedConfigImpl implements SpeedConfig {
+  speedLimit: NumberRange = {
+    minLimit: { value: 0, label: "0" },
+    maxLimit: { value: 127, label: "127" },
+    step: 1,
+    from: 20,
+    to: 100,
+  };
+  applicationRange: NumberRange = {
+    minLimit: { value: 0, label: "0" },
+    maxLimit: { value: 4, label: "4" },
+    step: 0.01,
+    from: 1.4,
+    to: 1.8,
+  };
+  transitionRange: NumberRange = {
+    minLimit: { value: 0, label: "0" },
+    maxLimit: { value: 1, label: "1" },
+    step: 0.01,
+    from: 0,
+    to: 0.95,
+  };
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  getConfigPanel() {
+    return (
+      <>
+        <Box className="panel-box">
+          <Typography>Min/Max Speed</Typography>
+          <RangeSlider range={this.speedLimit} />
+        </Box>
+        <Box className="panel-box">
+          <Typography>Curve Deceleration Range</Typography>
+          <RangeSlider range={this.applicationRange} />
+        </Box>
+        <Box className="panel-box">
+          <Typography>Acceleration/Deceleration</Typography>
+          <RangeSlider range={this.transitionRange} inverted />
+        </Box>
+      </>
+    )
+  }
+}
+
+// observable class
+export class OutputConfigImpl implements OutputConfig {
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  getConfigPanel() {
+    return <></>
+  }
+}
 
 export class LemLibFormatV0_4 implements Format {
   isInit: boolean = false;
@@ -23,39 +104,15 @@ export class LemLibFormatV0_4 implements Format {
   }
 
   buildGeneralConfig(): GeneralConfig {
-    const rtn = new GeneralConfig();
-    rtn.robotWidth = 12;
-    rtn.robotHeight = 12;
-    rtn.uol = UnitOfLength.Inch;
-    rtn.knotDensity = 2; // inches
-    rtn.controlMagnetDistance = 5 / 2.54;
-    return rtn;
+    return new GeneralConfigImpl();
   }
 
   buildSpeedConfig(): SpeedConfig {
-    const rtn = new SpeedConfig();
-    rtn.speedLimit = {
-      minLimit: { value: 0, label: "0" },
-      maxLimit: { value: 127, label: "127" },
-      step: 1,
-      from: 20,
-      to: 100,
-    };
-    rtn.applicationRange = {
-      minLimit: { value: 0, label: "0" },
-      maxLimit: { value: 4, label: "4" },
-      step: 0.01,
-      from: 1.4,
-      to: 1.8,
-    };
-    rtn.transitionRange = {
-      minLimit: { value: 0, label: "0" },
-      maxLimit: { value: 1, label: "1" },
-      step: 0.01,
-      from: 0,
-      to: 0.95,
-    };
-    return rtn;
+    return new SpeedConfigImpl();
+  }
+
+  buildOutputConfig(): OutputConfig {
+    return new OutputConfigImpl();
   }
 
   exportPathFile(app: MainApp): string | undefined {

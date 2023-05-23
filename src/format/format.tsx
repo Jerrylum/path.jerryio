@@ -1,5 +1,6 @@
 import { MainApp } from '../app/MainApp';
-import { GeneralConfig, SpeedConfig } from "./config";
+import { Path } from "../math/path";
+import { GeneralConfig, OutputConfig, SpeedConfig } from "./config";
 
 export interface Format {
   isInit: boolean;
@@ -12,6 +13,8 @@ export interface Format {
   buildGeneralConfig(): GeneralConfig;
 
   buildSpeedConfig(): SpeedConfig;
+
+  buildOutputConfig(): OutputConfig;
 
   exportPathFile(app: MainApp): string | undefined;
 }
