@@ -3,8 +3,12 @@ import { Box, Typography } from "@mui/material";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
 import { UnitOfLength } from "../math/unit";
 
+export interface ConfigSection {
+  getConfigPanel(): JSX.Element;
+}
+
 // observable class
-export class GeneralConfig {
+export class GeneralConfig implements ConfigSection {
   robotWidth: number = 30;
   robotHeight: number = 30;
   showRobot: boolean = true;
@@ -22,7 +26,7 @@ export class GeneralConfig {
 }
 
 // observable class
-export class SpeedConfig {
+export class SpeedConfig implements ConfigSection {
   speedLimit: NumberRange = {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 600, label: "600" },
@@ -45,6 +49,10 @@ export class SpeedConfig {
     to: 0.95,
   };
 
+  constructor() {
+    makeAutoObservable(this);
+  }
+
   getConfigPanel() {
     return (
       <>
@@ -63,8 +71,16 @@ export class SpeedConfig {
       </>
     )
   }
+}
+
+// observable class
+export class OutputConfig implements ConfigSection {
 
   constructor() {
     makeAutoObservable(this);
+  }
+
+  getConfigPanel() {
+    return <></>
   }
 }

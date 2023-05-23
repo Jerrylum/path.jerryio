@@ -1,3 +1,4 @@
+import { MainApp } from "../App";
 import { makeId } from "../app/Util";
 import { Path, Vertex } from "../math/path";
 import { UnitOfLength, UnitConverter } from "../math/unit";
@@ -57,19 +58,19 @@ export class LemLibFormatV0_4 implements Format {
     return rtn;
   }
 
-  exportPathFile(paths: Path[], gc: GeneralConfig, sc: SpeedConfig): string | undefined {
+  exportPathFile(app: MainApp): string | undefined {
     // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.
 
     let rtn = "";
 
-    if (paths.length === 0) return;
+    if (app.paths.length === 0) return;
 
-    const path = paths[0]; // TODO use selected path
+    const path = app.paths[0]; // TODO use selected path
     if (path.splines.length === 0) return;
 
-    const uc = new UnitConverter(gc.uol, UnitOfLength.Inch);
+    const uc = new UnitConverter(app.gc.uol, UnitOfLength.Inch);
 
-    const knots = path.calculateKnots(gc, sc);
+    const knots = path.calculateKnots(app.gc, app.sc);
     for (const knot of knots) {
       // ALGO: heading is not supported in LemLib V0.4 format.
       rtn += `${uc.fromAtoB(knot.x)}, ${uc.fromAtoB(knot.y)}, ${uc.fixPrecision(knot.speed)}\n`;
@@ -98,7 +99,7 @@ export class LemLibFormatV0_4 implements Format {
 
     rtn += `endData\n`;
     rtn += `200\n`; // Not supported
-    rtn += `${sc.speedLimit.to}\n`;
+    rtn += `${app.sc.speedLimit.to}\n`;
     rtn += `200\n`; // Not supported
 
     function output(control: Vertex, postfix: string = ", ") {

@@ -8,23 +8,19 @@ import { reaction, action, makeAutoObservable } from "mobx"
 
 import { observer } from "mobx-react-lite"
 
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
 import Card from '@mui/material/Card';
-import Typography from '@mui/material/Typography';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
 import { PathsAccordion } from './app/PathsAccordion';
 import { FieldCanvasElement } from './app/FieldCanvasElement';
-import { useTimer } from './app/Util';
+import { addToArray, removeFromArray, useTimer } from './app/Util';
 import { Format } from './format/format';
 import { GeneralConfigAccordion } from './app/GeneralConfigAccordion';
 import { SpeedConfigAccordion } from './app/SpeedControlAccordion';
 import { PathDotJerryioFormatV0_1 } from './format/PathDotJerryioFormatV0_1';
-import { GeneralConfig, SpeedConfig } from './format/config';
+import { GeneralConfig, OutputConfig, SpeedConfig } from './format/config';
 import { UnitConverter, UnitOfLength } from './math/unit';
+import { OutputConfigAccordion } from './app/OutputAccordion';
 
 // observable class
 class UserBehavior {
@@ -38,29 +34,11 @@ class UserBehavior {
   }
 }
 
-function addToArray<T>(array: T[], item: T): boolean {
-  if (array.includes(item)) {
-    return false;
-  } else {
-    array.push(item);
-    return true;
-  }
-}
-
-function removeFromArray<T>(array: T[], item: T): boolean {
-  let index = array.indexOf(item);
-  if (index !== -1) {
-    array.splice(index, 1);
-    return true;
-  } else {
-    return false;
-  }
-}
-
 // observable class
-class MainApp {
+export class MainApp {
   public gc: GeneralConfig = new GeneralConfig(); // a.k.a Configuration
   public sc: SpeedConfig = new SpeedConfig(); // a.k.a Speed Control
+  public oc: OutputConfig = new OutputConfig(); // a.k.a Output
 
   public paths: Path[] = [];
   public selected: string[] = [];
@@ -182,19 +160,6 @@ const App = observer(() => {
 
   const appProps: AppProps = { paths: app.paths, cc, ub, app };
 
-  function onDownload() {
-    const output = format.exportPathFile(app.paths, app.gc, app.sc);
-    if (output === undefined) {
-      alert("Error: Cannot export path file"); // TODO better error handling
-      return;
-    }
-    const a = document.createElement("a");
-    const file = new Blob([output], { type: "text/plain" });
-    a.href = URL.createObjectURL(file);
-    a.download = "path.jerryio.txt";
-    a.click();
-  }
-
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
     <div className='App' key={format.uid + "-" + app.gc.uol}>
@@ -203,21 +168,9 @@ const App = observer(() => {
       </Card>
 
       <Box className='editor-container'>
-        <GeneralConfigAccordion gc={app.gc} format={format} setFormat={setFormat} />
+        <GeneralConfigAccordion gc={app.gc} {...{format, setFormat}} />
         <SpeedConfigAccordion sc={app.sc} />
-        <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography>Output</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Box>
-              <Button variant="text">Save</Button>
-              <Button variant="text">Save As</Button>
-              <Button variant="text">Open</Button>
-              <Button variant="text" onClick={onDownload}>Download</Button>
-            </Box>
-          </AccordionDetails>
-        </Accordion>
+        <OutputConfigAccordion {...appProps} {...{format}} />
         <PathsAccordion {...appProps} />
       </Box>
     </div>

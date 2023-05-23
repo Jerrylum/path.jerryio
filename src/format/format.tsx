@@ -1,4 +1,4 @@
-import { Path } from "../math/path";
+import { MainApp } from "../App";
 import { GeneralConfig, SpeedConfig } from "./config";
 
 export interface Format {
@@ -13,5 +13,5 @@ export interface Format {
     
     buildSpeedConfig(): SpeedConfig;
 
-    exportPathFile(paths: Path[], gc: GeneralConfig, sc: SpeedConfig): string | undefined;
+    exportPathFile(app: MainApp): string | undefined;
 }

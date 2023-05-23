@@ -24,3 +24,22 @@ export function makeId(length: number) {
   }
   return result;
 }
+
+export function addToArray<T>(array: T[], item: T): boolean {
+  if (array.includes(item)) {
+    return false;
+  } else {
+    array.push(item);
+    return true;
+  }
+}
+
+export function removeFromArray<T>(array: T[], item: T): boolean {
+  let index = array.indexOf(item);
+  if (index !== -1) {
+    array.splice(index, 1);
+    return true;
+  } else {
+    return false;
+  }
+}

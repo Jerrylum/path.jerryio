@@ -1,5 +1,5 @@
+import { MainApp } from "../App";
 import { makeId } from "../app/Util";
-import { Path } from "../math/path";
 import { UnitConverter, UnitOfLength } from "../math/unit";
 import { GeneralConfig, SpeedConfig } from "./config";
 import { Format } from "./format";
@@ -29,15 +29,15 @@ export class PathDotJerryioFormatV0_1 implements Format {
     return new SpeedConfig();
   }
 
-  exportPathFile(paths: Path[], gc: GeneralConfig, sc: SpeedConfig): string | undefined {
+  exportPathFile(app: MainApp): string | undefined {
     let rtn = "";
 
-    const uc = new UnitConverter(gc.uol, UnitOfLength.Centimeter);
+    const uc = new UnitConverter(app.gc.uol, UnitOfLength.Centimeter);
 
-    for (const path of paths) {
+    for (const path of app.paths) {
       rtn += `#PATH-KNOTS-START ${path.name}\n`;
 
-      const knots = path.calculateKnots(gc, sc);
+      const knots = path.calculateKnots(app.gc, app.sc);
       for (const knot of knots) {
         const x = uc.fromAtoB(knot.x);
         const y = uc.fromAtoB(knot.y);
