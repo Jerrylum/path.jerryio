@@ -4,11 +4,11 @@ import { observer } from "mobx-react-lite";
 import { AppProps } from '../App';
 import { Format } from '../format/format';
 
-const OutputConfigAccordion = observer((props: AppProps & { format: Format }) => {
+const OutputConfigAccordion = observer((props: AppProps) => {
   const oc = props.app.oc;
 
   function onDownload() {
-    const output = props.format.exportPathFile(props.app);
+    const output = props.app.format.exportPathFile(props.app);
     if (output === undefined) {
       alert("Error: Cannot export path file"); // TODO better error handling
       return;

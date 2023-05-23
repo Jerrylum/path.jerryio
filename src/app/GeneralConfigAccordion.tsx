@@ -4,15 +4,13 @@ import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { Format } from '../format/format';
 import { ObserverInput } from './ObserverInput';
-import { GeneralConfig } from '../format/config';
 import { LemLibFormatV0_4 } from '../format/LemLibFormatV0_4';
 import { PathDotJerryioFormatV0_1 } from '../format/PathDotJerryioFormatV0_1';
 import { UnitOfLength } from '../math/unit';
+import { AppProps } from '../App';
 
-const GeneralConfigAccordion = observer((props: {
-  gc: GeneralConfig,
-  format: Format, setFormat: React.Dispatch<React.SetStateAction<Format>>
-}) => {
+const GeneralConfigAccordion = observer((props: AppProps) => {
+  const gc = props.app.gc;
 
   const formats: Format[] = [
     new LemLibFormatV0_4(),
@@ -28,8 +26,8 @@ const GeneralConfigAccordion = observer((props: {
         <Typography gutterBottom>Format</Typography>
         <Box className="panel-box">
           <Select size="small" sx={{ maxWidth: "100%" }}
-            value={formats.findIndex((x) => x.getName() === props.format.getName())}
-            onChange={(e) => props.setFormat(formats[parseInt(e.target.value + "")])}>
+            value={formats.findIndex((x) => x.getName() === props.app.format.getName())}
+            onChange={(e) => props.app.format = formats[parseInt(e.target.value + "")]}>
             {
               formats.map((x, i) => {
                 return <MenuItem key={i} value={i}>{x.getName()}</MenuItem>
@@ -40,7 +38,7 @@ const GeneralConfigAccordion = observer((props: {
         <Box className="flex-editor-panel" sx={{ marginTop: "2vh" }} >
           <FormControl sx={{ width: "8rem" }}>
             <InputLabel id="uol-label">Unit of Length</InputLabel>
-            <Select labelId="uol-label" label="Unit of Length" size="small" value={props.gc.uol} onChange={action((e: SelectChangeEvent<UnitOfLength>) => props.gc.uol = e.target.value as UnitOfLength)}>
+            <Select labelId="uol-label" label="Unit of Length" size="small" value={gc.uol} onChange={action((e: SelectChangeEvent<UnitOfLength>) => gc.uol = e.target.value as UnitOfLength)}>
               {
                 Object.keys(UnitOfLength).filter((x) => !isNaN(parseInt(x))).map((x) => {
                   return <MenuItem key={x} value={parseInt(x)}>{UnitOfLength[parseInt(x)]}
@@ -52,8 +50,8 @@ const GeneralConfigAccordion = observer((props: {
           <ObserverInput
             sx={{ width: "6rem" }}
             label="Knot Density"
-            getValue={() => props.gc.knotDensity + ""}
-            setValue={(value: string) => { props.gc.knotDensity = parseFloat(parseFloat(value).toFixed(3)); }}
+            getValue={() => gc.knotDensity + ""}
+            setValue={(value: string) => { gc.knotDensity = parseFloat(parseFloat(value).toFixed(3)); }}
             isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
             isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
           />
@@ -62,23 +60,23 @@ const GeneralConfigAccordion = observer((props: {
         <Box className='flex-editor-panel'>
           <ObserverInput
             label="Width"
-            getValue={() => props.gc.robotWidth + ""}
-            setValue={(value: string) => { props.gc.robotWidth = parseFloat(parseFloat(value).toFixed(3)); }}
+            getValue={() => gc.robotWidth + ""}
+            setValue={(value: string) => { gc.robotWidth = parseFloat(parseFloat(value).toFixed(3)); }}
             isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
             isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
           />
           <ObserverInput
             label="Height"
-            getValue={() => props.gc.robotHeight + ""}
-            setValue={(value: string) => { props.gc.robotHeight = parseFloat(parseFloat(value).toFixed(3)); }}
+            getValue={() => gc.robotHeight + ""}
+            setValue={(value: string) => { gc.robotHeight = parseFloat(parseFloat(value).toFixed(3)); }}
             isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
             isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
           />
           <FormControlLabel control={
-            <Checkbox checked={props.gc.showRobot} onChange={action((e, c) => props.gc.showRobot = c)} />
+            <Checkbox checked={gc.showRobot} onChange={action((e, c) => gc.showRobot = c)} />
           } label="Show Robot" sx={{ whiteSpace: "nowrap" }} />
         </Box>
-        {props.gc.getConfigPanel()}
+        {gc.getConfigPanel()}
       </AccordionDetails>
     </Accordion>
   )

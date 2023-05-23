@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import './App.css';
 
 import { Path } from './math/path';
@@ -14,10 +14,8 @@ import { Box } from '@mui/material';
 import { PathsAccordion } from './app/PathsAccordion';
 import { FieldCanvasElement } from './app/FieldCanvasElement';
 import { useTimer } from './app/Util';
-import { Format } from './format/format';
 import { GeneralConfigAccordion } from './app/GeneralConfigAccordion';
 import { SpeedConfigAccordion } from './app/SpeedControlAccordion';
-import { PathDotJerryioFormatV0_1 } from './format/PathDotJerryioFormatV0_1';
 import { UnitConverter, UnitOfLength } from './math/unit';
 import { OutputConfigAccordion } from './app/OutputAccordion';
 import { MainApp } from './app/MainApp';
@@ -47,8 +45,6 @@ export interface AppProps {
 const App = observer(() => {
   useTimer(1000 / 30);
 
-  const [format, setFormat] = useState<Format>(new PathDotJerryioFormatV0_1());
-
   const uc = new UnitConverter(UnitOfLength.Foot, app.gc.uol);
   const canvasSizeInPx = window.innerHeight * 0.94;
   const canvasSizeInUOL = uc.fromAtoB(12);
@@ -65,15 +61,15 @@ const App = observer(() => {
   });
 
   function initFormat() {
-    if (format.isInit) return;
+    if (app.format.isInit) return;
 
-    format.init();
+    app.format.init();
 
     const robotWidth = app.gc.robotWidth;
     const robotHeight = app.gc.robotHeight;
 
-    app.gc = format.buildGeneralConfig();
-    app.sc = format.buildSpeedConfig();
+    app.gc = app.format.buildGeneralConfig();
+    app.sc = app.format.buildSpeedConfig();
 
     // UX: Keep robot width and height
     app.gc.robotWidth = robotWidth;
@@ -115,21 +111,21 @@ const App = observer(() => {
     }
   }), []);
 
-  useEffect(action(initFormat), [format]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(action(initFormat), [app.format]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const appProps: AppProps = { paths: app.paths, cc, ub, app };
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
-    <div className='App' key={format.uid + "-" + app.gc.uol}>
+    <div className='App' key={app.format.uid + "-" + app.gc.uol}>
       <Card className='field-container'>
         <FieldCanvasElement {...appProps} />
       </Card>
 
       <Box className='editor-container'>
-        <GeneralConfigAccordion gc={app.gc} {...{ format, setFormat }} />
+        <GeneralConfigAccordion {...appProps} />
         <SpeedConfigAccordion sc={app.sc} />
-        <OutputConfigAccordion {...appProps} {...{ format }} />
+        <OutputConfigAccordion {...appProps} />
         <PathsAccordion {...appProps} />
       </Box>
     </div>
