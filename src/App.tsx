@@ -31,6 +31,7 @@ class UserBehavior {
     makeAutoObservable(this);
   }
 }
+
 let ub = new UserBehavior();
 let app = new MainApp();
 

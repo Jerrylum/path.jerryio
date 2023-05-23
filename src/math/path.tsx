@@ -1,7 +1,10 @@
+import { Transform, Type } from 'class-transformer';
 import { makeAutoObservable } from "mobx"
 import { makeId } from "../app/Util";
 import { GeneralConfig, SpeedConfig } from "../format/config";
 import { InteractiveEntity, CanvasEntity } from "./canvas";
+
+import 'reflect-metadata';
 
 export class Vertex {
 
@@ -152,11 +155,25 @@ export class EndPointControl extends Control implements Position {
 
 // observable class
 export class Spline implements CanvasEntity {
+  @Type(() => Control, {
+    discriminator: {
+      property: '__type',
+      subTypes: [
+        { value: EndPointControl, name: 'end-point' },
+        { value: Control, name: 'control' },
+      ],
+    },
+    keepDiscriminatorProperty: true
+  })
   public controls: (EndPointControl | Control)[];
   public uid: string;
 
   constructor(start: EndPointControl, middle: Control[], end: EndPointControl) {
-    this.controls = [start, ...middle, end];
+    if (start === undefined) { // for serialization
+      this.controls = [];
+    } else {
+      this.controls = [start, ...middle, end];
+    }
     this.uid = makeId(10);
     makeAutoObservable(this);
   }
