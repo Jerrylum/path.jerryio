@@ -1,3 +1,4 @@
+import { makeAutoObservable } from "mobx"
 import { makeId } from "../app/Util";
 import { GeneralConfig, SpeedConfig } from "../format/config";
 import { InteractiveEntity, CanvasEntity } from "./canvas";
@@ -149,6 +150,7 @@ export class EndPointControl extends Control implements Position {
   }
 }
 
+// observable class
 export class Spline implements CanvasEntity {
   public controls: (EndPointControl | Control)[];
   public uid: string;
@@ -156,6 +158,7 @@ export class Spline implements CanvasEntity {
   constructor(start: EndPointControl, middle: Control[], end: EndPointControl) {
     this.controls = [start, ...middle, end];
     this.uid = makeId(10);
+    makeAutoObservable(this);
   }
 
   distance(): number {
@@ -257,6 +260,7 @@ export class Spline implements CanvasEntity {
   }
 }
 
+// observable class
 export class Path implements InteractiveEntity {
   public splines: Spline[];
   public name: string = "Path";
@@ -267,6 +271,7 @@ export class Path implements InteractiveEntity {
   constructor(firstSpline: Spline) {
     this.splines = [firstSpline];
     this.uid = makeId(10);
+    makeAutoObservable(this);
   }
 
   getControlsSet(): (EndPointControl | Control)[] {
