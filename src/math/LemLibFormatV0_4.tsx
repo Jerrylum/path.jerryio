@@ -26,6 +26,7 @@ export class LemLibFormatV0_4 implements Format {
     rtn.robotWidth = 12;
     rtn.robotHeight = 12;
     rtn.uol = UnitOfLength.Inch;
+    rtn.knotDensity = 2; // inches
     rtn.controlMagnetDistance = 5 / 2.54;
     return rtn;
   }

@@ -1,5 +1,5 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Checkbox, FormControlLabel, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
 import { action, makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
 import { Format } from '../math/format';
@@ -29,6 +29,7 @@ export class GeneralConfig {
   robotHeight: number = 30;
   showRobot: boolean = true;
   uol: UnitOfLength = UnitOfLength.Centimeter;
+  knotDensity: number = 2;
   controlMagnetDistance: number = 5;
 
   constructor() {
@@ -81,7 +82,7 @@ export class UnitConverter {
     return this.betaUOL;
   }
 
-  fromAtoB(a: number): number {   
+  fromAtoB(a: number): number {
     return this.fixPrecision(a * this.aRatio / this.bRatio);
   }
 
@@ -123,6 +124,27 @@ const GeneralConfigAccordion = observer((props: {
             }
           </Select>
         </Box>
+        <Box className="flex-editor-panel" sx={{ marginTop: "2vh" }} >
+          <FormControl sx={{ width: "8rem" }}>
+            <InputLabel id="uol-label">Unit of Length</InputLabel>
+            <Select labelId="uol-label" label="Unit of Length" size="small" value={props.gc.uol} onChange={action((e: SelectChangeEvent<UnitOfLength>) => props.gc.uol = e.target.value as UnitOfLength)}>
+              {
+                Object.keys(UnitOfLength).filter((x) => !isNaN(parseInt(x))).map((x) => {
+                  return <MenuItem key={x} value={parseInt(x)}>{UnitOfLength[parseInt(x)]}
+                  </MenuItem>
+                })
+              }
+            </Select>
+          </FormControl>
+          <ObserverInput
+            sx={{ width: "6rem" }}
+            label="Knot Density"
+            getValue={() => props.gc.knotDensity + ""}
+            setValue={(value: string) => { props.gc.knotDensity = parseFloat(parseFloat(value).toFixed(3)); }}
+            isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+            isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+          />
+        </Box>
         <Typography sx={{ marginTop: "2vh" }} gutterBottom>Robot Visualize</Typography>
         <Box className='flex-editor-panel'>
           <ObserverInput
@@ -142,17 +164,6 @@ const GeneralConfigAccordion = observer((props: {
           <FormControlLabel control={
             <Checkbox checked={props.gc.showRobot} onChange={action((e, c) => props.gc.showRobot = c)} />
           } label="Show Robot" sx={{ whiteSpace: "nowrap" }} />
-        </Box>
-        <Typography sx={{ marginTop: "2vh" }}>Unit of Length</Typography>
-        <Box>
-          <Select size="small" value={props.gc.uol} onChange={action((e: SelectChangeEvent<UnitOfLength>) => props.gc.uol = e.target.value as UnitOfLength)}>
-            {
-              Object.keys(UnitOfLength).filter((x) => !isNaN(parseInt(x))).map((x) => {
-                return <MenuItem key={x} value={parseInt(x)}>{UnitOfLength[parseInt(x)]}
-                </MenuItem>
-              })
-            }
-          </Select>
         </Box>
         {props.gc.getConfigPanel()}
       </AccordionDetails>

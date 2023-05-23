@@ -190,7 +190,7 @@ export class Spline implements CanvasEntity {
 
     calculateKnots(gc: GeneralConfig, sc: SpeedConfig, integral = 0): Knot[] {
         const distance = this.distance();
-        const targetInterval = 1 / (distance / new UnitConverter(UnitOfLength.Inch, gc.uol).fromAtoB(2)); // TODO: editable
+        const targetInterval = 1 / (distance / gc.knotDensity);
 
         // The density of knots is NOT uniform along the curve
         let points: Knot[] = this.calculateBezierCurveKnots(targetInterval, integral);
@@ -437,7 +437,7 @@ export class Path implements InteractiveEntity {
         // ALGO: Same with above
         const decSpeedScale = speedDiff / (1 - sc.transitionRange.to);
 
-        const targetInterval = 1 / (pathTTD / new UnitConverter(UnitOfLength.Inch, gc.uol).fromAtoB(2)); // TODO: editable
+        const targetInterval = 1 / (pathTTD / gc.knotDensity);
 
         function calculateSpeed(p3: Knot) {
             // ALGO: Scale the speed according to the application range
