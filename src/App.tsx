@@ -96,6 +96,8 @@ const App = observer(() => {
       app.selected = [];
       app.expanded = [];
 
+      app.gc.knotDensity = uc.fromAtoB(app.gc.knotDensity);
+      app.gc.controlMagnetDistance = uc.fromAtoB(app.gc.controlMagnetDistance);
       app.gc.robotWidth = uc.fromAtoB(app.gc.robotWidth);
       app.gc.robotHeight = uc.fromAtoB(app.gc.robotHeight);
 
