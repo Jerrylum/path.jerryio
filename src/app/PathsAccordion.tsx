@@ -17,14 +17,11 @@ export class ControlEditorData {
   private headingInput: string = "";
   private selected: EndPointControl | Control | Symbol | undefined;
 
-  public xInputRef = useRef<HTMLInputElement>(null);
-  public yInputRef = useRef<HTMLInputElement>(null);
-  public headingInputRef = useRef<HTMLInputElement>(null);
+  constructor(
+    public xInputRef: React.RefObject<HTMLInputElement>,
+    public yInputRef: React.RefObject<HTMLInputElement>,
+    public headingInputRef: React.RefObject<HTMLInputElement>) {
 
-  constructor(xInputRef: React.RefObject<HTMLInputElement>, yInputRef: React.RefObject<HTMLInputElement>, headingInputRef: React.RefObject<HTMLInputElement>) {
-    this.xInputRef = xInputRef;
-    this.yInputRef = yInputRef;
-    this.headingInputRef = headingInputRef;
   }
 
   getSelected() {

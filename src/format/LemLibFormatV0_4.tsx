@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { makeId } from "../app/Util";
-import { Path, Vertex } from "../math/path";
+import { Vertex } from "../math/path";
 import { UnitOfLength, UnitConverter } from "../math/unit";
 import { GeneralConfig, OutputConfig, SpeedConfig } from "./config";
 import { Format } from "./format";

@@ -14,18 +14,12 @@ const ratioInch = 2.54 * ratioCentimeter;
 const ratioFoot = 12 * ratioInch;
 
 export class UnitConverter {
-  private alphaUOL: UnitOfLength;
-  private betaUOL: UnitOfLength;
   private aRatio: number;
   private bRatio: number;
-  private precision: number = 3;
 
-  constructor(alphaUOL: UnitOfLength, betaUOL: UnitOfLength, precision?: number) {
-    this.alphaUOL = alphaUOL;
-    this.betaUOL = betaUOL;
+  constructor(private alphaUOL: UnitOfLength, private betaUOL: UnitOfLength, private precision: number = 3) {
     this.aRatio = UnitConverter.getRatio(alphaUOL);
     this.bRatio = UnitConverter.getRatio(betaUOL);
-    if (precision !== undefined) this.precision = precision;
   }
 
   static getRatio(UOL: number): number {

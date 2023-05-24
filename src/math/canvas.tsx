@@ -10,22 +10,12 @@ export interface InteractiveEntity extends CanvasEntity {
 }
 
 export class CanvasConverter {
-    public pixelWidth: number; // in pixel
-    public pixelHeight: number; // in pixel
-    public fieldWidth: number; // in uol
-    public fieldHeight: number; // in uol
-
-    // calculated
     public pixelWidthHalf: number;
     public pixelHeightHalf: number;
     public uol2pixel: number; // in pixel/uol
     public pixel2uol: number; // in uol/pixel
 
-    constructor(pixelWidth: number, pixelHeight: number, fieldWidth: number, fieldHeight: number) {
-        this.pixelWidth = pixelWidth;
-        this.pixelHeight = pixelHeight;
-        this.fieldWidth = fieldWidth;
-        this.fieldHeight = fieldHeight;
+    constructor(public pixelWidth: number, public pixelHeight: number, public fieldWidth: number, public fieldHeight: number) {
         this.pixelWidthHalf = pixelWidth / 2;
         this.pixelHeightHalf = pixelHeight / 2;
         this.uol2pixel = pixelWidth / fieldWidth;
