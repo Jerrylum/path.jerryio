@@ -94,6 +94,22 @@ export class MainApp {
     return instanceToPlain(data);
   }
 
+  importPathFile(app: MainApp, data: string): void {
+    // ALGO: This function throws error
+    // ALGO: Just find the first line that starts with "#PATH.JERRYIO-DATA"
+    // ALGO: Throw error if not found
+    const lines = data.split("\n");
+    for (const line of lines) {
+      if (line.startsWith("#PATH.JERRYIO-DATA")) {
+        const json = line.substring("#PATH.JERRYIO-DATA".length).trim();
+        const appData = JSON.parse(json) as AppData;
+        app.importAppData(appData);
+        return;
+      }
+    }
+    // TODO: recover
+  }
+
   exportPathFile(): string | undefined {
     return this.format.exportPathFile(this);
   }
