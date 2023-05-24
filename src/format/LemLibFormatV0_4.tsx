@@ -178,7 +178,7 @@ export class LemLibFormatV0_4 implements Format {
       }
     }
 
-    rtn += "PATH.JERRYIO-DATA " + JSON.stringify(app.exportAppData());
+    rtn += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportAppData());
 
     return rtn;
   }
