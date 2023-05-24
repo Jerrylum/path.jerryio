@@ -59,14 +59,20 @@ class CustomGeneralConfig implements GeneralConfig {
   }
 }
 
-test('test 1', () => {
+test('Export test', () => {
   // render(<App />);
   // const linkElement = screen.getByText(/learn react/i);
   // expect(linkElement).toBeInTheDocument();
 
-  // const app = new MainApp();
+  const app = new MainApp();
 
-  // console.log(app);
+  const plain = JSON.stringify(app.exportAppData());
+
+  app.importAppData(JSON.parse(plain));
+
+  const plain2 = JSON.stringify(app.exportAppData());
+
+  expect(plain).toEqual(plain2);
 });
 
 test('Format serialize', () => {

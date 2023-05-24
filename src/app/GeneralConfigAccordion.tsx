@@ -2,20 +2,15 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { Format } from '../format/format';
+import { getAllFormats } from '../format/format';
 import { ObserverInput } from './ObserverInput';
-import { LemLibFormatV0_4 } from '../format/LemLibFormatV0_4';
-import { PathDotJerryioFormatV0_1 } from '../format/PathDotJerryioFormatV0_1';
 import { UnitOfLength } from '../math/unit';
 import { AppProps } from '../App';
 
 const GeneralConfigAccordion = observer((props: AppProps) => {
   const gc = props.app.gc;
 
-  const formats: Format[] = [
-    new LemLibFormatV0_4(),
-    new PathDotJerryioFormatV0_1(),
-  ];
+  const formats = getAllFormats();
 
   return (
     <Accordion defaultExpanded>

@@ -75,7 +75,7 @@ class SpeedConfigImpl implements SpeedConfig {
 }
 
 // observable class
-export class OutputConfigImpl implements OutputConfig {
+class OutputConfigImpl implements OutputConfig {
 
   constructor() {
     makeAutoObservable(this);
@@ -177,6 +177,8 @@ export class LemLibFormatV0_4 implements Format {
         output(spline.controls[1], "\n");
       }
     }
+
+    rtn += "PATH.JERRYIO-DATA " + JSON.stringify(app.exportAppData());
 
     return rtn;
   }

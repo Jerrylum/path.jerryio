@@ -4,8 +4,9 @@ import { GeneralConfig, SpeedConfig, OutputConfig } from "../format/config";
 import { InteractiveEntity } from "../math/canvas";
 import { Path, Vertex } from "../math/path";
 import { addToArray, removeFromArray } from "./Util";
-import { Format } from "../format/format";
+import { AppData, Format, getAllFormats } from "../format/format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
+import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-transformer';
 
 
 // observable class
@@ -47,5 +48,45 @@ export class MainApp {
 
   removeExpanded(x: InteractiveEntity | string): boolean {
     return removeFromArray(this.expanded, typeof x === "string" ? x : x.uid);
+  }
+
+  importAppData(data: Record<string, any>): void {
+    const format = getAllFormats().find(f => f.getName() === data.format);
+    if (format === undefined) throw new Error("Format not found.");
+    format.init();
+
+    if (typeof data.gc !== "object") throw new Error("Invalid data format: gc is not an object.");
+    if (typeof data.sc !== "object") throw new Error("Invalid data format: sc is not an object.");
+    if (typeof data.oc !== "object") throw new Error("Invalid data format: oc is not an object.");
+
+    const gc = plainToClassFromExist(format.buildGeneralConfig(), data.gc);
+    const sc = plainToClassFromExist(format.buildSpeedConfig(), data.sc);
+    const oc = plainToClassFromExist(format.buildOutputConfig(), data.oc);
+
+    // check data.paths is an array
+    if (!Array.isArray(data.paths)) throw new Error("Invalid data format: paths is not an array.");
+    const paths = plainToInstance(Path, data.paths);
+
+    this.format = format;
+    this.gc = gc;
+    this.sc = sc;
+    this.oc = oc;
+    this.paths = paths;
+  }
+
+  exportAppData(): Record<string, any> {
+    const data: AppData = {
+      format: this.format.getName(),
+      gc: this.gc,
+      sc: this.sc,
+      oc: this.oc,
+      paths: this.paths
+    };
+
+    return instanceToPlain(data);
+  }
+
+  exportPathFile(): string | undefined {
+    return this.format.exportPathFile(this);
   }
 }
