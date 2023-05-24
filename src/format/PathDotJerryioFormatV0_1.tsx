@@ -131,9 +131,6 @@ export class PathDotJerryioFormatV0_1 implements Format {
         else
           rtn += `${x},${y},${knot.speed.toFixed(3)}\n`;
       }
-
-      rtn += `#PATH-KNOTS-END\n`;
-      rtn += `#PATH-EDITOR ${path.name}\n`; // TODO
     }
 
     rtn += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportAppData());
