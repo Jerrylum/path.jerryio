@@ -136,7 +136,7 @@ const PathTreeItem = observer((props: PathTreeProps) => {
           onKeyDown={(e) => onPathNameKeyDown(e)}
           onBlur={(e) => onPathNameConfirm(e)}
           suppressContentEditableWarning={true}
-          dangerouslySetInnerHTML={{ __html: initialValue.current }} // XXX: Beware of XSS attack from the path file
+          dangerouslySetInnerHTML={{ __html: initialValue.current }} // SECURITY: Beware of XSS attack from the path file
           onClick={(e) => e.preventDefault()}
         />
       </PathTreeItemLabel>

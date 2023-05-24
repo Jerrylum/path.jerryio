@@ -10,6 +10,7 @@ import { instanceToPlain } from 'class-transformer';
 import { GeneralConfig, OutputConfig, SpeedConfig } from './format/config';
 import { Format } from './format/format';
 import { UnitOfLength } from "./math/unit";
+import DOMPurify from "dompurify";
 
 class CustomFormat implements Format {
   isInit: boolean;
@@ -59,11 +60,19 @@ class CustomGeneralConfig implements GeneralConfig {
   }
 }
 
-test('Export test', () => {
+test('Sanitize', () => {
   // render(<App />);
   // const linkElement = screen.getByText(/learn react/i);
   // expect(linkElement).toBeInTheDocument();
 
+  const purify = DOMPurify();
+
+  expect(purify.isSupported).toBeTruthy();
+
+  expect(purify.sanitize("<script>alert('hello')</script>")).toEqual("");
+});
+
+test('Export test', () => {
   const app = new MainApp();
 
   const plain = JSON.stringify(app.exportAppData());

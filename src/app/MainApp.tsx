@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx"
-
+import DOMPurify from 'dompurify';
 import { GeneralConfig, SpeedConfig, OutputConfig } from "../format/config";
 import { InteractiveEntity } from "../math/canvas";
 import { Path, Vertex } from "../math/path";
@@ -66,6 +66,14 @@ export class MainApp {
     // check data.paths is an array
     if (!Array.isArray(data.paths)) throw new Error("Invalid data format: paths is not an array.");
     const paths = plainToInstance(Path, data.paths);
+
+    const purify = DOMPurify();
+
+    // SECURITY: sanitize path names, beware of XSS attack from the path file
+    for (const path of paths) {
+      const temp = purify.sanitize(path.name);
+      path.name = temp === "" ? "Path" : temp;
+    }
 
     this.format = format;
     this.gc = gc;
