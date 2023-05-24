@@ -82,7 +82,10 @@ const FieldCanvasElement = observer((props: AppProps) => {
                   let knotInPx = props.cc.toPx(knotInUOL);
 
                   let percentage = (knotInUOL.speed - speedFrom) / (speedTo - speedFrom);
-                  let color = `rgb(${255 - percentage * 255}, ${percentage * 255}, 0)`; // red = min speed, green = max speed
+                  // h => hue
+                  // s => saturation
+                  // l => lightness
+                  const color = `hsl(${percentage * 90}, 70%, 50%)`; // red = min speed, green = max speed
                   return <Circle key={index} x={knotInPx.x} y={knotInPx.y} radius={knotRadius} fill={color} />
                 })
               }
