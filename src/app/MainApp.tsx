@@ -52,6 +52,26 @@ export class MainApp {
     return removeFromArray(this.expanded, typeof x === "string" ? x : x.uid);
   }
 
+  private setPathFileData(format: Format, pfd: PathFileData): void {
+    const purify = DOMPurify();
+
+    // SECURITY: sanitize path names, beware of XSS attack from the path file
+    for (const path of pfd.paths) {
+      const temp = purify.sanitize(path.name);
+      path.name = temp === "" ? "Path" : temp;
+    }
+
+    this.format = format;
+    this.usingUOL = pfd.gc.uol;
+    this.gc = pfd.gc;
+    this.sc = pfd.sc;
+    this.oc = pfd.oc;
+    this.paths = pfd.paths;
+
+    this.selected = [];
+    this.expanded = [];
+  }
+
   importPathFileData(data: Record<string, any>): void {
     const format = getAllFormats().find(f => f.getName() === data.format);
     if (format === undefined) throw new Error("Format not found.");
@@ -69,20 +89,13 @@ export class MainApp {
     if (!Array.isArray(data.paths)) throw new Error("Invalid data format: paths is not an array.");
     const paths = plainToInstance(Path, data.paths);
 
-    const purify = DOMPurify();
-
-    // SECURITY: sanitize path names, beware of XSS attack from the path file
-    for (const path of paths) {
-      const temp = purify.sanitize(path.name);
-      path.name = temp === "" ? "Path" : temp;
-    }
-
-    this.format = format;
-    this.usingUOL = gc.uol;
-    this.gc = gc;
-    this.sc = sc;
-    this.oc = oc;
-    this.paths = paths;
+    this.setPathFileData(format, {
+      format: format.getName(),
+      gc: gc,
+      sc: sc,
+      oc: oc,
+      paths: paths
+    });
   }
 
   exportPathFileData(): Record<string, any> {
@@ -105,8 +118,7 @@ export class MainApp {
     for (const line of lines) {
       if (line.startsWith("#PATH.JERRYIO-DATA")) {
         const json = line.substring("#PATH.JERRYIO-DATA".length).trim();
-        const pfd = JSON.parse(json) as PathFileData;
-        this.importPathFileData(pfd);
+        this.importPathFileData(JSON.parse(json));
         return;
       }
     }
@@ -118,12 +130,7 @@ export class MainApp {
     format.init(); // ALGO: Suspend initFormat()
     const pfd = format.recoverPathFileData(fileContent);
 
-    this.format = format;
-    this.usingUOL = pfd.gc.uol;
-    this.gc = pfd.gc;
-    this.sc = pfd.sc;
-    this.oc = pfd.oc;
-    this.paths = pfd.paths;
+    this.setPathFileData(format, pfd);
   }
 
   exportPathFile(): string | undefined {
