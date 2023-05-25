@@ -22,7 +22,7 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
         <Box className="panel-box">
           <Select size="small" sx={{ maxWidth: "100%" }}
             value={formats.findIndex((x) => x.getName() === props.app.format.getName())}
-            onChange={(e) => props.app.format = formats[parseInt(e.target.value + "")]}>
+            onChange={action((e: SelectChangeEvent<number>) => props.app.format = formats[parseInt(e.target.value + "")])}>
             {
               formats.map((x, i) => {
                 return <MenuItem key={i} value={i}>{x.getName()}</MenuItem>
