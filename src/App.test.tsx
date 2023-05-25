@@ -8,7 +8,7 @@ import { Control, EndPointControl, Path, Spline, Vertex } from './math/Path';
 import { plainToClassFromExist, plainToInstance } from 'class-transformer';
 import { instanceToPlain } from 'class-transformer';
 import { GeneralConfig, OutputConfig, SpeedConfig } from './format/Config';
-import { Format } from './format/Format';
+import { Format, PathFileData } from './format/Format';
 import { UnitOfLength } from "./math/Unit";
 import DOMPurify from "dompurify";
 
@@ -36,7 +36,10 @@ class CustomFormat implements Format {
   buildOutputConfig(): OutputConfig {
     throw new Error("Method not implemented.");
   }
-  exportPathFile(app: MainApp): string | undefined {
+  recoverPathFileData(fileContent: string): PathFileData {
+    throw new Error("Method not implemented.");
+  }
+  exportPathFile(app: MainApp): string {
     throw new Error('Method not implemented.');
   }
 }
@@ -75,11 +78,11 @@ test('Sanitize', () => {
 test('Export test', () => {
   const app = new MainApp();
 
-  const plain = JSON.stringify(app.exportAppData());
+  const plain = JSON.stringify(app.exportPathFileData());
 
-  app.importAppData(JSON.parse(plain));
+  app.importPathFileData(JSON.parse(plain));
 
-  const plain2 = JSON.stringify(app.exportAppData());
+  const plain2 = JSON.stringify(app.exportPathFileData());
 
   expect(plain).toEqual(plain2);
 });

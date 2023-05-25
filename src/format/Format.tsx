@@ -18,10 +18,12 @@ export interface Format {
 
   buildOutputConfig(): OutputConfig;
 
-  exportPathFile(app: MainApp): string | undefined;
+  recoverPathFileData(fileContent: string): PathFileData;
+
+  exportPathFile(app: MainApp): string;
 }
 
-export interface AppData {
+export interface PathFileData {
   format: string;
   gc: GeneralConfig;
   sc: SpeedConfig;

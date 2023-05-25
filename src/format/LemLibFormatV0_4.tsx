@@ -1,12 +1,13 @@
 import { makeAutoObservable } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { makeId } from "../app/Util";
-import { Vertex } from "../math/Path";
+import { Control, EndPointControl, Path, Spline, Vertex } from "../math/Path";
 import { UnitOfLength, UnitConverter } from "../math/Unit";
 import { GeneralConfig, OutputConfig, SpeedConfig } from "./Config";
-import { Format } from "./Format";
+import { Format, PathFileData } from "./Format";
 import { Box, Typography } from "@mui/material";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
+import { parse } from "url";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -115,15 +116,89 @@ export class LemLibFormatV0_4 implements Format {
     return new OutputConfigImpl();
   }
 
-  exportPathFile(app: MainApp): string | undefined {
+  recoverPathFileData(fileContent: string): PathFileData {
+    // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.
+
+    const paths: Path[] = [];
+    const gc = new GeneralConfigImpl();
+    const sc = new SpeedConfigImpl();
+    const oc = new OutputConfigImpl();
+
+    // find the first line that is "endData"
+    const lines = fileContent.split("\n");
+
+    let i = lines.findIndex((line) => line === "endData");
+    if (i === -1) throw new Error("Invalid file format, unable to find line 'endData'");
+
+    // i + 1 Deceleration not supported.
+
+    const maxSpeed = Number(lines[i + 2]);
+    if (isNaN(maxSpeed)) throw new Error("Invalid file format, unable to parse max speed");
+    sc.speedLimit.to = Math.max(Math.min(Number(maxSpeed.toFixed(3)), sc.speedLimit.maxLimit.value), sc.speedLimit.minLimit.value);
+
+    // i + 3 Multiplier not supported.
+
+    i += 4;
+
+    function error() {
+      throw new Error("Invalid file format, unable to parse spline at line " + (i + 1));
+    }
+
+    function number(str: string): number {
+      const num = Number(str);
+      if (isNaN(num)) error();
+      return parseFloat(num.toFixed(3));
+    }
+
+    function push(spline: Spline) {
+      // check if there is a path
+      if (paths.length === 0) {
+        paths.push(new Path(spline));
+      } else {
+        const path = paths[paths.length - 1];
+        const lastSpline = path.splines[path.splines.length - 1];
+        const a = lastSpline.last();
+        const b = spline.first();
+
+        if (a.x !== b.x || a.y !== b.y) error();
+
+        path.splines.push(spline);
+      }
+    }
+
+    while (i < lines.length - 1) { // ALGO: the last line is always empty, follow the original implementation.
+      const line = lines[i];
+      const tokens = line.split(", ");
+      if (tokens.length !== 8) error();
+
+      const p1 = new EndPointControl(number(tokens[0]), number(tokens[1]), 0);
+      const p2 = new Control(number(tokens[2]), number(tokens[3]));
+      const p3 = new Control(number(tokens[4]), number(tokens[5]));
+      const p4 = new EndPointControl(number(tokens[6]), number(tokens[7]), 0);
+      const spline = new Spline(p1, [p2, p3], p4);
+      push(spline);
+
+      i++;
+    }
+
+    return {
+      format: this.getName(),
+      gc,
+      sc,
+      oc,
+      paths
+    };
+  }
+
+  exportPathFile(app: MainApp): string {
     // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.
 
     let rtn = "";
 
-    if (app.paths.length === 0) return;
+    if (app.paths.length === 0) throw new Error("No path to export");
 
     const path = app.paths[0]; // TODO use selected path
-    if (path.splines.length === 0) return;
+    if (path.splines.length === 0) throw new Error("No spline to export");
 
     const uc = new UnitConverter(app.gc.uol, UnitOfLength.Inch);
 
@@ -178,7 +253,7 @@ export class LemLibFormatV0_4 implements Format {
       }
     }
 
-    rtn += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportAppData());
+    rtn += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPathFileData());
 
     return rtn;
   }

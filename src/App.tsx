@@ -64,6 +64,8 @@ const App = observer(() => {
   function initFormat() {
     if (app.format.isInit) return;
 
+    // ALGO: importPathFileData should init the format and set the app data by itself
+
     app.format.init();
 
     const robotWidth = app.gc.robotWidth;
@@ -91,6 +93,8 @@ const App = observer(() => {
     initFormat();
 
     const disposer = reaction(() => app.gc.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
+      if (app.uolFollowingFormat === app.format) return;
+
       const uc = new UnitConverter(oldUOL, newUOL);
 
       app.selected = [];
@@ -107,6 +111,8 @@ const App = observer(() => {
           control.y = uc.fromAtoB(control.y);
         }
       }
+
+      app.uolFollowingFormat = app.format;
     }));
 
     return () => {

@@ -4,7 +4,7 @@ import { GeneralConfig, SpeedConfig, OutputConfig } from "../format/Config";
 import { InteractiveEntity } from "../math/Canvas";
 import { Path, Vertex } from "../math/Path";
 import { addToArray, removeFromArray } from "./Util";
-import { AppData, Format, getAllFormats } from "../format/Format";
+import { PathFileData, Format, getAllFormats } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-transformer';
 
@@ -12,6 +12,7 @@ import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-t
 // observable class
 export class MainApp {
   public format: Format = new PathDotJerryioFormatV0_1();
+  public uolFollowingFormat: Format = this.format;
 
   public gc: GeneralConfig = this.format.buildGeneralConfig(); // a.k.a Configuration
   public sc: SpeedConfig = this.format.buildSpeedConfig(); // a.k.a Speed Control
@@ -50,10 +51,10 @@ export class MainApp {
     return removeFromArray(this.expanded, typeof x === "string" ? x : x.uid);
   }
 
-  importAppData(data: Record<string, any>): void {
+  importPathFileData(data: Record<string, any>): void {
     const format = getAllFormats().find(f => f.getName() === data.format);
     if (format === undefined) throw new Error("Format not found.");
-    format.init();
+    format.init(); // ALGO: Suspend initFormat()
 
     if (typeof data.gc !== "object") throw new Error("Invalid data format: gc is not an object.");
     if (typeof data.sc !== "object") throw new Error("Invalid data format: sc is not an object.");
@@ -76,14 +77,15 @@ export class MainApp {
     }
 
     this.format = format;
+    this.uolFollowingFormat = format;
     this.gc = gc;
     this.sc = sc;
     this.oc = oc;
     this.paths = paths;
   }
 
-  exportAppData(): Record<string, any> {
-    const data: AppData = {
+  exportPathFileData(): Record<string, any> {
+    const data: PathFileData = {
       format: this.format.getName(),
       gc: this.gc,
       sc: this.sc,
@@ -94,20 +96,33 @@ export class MainApp {
     return instanceToPlain(data);
   }
 
-  importPathFile(app: MainApp, data: string): void {
+  importPathFile(fileContent: string): void {
     // ALGO: This function throws error
     // ALGO: Just find the first line that starts with "#PATH.JERRYIO-DATA"
     // ALGO: Throw error if not found
-    const lines = data.split("\n");
+    const lines = fileContent.split("\n");
     for (const line of lines) {
       if (line.startsWith("#PATH.JERRYIO-DATA")) {
         const json = line.substring("#PATH.JERRYIO-DATA".length).trim();
-        const appData = JSON.parse(json) as AppData;
-        app.importAppData(appData);
+        const pfd = JSON.parse(json) as PathFileData;
+        this.importPathFileData(pfd);
         return;
       }
     }
-    // TODO: recover
+
+    // Recover
+
+    // Clone format
+    const format = getAllFormats().find(f => f.getName() === this.format.getName()) as Format;
+    format.init(); // ALGO: Suspend initFormat()
+    const pfd = format.recoverPathFileData(fileContent);
+
+    this.format = format;
+    this.uolFollowingFormat = format;
+    this.gc = pfd.gc;
+    this.sc = pfd.sc;
+    this.oc = pfd.oc;
+    this.paths = pfd.paths;
   }
 
   exportPathFile(): string | undefined {

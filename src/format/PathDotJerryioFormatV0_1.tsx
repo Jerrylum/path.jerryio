@@ -3,7 +3,7 @@ import { MainApp } from '../app/MainApp';
 import { makeId } from "../app/Util";
 import { UnitConverter, UnitOfLength } from "../math/Unit";
 import { GeneralConfig, OutputConfig, SpeedConfig } from "./Config";
-import { Format } from "./Format";
+import { Format, PathFileData } from "./Format";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
 import { Box, Typography } from "@mui/material";
 
@@ -114,7 +114,11 @@ export class PathDotJerryioFormatV0_1 implements Format {
     return new OutputConfigImpl();
   }
 
-  exportPathFile(app: MainApp): string | undefined {
+  recoverPathFileData(fileContent: string): PathFileData {
+    throw new Error("Unable to recover path file data from this format, try other formats?");
+  }
+
+  exportPathFile(app: MainApp): string {
     let rtn = "";
 
     const uc = new UnitConverter(app.gc.uol, UnitOfLength.Centimeter);
@@ -133,7 +137,7 @@ export class PathDotJerryioFormatV0_1 implements Format {
       }
     }
 
-    rtn += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportAppData());
+    rtn += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPathFileData());
 
     return rtn;
   }
