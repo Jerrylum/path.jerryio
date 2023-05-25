@@ -279,6 +279,7 @@ export class Spline implements CanvasEntity {
 
 // observable class
 export class Path implements InteractiveEntity {
+  @Type(() => Spline)
   public splines: Spline[];
   public name: string = "Path";
   public uid: string;
