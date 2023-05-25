@@ -93,7 +93,7 @@ const App = observer(() => {
     initFormat();
 
     const disposer = reaction(() => app.gc.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
-      if (app.uolFollowingFormat === app.format) return;
+      if (app.usingUOL === newUOL) return;
 
       const uc = new UnitConverter(oldUOL, newUOL);
 
@@ -112,7 +112,7 @@ const App = observer(() => {
         }
       }
 
-      app.uolFollowingFormat = app.format;
+      app.usingUOL = newUOL;
     }));
 
     return () => {

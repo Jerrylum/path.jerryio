@@ -7,12 +7,13 @@ import { addToArray, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-transformer';
+import { UnitOfLength } from "../math/Unit";
 
 
 // observable class
 export class MainApp {
   public format: Format = new PathDotJerryioFormatV0_1();
-  public uolFollowingFormat: Format = this.format;
+  public usingUOL: UnitOfLength = UnitOfLength.Centimeter;
 
   public gc: GeneralConfig = this.format.buildGeneralConfig(); // a.k.a Configuration
   public sc: SpeedConfig = this.format.buildSpeedConfig(); // a.k.a Speed Control
@@ -77,7 +78,7 @@ export class MainApp {
     }
 
     this.format = format;
-    this.uolFollowingFormat = format;
+    this.usingUOL = gc.uol;
     this.gc = gc;
     this.sc = sc;
     this.oc = oc;
@@ -118,7 +119,7 @@ export class MainApp {
     const pfd = format.recoverPathFileData(fileContent);
 
     this.format = format;
-    this.uolFollowingFormat = format;
+    this.usingUOL = pfd.gc.uol;
     this.gc = pfd.gc;
     this.sc = pfd.sc;
     this.oc = pfd.oc;
