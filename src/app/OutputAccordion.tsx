@@ -10,23 +10,94 @@ const OutputConfigAccordion = observer((props: AppProps) => {
 
   const fileHandleRef = useRef<FileSystemFileHandle>();
 
-  async function onOpen() {
+  function exportPathFile(): string | undefined {
+    try {
+      return props.app.format.exportPathFile(props.app);
+    } catch (err) {
+      console.log(err);
+      alert("Error: Cannot export path file"); // TODO better error handling
+
+      return undefined;
+    }
+  }
+
+  async function writeFile(contents: string): Promise<boolean> {
+    try {
+      const fileHandle = fileHandleRef.current;
+      if (fileHandle === undefined) throw new Error("fileHandle is undefined");
+
+      const writable = await fileHandle.createWritable();
+      await writable.write(contents);
+      await writable.close();
+
+      // TODO Show save notification
+      return true;
+    } catch (err) {
+      console.log(err);
+
+      alert("Error: Cannot save path file"); // TODO better error handling
+      return false;
+    }
+  }
+
+  async function readFile(): Promise<string | undefined> {
     const options = {
       types: [{ description: 'Path Files', accept: { 'text/plain': [] } },],
     };
 
-    let contents: string;
     try {
       const [fileHandle] = await window.showOpenFilePicker(options);
       fileHandleRef.current = fileHandle;
+
       const file = await fileHandle.getFile();
-      contents = await file.text();
+      const contents = await file.text();
+
+      return contents;
+    } catch (err) {
+      console.log(err);
+
+      alert("Error: Cannot read path file"); // TODO better error handling
+      return undefined;
+    }
+  }
+
+  async function choiceSave(): Promise<boolean> {
+    const options = {
+      types: [{ description: 'Path Files', accept: { 'text/plain': [] } },],
+    };
+
+    try {
+      const fileHandle = await window.showSaveFilePicker(options);
+      fileHandleRef.current = fileHandle;
+      return true;
     } catch (err) {
       console.log(err);
 
       // ignore error
-      return;
+      return false;
     }
+  }
+
+  async function onSave() {
+    if (fileHandleRef.current === undefined) return onSaveAs();
+
+    const output = exportPathFile();
+    if (output === undefined) return;
+
+    await writeFile(output);
+  }
+
+  async function onSaveAs() {
+    const output = exportPathFile();
+    if (output === undefined) return;
+
+    if (!await choiceSave()) return;
+    await writeFile(output);
+  }
+
+  async function onOpen() {
+    let contents = await readFile();
+    if (contents === undefined) return;
 
     try {
       props.app.importPathFile(contents);
@@ -38,13 +109,8 @@ const OutputConfigAccordion = observer((props: AppProps) => {
   }
 
   function onDownload() {
-    let output: string;
-    try {
-      output = props.app.format.exportPathFile(props.app);
-    } catch (err) {
-      alert("Error: Cannot export path file"); // TODO better error handling
-      return;
-    }
+    const output = exportPathFile();
+    if (output === undefined) return;
 
     const a = document.createElement("a");
     const file = new Blob([output], { type: "text/plain" });
@@ -60,8 +126,8 @@ const OutputConfigAccordion = observer((props: AppProps) => {
       </AccordionSummary>
       <AccordionDetails>
         <Box>
-          <Button variant="text">Save</Button>
-          <Button variant="text">Save As</Button>
+          <Button variant="text" onClick={onSave}>Save</Button>
+          <Button variant="text" onClick={onSaveAs}>Save As</Button>
           <Button variant="text" onClick={onOpen}>Open</Button>
           <Button variant="text" onClick={onDownload}>Download</Button>
         </Box>
