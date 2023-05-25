@@ -3,8 +3,8 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Checkbox, FormContr
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { getAllFormats } from '../format/Format';
-import { ObserverInput } from './ObserverInput';
-import { UnitOfLength } from '../math/Unit';
+import { ObserverInput, parseNumberInString } from './ObserverInput';
+import { NumberInUnit, UnitOfLength } from '../math/Unit';
 import { AppProps } from '../App';
 
 const GeneralConfigAccordion = observer((props: AppProps) => {
@@ -46,7 +46,9 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
             sx={{ width: "6rem" }}
             label="Knot Density"
             getValue={() => gc.knotDensity + ""}
-            setValue={(value: string) => { gc.knotDensity = parseFloat(parseFloat(value).toFixed(3)); }}
+            setValue={(value: string) => gc.knotDensity = parseNumberInString(value, gc.uol,
+              new NumberInUnit(0.1, UnitOfLength.Centimeter), new NumberInUnit(100, UnitOfLength.Centimeter))
+            }
             isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
             isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
           />
@@ -56,14 +58,18 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
           <ObserverInput
             label="Width"
             getValue={() => gc.robotWidth + ""}
-            setValue={(value: string) => { gc.robotWidth = parseFloat(parseFloat(value).toFixed(3)); }}
+            setValue={(value: string) => gc.robotWidth = parseNumberInString(value, gc.uol,
+              new NumberInUnit(0.1, UnitOfLength.Centimeter), new NumberInUnit(100, UnitOfLength.Centimeter))
+            }
             isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
             isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
           />
           <ObserverInput
             label="Height"
             getValue={() => gc.robotHeight + ""}
-            setValue={(value: string) => { gc.robotHeight = parseFloat(parseFloat(value).toFixed(3)); }}
+            setValue={(value: string) => gc.robotHeight = parseNumberInString(value, gc.uol,
+              new NumberInUnit(0.1, UnitOfLength.Centimeter), new NumberInUnit(100, UnitOfLength.Centimeter))
+            }
             isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
             isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
           />

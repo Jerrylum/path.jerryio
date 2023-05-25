@@ -7,7 +7,6 @@ import { GeneralConfig, OutputConfig, SpeedConfig } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { Box, Typography } from "@mui/material";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
-import { parse } from "url";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {

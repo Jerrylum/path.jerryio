@@ -13,6 +13,10 @@ const ratioMeter = 100 * ratioCentimeter; // SI base unit
 const ratioInch = 2.54 * ratioCentimeter;
 const ratioFoot = 12 * ratioInch;
 
+export class NumberInUnit {
+  constructor(public value: number, public unit: UnitOfLength) { }
+}
+
 export class UnitConverter {
   private aRatio: number;
   private bRatio: number;

@@ -2,7 +2,6 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import { AppProps } from '../App';
-import { Format } from '../format/Format';
 import { useRef } from 'react';
 
 const OutputConfigAccordion = observer((props: AppProps) => {
