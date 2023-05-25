@@ -14,6 +14,7 @@ import { UnitOfLength } from "../math/Unit";
 export class MainApp {
   public format: Format = new PathDotJerryioFormatV0_1();
   public usingUOL: UnitOfLength = UnitOfLength.Centimeter;
+  public mountingFile: FileSystemFileHandle | null = null;
 
   public gc: GeneralConfig = this.format.buildGeneralConfig(); // a.k.a Configuration
   public sc: SpeedConfig = this.format.buildSpeedConfig(); // a.k.a Speed Control

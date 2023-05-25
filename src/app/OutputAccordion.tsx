@@ -2,12 +2,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import { AppProps } from '../App';
-import { useRef } from 'react';
 
 const OutputConfigAccordion = observer((props: AppProps) => {
   const oc = props.app.oc;
-
-  const fileHandleRef = useRef<FileSystemFileHandle>();
 
   function exportPathFile(): string | undefined {
     try {
@@ -22,8 +19,8 @@ const OutputConfigAccordion = observer((props: AppProps) => {
 
   async function writeFile(contents: string): Promise<boolean> {
     try {
-      const fileHandle = fileHandleRef.current;
-      if (fileHandle === undefined) throw new Error("fileHandle is undefined");
+      const fileHandle = props.app.mountingFile;
+      if (fileHandle === null) throw new Error("fileHandle is undefined");
 
       const writable = await fileHandle.createWritable();
       await writable.write(contents);
@@ -46,7 +43,7 @@ const OutputConfigAccordion = observer((props: AppProps) => {
 
     try {
       const [fileHandle] = await window.showOpenFilePicker(options);
-      fileHandleRef.current = fileHandle;
+      props.app.mountingFile = fileHandle;
 
       const file = await fileHandle.getFile();
       const contents = await file.text();
@@ -67,7 +64,7 @@ const OutputConfigAccordion = observer((props: AppProps) => {
 
     try {
       const fileHandle = await window.showSaveFilePicker(options);
-      fileHandleRef.current = fileHandle;
+      props.app.mountingFile = fileHandle;
       return true;
     } catch (err) {
       console.log(err);
@@ -78,7 +75,7 @@ const OutputConfigAccordion = observer((props: AppProps) => {
   }
 
   async function onSave() {
-    if (fileHandleRef.current === undefined) return onSaveAs();
+    if (props.app.mountingFile === null) return onSaveAs();
 
     const output = exportPathFile();
     if (output === undefined) return;
