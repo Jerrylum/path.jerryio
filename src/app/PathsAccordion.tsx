@@ -4,107 +4,12 @@ import { Accordion, AccordionDetails, AccordionSummary, Button, TextField, Typog
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { TreeView } from '@mui/lab';
-import { AppProps } from '../App';
+import App, { AppProps } from '../App';
 import { Control, EndPointControl, Path, Spline } from '../math/Path';
 import { useRef } from 'react';
 import { PathTreeItem } from './PathTreeItem';
-
-export class ControlEditorData {
-  static readonly MultiSelect: unique symbol = Symbol("multi select");
-
-  private xInput: string = "";
-  private yInput: string = "";
-  private headingInput: string = "";
-  private selected: EndPointControl | Control | Symbol | undefined;
-
-  constructor(
-    public xInputRef: React.RefObject<HTMLInputElement>,
-    public yInputRef: React.RefObject<HTMLInputElement>,
-    public headingInputRef: React.RefObject<HTMLInputElement>) {
-
-  }
-
-  getSelected() {
-    return this.selected;
-  }
-
-  setSelected(selected: EndPointControl | Control | Symbol | undefined) {
-    if (selected !== this.selected) {
-      this.selected = selected;
-      if (selected instanceof Control) {
-        this.xInput = selected.x.toString();
-        this.yInput = selected.y.toString();
-        if (selected instanceof EndPointControl) {
-          this.headingInput = selected.heading.toString();
-        } else {
-          this.headingInput = "";
-        }
-      } else if (selected === undefined) {
-        this.xInput = "";
-        this.yInput = "";
-        this.headingInput = "";
-      } else {
-        this.xInput = "(mixed)";
-        this.yInput = "(mixed)";
-        this.headingInput = "(mixed)";
-      }
-      if (this.xInputRef.current) this.xInputRef.current.value = this.xInput;
-      if (this.yInputRef.current) this.yInputRef.current.value = this.yInput;
-      if (this.headingInputRef.current) this.headingInputRef.current.value = this.headingInput;
-    }
-  }
-
-  setXInput(x: string) {
-    if (x !== this.xInput) {
-      this.xInput = x;
-      this.xInputRef.current!.value = x;
-    }
-  }
-
-  setYInput(y: string) {
-    if (y !== this.yInput) {
-      this.yInput = y;
-      this.yInputRef.current!.value = y;
-    }
-  }
-
-  setHeadingInput(heading: string) {
-    if (heading !== this.headingInput) {
-      this.headingInput = heading;
-      this.headingInputRef.current!.value = heading;
-    }
-  }
-
-  writeBack() {
-    if (!(this.selected instanceof Control)) return;
-
-    let x = parseFloat(this.xInputRef.current!.value);
-    let y = parseFloat(this.yInputRef.current!.value);
-    let heading = parseFloat(this.headingInputRef.current!.value);
-
-    if (!isNaN(x)) {
-      this.selected.x = x;
-      this.xInputRef.current!.value = x.toString();
-    } else {
-      this.xInputRef.current!.value = this.selected.x.toString();
-    }
-    if (!isNaN(y)) {
-      this.selected.y = y;
-      this.yInputRef.current!.value = y.toString();
-    } else {
-      this.yInputRef.current!.value = this.selected.y.toString();
-    }
-    if (this.selected instanceof EndPointControl) {
-      if (!isNaN(heading)) {
-        this.selected.heading = heading;
-        this.headingInputRef.current!.value = heading.toString();
-      } else {
-        this.headingInputRef.current!.value = this.selected.heading.toString();
-      }
-    }
-    this.selected.fixPrecision();
-  }
-}
+import { ObserverInput, parseNumberInString } from './ObserverInput';
+import { NumberInUnit, UnitOfLength } from '../math/Unit';
 
 const PathsAccordion = observer((props: AppProps) => {
   function onAddPathClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
@@ -113,14 +18,6 @@ const PathsAccordion = observer((props: AppProps) => {
 
   function onExpandAllClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     props.app.expanded = props.app.expanded.length !== props.paths.length ? props.paths.map((path) => path.uid) : [];
-  }
-
-  function onControlEditorInputConfirm(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.code === "Enter" || event.code === "NumpadEnter") controlEditor.current.writeBack();
-  }
-
-  function onControlEditorInputTabConfirm(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.code === "Tab") controlEditor.current.writeBack();
   }
 
   function onTreeViewNodeToggle(event: React.SyntheticEvent, nodeIds: string[]) {
@@ -132,73 +29,77 @@ const PathsAccordion = observer((props: AppProps) => {
     }
   }
 
-  const controlEditor = useRef<ControlEditorData>(new ControlEditorData(
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null)
-  ));
-
-  let xDisabled = true, yDisabled = true, headingDisabled = true, headingHide = false;
-  let currentCED = controlEditor.current;
-
-  if (props.app.selected.length > 1) {
-    currentCED.setSelected(ControlEditorData.MultiSelect);
-  } else if (props.app.selected.length === 1) {
-    let firstSelected = props.paths.map(
-      (path) => path.getControlsSet().find((control) => control.uid === props.app.selected[0])
-    ).find((control) => control !== undefined);
-    currentCED.setSelected(firstSelected);
-    if (firstSelected !== undefined) {
-      currentCED.setXInput(firstSelected.x.toString());
-      currentCED.setYInput(firstSelected.y.toString());
-      xDisabled = false;
-      yDisabled = false;
-      if (firstSelected instanceof EndPointControl) {
-        currentCED.setHeadingInput((firstSelected as EndPointControl).heading.toString());
-        headingDisabled = false;
-      } else {
-        headingHide = true;
-      }
-    }
-  } else {
-    currentCED.setSelected(undefined);
-  }
-
   return (
     <Accordion defaultExpanded>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography>Paths</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <div className='path-editor' onKeyDown={onControlEditorInputTabConfirm}>
+        <div className='path-editor'>
           <div className='flex-editor-panel'>
-            <TextField
+            <ObserverInput
               label="X"
-              id="outlined-size-small"
-              InputLabelProps={{ shrink: true }}
-              size="small"
-              inputRef={controlEditor.current.xInputRef}
-              onKeyUp={onControlEditorInputConfirm}
-              disabled={xDisabled}
+              getValue={() => {
+                if (props.app.selected.length === 0) return "";
+                if (props.app.selected.length > 1) return "(mixed)";
+                const control = props.app.selectedControl;
+                if (control === undefined) return "";
+                return control.x.toString();
+              }}
+              setValue={(value: string) => {
+                if (props.app.selected.length !== 1) return;
+                const control = props.app.selectedControl;
+                if (control === undefined) return;
+
+                control.x = parseNumberInString(value, props.app.gc.uol,
+                  new NumberInUnit(-1000, UnitOfLength.Centimeter), new NumberInUnit(1000, UnitOfLength.Centimeter))
+              }}
+              isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+              isValidValue={(candidate: string) => new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+              disabled={props.app.selected.length !== 1}
             />
-            <TextField
+            <ObserverInput
               label="Y"
-              id="outlined-size-small"
-              InputLabelProps={{ shrink: true }}
-              size="small"
-              inputRef={controlEditor.current.yInputRef}
-              onKeyUp={onControlEditorInputConfirm}
-              disabled={yDisabled}
+              getValue={() => {
+                if (props.app.selected.length === 0) return "";
+                if (props.app.selected.length > 1) return "(mixed)";
+                const control = props.app.selectedControl;
+                if (control === undefined) return "";
+                return control.y.toString();
+              }}
+              setValue={(value: string) => {
+                if (props.app.selected.length !== 1) return;
+                const control = props.app.selectedControl;
+                if (control === undefined) return;
+
+                control.y = parseNumberInString(value, props.app.gc.uol,
+                  new NumberInUnit(-1000, UnitOfLength.Centimeter), new NumberInUnit(1000, UnitOfLength.Centimeter))
+              }}
+              isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+              isValidValue={(candidate: string) => new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+              disabled={props.app.selected.length !== 1}
             />
-            <TextField
+            <ObserverInput
               label="Heading"
-              id="outlined-size-small"
-              InputLabelProps={{ shrink: true }}
-              size="small"
-              sx={{ visibility: headingHide ? "hidden" : "" }}
-              inputRef={controlEditor.current.headingInputRef}
-              onKeyUp={onControlEditorInputConfirm}
-              disabled={headingDisabled}
+              getValue={() => {
+                if (props.app.selected.length === 0) return "";
+                if (props.app.selected.length > 1) return "(mixed)";
+                const control = props.app.selectedControl;
+                if (!(control instanceof EndPointControl)) return "";
+                return control.heading.toString();
+              }}
+              setValue={(value: string) => {
+                if (props.app.selected.length !== 1) return;
+                const control = props.app.selectedControl;
+                if (!(control instanceof EndPointControl)) return;
+                
+                control.heading = parseFloat(value);
+                control.fixPrecision();
+              }}
+              isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+              isValidValue={(candidate: string) => new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+              disabled={props.app.selected.length !== 1}
+              sx={{ visibility: props.app.selected.length === 1 && !(props.app.selectedControl instanceof EndPointControl) ? "hidden" : "" }}
             />
           </div>
           <div style={{ marginTop: "1vh" }}>

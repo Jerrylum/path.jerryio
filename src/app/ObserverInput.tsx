@@ -69,17 +69,16 @@ const ObserverInput = observer((props: TextFieldProps & {
     inputRef.current!.value = initialValue.current = lastValidIntermediate.current = getValue();
   }
 
-  useEffect(() => {
-    const disposer = reaction(getValue, (value) => {
-      if (value !== initialValue.current) {
-        initialValue.current = value;
-        lastValidIntermediate.current = value;
-        inputRef.current!.value = value;
-      }
-    });
+  const value = getValue();
 
-    return () => disposer();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const value = getValue();
+    if (value !== initialValue.current) {
+      initialValue.current = value;
+      lastValidIntermediate.current = value;
+      inputRef.current!.value = value;
+    }
+  }, [value, getValue]);
 
   return (
     <TextField

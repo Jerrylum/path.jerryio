@@ -1,8 +1,8 @@
-import { makeAutoObservable } from "mobx"
+import { makeAutoObservable, computed } from "mobx"
 import DOMPurify from 'dompurify';
 import { GeneralConfig, SpeedConfig, OutputConfig } from "../format/Config";
 import { InteractiveEntity } from "../math/Canvas";
-import { Path, Vertex } from "../math/Path";
+import { Control, EndPointControl, Path, Vertex } from "../math/Path";
 import { addToArray, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
@@ -51,6 +51,12 @@ export class MainApp {
 
   removeExpanded(x: InteractiveEntity | string): boolean {
     return removeFromArray(this.expanded, typeof x === "string" ? x : x.uid);
+  }
+
+  @computed get selectedControl() : EndPointControl | Control | undefined {
+    return this.paths.map(
+      (path) => path.getControlsSet().find((control) => control.uid === this.selected[0])
+    ).find((control) => control !== undefined);
   }
 
   private setPathFileData(format: Format, pfd: PathFileData): void {
