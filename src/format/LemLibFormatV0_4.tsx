@@ -1,10 +1,10 @@
 import { makeAutoObservable } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { makeId } from "../app/Util";
-import { Vertex } from "../math/path";
-import { UnitOfLength, UnitConverter } from "../math/unit";
-import { GeneralConfig, OutputConfig, SpeedConfig } from "./config";
-import { Format } from "./format";
+import { Vertex } from "../math/Path";
+import { UnitOfLength, UnitConverter } from "../math/Unit";
+import { GeneralConfig, OutputConfig, SpeedConfig } from "./Config";
+import { Format } from "./Format";
 import { Box, Typography } from "@mui/material";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
 

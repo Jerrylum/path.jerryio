@@ -2,9 +2,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { getAllFormats } from '../format/format';
+import { getAllFormats } from '../format/Format';
 import { ObserverInput } from './ObserverInput';
-import { UnitOfLength } from '../math/unit';
+import { UnitOfLength } from '../math/Unit';
 import { AppProps } from '../App';
 
 const GeneralConfigAccordion = observer((props: AppProps) => {

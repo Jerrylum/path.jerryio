@@ -9,9 +9,9 @@ import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { TreeItem } from '@mui/lab';
 import { AppProps } from '../App';
-import { EndPointControl, Path } from '../math/path';
+import { EndPointControl, Path } from '../math/Path';
 import { useRef } from 'react';
-import { InteractiveEntity } from '../math/canvas';
+import { InteractiveEntity } from '../math/Canvas';
 
 export interface PathTreeProps extends AppProps {
   path: Path;

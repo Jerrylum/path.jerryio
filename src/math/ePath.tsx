@@ -1,8 +1,8 @@
 import { Type } from 'class-transformer';
 import { makeAutoObservable } from "mobx"
 import { makeId } from "../app/Util";
-import { GeneralConfig, SpeedConfig } from "../format/config";
-import { InteractiveEntity, CanvasEntity } from "./canvas";
+import { GeneralConfig, SpeedConfig } from "../format/Config";
+import { InteractiveEntity, CanvasEntity } from "./Canvas";
 
 import 'reflect-metadata';
 

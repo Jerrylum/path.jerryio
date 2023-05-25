@@ -3,13 +3,13 @@ import { makeAutoObservable } from "mobx"
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MainApp } from './app/MainApp';
-import { Control, EndPointControl, Path, Spline, Vertex } from './math/path';
+import { Control, EndPointControl, Path, Spline, Vertex } from './math/Path';
 
 import { plainToClassFromExist, plainToInstance } from 'class-transformer';
 import { instanceToPlain } from 'class-transformer';
-import { GeneralConfig, OutputConfig, SpeedConfig } from './format/config';
-import { Format } from './format/format';
-import { UnitOfLength } from "./math/unit";
+import { GeneralConfig, OutputConfig, SpeedConfig } from './format/Config';
+import { Format } from './format/Format';
+import { UnitOfLength } from "./math/Unit";
 import DOMPurify from "dompurify";
 
 class CustomFormat implements Format {

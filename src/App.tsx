@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import './App.css';
 
-import { Path } from './math/path';
-import { CanvasConverter } from './math/canvas';
+import { Path } from './math/Path';
+import { CanvasConverter } from './math/Canvas';
 
 import { reaction, action, makeAutoObservable } from "mobx"
 
@@ -16,7 +16,7 @@ import { FieldCanvasElement } from './app/FieldCanvasElement';
 import { useTimer } from './app/Util';
 import { GeneralConfigAccordion } from './app/GeneralConfigAccordion';
 import { SpeedConfigAccordion } from './app/SpeedControlAccordion';
-import { UnitConverter, UnitOfLength } from './math/unit';
+import { UnitConverter, UnitOfLength } from './math/Unit';
 import { OutputConfigAccordion } from './app/OutputAccordion';
 import { MainApp } from './app/MainApp';
 

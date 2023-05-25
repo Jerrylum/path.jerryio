@@ -1,6 +1,6 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { EndPointControl, Path, Spline } from '../math/path';
+import { EndPointControl, Path, Spline } from '../math/Path';
 import Konva from 'konva';
 import { Circle, Image, Layer, Line, Stage } from 'react-konva';
 import { SplineElement } from "./SplineElement";

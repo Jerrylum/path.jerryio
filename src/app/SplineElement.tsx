@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { Path, Spline } from '../math/path';
+import { Path, Spline } from '../math/Path';
 import { AppProps } from "../App";
 import { SplineControlVisualLineElement } from "./SplineControlVisualLineElement";
 import { SplineKnotsHitBoxElement } from "./SplineKnotsHitBoxElement";

@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 import Konva from 'konva';
 import { Line } from 'react-konva';
-import { EndPointControl } from '../math/path';
+import { EndPointControl } from '../math/Path';
 import { SplineElementProps } from "./SplineElement";
 
 const SplineKnotsHitBoxElement = observer((props: SplineElementProps) => {

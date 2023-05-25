@@ -1,6 +1,6 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { Control, EndPointControl, Vertex } from '../math/path';
+import { Control, EndPointControl, Vertex } from '../math/Path';
 import Konva from 'konva';
 import { Circle, Line } from 'react-konva';
 import { useState } from "react";

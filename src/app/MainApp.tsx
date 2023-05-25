@@ -1,10 +1,10 @@
 import { makeAutoObservable } from "mobx"
 import DOMPurify from 'dompurify';
-import { GeneralConfig, SpeedConfig, OutputConfig } from "../format/config";
-import { InteractiveEntity } from "../math/canvas";
-import { Path, Vertex } from "../math/path";
+import { GeneralConfig, SpeedConfig, OutputConfig } from "../format/Config";
+import { InteractiveEntity } from "../math/Canvas";
+import { Path, Vertex } from "../math/Path";
 import { addToArray, removeFromArray } from "./Util";
-import { AppData, Format, getAllFormats } from "../format/format";
+import { AppData, Format, getAllFormats } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-transformer';
 

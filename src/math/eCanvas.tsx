@@ -1,4 +1,4 @@
-import { Vertex } from "./path";
+import { Vertex } from "./Path";
 
 export interface CanvasEntity {
     uid: string;

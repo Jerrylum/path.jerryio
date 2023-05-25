@@ -5,7 +5,7 @@ import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { TreeView } from '@mui/lab';
 import { AppProps } from '../App';
-import { Control, EndPointControl, Path, Spline } from '../math/path';
+import { Control, EndPointControl, Path, Spline } from '../math/Path';
 import { useRef } from 'react';
 import { PathTreeItem } from './PathTreeItem';
 

@@ -1,7 +1,7 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import { SpeedConfig } from '../format/config';
+import { SpeedConfig } from '../format/Config';
 
 const SpeedConfigAccordion = observer((props: { sc: SpeedConfig }) => {
   const sc = props.sc;

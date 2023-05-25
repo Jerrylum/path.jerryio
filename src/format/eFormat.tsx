@@ -1,8 +1,8 @@
 import { MainApp } from '../app/MainApp';
-import { Path } from "../math/path";
+import { Path } from "../math/Path";
 import { LemLibFormatV0_4 } from './LemLibFormatV0_4';
 import { PathDotJerryioFormatV0_1 } from './PathDotJerryioFormatV0_1';
-import { GeneralConfig, OutputConfig, SpeedConfig } from "./config";
+import { GeneralConfig, OutputConfig, SpeedConfig } from "./Config";
 
 export interface Format {
   isInit: boolean;

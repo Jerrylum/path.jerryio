@@ -1,9 +1,9 @@
 import { makeAutoObservable } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { makeId } from "../app/Util";
-import { UnitConverter, UnitOfLength } from "../math/unit";
-import { GeneralConfig, OutputConfig, SpeedConfig } from "./config";
-import { Format } from "./format";
+import { UnitConverter, UnitOfLength } from "../math/Unit";
+import { GeneralConfig, OutputConfig, SpeedConfig } from "./Config";
+import { Format } from "./Format";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
 import { Box, Typography } from "@mui/material";
 
