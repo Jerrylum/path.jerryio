@@ -3,6 +3,7 @@ import { makeAutoObservable } from "mobx"
 import { makeId } from "../app/Util";
 import { GeneralConfig, SpeedConfig } from "../format/Config";
 import { InteractiveEntity, CanvasEntity } from "./Canvas";
+import { UnitConverter, UnitOfLength } from './Unit';
 
 import 'reflect-metadata';
 
@@ -200,16 +201,20 @@ export class Spline implements CanvasEntity {
   }
 
   calculateKnots(gc: GeneralConfig, sc: SpeedConfig, integral = 0): Knot[] {
-    const distance = this.distance();
-    const targetInterval = 1 / (distance / gc.knotDensity);
+    // ALGO: Calculate the target interval based on the density of knots to generate knots more than enough
+    const targetInterval = new UnitConverter(gc.uol, UnitOfLength.Centimeter).fromAtoB(gc.knotDensity) / 200;
 
     // The density of knots is NOT uniform along the curve
-    let points: Knot[] = this.calculateBezierCurveKnots(targetInterval, integral);
+    let knots: Knot[] = this.calculateBezierCurveKnots(targetInterval, integral);
 
-    if (points.length > 1) points[0].heading = this.first().heading;
-    if (points.length > 2) points[points.length - 1].heading = this.last().heading;
+    if (knots.length > 1) knots[0].heading = this.first().heading;
+    const lastKnot = knots[knots.length - 1];
+    const lastControl = this.last();
+    const distance = lastKnot.distance(lastControl);
+    const finalKnot = new Knot(lastControl.x, lastControl.y, distance, lastKnot.integral + distance, 0, this.last().heading);
+    knots.push(finalKnot);
 
-    return points;
+    return knots;
   }
 
   first(): EndPointControl {
@@ -433,7 +438,10 @@ export class Path implements InteractiveEntity {
     const gen1: Knot[] = [];
     let pathTTD = 0; // total travel distance
     for (let spline of this.splines) {
-      gen1.push(...spline.calculateKnots(gc, sc, pathTTD));
+      const [firstKnot, ...knots] = spline.calculateKnots(gc, sc, pathTTD);
+      // ALGO: Ignore the first knot, It is (too close) the last knot of the previous spline
+      if (pathTTD === 0) gen1.push(firstKnot); // Except for the first spline
+      gen1.push(...knots);
       pathTTD = gen1[gen1.length - 1].integral;
     }
 
