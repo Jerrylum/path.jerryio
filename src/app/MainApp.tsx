@@ -59,6 +59,17 @@ export class MainApp {
     ).find((control) => control !== undefined);
   }
 
+  @computed get selectedPath(): Path | undefined {
+    if (this.selected.length === 0) return undefined;
+
+    // ALGO: return the first selected path if: some path is selected
+    let rtn = this.paths.find((path) => this.isSelected(path.uid));
+    // ALGO: return the first selected control point's path if: some control point is selected, the path visible and not locked
+    if (rtn === undefined) rtn = this.paths.find((path) => path.getControlsSet().some((control) => this.isSelected(control.uid)));
+
+    return rtn;
+  }
+
   private setPathFileData(format: Format, pfd: PathFileData): void {
     const purify = DOMPurify();
 

@@ -22,18 +22,10 @@ const FieldCanvasElement = observer((props: AppProps) => {
   function onClickFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
-    let targetPath: Path | undefined;
-    if (props.app.selected.length !== 0) {
-      // UX: Set target path to the first selected path if: some path is selected
-      targetPath = paths.find((path) => props.app.isSelected(path.uid));
-      // UX: Set target path to the first selected control point's path if: some control point is selected, the path visible and not locked
-      if (targetPath === undefined) targetPath = paths.find((path) => path.getControlsSet().some((control) => props.app.isSelected(control.uid)));
-    }
+    const cpInUOL = cc.toUOL(new EndPointControl(evt.offsetX, evt.offsetY, 0));
+    
     // UX: Set target path to the first path if: no path is selected
-    if (targetPath === undefined) targetPath = paths[0];
-
-    let cpInUOL = cc.toUOL(new EndPointControl(evt.offsetX, evt.offsetY, 0));
-
+    let targetPath: Path | undefined = props.app.selectedPath || paths[0];
     if (targetPath === undefined) {
       // UX: Create new path if: no path exists
       // UX: Use user mouse position as the last control point
