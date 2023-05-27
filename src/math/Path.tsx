@@ -9,13 +9,7 @@ import 'reflect-metadata';
 
 export class Vertex {
 
-  public x: number;
-  public y: number;
-
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-  }
+  constructor(public x: number, public y: number) { }
 
   add<T extends Vertex>(vector: T): T {
     let rtn = vector.clone() as T;
@@ -90,17 +84,16 @@ export class Vertex {
 }
 
 export class Knot extends Vertex {
-  delta: number; // distance to the previous knot
-  integral: number; // integral distance from the first knot
-  speed: number;
-  heading?: number;
-
-  constructor(x: number, y: number, delta: number, integralDistance: number, speed: number = 0, heading?: number) {
+  constructor(x: number, y: number,
+    public delta: number, // distance to the previous knot
+    public integral: number, // integral distance from the first knot
+    public speed: number = 0,
+    public heading?: number) {
     super(x, y);
-    this.delta = delta;
-    this.integral = integralDistance;
-    this.speed = speed;
-    this.heading = heading;
+  }
+
+  clone(): Knot {
+    return new Knot(this.x, this.y, this.delta, this.integral, this.speed, this.heading);
   }
 }
 
@@ -130,11 +123,9 @@ export class Control extends Vertex implements InteractiveEntity {
 }
 
 export class EndPointControl extends Control implements Position {
-  heading: number;
 
-  constructor(x: number, y: number, heading: number) {
+  constructor(x: number, y: number, public heading: number) {
     super(x, y);
-    this.heading = heading;
   }
 
   headingInRadian(): number {
