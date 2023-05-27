@@ -51,6 +51,7 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
             }
             isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
             isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+            numeric
           />
         </Box>
         <Typography sx={{ marginTop: "2vh" }} gutterBottom>Robot Visualize</Typography>
@@ -63,6 +64,7 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
             }
             isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
             isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+            numeric
           />
           <ObserverInput
             label="Height"
@@ -72,6 +74,7 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
             }
             isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
             isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+            numeric
           />
           <FormControlLabel control={
             <Checkbox checked={gc.showRobot} onChange={action((e, c) => gc.showRobot = c)} />

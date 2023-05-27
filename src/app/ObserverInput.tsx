@@ -20,11 +20,12 @@ const ObserverInput = observer((props: TextFieldProps & {
   setValue: (value: string) => void
   isValidIntermediate: (candidate: string) => boolean
   isValidValue: (candidate: string) => boolean
+  numeric?: boolean // default false
   allowEmpty?: boolean // default true
 }
 ) => {
   // rest is used to send props to TextField without custom attributes
-  const { getValue, setValue, isValidIntermediate, isValidValue, allowEmpty, ...rest } = props;
+  const { getValue, setValue, isValidIntermediate, isValidValue, numeric: isNumeric, allowEmpty, ...rest } = props;
 
   const memoInitialValue = useMemo(() => getValue(), []); // eslint-disable-line react-hooks/exhaustive-deps
   const inputRef = useRef<HTMLInputElement>(null);
@@ -50,6 +51,14 @@ const ObserverInput = observer((props: TextFieldProps & {
     if (event.code === "Enter" || event.code === "NumpadEnter") {
       event.preventDefault();
       element.blur();
+      onConfirm(event);
+    } else if (isNumeric && event.code === "ArrowDown") {
+      onConfirm(event);
+      element.value = (parseFloat(getValue()) - 1) + "";
+      onConfirm(event);
+    } else if (isNumeric && event.code === "ArrowUp") {
+      onConfirm(event);
+      element.value = (parseFloat(getValue()) + 1) + "";
       onConfirm(event);
     }
   }
