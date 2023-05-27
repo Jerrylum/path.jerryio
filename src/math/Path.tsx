@@ -202,8 +202,14 @@ export class Spline implements CanvasEntity {
     const lastKnot = knots[knots.length - 1];
     const lastControl = this.last();
     const distance = lastKnot.distance(lastControl);
-    const finalKnot = new Knot(lastControl.x, lastControl.y, distance, lastKnot.integral + distance, 0, this.last().heading);
+    const integralDistance = lastKnot.integral + distance;
+    const finalKnot = new Knot(lastControl.x, lastControl.y, distance, integralDistance, 0, this.last().heading);
     knots.push(finalKnot);
+
+    const splineDeltaRatio = (1 / targetInterval) / ((integralDistance - integral) / gc.knotDensity);
+    for (const knot of knots) {
+      knot.delta *= splineDeltaRatio;
+    }
 
     return knots;
   }
@@ -450,14 +456,12 @@ export class Path implements InteractiveEntity {
     // ALGO: Same with above
     const decSpeedScale = speedDiff / (1 - sc.transitionRange.to);
 
-    const splineTargetInterval = new UnitConverter(gc.uol, UnitOfLength.Centimeter).fromAtoB(gc.knotDensity) / 200;
-    const splineDeltaRatio = (1 / splineTargetInterval) / (pathTTD / gc.knotDensity);
     const targetInterval = 1 / (pathTTD / gc.knotDensity);
 
     function calculateSpeed(p3: Knot) {
       // ALGO: Scale the speed according to the application range
       // ALGO: The first knot has delta 0, but it should have the highest speed
-      const delta = p3.delta * splineDeltaRatio;
+      const delta = p3.delta;
       if (delta < sc.applicationRange.from && delta !== 0) p3.speed = sc.speedLimit.from;
       else if (delta > sc.applicationRange.to) p3.speed = sc.speedLimit.to;
       else if (useRatio && delta !== 0) p3.speed = sc.speedLimit.from + (delta - sc.applicationRange.from) * applicationRatio;
