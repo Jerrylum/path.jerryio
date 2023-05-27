@@ -133,8 +133,8 @@ const PathTreeItem = observer((props: PathTreeProps) => {
         <span contentEditable
           style={{ display: 'inline-block' }}
           onInput={(e) => onPathNameChange(e)}
-          onKeyDown={(e) => onPathNameKeyDown(e)}
-          onBlur={(e) => onPathNameConfirm(e)}
+          onKeyDown={action(onPathNameKeyDown)}
+          onBlur={action(onPathNameConfirm)}
           suppressContentEditableWarning={true}
           dangerouslySetInnerHTML={{ __html: initialValue.current }} // SECURITY: Beware of XSS attack from the path file
           onClick={(e) => e.preventDefault()}
