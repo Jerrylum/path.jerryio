@@ -49,6 +49,9 @@ const FieldCanvasElement = observer((props: AppProps) => {
         targetPath.add4ControlsCurve(cpInUOL);
       }
     }
+
+    // UX: Select the new control point
+    props.app.selected = [cpInUOL.uid];
   }
 
   const lineWidth = 1;
