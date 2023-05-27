@@ -19,6 +19,7 @@ import { SpeedConfigAccordion } from './app/SpeedControlAccordion';
 import { UnitConverter, UnitOfLength } from './math/Unit';
 import { OutputConfigAccordion } from './app/OutputAccordion';
 import { MainApp } from './app/MainApp';
+import { PathTreeAccordion } from './app/PathTreeAccordion';
 
 // observable class
 class UserBehavior {
@@ -141,11 +142,13 @@ const App = observer(() => {
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
     <div className='App' key={app.format.uid + "-" + app.gc.uol}>
+      <PathTreeAccordion {...appProps} />
+
       <Card className='field-container'>
         <FieldCanvasElement {...appProps} />
       </Card>
 
-      <Box className='editor-container'>
+      <Box className='right-editor-container'>
         <GeneralConfigAccordion {...appProps} />
         <SpeedConfigAccordion sc={app.sc} />
         <OutputConfigAccordion {...appProps} />

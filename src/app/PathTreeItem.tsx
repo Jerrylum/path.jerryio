@@ -147,7 +147,7 @@ const PathTreeItem = observer((props: PathTreeProps) => {
             <TreeItem nodeId={control.uid} key={control.uid}
               label={control instanceof EndPointControl
                 ? <PathTreeItemLabel entity={control} parent={path} onDelete={() => path.removeSpline(control)} {...props}>
-                  <span>End Point Control</span>
+                  <span>End Control</span>
                 </PathTreeItemLabel>
                 : <PathTreeItemLabel entity={control} parent={path} {...props}>
                   <span>Control</span>

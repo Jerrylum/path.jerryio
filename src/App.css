@@ -18,7 +18,7 @@
   overflow: hidden;
 }
 
-.editor-container {
+.right-editor-container {
   float: left;
   flex-grow: 1;
   min-width: 22rem;
@@ -29,20 +29,31 @@
   overflow-y: scroll;
 }
 
-.editor-container::-webkit-scrollbar {
+.left-editor-container {
+  float: left;
+  flex-grow: 1;
+  min-width: 18rem;
+  max-width: 18rem;
+  margin: 1vh !important;
+  padding-top: 4px;
+  font-size: 1.5vh;
+  overflow-y: scroll !important;
+}
+
+.left-editor-container::-webkit-scrollbar,.right-editor-container::-webkit-scrollbar {
   width: 0;
 }
 
-.editor-container > * {
+.left-editor-container > *,.right-editor-container > * {
   margin: 0 4px !important;
 }
 
-.editor-container h3 {
+.left-editor-container h3,.right-editor-container h3 {
   margin: 0;
   font-weight: 100;
 }
 
-.editor-container > *::before {
+.left-editor-container > *::before, .right-editor-container > *::before {
   background-color: transparent !important;
 }
 
