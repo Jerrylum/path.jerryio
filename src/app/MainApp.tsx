@@ -62,10 +62,15 @@ export class MainApp {
   private setPathFileData(format: Format, pfd: PathFileData): void {
     const purify = DOMPurify();
 
-    // SECURITY: sanitize path names, beware of XSS attack from the path file
     for (const path of pfd.paths) {
+      // SECURITY: Sanitize path names, beware of XSS attack from the path file
       const temp = purify.sanitize(path.name);
       path.name = temp === "" ? "Path" : temp;
+
+      // ALGO: Link the first vertex of each spline to the last vertex of the previous spline
+      for (let j = 1; j < path.splines.length; j++) {
+        path.splines[j].setFirst(path.splines[j - 1].last());
+      }
     }
 
     this.format = format;
