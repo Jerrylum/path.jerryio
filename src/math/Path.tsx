@@ -430,7 +430,7 @@ export class Path implements InteractiveEntity {
     let pathTTD = 0; // total travel distance
     for (let spline of this.splines) {
       const [firstKnot, ...knots] = spline.calculateKnots(gc, sc, pathTTD);
-      // ALGO: Ignore the first knot, It is (too close) the last knot of the previous spline
+      // ALGO: Ignore the first knot, it is (too close) the last knot of the previous spline
       if (pathTTD === 0) gen1.push(firstKnot); // Except for the first spline
       gen1.push(...knots);
       pathTTD = gen1[gen1.length - 1].integral;
@@ -442,7 +442,7 @@ export class Path implements InteractiveEntity {
     const speedDiff = sc.speedLimit.to - sc.speedLimit.from;
     const applicationDiff = sc.applicationRange.to - sc.applicationRange.from;
     const useRatio = speedDiff !== 0 && applicationDiff !== 0;
-    const ratio = speedDiff / applicationDiff;
+    const applicationRatio = speedDiff / applicationDiff;
     const accelThreshold = sc.transitionRange.from * pathTTD;
     const decThreshold = sc.transitionRange.to * pathTTD;
     // ALGO: accelSpeedScale can be Infinity if sc.transitionRange.from is 0, but it is ok
@@ -450,14 +450,17 @@ export class Path implements InteractiveEntity {
     // ALGO: Same with above
     const decSpeedScale = speedDiff / (1 - sc.transitionRange.to);
 
+    const splineTargetInterval = new UnitConverter(gc.uol, UnitOfLength.Centimeter).fromAtoB(gc.knotDensity) / 200;
+    const splineDeltaRatio = (1 / splineTargetInterval) / (pathTTD / gc.knotDensity);
     const targetInterval = 1 / (pathTTD / gc.knotDensity);
 
     function calculateSpeed(p3: Knot) {
       // ALGO: Scale the speed according to the application range
       // ALGO: The first knot has delta 0, but it should have the highest speed
-      if (p3.delta < sc.applicationRange.from && p3.delta !== 0) p3.speed = sc.speedLimit.from;
-      else if (p3.delta > sc.applicationRange.to) p3.speed = sc.speedLimit.to;
-      else if (useRatio && p3.delta !== 0) p3.speed = sc.speedLimit.from + (p3.delta - sc.applicationRange.from) * ratio;
+      const delta = p3.delta * splineDeltaRatio;
+      if (delta < sc.applicationRange.from && delta !== 0) p3.speed = sc.speedLimit.from;
+      else if (delta > sc.applicationRange.to) p3.speed = sc.speedLimit.to;
+      else if (useRatio && delta !== 0) p3.speed = sc.speedLimit.from + (delta - sc.applicationRange.from) * applicationRatio;
       else p3.speed = sc.speedLimit.to;
 
       // ALGO: Acceleration/Deceleration
