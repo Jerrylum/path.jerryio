@@ -35,7 +35,7 @@ const PathsAccordion = observer((props: AppProps) => {
               }}
               isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
               isValidValue={(candidate: string) => new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
-              disabled={props.app.selected.length !== 1}
+              disabled={props.app.selected.length !== 1 || props.app.selectedControl === undefined}
               numeric
             />
             <ObserverInput
@@ -57,7 +57,7 @@ const PathsAccordion = observer((props: AppProps) => {
               }}
               isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
               isValidValue={(candidate: string) => new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
-              disabled={props.app.selected.length !== 1}
+              disabled={props.app.selected.length !== 1 || props.app.selectedControl === undefined}
               numeric
             />
             <ObserverInput
@@ -79,7 +79,7 @@ const PathsAccordion = observer((props: AppProps) => {
               }}
               isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
               isValidValue={(candidate: string) => new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
-              disabled={props.app.selected.length !== 1}
+              disabled={props.app.selected.length !== 1 || props.app.selectedControl === undefined}
               sx={{ visibility: props.app.selected.length === 1 && !(props.app.selectedControl instanceof EndPointControl) ? "hidden" : "" }}
               numeric
             />
