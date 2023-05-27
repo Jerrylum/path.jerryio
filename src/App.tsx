@@ -115,8 +115,22 @@ const App = observer(() => {
       app.usingUOL = newUOL;
     }));
 
+    const disposer2 = reaction(() => app.gc.knotDensity, action((val: number, oldVal: number) => {
+      const newMaxLimit = parseFloat((val * 2).toFixed(3));
+      app.sc.applicationRange.maxLimit.label = newMaxLimit + "";
+      app.sc.applicationRange.maxLimit.value = newMaxLimit;
+
+      const ratio = val / oldVal;
+
+      app.sc.applicationRange.from *= ratio;
+      app.sc.applicationRange.from = parseFloat(app.sc.applicationRange.from.toFixed(3));
+      app.sc.applicationRange.to *= ratio;
+      app.sc.applicationRange.to = parseFloat(app.sc.applicationRange.to.toFixed(3));
+    }));
+
     return () => {
       disposer();
+      disposer2();
     }
   }), []);
 
