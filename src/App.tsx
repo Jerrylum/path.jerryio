@@ -80,6 +80,10 @@ const App = observer(() => {
     app.gc.robotHeight = robotHeight;
   }
 
+  useEffect(action(() => {
+    app.paths.map(path => path.calculateKnots(app.gc, app.sc));
+  }), undefined);
+
   useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
     document.body.addEventListener('keydown', onKeyDown);
     document.body.addEventListener('keyup', onKeyUp);

@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Exclude, Type } from 'class-transformer';
 import { makeAutoObservable } from "mobx"
 import { makeId } from "../app/Util";
 import { GeneralConfig, SpeedConfig } from "../format/Config";
@@ -288,6 +288,9 @@ export class Path implements InteractiveEntity {
   public lock: boolean = false;
   public visible: boolean = true;
 
+  @Exclude()
+  public cachedKnots: Knot[] = [];
+
   constructor(firstSpline: Spline) {
     this.splines = [firstSpline];
     this.uid = makeId(10);
@@ -443,7 +446,7 @@ export class Path implements InteractiveEntity {
     }
 
     // ALGO: gen1 must have at least 2 knots, if not return gen1 with no knot at all, or 1 knot with speed 0 and heading
-    if (gen1.length < 2) return gen1;
+    if (gen1.length < 2) return this.cachedKnots = gen1;
 
     const speedDiff = sc.speedLimit.to - sc.speedLimit.from;
     const applicationDiff = sc.applicationRange.to - sc.applicationRange.from;
@@ -513,6 +516,6 @@ export class Path implements InteractiveEntity {
     // ALGO: No need to calculate speed for the final knot, it is always 0
     gen2.push(finalKnot);
 
-    return gen2;
+    return this.cachedKnots = gen2;
   }
 }

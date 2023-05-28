@@ -23,7 +23,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
     const evt = event.evt;
 
     const cpInUOL = cc.toUOL(new EndPointControl(evt.offsetX, evt.offsetY, 0));
-    
+
     // UX: Set target path to the first path if: no path is selected
     let targetPath: Path | undefined = props.app.selectedPath || paths[0];
     if (targetPath === undefined) {
@@ -74,7 +74,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
           visiblePaths.map((path, index) => (
             <React.Fragment key={index}>
               {
-                path.calculateKnots(props.app.gc, props.app.sc).map((knotInUOL, index) => {
+                path.cachedKnots.map((knotInUOL, index) => {
                   let knotInPx = props.cc.toPx(knotInUOL);
 
                   let percentage = (knotInUOL.speed - speedFrom) / (speedTo - speedFrom);
