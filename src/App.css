@@ -1,5 +1,5 @@
 .App {
-  display:flex;
+  display: flex;
   width: 100vw;
   height: 100vh;
   padding: 1vh;
@@ -11,11 +11,28 @@
   margin: 1vh;
 }
 
+.middle-container {
+  display: flex;
+  width: 80vh;
+  height: 100vh;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: flex-start;
+}
+
 .field-container {
-  width: 96vh;
-  height: 96vh;
+  width: 78vh;
+  height: 78vh;
   padding: 1vh;
   overflow: hidden;
+}
+
+.graph-container {
+  width: 78vh;
+  height: 12vh;
+  padding: 1vh;
+  overflow: hidden;
+  margin-top: 2vh;
 }
 
 .right-editor-container {
@@ -40,20 +57,24 @@
   overflow-y: scroll !important;
 }
 
-.left-editor-container::-webkit-scrollbar,.right-editor-container::-webkit-scrollbar {
+.left-editor-container::-webkit-scrollbar,
+.right-editor-container::-webkit-scrollbar {
   width: 0;
 }
 
-.left-editor-container > *,.right-editor-container > * {
+.left-editor-container > *,
+.right-editor-container > * {
   margin: 0 4px !important;
 }
 
-.left-editor-container h3,.right-editor-container h3 {
+.left-editor-container h3,
+.right-editor-container h3 {
   margin: 0;
   font-weight: 100;
 }
 
-.left-editor-container > *::before, .right-editor-container > *::before {
+.left-editor-container > *::before,
+.right-editor-container > *::before {
   background-color: transparent !important;
 }
 

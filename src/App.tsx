@@ -20,6 +20,7 @@ import { UnitConverter, UnitOfLength } from './math/Unit';
 import { OutputConfigAccordion } from './app/OutputAccordion';
 import { MainApp } from './app/MainApp';
 import { PathTreeAccordion } from './app/PathTreeAccordion';
+import { GraphCanvasElement } from './app/GraphCanvasElement';
 
 // observable class
 class UserBehavior {
@@ -48,7 +49,7 @@ const App = observer(() => {
   useTimer(1000 / 30);
 
   const uc = new UnitConverter(UnitOfLength.Foot, app.gc.uol);
-  const canvasSizeInPx = window.innerHeight * 0.94;
+  const canvasSizeInPx = window.innerHeight * 0.78;
   const canvasSizeInUOL = uc.fromAtoB(12);
   const cc = new CanvasConverter(canvasSizeInPx, canvasSizeInPx, canvasSizeInUOL, canvasSizeInUOL);
 
@@ -148,9 +149,14 @@ const App = observer(() => {
     <div className='App' key={app.format.uid + "-" + app.gc.uol}>
       <PathTreeAccordion {...appProps} />
 
-      <Card className='field-container'>
-        <FieldCanvasElement {...appProps} />
-      </Card>
+      <Box className='middle-container'>
+        <Card className='field-container'>
+          <FieldCanvasElement {...appProps} />
+        </Card>
+        <Card className='graph-container'>
+          <GraphCanvasElement {...appProps} />
+        </Card>
+      </Box>
 
       <Box className='right-editor-container'>
         <GeneralConfigAccordion {...appProps} />

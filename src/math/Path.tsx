@@ -473,8 +473,8 @@ export class Path implements InteractiveEntity {
       // ALGO: Acceleration/Deceleration
       // ALGO: Speed never exceeds the speed limit, except for the final knot
       // (p3.integral / totalDistance) / sc.transitionRange.from * speedDiff
-      if (p3.integral < accelThreshold) p3.speed = sc.speedLimit.from + (p3.integral / pathTTD) * accelSpeedScale;
-      else if (p3.integral > decThreshold) p3.speed = sc.speedLimit.from + (1 - p3.integral / pathTTD) * decSpeedScale;
+      if (p3.integral < accelThreshold) p3.speed = Math.min(p3.speed, sc.speedLimit.from + (p3.integral / pathTTD) * accelSpeedScale);
+      else if (p3.integral > decThreshold) p3.speed = Math.min(p3.speed, sc.speedLimit.from + (1 - p3.integral / pathTTD) * decSpeedScale);
 
       return p3;
     }
