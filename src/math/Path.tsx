@@ -331,6 +331,10 @@ export class Path implements InteractiveEntity {
 
   @Exclude()
   public cachedKnots: Knot[] = [];
+  @Exclude()
+  public cachedSplineRanges: IndexRange[] = [];
+  @Exclude()
+  public cachedIndexWithKeyFrames: IndexWithKeyFrame[] = [];
 
   constructor(firstSpline: Spline) {
     this.splines = [firstSpline];
@@ -475,6 +479,12 @@ export class Path implements InteractiveEntity {
   }
 
   calculateKnots(gc: GeneralConfig, sc: SpeedConfig): Knot[] {
+    if (this.splines.length === 0) {
+      this.cachedSplineRanges = [];
+      this.cachedIndexWithKeyFrames = [];
+      return this.cachedKnots = [];
+    }
+
     // ALGO: The density of knots is NOT uniform along the curve, and we are using this to decelerate the robot
     const gen1: Knot[] = [];
     let pathTTD = 0; // total travel distance
@@ -536,6 +546,7 @@ export class Path implements InteractiveEntity {
       let isLastKnotOfSplines = false; // flag
       while (gen1[closestIdx].integral < integral) { // ALGO: ClosestIdx never exceeds the array length
         // ALGO: Obtain the heading value if it is available
+        // ALGO: the last knot with heading and isLastKnotOfSplines flag is not looped
         if (gen1[closestIdx].heading !== undefined) heading = gen1[closestIdx].heading;
         isLastKnotOfSplines = isLastKnotOfSplines || gen1[closestIdx].isLastKnotOfSplines;
         closestIdx++;
@@ -558,12 +569,19 @@ export class Path implements InteractiveEntity {
       gen2.push(p3);
     }
 
+    // ALGO: The last spline is not looped
+    gen2SplineRanges.push(new IndexRange(splineFirstKnotIdx, gen2.length));
+    this.cachedSplineRanges = gen2SplineRanges;
+
+    // ALGO: gen2SplineRanges must have at least x ranges (x = number of splines)
+
     const ikf: IndexWithKeyFrame[] = [new IndexWithKeyFrame(0, new KeyFrame(0, 1, undefined))];
 
     for (let splineIdx = 0; splineIdx < this.splines.length; splineIdx++) {
       const spline = this.splines[splineIdx];
       const knotIdxRange = gen2SplineRanges[splineIdx];
-      spline.speedProfiles.slice().sort((a, b) => a.xPos - b.xPos).forEach((kf) => {
+      // ALGO: Assume the keyframes are sorted
+      spline.speedProfiles.forEach((kf) => {
         const knotIdx = knotIdxRange.from + Math.floor((knotIdxRange.to - knotIdxRange.from) * kf.xPos);
         ikf.push(new IndexWithKeyFrame(knotIdx, kf));
       });
@@ -578,6 +596,7 @@ export class Path implements InteractiveEntity {
 
       current.keyFrame.process(sc, responsibleKnots, next?.keyFrame);
     }
+    this.cachedIndexWithKeyFrames = ikf;
 
     // ALGO: gen2 must have at least 1 knots
     // ALGO: The first should have heading information
