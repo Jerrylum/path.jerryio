@@ -84,6 +84,8 @@ export class Vertex {
 }
 
 export class Knot extends Vertex {
+  public isLastKnotOfSplines: boolean = false;
+
   constructor(x: number, y: number,
     public delta: number, // distance to the previous knot
     public integral: number, // integral distance from the first knot
@@ -145,6 +147,31 @@ export class EndPointControl extends Control implements Position {
   }
 }
 
+export class KeyFrame {
+
+  constructor(
+    public xPos: number, // [0...1)
+    public yPos: number, // [0...1]
+    public transitionTimingFunction: any) { }
+
+  process(sc: SpeedConfig, responsible: Knot[], nextFrame?: KeyFrame): void {
+    const limitFrom = sc.speedLimit.from;
+    const limitTo = sc.speedLimit.to;
+    const limitDiff = limitTo - limitFrom;
+
+    const yFrom = this.yPos;
+    const yTo = nextFrame ? nextFrame.yPos : yFrom;
+    const yDiff = yTo - yFrom;
+
+    const length = responsible.length;
+    for (let i = 0; i < length; i++) {
+      const y = yFrom + yDiff * i / length; // length - 1 + 1
+      const speed = limitFrom + limitDiff * y;
+      responsible[i].speed = speed;
+    }
+  }
+}
+
 // observable class
 export class Spline implements CanvasEntity {
   @Type(() => Control, {
@@ -158,6 +185,8 @@ export class Spline implements CanvasEntity {
     keepDiscriminatorProperty: true
   })
   public controls: (EndPointControl | Control)[];
+  @Type(() => KeyFrame)
+  public speedProfiles: KeyFrame[];
   public uid: string;
 
   constructor(start: EndPointControl, middle: Control[], end: EndPointControl) {
@@ -166,6 +195,7 @@ export class Spline implements CanvasEntity {
     } else {
       this.controls = [start, ...middle, end];
     }
+    this.speedProfiles = [];
     this.uid = makeId(10);
     makeAutoObservable(this);
   }
@@ -198,19 +228,22 @@ export class Spline implements CanvasEntity {
     // The density of knots is NOT uniform along the curve
     let knots: Knot[] = this.calculateBezierCurveKnots(targetInterval, integral);
 
-    if (knots.length > 1) knots[0].heading = this.first().heading;
     const lastKnot = knots[knots.length - 1];
     const lastControl = this.last();
     const distance = lastKnot.distance(lastControl);
     const integralDistance = lastKnot.integral + distance;
     const finalKnot = new Knot(lastControl.x, lastControl.y, distance, integralDistance, 0, this.last().heading);
+    finalKnot.isLastKnotOfSplines = true;
     knots.push(finalKnot);
 
     const splineDeltaRatio = (1 / targetInterval) / ((integralDistance - integral) / gc.knotDensity);
-    for (const knot of knots) {
-      knot.delta *= splineDeltaRatio;
+    if (splineDeltaRatio !== Infinity) {
+      for (const knot of knots) {
+        knot.delta *= splineDeltaRatio;
+      }
     }
 
+    // At least 2 knots are returned
     return knots;
   }
 
@@ -277,6 +310,14 @@ export class Spline implements CanvasEntity {
     }
     return coeff;
   }
+}
+
+class IndexRange {
+  constructor(public from: number, public to: number) { } // to is exclusive
+}
+
+class IndexWithKeyFrame {
+  constructor(public index: number, public keyFrame: KeyFrame) { }
 }
 
 // observable class
@@ -445,8 +486,7 @@ export class Path implements InteractiveEntity {
       pathTTD = gen1[gen1.length - 1].integral;
     }
 
-    // ALGO: gen1 must have at least 2 knots, if not return gen1 with no knot at all, or 1 knot with speed 0 and heading
-    if (gen1.length < 2) return this.cachedKnots = gen1;
+    // ALGO: gen1 must have at least 2 knots
 
     const speedDiff = sc.speedLimit.to - sc.speedLimit.from;
     const applicationDiff = sc.applicationRange.to - sc.applicationRange.from;
@@ -480,16 +520,24 @@ export class Path implements InteractiveEntity {
     }
 
     // ALGO: Space points evenly
+
     const gen2: Knot[] = [];
+
+    // ALGO: An array of index ranges, each range represents a set of knots calculated by a spline in gen2
+    const gen2SplineRanges: IndexRange[] = [];
+
     let closestIdx = 1;
+    let splineFirstKnotIdx = 0;
 
     for (let t = 0; t < 1; t += targetInterval) {
       const integral = t * pathTTD;
 
       let heading: number | undefined;
+      let isLastKnotOfSplines = false; // flag
       while (gen1[closestIdx].integral < integral) { // ALGO: ClosestIdx never exceeds the array length
         // ALGO: Obtain the heading value if it is available
         if (gen1[closestIdx].heading !== undefined) heading = gen1[closestIdx].heading;
+        isLastKnotOfSplines = isLastKnotOfSplines || gen1[closestIdx].isLastKnotOfSplines;
         closestIdx++;
       }
 
@@ -499,9 +547,36 @@ export class Path implements InteractiveEntity {
       const p3X = p1.x + (p2.x - p1.x) * pRatio;
       const p3Y = p1.y + (p2.y - p1.y) * pRatio;
       const p3Delta = p1.delta + (p2.delta - p1.delta) * pRatio;
-      const p3 = new Knot(p3X, p3Y, p3Delta, integral, 0, heading);
+      const p3 = isNaN(pRatio) ? new Knot(p1.x, p1.y, p1.delta, integral, 0, heading) : new Knot(p3X, p3Y, p3Delta, integral, 0, heading);
 
-      gen2.push(calculateSpeed(p3));
+      if (p3.isLastKnotOfSplines = isLastKnotOfSplines) {
+        gen2SplineRanges.push(new IndexRange(splineFirstKnotIdx, gen2.length));
+        splineFirstKnotIdx = gen2.length;
+      }
+
+      // gen2.push(calculateSpeed(p3));
+      gen2.push(p3);
+    }
+
+    const ikf: IndexWithKeyFrame[] = [new IndexWithKeyFrame(0, new KeyFrame(0, 1, undefined))];
+
+    for (let splineIdx = 0; splineIdx < this.splines.length; splineIdx++) {
+      const spline = this.splines[splineIdx];
+      const knotIdxRange = gen2SplineRanges[splineIdx];
+      spline.speedProfiles.slice().sort((a, b) => a.xPos - b.xPos).forEach((kf) => {
+        const knotIdx = knotIdxRange.from + Math.floor((knotIdxRange.to - knotIdxRange.from) * kf.xPos);
+        ikf.push(new IndexWithKeyFrame(knotIdx, kf));
+      });
+    }
+
+    for (let i = 0; i < ikf.length; i++) {
+      const current = ikf[i];
+      const next = ikf[i + 1];
+      const from = current.index;
+      const to = next === undefined ? gen2.length : next.index;
+      const responsibleKnots = gen2.slice(from, to);
+
+      current.keyFrame.process(sc, responsibleKnots, next?.keyFrame);
     }
 
     // ALGO: gen2 must have at least 1 knots
