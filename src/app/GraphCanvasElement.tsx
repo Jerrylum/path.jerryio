@@ -112,7 +112,7 @@ const KnotElement = observer((props: { knot: Knot, index: number, sc: SpeedConfi
 const KeyFrameElement = observer((props: { ikf: IndexWithKeyFrame, gcc: GraphCanvasConverter }) => {
   const { ikf, gcc } = props;
 
-  const onDragKeyFrame = (event: Konva.KonvaEventObject<DragEvent>, ikf: IndexWithKeyFrame) => {
+  const onDragKeyFrame = (event: Konva.KonvaEventObject<DragEvent>) => {
     const evt = event.evt;
 
     let canvasPos = event.target.getStage()?.container().getBoundingClientRect();
@@ -148,12 +148,21 @@ const KeyFrameElement = observer((props: { ikf: IndexWithKeyFrame, gcc: GraphCan
     event.target.y(posInPx.y);
   };
 
+  const onClickKeyFrame = (event: Konva.KonvaEventObject<MouseEvent>) => {
+    const evt = event.evt;
+
+    if (evt.button === 2) { // right click
+      for (const spline of gcc.path.splines) {
+        spline.speedProfiles = spline.speedProfiles.filter((kf) => kf !== ikf.keyFrame);
+      }
+    }
+  };
+
   const x = gcc.toPxNumber(ikf.index);
   const y = (1 - ikf.keyFrame.yPos) * gcc.bodyHeight + gcc.axisLineTopX;
   return <React.Fragment>
-    <Circle x={x} y={y} radius={gcc.knotRadius * 4} fill={"#D7B301"} opacity={0.75} draggable onDragMove={
-      action((e) => onDragKeyFrame(e, ikf))
-    } />
+    <Circle x={x} y={y} radius={gcc.knotRadius * 4} fill={"#D7B301"} opacity={0.75} draggable
+      onDragMove={action(onDragKeyFrame)} onClick={action(onClickKeyFrame)} />
   </React.Fragment>
 });
 
@@ -176,6 +185,9 @@ const GraphCanvasElement = observer((props: AppProps) => {
   const densityLow = props.app.sc.applicationRange.from;
 
   const onGraphClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    // UX: Allow to add keyframes only with left mouse button
+    if (e.evt.button !== 0) return;
+
     if (path === undefined) return;
 
     const kfPos = gcc.toPos(new Vertex(e.evt.offsetX, e.evt.offsetY));
@@ -202,7 +214,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
   };
 
   return (
-    <Stage width={canvasWidth} height={canvasHeight} onWheel={handleWheel}>
+    <Stage width={canvasWidth} height={canvasHeight} onWheel={handleWheel} onContextMenu={(e) => e.evt.preventDefault()}>
       <Layer>
         <Line points={[0, gcc.axisLineTopX, gcc.pixelWidth, gcc.axisLineTopX]} stroke="grey" strokeWidth={gcc.lineWidth} />
         <Line points={[0, gcc.axisLineBottomX, gcc.pixelWidth, gcc.axisLineBottomX]} stroke="grey" strokeWidth={gcc.lineWidth} />
@@ -219,7 +231,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
         <Rect x={gcc.twoSidePaddingWidth} y={0} width={gcc.pixelWidth - gcc.twoSidePaddingWidth * 2} height={gcc.pixelHeight} onClick={action(onGraphClick)} />
         {
           path !== undefined
-            ? path.cachedIndexWithKeyFrames.map((ikf) => <KeyFrameElement key={ikf.keyFrame.uid} {...{ikf, gcc}} />)
+            ? path.cachedIndexWithKeyFrames.map((ikf) => <KeyFrameElement key={ikf.keyFrame.uid} {...{ ikf, gcc }} />)
             : null
         }
 
