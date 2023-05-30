@@ -21,7 +21,7 @@ export class GraphCanvasConverter {
   public bodyHeight: number;
   public axisLineBottomX: number;
 
-  constructor(public pixelWidth: number, public pixelHeight: number, 
+  constructor(public pixelWidth: number, public pixelHeight: number,
     public zoom: number, public xOffset: number,
     public path: Path) {
     this.knotWidth = pixelWidth / this.knotsOnPage;
@@ -34,11 +34,11 @@ export class GraphCanvasConverter {
     this.axisLineBottomX = this.pixelHeight * 0.8;
   }
 
-  toPx(index: number): number {
+  toPxNumber(index: number): number {
     return (index) * this.knotWidth + this.knotWidth * 14 - this.xOffset;
   }
 
-  toIndex(px: number): number {
+  toIndexNumber(px: number): number {
     return Math.floor((px + this.xOffset - this.twoSidePaddingWidth) / this.knotWidth);
   }
 
@@ -46,12 +46,18 @@ export class GraphCanvasConverter {
     const x = px.x;
     const y = px.y;
 
-    const index = this.toIndex(x);
+    let index = this.toIndexNumber(x);
+    if (index >= this.path.cachedKnots.length - 1) {
+      index = this.path.cachedKnots.length - 1;
+    } else if (index < 0) {
+      index = 0;
+    }
+
     const splineIndex = this.path.cachedSplineRanges.findIndex((range) => range.from <= index && range.to > index);
     if (splineIndex === -1) return;
 
     const range = this.path.cachedSplineRanges[splineIndex];
-    const spline = this.path.splines[splineIndex];  
+    const spline = this.path.splines[splineIndex];
 
     let xPos = (index - range.from) / (range.to - range.from);
     if (xPos === Infinity || xPos === -Infinity || isNaN(xPos)) return;
@@ -62,6 +68,17 @@ export class GraphCanvasConverter {
     if (yPos > 1) yPos = 1;
 
     return { spline, xPos, yPos };
+  }
+
+  toPx(pos: KeyFramePosition): Vertex {
+    const spline = pos.spline;
+    const splineIndex = this.path.splines.findIndex((s) => s === spline);
+    const range = this.path.cachedSplineRanges[splineIndex];
+
+    const x = range.from + pos.xPos * (range.to - range.from);
+    const y = this.axisLineTopX + (1 - pos.yPos) * (this.axisLineBottomX - this.axisLineTopX);
+
+    return new Vertex(this.toPxNumber(x), y);
   }
 }
 
@@ -76,7 +93,7 @@ const KnotElement = observer((props: { knot: Knot, index: number, sc: SpeedConfi
 
   let p1 = (knot.delta - densityLow) / (densityHigh - densityLow);
   let p2 = (knot.speed - speedFrom) / (speedTo - speedFrom);
-  let x = gcc.toPx(index);
+  let x = gcc.toPxNumber(index);
   let y1 = (1 - p1) * (gcc.pixelHeight * 0.6) + (gcc.axisLineTopX);
   let y2 = (1 - p2) * (gcc.pixelHeight * 0.6) + (gcc.axisLineTopX);
   const color = `hsl(${p2 * 90}, 70%, 50%)`; // red = min speed, green = max speed
@@ -95,7 +112,7 @@ const KnotElement = observer((props: { knot: Knot, index: number, sc: SpeedConfi
 const GraphCanvasElement = observer((props: AppProps) => {
   const [zoom, setZoom] = React.useState(1);
   const [xOffset, setXOffset] = React.useState(0);
-  
+
   const path = props.app.selectedPath || props.paths[0];
 
   const canvasWidth = window.innerHeight * 0.78;
@@ -127,20 +144,19 @@ const GraphCanvasElement = observer((props: AppProps) => {
     let canvasPos = event.target.getStage()?.container().getBoundingClientRect();
     if (canvasPos === undefined) return;
 
-    // TODO UX bounding
-
     // UX: Calculate the position of the control point by the client mouse position
     const kfPos = gcc.toPos(new Vertex(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top));
     if (kfPos === undefined) {
       evt.preventDefault();
-      console.log("out of bounds");
+
+      if (ikf.spline === undefined) return;
+      const posInPx = gcc.toPx({ spline: ikf.spline, xPos: ikf.keyFrame.xPos, yPos: ikf.keyFrame.yPos });
+      event.target.x(posInPx.x);
+      event.target.y(posInPx.y);
       return;
     }
 
-    console.log(kfPos.xPos, kfPos.yPos);
-
     // remove keyframe from oldSpline speed control
-    // if (ikf.spline !== undefined) ikf.spline.speedProfiles = ikf.spline.speedProfiles.filter((kf) => kf !== ikf.keyFrame);
     for (const spline of path.splines) {
       spline.speedProfiles = spline.speedProfiles.filter((kf) => kf !== ikf.keyFrame);
     }
@@ -150,6 +166,10 @@ const GraphCanvasElement = observer((props: AppProps) => {
     kf.yPos = kfPos.yPos;
     kfPos.spline.speedProfiles.push(kf);
     kfPos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
+
+    const posInPx = gcc.toPx(kfPos);
+    event.target.x(posInPx.x);
+    event.target.y(posInPx.y);
   };
 
   React.useEffect(() => {
@@ -186,7 +206,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
         {
           path !== undefined
             ? path.cachedIndexWithKeyFrames.map((ikf) => {
-              const x = gcc.toPx(ikf.index);
+              const x = gcc.toPxNumber(ikf.index);
               const y = (1 - ikf.keyFrame.yPos) * gcc.bodyHeight + gcc.axisLineTopX;
               return <React.Fragment key={ikf.keyFrame.uid}>
                 <Circle x={x} y={y} radius={gcc.knotRadius * 4} fill={"#D7B301"} opacity={0.75} draggable onDragMove={
