@@ -115,7 +115,7 @@ export class PathDotJerryioFormatV0_1 implements Format {
     for (const path of app.paths) {
       rtn += `#PATH-KNOTS-START ${path.name}\n`;
 
-      const knots = path.calculateKnots(app.gc);
+      const knots = path.calculateKnots(app.gc).knots;
       for (const knot of knots) {
         const x = uc.fromAtoB(knot.x);
         const y = uc.fromAtoB(knot.y);

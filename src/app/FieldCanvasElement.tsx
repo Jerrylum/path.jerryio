@@ -71,7 +71,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
           visiblePaths.map((path, index) => (
             <React.Fragment key={index}>
               {
-                path.cachedKnots.map((knotInUOL, index) => {
+                path.cachedResult.knots.map((knotInUOL, index) => {
                   const sc = path.sc;
 
                   const speedFrom = sc.speedLimit.from;

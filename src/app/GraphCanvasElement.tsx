@@ -1,6 +1,6 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { IndexWithKeyFrame, KeyFrame, KeyFramePosition, Knot, Path, Vertex } from '../math/Path';
+import { KeyFrameIndexing, KeyFrame, KeyFramePos, Knot, Path, Vertex } from '../math/Path';
 import Konva from 'konva';
 import { Circle, Layer, Line, Rect, Stage, Text } from 'react-konva';
 import { AppProps } from "../App";
@@ -41,22 +41,22 @@ export class GraphCanvasConverter {
     return Math.floor((px + this.xOffset - this.twoSidePaddingWidth) / this.knotWidth);
   }
 
-  toPos(px: Vertex): KeyFramePosition | undefined {
+  toPos(px: Vertex): KeyFramePos | undefined {
     const x = px.x;
     const y = px.y;
 
     let index = this.toIndexNumber(x);
-    if (index >= this.path.cachedKnots.length - 2) {
-      index = this.path.cachedKnots.length - 2;
+    if (index >= this.path.cachedResult.knots.length - 2) {
+      index = this.path.cachedResult.knots.length - 2;
     }
     if (index < 0) {
       index = 0;
     }
 
-    const splineIndex = this.path.cachedSplineRanges.findIndex((range) => range.from <= index && range.to > index);
+    const splineIndex = this.path.cachedResult.splineRanges.findIndex((range) => range.from <= index && range.to > index);
     if (splineIndex === -1) return;
 
-    const range = this.path.cachedSplineRanges[splineIndex];
+    const range = this.path.cachedResult.splineRanges[splineIndex];
     const spline = this.path.splines[splineIndex];
 
     let xPos = (index - range.from) / (range.to - range.from);
@@ -70,10 +70,10 @@ export class GraphCanvasConverter {
     return { spline, xPos, yPos };
   }
 
-  toPx(pos: KeyFramePosition): Vertex {
+  toPx(pos: KeyFramePos): Vertex {
     const spline = pos.spline;
     const splineIndex = this.path.splines.findIndex((s) => s === spline);
-    const range = this.path.cachedSplineRanges[splineIndex];
+    const range = this.path.cachedResult.splineRanges[splineIndex];
 
     const x = range.from + pos.xPos * (range.to - range.from);
     const y = this.axisLineTopX + (1 - pos.yPos) * (this.axisLineBottomX - this.axisLineTopX);
@@ -109,7 +109,7 @@ const KnotElement = observer((props: { knot: Knot, index: number, sc: SpeedConfi
   </>
 });
 
-const KeyFrameElement = observer((props: { ikf: IndexWithKeyFrame, gcc: GraphCanvasConverter }) => {
+const KeyFrameElement = observer((props: { ikf: KeyFrameIndexing, gcc: GraphCanvasConverter }) => {
   const { ikf, gcc } = props;
 
   const onDragKeyFrame = (event: Konva.KonvaEventObject<DragEvent>) => {
@@ -212,7 +212,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
     if (path === undefined) {
       setXOffset(0);
     } else {
-      const maxScrollPos = gcc.knotWidth * (path.cachedKnots.length - 2);
+      const maxScrollPos = gcc.knotWidth * (path.cachedResult.knots.length - 2);
       setXOffset((prev) => Math.min(Math.max(prev + delta, 0), maxScrollPos));
     }
   };
@@ -224,9 +224,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
         <Line points={[0, gcc.axisLineBottomX, gcc.pixelWidth, gcc.axisLineBottomX]} stroke="grey" strokeWidth={gcc.lineWidth} />
 
         {
-          path !== undefined
-            ? path.cachedKnots.map((knot, index) => <KnotElement key={index} sc={path.sc} {...{ knot, index, gcc }} />)
-            : null
+          path?.cachedResult.knots.map((knot, index) => <KnotElement key={index} sc={path.sc} {...{ knot, index, gcc }} />)
         }
 
         <Rect x={0} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill="white" />
@@ -234,9 +232,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
 
         <Rect x={gcc.twoSidePaddingWidth} y={0} width={gcc.pixelWidth - gcc.twoSidePaddingWidth * 2} height={gcc.pixelHeight} onClick={action(onGraphClick)} />
         {
-          path !== undefined
-            ? path.cachedIndexWithKeyFrames.map((ikf) => <KeyFrameElement key={ikf.keyFrame.uid} {...{ ikf, gcc }} />)
-            : null
+          path?.cachedResult.keyframeIndexes.map((ikf) => <KeyFrameElement key={ikf.keyFrame.uid} {...{ ikf, gcc }} />)
         }
 
         <Rect x={0} y={0} width={gcc.axisTitleWidth} height={gcc.pixelHeight} fill="white" />

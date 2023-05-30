@@ -189,7 +189,7 @@ export class LemLibFormatV0_4 implements Format {
 
     const uc = new UnitConverter(app.gc.uol, UnitOfLength.Inch);
 
-    const knots = path.calculateKnots(app.gc);
+    const knots = path.calculateKnots(app.gc).knots;
     for (const knot of knots) {
       // ALGO: heading is not supported in LemLib V0.4 format.
       rtn += `${uc.fromAtoB(knot.x)}, ${uc.fromAtoB(knot.y)}, ${uc.fixPrecision(knot.speed)}\n`;
