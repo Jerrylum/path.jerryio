@@ -147,6 +147,12 @@ export class EndPointControl extends Control implements Position {
   }
 }
 
+export interface KeyFramePosition {
+  spline: Spline,
+  xPos: number, // [0...1)
+  yPos: number // [0...1]
+}
+
 export class KeyFrame {
   public uid: string;
 
@@ -319,8 +325,8 @@ class IndexRange {
   constructor(public from: number, public to: number) { } // to is exclusive
 }
 
-class IndexWithKeyFrame {
-  constructor(public index: number, public keyFrame: KeyFrame) { }
+export class IndexWithKeyFrame {
+  constructor(public index: number, public spline: Spline | undefined, public keyFrame: KeyFrame) { }
 }
 
 // observable class
@@ -578,7 +584,7 @@ export class Path implements InteractiveEntity {
 
     // ALGO: gen2SplineRanges must have at least x ranges (x = number of splines)
 
-    const ikf: IndexWithKeyFrame[] = [new IndexWithKeyFrame(0, new KeyFrame(0, 1, undefined))];
+    const ikf: IndexWithKeyFrame[] = [new IndexWithKeyFrame(0, undefined, new KeyFrame(0, 1, undefined))];
 
     for (let splineIdx = 0; splineIdx < this.splines.length; splineIdx++) {
       const spline = this.splines[splineIdx];
@@ -586,7 +592,7 @@ export class Path implements InteractiveEntity {
       // ALGO: Assume the keyframes are sorted
       spline.speedProfiles.forEach((kf) => {
         const knotIdx = knotIdxRange.from + Math.floor((knotIdxRange.to - knotIdxRange.from) * kf.xPos);
-        ikf.push(new IndexWithKeyFrame(knotIdx, kf));
+        ikf.push(new IndexWithKeyFrame(knotIdx, spline, kf));
       });
     }
 
@@ -599,7 +605,7 @@ export class Path implements InteractiveEntity {
 
       current.keyFrame.process(sc, responsibleKnots, next?.keyFrame);
     }
-    this.cachedIndexWithKeyFrames = ikf;
+    this.cachedIndexWithKeyFrames = ikf.slice(1);
 
     // ALGO: gen2 must have at least 1 knots
     // ALGO: The first should have heading information

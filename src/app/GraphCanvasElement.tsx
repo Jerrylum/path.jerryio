@@ -1,6 +1,6 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { EndPointControl, KeyFrame, Knot, Path, Spline } from '../math/Path';
+import { EndPointControl, IndexWithKeyFrame, KeyFrame, KeyFramePosition, Knot, Path, Spline, Vertex } from '../math/Path';
 import Konva from 'konva';
 import { Circle, Image, Layer, Line, Rect, Stage, Text } from 'react-konva';
 import { SplineElement } from "./SplineElement";
@@ -21,7 +21,9 @@ export class GraphCanvasConverter {
   public bodyHeight: number;
   public axisLineBottomX: number;
 
-  constructor(public pixelWidth: number, public pixelHeight: number, public zoom: number, public xOffset: number) {
+  constructor(public pixelWidth: number, public pixelHeight: number, 
+    public zoom: number, public xOffset: number,
+    public path: Path) {
     this.knotWidth = pixelWidth / this.knotsOnPage;
     this.knotRadius = this.knotWidth / 2;
     this.twoSidePaddingWidth = this.knotWidth * 14;
@@ -34,6 +36,32 @@ export class GraphCanvasConverter {
 
   toPx(index: number): number {
     return (index) * this.knotWidth + this.knotWidth * 14 - this.xOffset;
+  }
+
+  toIndex(px: number): number {
+    return Math.floor((px + this.xOffset - this.twoSidePaddingWidth) / this.knotWidth);
+  }
+
+  toPos(px: Vertex): KeyFramePosition | undefined {
+    const x = px.x;
+    const y = px.y;
+
+    const index = this.toIndex(x);
+    const splineIndex = this.path.cachedSplineRanges.findIndex((range) => range.from <= index && range.to > index);
+    if (splineIndex === -1) return;
+
+    const range = this.path.cachedSplineRanges[splineIndex];
+    const spline = this.path.splines[splineIndex];  
+
+    let xPos = (index - range.from) / (range.to - range.from);
+    if (xPos === Infinity || xPos === -Infinity || isNaN(xPos)) return;
+
+    let yPos = 1 - (y - this.axisLineTopX) / (this.axisLineBottomX - this.axisLineTopX);
+    if (yPos === Infinity || yPos === -Infinity || isNaN(yPos)) return;
+    if (yPos < 0) yPos = 0;
+    if (yPos > 1) yPos = 1;
+
+    return { spline, xPos, yPos };
   }
 }
 
@@ -67,14 +95,14 @@ const KnotElement = observer((props: { knot: Knot, index: number, sc: SpeedConfi
 const GraphCanvasElement = observer((props: AppProps) => {
   const [zoom, setZoom] = React.useState(1);
   const [xOffset, setXOffset] = React.useState(0);
+  
+  const path = props.app.selectedPath || props.paths[0];
 
   const canvasWidth = window.innerHeight * 0.78;
   const canvasHeight = window.innerHeight * 0.12;
-  const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, zoom, xOffset);
+  const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, zoom, xOffset, path);
 
   const fontSize = canvasHeight / 8;
-
-  const path = props.app.selectedPath || props.paths[0];
 
   const speedFrom = props.app.sc.speedLimit.from;
   const speedTo = props.app.sc.speedLimit.to;
@@ -85,33 +113,43 @@ const GraphCanvasElement = observer((props: AppProps) => {
   const onGraphClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
     if (path === undefined) return;
 
-    const x = e.evt.offsetX;
-    const y = e.evt.offsetY;
-
-    const index = Math.floor((x + gcc.xOffset - gcc.twoSidePaddingWidth) / gcc.knotWidth);
-    // get spline index by path.cachedSplineRanges
-    const splineIndex = path.cachedSplineRanges.findIndex((range) => range.from <= index && range.to > index);
-
-    if (splineIndex === -1) return;
-
-    const range = path.cachedSplineRanges[splineIndex];
-    const spline = path.splines[splineIndex];
-
-    let xPos = (index - range.from) / (range.to - range.from);
-    if (xPos === Infinity || xPos === -Infinity || isNaN(xPos)) return;
-
-    let yPos = 1 - (y - gcc.axisLineTopX) / (gcc.axisLineBottomX - gcc.axisLineTopX);
-    if (yPos === Infinity || yPos === -Infinity || isNaN(yPos)) return;
-    if (yPos < 0) yPos = 0;
-    if (yPos > 1) yPos = 1;
+    const kfPos = gcc.toPos(new Vertex(e.evt.offsetX, e.evt.offsetY));
+    if (kfPos === undefined) return;
 
     // sort and push
-    spline.speedProfiles.push(new KeyFrame(xPos, yPos, undefined));
-    spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
+    kfPos.spline.speedProfiles.push(new KeyFrame(kfPos.xPos, kfPos.yPos, undefined));
+    kfPos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
   }
 
-  const onDragKeyFrame = (e: Konva.KonvaEventObject<DragEvent>, keyFrame: KeyFrame, spline: Spline) => {
+  const onDragKeyFrame = (event: Konva.KonvaEventObject<DragEvent>, ikf: IndexWithKeyFrame) => {
+    const evt = event.evt;
 
+    let canvasPos = event.target.getStage()?.container().getBoundingClientRect();
+    if (canvasPos === undefined) return;
+
+    // TODO UX bounding
+
+    // UX: Calculate the position of the control point by the client mouse position
+    const kfPos = gcc.toPos(new Vertex(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top));
+    if (kfPos === undefined) {
+      evt.preventDefault();
+      console.log("out of bounds");
+      return;
+    }
+
+    console.log(kfPos.xPos, kfPos.yPos);
+
+    // remove keyframe from oldSpline speed control
+    // if (ikf.spline !== undefined) ikf.spline.speedProfiles = ikf.spline.speedProfiles.filter((kf) => kf !== ikf.keyFrame);
+    for (const spline of path.splines) {
+      spline.speedProfiles = spline.speedProfiles.filter((kf) => kf !== ikf.keyFrame);
+    }
+
+    const kf = ikf.keyFrame;
+    kf.xPos = kfPos.xPos;
+    kf.yPos = kfPos.yPos;
+    kfPos.spline.speedProfiles.push(kf);
+    kfPos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
   };
 
   React.useEffect(() => {
@@ -151,7 +189,9 @@ const GraphCanvasElement = observer((props: AppProps) => {
               const x = gcc.toPx(ikf.index);
               const y = (1 - ikf.keyFrame.yPos) * gcc.bodyHeight + gcc.axisLineTopX;
               return <React.Fragment key={ikf.keyFrame.uid}>
-                <Circle x={x} y={y} radius={gcc.knotRadius * 4} fill={"#D7B301"} opacity={0.75} />
+                <Circle x={x} y={y} radius={gcc.knotRadius * 4} fill={"#D7B301"} opacity={0.75} draggable onDragMove={
+                  action((e) => onDragKeyFrame(e, ikf))
+                } />
               </React.Fragment>
             })
             : null
