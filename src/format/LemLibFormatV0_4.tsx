@@ -42,13 +42,6 @@ class SpeedConfigImpl implements SpeedConfig {
     from: 1.4,
     to: 1.8,
   };
-  transitionRange: NumberRange = {
-    minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 1, label: "1" },
-    step: 0.01,
-    from: 0,
-    to: 0.95,
-  };
 
   constructor() {
     makeAutoObservable(this);
@@ -64,10 +57,6 @@ class SpeedConfigImpl implements SpeedConfig {
         <Box className="panel-box">
           <Typography>Curve Deceleration Range</Typography>
           <RangeSlider range={this.applicationRange} />
-        </Box>
-        <Box className="panel-box">
-          <Typography>Acceleration/Deceleration</Typography>
-          <RangeSlider range={this.transitionRange} inverted />
         </Box>
       </>
     )
@@ -120,7 +109,6 @@ export class LemLibFormatV0_4 implements Format {
 
     const paths: Path[] = [];
     const gc = new GeneralConfigImpl();
-    const sc = new SpeedConfigImpl();
     const oc = new OutputConfigImpl();
 
     // find the first line that is "endData"
@@ -133,26 +121,27 @@ export class LemLibFormatV0_4 implements Format {
 
     const maxSpeed = Number(lines[i + 2]);
     if (isNaN(maxSpeed)) throw new Error("Invalid file format, unable to parse max speed");
-    sc.speedLimit.to = Math.max(Math.min(Number(maxSpeed.toFixed(3)), sc.speedLimit.maxLimit.value), sc.speedLimit.minLimit.value);
 
     // i + 3 Multiplier not supported.
 
     i += 4;
 
-    function error() {
+    const error = () => {
       throw new Error("Invalid file format, unable to parse spline at line " + (i + 1));
     }
 
-    function number(str: string): number {
+    const num = (str: string): number => {
       const num = Number(str);
       if (isNaN(num)) error();
       return parseFloat(num.toFixed(3));
     }
 
-    function push(spline: Spline) {
+    const push = (spline: Spline) => {
       // check if there is a path
       if (paths.length === 0) {
-        paths.push(new Path(spline));
+        const path = new Path(this.buildSpeedConfig(), spline);
+        path.sc.speedLimit.to = Math.max(Math.min(Number(maxSpeed.toFixed(3)), path.sc.speedLimit.maxLimit.value), path.sc.speedLimit.minLimit.value);
+        paths.push(path);
       } else {
         const path = paths[paths.length - 1];
         const lastSpline = path.splines[path.splines.length - 1];
@@ -170,10 +159,10 @@ export class LemLibFormatV0_4 implements Format {
       const tokens = line.split(", ");
       if (tokens.length !== 8) error();
 
-      const p1 = new EndPointControl(number(tokens[0]), number(tokens[1]), 0);
-      const p2 = new Control(number(tokens[2]), number(tokens[3]));
-      const p3 = new Control(number(tokens[4]), number(tokens[5]));
-      const p4 = new EndPointControl(number(tokens[6]), number(tokens[7]), 0);
+      const p1 = new EndPointControl(num(tokens[0]), num(tokens[1]), 0);
+      const p2 = new Control(num(tokens[2]), num(tokens[3]));
+      const p3 = new Control(num(tokens[4]), num(tokens[5]));
+      const p4 = new EndPointControl(num(tokens[6]), num(tokens[7]), 0);
       const spline = new Spline(p1, [p2, p3], p4);
       push(spline);
 
@@ -183,7 +172,6 @@ export class LemLibFormatV0_4 implements Format {
     return {
       format: this.getName(),
       gc,
-      sc,
       oc,
       paths
     };
@@ -201,7 +189,7 @@ export class LemLibFormatV0_4 implements Format {
 
     const uc = new UnitConverter(app.gc.uol, UnitOfLength.Inch);
 
-    const knots = path.calculateKnots(app.gc, app.sc);
+    const knots = path.calculateKnots(app.gc);
     for (const knot of knots) {
       // ALGO: heading is not supported in LemLib V0.4 format.
       rtn += `${uc.fromAtoB(knot.x)}, ${uc.fromAtoB(knot.y)}, ${uc.fixPrecision(knot.speed)}\n`;
@@ -230,7 +218,7 @@ export class LemLibFormatV0_4 implements Format {
 
     rtn += `endData\n`;
     rtn += `200\n`; // Not supported
-    rtn += `${app.sc.speedLimit.to}\n`;
+    rtn += `${path.sc.speedLimit.to}\n`;
     rtn += `200\n`; // Not supported
 
     function output(control: Vertex, postfix: string = ", ") {

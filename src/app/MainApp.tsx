@@ -1,6 +1,6 @@
 import { makeAutoObservable, computed } from "mobx"
 import DOMPurify from 'dompurify';
-import { GeneralConfig, SpeedConfig, OutputConfig } from "../format/Config";
+import { GeneralConfig, OutputConfig } from "../format/Config";
 import { InteractiveEntity } from "../math/Canvas";
 import { Control, EndPointControl, Path, Vertex } from "../math/Path";
 import { addToArray, removeFromArray } from "./Util";
@@ -17,7 +17,6 @@ export class MainApp {
   public mountingFile: FileSystemFileHandle | null = null;
 
   public gc: GeneralConfig = this.format.buildGeneralConfig(); // a.k.a Configuration
-  public sc: SpeedConfig = this.format.buildSpeedConfig(); // a.k.a Speed Control
   public oc: OutputConfig = this.format.buildOutputConfig(); // a.k.a Output
 
   public paths: Path[] = [];
@@ -87,7 +86,6 @@ export class MainApp {
     this.format = format;
     this.usingUOL = pfd.gc.uol;
     this.gc = pfd.gc;
-    this.sc = pfd.sc;
     this.oc = pfd.oc;
     this.paths = pfd.paths;
 
@@ -101,21 +99,22 @@ export class MainApp {
     format.init(); // ALGO: Suspend initFormat()
 
     if (typeof data.gc !== "object") throw new Error("Invalid data format: gc is not an object.");
-    if (typeof data.sc !== "object") throw new Error("Invalid data format: sc is not an object.");
     if (typeof data.oc !== "object") throw new Error("Invalid data format: oc is not an object.");
 
     const gc = plainToClassFromExist(format.buildGeneralConfig(), data.gc);
-    const sc = plainToClassFromExist(format.buildSpeedConfig(), data.sc);
     const oc = plainToClassFromExist(format.buildOutputConfig(), data.oc);
 
     // check data.paths is an array
     if (!Array.isArray(data.paths)) throw new Error("Invalid data format: paths is not an array.");
     const paths = plainToInstance(Path, data.paths);
 
+    for (const path of paths) {
+      path.sc = plainToClassFromExist(format.buildSpeedConfig(), path.sc);
+    }
+
     this.setPathFileData(format, {
       format: format.getName(),
       gc: gc,
-      sc: sc,
       oc: oc,
       paths: paths
     });
@@ -125,7 +124,6 @@ export class MainApp {
     const data: PathFileData = {
       format: this.format.getName(),
       gc: this.gc,
-      sc: this.sc,
       oc: this.oc,
       paths: this.paths
     };

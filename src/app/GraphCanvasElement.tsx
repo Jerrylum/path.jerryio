@@ -21,7 +21,7 @@ export class GraphCanvasConverter {
   public axisLineBottomX: number;
 
   constructor(public pixelWidth: number, public pixelHeight: number,
-    public zoom: number, public xOffset: number,
+    public xOffset: number,
     public path: Path) {
     this.knotWidth = pixelWidth / this.knotsOnPage;
     this.knotRadius = this.knotWidth / 2;
@@ -169,22 +169,27 @@ const KeyFrameElement = observer((props: { ikf: IndexWithKeyFrame, gcc: GraphCan
 });
 
 const GraphCanvasElement = observer((props: AppProps) => {
-  const [zoom, setZoom] = React.useState(1);
   const [xOffset, setXOffset] = React.useState(0);
 
   const path = props.app.selectedPath || props.paths[0];
 
+  React.useEffect(() => {
+    setXOffset(0);
+  }, [path]);
+
+  if (path === undefined) return null;
+
   const canvasWidth = window.innerHeight * 0.78;
   const canvasHeight = window.innerHeight * 0.12;
-  const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, zoom, xOffset, path);
+  const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, xOffset, path);
 
   const fontSize = canvasHeight / 8;
 
-  const speedFrom = props.app.sc.speedLimit.from;
-  const speedTo = props.app.sc.speedLimit.to;
+  const speedFrom = path.sc.speedLimit.from;
+  const speedTo = path.sc.speedLimit.to;
 
-  const densityHigh = props.app.sc.applicationRange.to;
-  const densityLow = props.app.sc.applicationRange.from;
+  const densityHigh = path.sc.applicationRange.to;
+  const densityLow = path.sc.applicationRange.from;
 
   const onGraphClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
     // UX: Allow to add keyframes only with left mouse button
@@ -200,9 +205,6 @@ const GraphCanvasElement = observer((props: AppProps) => {
     kfPos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
   }
 
-  React.useEffect(() => {
-    setXOffset(0);
-  }, [path]);
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     const delta = e.evt.deltaY / 5;
@@ -223,7 +225,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
 
         {
           path !== undefined
-            ? path.cachedKnots.map((knot, index) => <KnotElement key={index} sc={props.app.sc} {...{ knot, index, gcc }} />)
+            ? path.cachedKnots.map((knot, index) => <KnotElement key={index} sc={path.sc} {...{ knot, index, gcc }} />)
             : null
         }
 

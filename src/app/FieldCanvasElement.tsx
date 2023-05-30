@@ -29,7 +29,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
     if (targetPath === undefined) {
       // UX: Create new path if: no path exists
       // UX: Use user mouse position as the last control point
-      targetPath = new Path(new Spline(new EndPointControl(0, 0, 0), [], cpInUOL));
+      targetPath = new Path(props.app.format.buildSpeedConfig(), new Spline(new EndPointControl(0, 0, 0), [], cpInUOL));
       props.app.addExpanded(targetPath);
       paths.push(targetPath);
     } else if (targetPath.visible && !targetPath.lock) {
@@ -53,9 +53,6 @@ const FieldCanvasElement = observer((props: AppProps) => {
 
   const knotRadius = props.cc.pixelWidth / 320;
 
-  const speedFrom = props.app.sc.speedLimit.from;
-  const speedTo = props.app.sc.speedLimit.to;
-
   return (
     <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight} onContextMenu={(e) => e.evt.preventDefault()}>
       <Layer>
@@ -75,9 +72,13 @@ const FieldCanvasElement = observer((props: AppProps) => {
             <React.Fragment key={index}>
               {
                 path.cachedKnots.map((knotInUOL, index) => {
-                  let knotInPx = props.cc.toPx(knotInUOL);
+                  const sc = path.sc;
 
-                  let percentage = (knotInUOL.speed - speedFrom) / (speedTo - speedFrom);
+                  const speedFrom = sc.speedLimit.from;
+                  const speedTo = sc.speedLimit.to;
+
+                  const knotInPx = props.cc.toPx(knotInUOL);
+                  const percentage = (knotInUOL.speed - speedFrom) / (speedTo - speedFrom);
                   // h => hue
                   // s => saturation
                   // l => lightness

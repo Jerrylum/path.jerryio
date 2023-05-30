@@ -3,7 +3,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/
 import { observer } from "mobx-react-lite";
 import { SpeedConfig } from '../format/Config';
 
-const SpeedConfigAccordion = observer((props: { sc: SpeedConfig }) => {
+const SpeedConfigAccordion = observer((props: { sc: SpeedConfig | undefined }) => {
   const sc = props.sc;
   return (
     <Accordion defaultExpanded>
@@ -11,7 +11,7 @@ const SpeedConfigAccordion = observer((props: { sc: SpeedConfig }) => {
         <Typography>Speed Control</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        {sc.getConfigPanel()}
+        {sc?.getConfigPanel()}
       </AccordionDetails>
     </Accordion>
   )

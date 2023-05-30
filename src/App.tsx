@@ -11,7 +11,7 @@ import { observer } from "mobx-react-lite"
 import Card from '@mui/material/Card';
 
 import { Box } from '@mui/material';
-import { PathsAccordion } from './app/PathsAccordion';
+import { PathsAccordion as EditAccordion } from './app/EditAccordion';
 import { FieldCanvasElement } from './app/FieldCanvasElement';
 import { useTimer } from './app/Util';
 import { GeneralConfigAccordion } from './app/GeneralConfigAccordion';
@@ -74,15 +74,19 @@ const App = observer(() => {
     const robotHeight = app.gc.robotHeight;
 
     app.gc = app.format.buildGeneralConfig();
-    app.sc = app.format.buildSpeedConfig();
+    app.oc = app.format.buildOutputConfig();
 
     // UX: Keep robot width and height
     app.gc.robotWidth = robotWidth;
     app.gc.robotHeight = robotHeight;
+
+    for (const path of app.paths) {
+      path.sc = app.format.buildSpeedConfig();
+    }
   }
 
-  useEffect(action(() => {
-    app.paths.map(path => path.calculateKnots(app.gc, app.sc));
+  useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
+    app.paths.map(path => path.calculateKnots(app.gc));
   }), undefined);
 
   useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
@@ -111,8 +115,8 @@ const App = observer(() => {
       app.gc.robotWidth = uc.fromAtoB(app.gc.robotWidth);
       app.gc.robotHeight = uc.fromAtoB(app.gc.robotHeight);
 
-      for (let path of app.paths) {
-        for (let control of path.getControlsSet()) {
+      for (const path of app.paths) {
+        for (const control of path.getControlsSet()) {
           control.x = uc.fromAtoB(control.x);
           control.y = uc.fromAtoB(control.y);
         }
@@ -123,15 +127,19 @@ const App = observer(() => {
 
     const disposer2 = reaction(() => app.gc.knotDensity, action((val: number, oldVal: number) => {
       const newMaxLimit = parseFloat((val * 2).toFixed(3));
-      app.sc.applicationRange.maxLimit.label = newMaxLimit + "";
-      app.sc.applicationRange.maxLimit.value = newMaxLimit;
 
-      const ratio = val / oldVal;
+      for (const path of app.paths) {
+        path.sc.applicationRange.maxLimit.label = newMaxLimit + "";
+        path.sc.applicationRange.maxLimit.value = newMaxLimit;
 
-      app.sc.applicationRange.from *= ratio;
-      app.sc.applicationRange.from = parseFloat(app.sc.applicationRange.from.toFixed(3));
-      app.sc.applicationRange.to *= ratio;
-      app.sc.applicationRange.to = parseFloat(app.sc.applicationRange.to.toFixed(3));
+        const ratio = val / oldVal;
+
+        path.sc.applicationRange.from *= ratio;
+        path.sc.applicationRange.from = parseFloat(path.sc.applicationRange.from.toFixed(3));
+        path.sc.applicationRange.to *= ratio;
+        path.sc.applicationRange.to = parseFloat(path.sc.applicationRange.to.toFixed(3));
+      }
+
     }));
 
     return () => {
@@ -160,9 +168,9 @@ const App = observer(() => {
 
       <Box className='right-editor-container'>
         <GeneralConfigAccordion {...appProps} />
-        <SpeedConfigAccordion sc={app.sc} />
+        <EditAccordion {...appProps} />
+        <SpeedConfigAccordion sc={(app.selectedPath || app.paths[0])?.sc} />
         <OutputConfigAccordion {...appProps} />
-        <PathsAccordion {...appProps} />
       </Box>
     </div>
   );

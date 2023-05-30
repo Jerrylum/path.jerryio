@@ -11,6 +11,7 @@ import { GeneralConfig, OutputConfig, SpeedConfig } from './format/Config';
 import { Format, PathFileData } from './format/Format';
 import { UnitOfLength } from "./math/Unit";
 import DOMPurify from "dompurify";
+import { NumberRange } from "./app/RangeSlider";
 
 class CustomFormat implements Format {
   isInit: boolean;
@@ -31,7 +32,7 @@ class CustomFormat implements Format {
     return new CustomGeneralConfig();
   }
   buildSpeedConfig(): SpeedConfig {
-    throw new Error('Method not implemented.');
+    return new CustomSpeedConfig();
   }
   buildOutputConfig(): OutputConfig {
     throw new Error("Method not implemented.");
@@ -53,6 +54,33 @@ class CustomGeneralConfig implements GeneralConfig {
   uol: UnitOfLength = UnitOfLength.Inch;
   knotDensity: number = 2; // inches
   controlMagnetDistance: number = 5 / 2.54;
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  getConfigPanel(): JSX.Element {
+    throw new Error("Method not implemented.");
+  }
+}
+
+class CustomSpeedConfig implements SpeedConfig {
+  public custom: string = "custom";
+
+  speedLimit: NumberRange = {
+    minLimit: { value: 0, label: "0" },
+    maxLimit: { value: 127, label: "127" },
+    step: 1,
+    from: 20,
+    to: 100,
+  };
+  applicationRange: NumberRange = {
+    minLimit: { value: 0, label: "0" },
+    maxLimit: { value: 4, label: "4" },
+    step: 0.01,
+    from: 1.4,
+    to: 1.8,
+  };
 
   constructor() {
     makeAutoObservable(this);
@@ -111,7 +139,8 @@ test('Spline serialize', () => {
 });
 
 test('Path serialize', () => {
-  let r = new Path(new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)));
+  let format = new CustomFormat();
+  let r = new Path(format.buildSpeedConfig(), new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)));
   let p = instanceToPlain(r);
   let r2 = plainToInstance(Path, p);
   let p2 = instanceToPlain(r2);
@@ -120,7 +149,8 @@ test('Path serialize', () => {
 });
 
 test('Path[] serialize', () => {
-  let r = [new Path(new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)))];
+  let format = new CustomFormat();
+  let r = [new Path(format.buildSpeedConfig(), new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)))];
   let p = instanceToPlain(r);
   let r2 = plainToInstance(Path, p);
   let p2 = instanceToPlain(r2);

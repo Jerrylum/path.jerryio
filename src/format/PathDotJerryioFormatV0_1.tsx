@@ -41,13 +41,6 @@ class SpeedConfigImpl implements SpeedConfig {
     from: 1.4,
     to: 1.8,
   };
-  transitionRange: NumberRange = {
-    minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 1, label: "1" },
-    step: 0.01,
-    from: 0,
-    to: 0.95,
-  };
 
   constructor() {
     makeAutoObservable(this);
@@ -63,10 +56,6 @@ class SpeedConfigImpl implements SpeedConfig {
         <Box className="panel-box">
           <Typography>Curve Deceleration Range</Typography>
           <RangeSlider range={this.applicationRange} />
-        </Box>
-        <Box className="panel-box">
-          <Typography>Acceleration/Deceleration</Typography>
-          <RangeSlider range={this.transitionRange} inverted />
         </Box>
       </>
     )
@@ -126,7 +115,7 @@ export class PathDotJerryioFormatV0_1 implements Format {
     for (const path of app.paths) {
       rtn += `#PATH-KNOTS-START ${path.name}\n`;
 
-      const knots = path.calculateKnots(app.gc, app.sc);
+      const knots = path.calculateKnots(app.gc);
       for (const knot of knots) {
         const x = uc.fromAtoB(knot.x);
         const y = uc.fromAtoB(knot.y);

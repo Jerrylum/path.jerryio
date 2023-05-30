@@ -346,6 +346,7 @@ export class IndexWithKeyFrame {
 export class Path implements InteractiveEntity {
   @Type(() => Spline)
   public splines: Spline[];
+  public sc: SpeedConfig;
   public name: string = "Path";
   public uid: string;
   public lock: boolean = false;
@@ -358,8 +359,9 @@ export class Path implements InteractiveEntity {
   @Exclude()
   public cachedIndexWithKeyFrames: IndexWithKeyFrame[] = [];
 
-  constructor(firstSpline: Spline) {
+  constructor(sc: SpeedConfig, firstSpline: Spline) {
     this.splines = [firstSpline];
+    this.sc = sc;
     this.uid = makeId(10);
     makeAutoObservable(this);
   }
@@ -500,7 +502,7 @@ export class Path implements InteractiveEntity {
     return [];
   }
 
-  calculateKnots(gc: GeneralConfig, sc: SpeedConfig): Knot[] {
+  calculateKnots(gc: GeneralConfig): Knot[] {
     if (this.splines.length === 0) {
       this.cachedSplineRanges = [];
       this.cachedIndexWithKeyFrames = [];
@@ -511,7 +513,7 @@ export class Path implements InteractiveEntity {
     const gen1: Knot[] = [];
     let pathTTD = 0; // total travel distance
     for (let spline of this.splines) {
-      const [firstKnot, ...knots] = spline.calculateKnots(gc, sc, pathTTD);
+      const [firstKnot, ...knots] = spline.calculateKnots(gc, this.sc, pathTTD);
       // ALGO: Ignore the first knot, it is (too close) the last knot of the previous spline
       if (pathTTD === 0) gen1.push(firstKnot); // Except for the first spline
       gen1.push(...knots);
@@ -520,36 +522,7 @@ export class Path implements InteractiveEntity {
 
     // ALGO: gen1 must have at least 2 knots
 
-    const speedDiff = sc.speedLimit.to - sc.speedLimit.from;
-    const applicationDiff = sc.applicationRange.to - sc.applicationRange.from;
-    const useRatio = speedDiff !== 0 && applicationDiff !== 0;
-    const applicationRatio = speedDiff / applicationDiff;
-    const accelThreshold = sc.transitionRange.from * pathTTD;
-    const decThreshold = sc.transitionRange.to * pathTTD;
-    // ALGO: accelSpeedScale can be Infinity if sc.transitionRange.from is 0, but it is ok
-    const accelSpeedScale = speedDiff / sc.transitionRange.from;
-    // ALGO: Same with above
-    const decSpeedScale = speedDiff / (1 - sc.transitionRange.to);
-
     const targetInterval = 1 / (pathTTD / gc.knotDensity);
-
-    function calculateSpeed(p3: Knot) {
-      // ALGO: Scale the speed according to the application range
-      // ALGO: The first knot has delta 0, but it should have the highest speed
-      const delta = p3.delta;
-      if (delta < sc.applicationRange.from && delta !== 0) p3.speed = sc.speedLimit.from;
-      else if (delta > sc.applicationRange.to) p3.speed = sc.speedLimit.to;
-      else if (useRatio && delta !== 0) p3.speed = sc.speedLimit.from + (delta - sc.applicationRange.from) * applicationRatio;
-      else p3.speed = sc.speedLimit.to;
-
-      // ALGO: Acceleration/Deceleration
-      // ALGO: Speed never exceeds the speed limit, except for the final knot
-      // (p3.integral / totalDistance) / sc.transitionRange.from * speedDiff
-      if (p3.integral < accelThreshold) p3.speed = Math.min(p3.speed, sc.speedLimit.from + (p3.integral / pathTTD) * accelSpeedScale);
-      else if (p3.integral > decThreshold) p3.speed = Math.min(p3.speed, sc.speedLimit.from + (1 - p3.integral / pathTTD) * decSpeedScale);
-
-      return p3;
-    }
 
     // ALGO: Space points evenly
 
@@ -582,7 +555,7 @@ export class Path implements InteractiveEntity {
       const p3Delta = p1.delta + (p2.delta - p1.delta) * pRatio;
       const p3 = isNaN(pRatio) ? new Knot(p1.x, p1.y, p1.delta, integral, 0, heading) : new Knot(p3X, p3Y, p3Delta, integral, 0, heading);
 
-      if (p3.isLastKnotOfSplines = isLastKnotOfSplines) {
+      if ((p3.isLastKnotOfSplines = isLastKnotOfSplines) === true) {
         gen2SplineRanges.push(new IndexRange(splineFirstKnotIdx, gen2.length));
         splineFirstKnotIdx = gen2.length;
       }
@@ -597,7 +570,7 @@ export class Path implements InteractiveEntity {
 
     // ALGO: gen2SplineRanges must have at least x ranges (x = number of splines)
 
-    const ikf: IndexWithKeyFrame[] = [new IndexWithKeyFrame(0, undefined, new KeyFrame(0, 1, undefined))];
+    const ikf: IndexWithKeyFrame[] = [new IndexWithKeyFrame(0, undefined, new KeyFrame(0, 1))];
 
     for (let splineIdx = 0; splineIdx < this.splines.length; splineIdx++) {
       const spline = this.splines[splineIdx];
@@ -616,7 +589,7 @@ export class Path implements InteractiveEntity {
       const to = next === undefined ? gen2.length : next.index;
       const responsibleKnots = gen2.slice(from, to);
 
-      current.keyFrame.process(sc, responsibleKnots, next?.keyFrame);
+      current.keyFrame.process(this.sc, responsibleKnots, next?.keyFrame);
     }
     this.cachedIndexWithKeyFrames = ikf.slice(1);
 

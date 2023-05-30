@@ -26,7 +26,6 @@ export interface Format {
 export interface PathFileData {
   format: string;
   gc: GeneralConfig;
-  sc: SpeedConfig;
   oc: OutputConfig;
   paths: Path[];
 }

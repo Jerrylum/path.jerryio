@@ -17,7 +17,6 @@ export interface GeneralConfig extends ConfigSection {
 export interface SpeedConfig extends ConfigSection {
   speedLimit: NumberRange;
   applicationRange: NumberRange;
-  transitionRange: NumberRange;
 }
 
 export interface OutputConfig extends ConfigSection {
