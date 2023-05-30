@@ -148,11 +148,14 @@ export class EndPointControl extends Control implements Position {
 }
 
 export class KeyFrame {
+  public uid: string;
 
   constructor(
     public xPos: number, // [0...1)
     public yPos: number, // [0...1]
-    public transitionTimingFunction: any) { }
+    public transitionTimingFunction: any) {
+    this.uid = makeId(10);
+  }
 
   process(sc: SpeedConfig, responsible: Knot[], nextFrame?: KeyFrame): void {
     const limitFrom = sc.speedLimit.from;
