@@ -109,6 +109,54 @@ const KnotElement = observer((props: { knot: Knot, index: number, sc: SpeedConfi
   </>
 });
 
+const KeyFrameElement = observer((props: { ikf: IndexWithKeyFrame, gcc: GraphCanvasConverter }) => {
+  const { ikf, gcc } = props;
+
+  const onDragKeyFrame = (event: Konva.KonvaEventObject<DragEvent>, ikf: IndexWithKeyFrame) => {
+    const evt = event.evt;
+
+    let canvasPos = event.target.getStage()?.container().getBoundingClientRect();
+    if (canvasPos === undefined) return;
+
+    // UX: Calculate the position of the control point by the client mouse position
+    // UX: Allow to drag the control point outside of the graph
+    const kfPos = gcc.toPos(new Vertex(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top));
+    if (kfPos === undefined) {
+      evt.preventDefault();
+
+      if (ikf.spline === undefined) return;
+      const posInPx = gcc.toPx({ spline: ikf.spline, xPos: ikf.keyFrame.xPos, yPos: ikf.keyFrame.yPos });
+      event.target.x(posInPx.x);
+      event.target.y(posInPx.y);
+      return;
+    }
+
+    // ALGO: Assume path is not undefined
+    // remove keyframe from oldSpline speed control
+    for (const spline of gcc.path.splines) {
+      spline.speedProfiles = spline.speedProfiles.filter((kf) => kf !== ikf.keyFrame);
+    }
+
+    const kf = ikf.keyFrame;
+    kf.xPos = kfPos.xPos;
+    kf.yPos = kfPos.yPos;
+    kfPos.spline.speedProfiles.push(kf);
+    kfPos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
+
+    const posInPx = gcc.toPx(kfPos);
+    event.target.x(posInPx.x);
+    event.target.y(posInPx.y);
+  };
+
+  const x = gcc.toPxNumber(ikf.index);
+  const y = (1 - ikf.keyFrame.yPos) * gcc.bodyHeight + gcc.axisLineTopX;
+  return <React.Fragment>
+    <Circle x={x} y={y} radius={gcc.knotRadius * 4} fill={"#D7B301"} opacity={0.75} draggable onDragMove={
+      action((e) => onDragKeyFrame(e, ikf))
+    } />
+  </React.Fragment>
+});
+
 const GraphCanvasElement = observer((props: AppProps) => {
   const [zoom, setZoom] = React.useState(1);
   const [xOffset, setXOffset] = React.useState(0);
@@ -137,41 +185,6 @@ const GraphCanvasElement = observer((props: AppProps) => {
     kfPos.spline.speedProfiles.push(new KeyFrame(kfPos.xPos, kfPos.yPos, undefined));
     kfPos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
   }
-
-  const onDragKeyFrame = (event: Konva.KonvaEventObject<DragEvent>, ikf: IndexWithKeyFrame) => {
-    const evt = event.evt;
-
-    let canvasPos = event.target.getStage()?.container().getBoundingClientRect();
-    if (canvasPos === undefined) return;
-
-    // UX: Calculate the position of the control point by the client mouse position
-    // UX: Allow to drag the control point outside of the graph
-    const kfPos = gcc.toPos(new Vertex(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top));
-    if (kfPos === undefined) {
-      evt.preventDefault();
-
-      if (ikf.spline === undefined) return;
-      const posInPx = gcc.toPx({ spline: ikf.spline, xPos: ikf.keyFrame.xPos, yPos: ikf.keyFrame.yPos });
-      event.target.x(posInPx.x);
-      event.target.y(posInPx.y);
-      return;
-    }
-
-    // remove keyframe from oldSpline speed control
-    for (const spline of path.splines) {
-      spline.speedProfiles = spline.speedProfiles.filter((kf) => kf !== ikf.keyFrame);
-    }
-
-    const kf = ikf.keyFrame;
-    kf.xPos = kfPos.xPos;
-    kf.yPos = kfPos.yPos;
-    kfPos.spline.speedProfiles.push(kf);
-    kfPos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
-
-    const posInPx = gcc.toPx(kfPos);
-    event.target.x(posInPx.x);
-    event.target.y(posInPx.y);
-  };
 
   React.useEffect(() => {
     setXOffset(0);
@@ -206,15 +219,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
         <Rect x={gcc.twoSidePaddingWidth} y={0} width={gcc.pixelWidth - gcc.twoSidePaddingWidth * 2} height={gcc.pixelHeight} onClick={action(onGraphClick)} />
         {
           path !== undefined
-            ? path.cachedIndexWithKeyFrames.map((ikf) => {
-              const x = gcc.toPxNumber(ikf.index);
-              const y = (1 - ikf.keyFrame.yPos) * gcc.bodyHeight + gcc.axisLineTopX;
-              return <React.Fragment key={ikf.keyFrame.uid}>
-                <Circle x={x} y={y} radius={gcc.knotRadius * 4} fill={"#D7B301"} opacity={0.75} draggable onDragMove={
-                  action((e) => onDragKeyFrame(e, ikf))
-                } />
-              </React.Fragment>
-            })
+            ? path.cachedIndexWithKeyFrames.map((ikf) => <KeyFrameElement key={ikf.keyFrame.uid} {...{ikf, gcc}} />)
             : null
         }
 
