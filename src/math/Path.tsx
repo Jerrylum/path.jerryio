@@ -159,7 +159,7 @@ export class KeyFrame {
   constructor(
     public xPos: number, // [0...1)
     public yPos: number, // [0...1]
-    public transitionTimingFunction: any) {
+    public followCurve: boolean = false) {
     this.uid = makeId(10);
   }
 
@@ -168,15 +168,28 @@ export class KeyFrame {
     const limitTo = sc.speedLimit.to;
     const limitDiff = limitTo - limitFrom;
 
+    const applicationDiff = sc.applicationRange.to - sc.applicationRange.from;
+    const useRatio = limitDiff !== 0 && applicationDiff !== 0;
+    const applicationRatio = limitDiff / applicationDiff;
+
     const yFrom = this.yPos;
     const yTo = nextFrame ? nextFrame.yPos : yFrom;
     const yDiff = yTo - yFrom;
 
     const length = responsible.length;
     for (let i = 0; i < length; i++) {
+      const knot = responsible[i];
       const y = yFrom + yDiff * i / length; // length - 1 + 1
-      const speed = limitFrom + limitDiff * y;
-      responsible[i].speed = speed;
+      let speed = limitFrom + limitDiff * y;
+
+      if (this.followCurve) {
+        const delta = knot.delta;
+        if (delta < sc.applicationRange.from && delta !== 0) speed = Math.min(speed, limitFrom);
+        else if (delta > sc.applicationRange.to) speed = Math.min(speed, limitTo);
+        else if (useRatio && delta !== 0) speed = Math.min(speed, limitFrom + (delta - sc.applicationRange.from) * applicationRatio);
+      }
+
+      knot.speed = speed;
     }
   }
 }

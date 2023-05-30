@@ -151,7 +151,9 @@ const KeyFrameElement = observer((props: { ikf: IndexWithKeyFrame, gcc: GraphCan
   const onClickKeyFrame = (event: Konva.KonvaEventObject<MouseEvent>) => {
     const evt = event.evt;
 
-    if (evt.button === 2) { // right click
+    if (evt.button === 0) { // left click
+      ikf.keyFrame.followCurve = !ikf.keyFrame.followCurve;
+    } else if (evt.button === 2) { // right click
       for (const spline of gcc.path.splines) {
         spline.speedProfiles = spline.speedProfiles.filter((kf) => kf !== ikf.keyFrame);
       }
@@ -160,10 +162,10 @@ const KeyFrameElement = observer((props: { ikf: IndexWithKeyFrame, gcc: GraphCan
 
   const x = gcc.toPxNumber(ikf.index);
   const y = (1 - ikf.keyFrame.yPos) * gcc.bodyHeight + gcc.axisLineTopX;
-  return <React.Fragment>
+  return (
     <Circle x={x} y={y} radius={gcc.knotRadius * 4} fill={"#D7B301"} opacity={0.75} draggable
       onDragMove={action(onDragKeyFrame)} onClick={action(onClickKeyFrame)} />
-  </React.Fragment>
+  );
 });
 
 const GraphCanvasElement = observer((props: AppProps) => {
@@ -194,7 +196,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
     if (kfPos === undefined) return;
 
     // sort and push
-    kfPos.spline.speedProfiles.push(new KeyFrame(kfPos.xPos, kfPos.yPos, undefined));
+    kfPos.spline.speedProfiles.push(new KeyFrame(kfPos.xPos, kfPos.yPos));
     kfPos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
   }
 
