@@ -234,7 +234,8 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
           <Circle x={cpInPx.x} y={cpInPx.y} radius={cpRadius / 2} fill={fillColor}
             draggable onDragMove={action(onDragControlPoint)}
             onMouseDown={action(onMouseDownControlPoint)}
-            onMouseUp={action(onMouseUpControlPoint)} />
+            onMouseUp={action(onMouseUpControlPoint)}
+            onClick={action(onClickControlPoint)} />
         )
       }
 
