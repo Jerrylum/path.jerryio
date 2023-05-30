@@ -1,9 +1,8 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { EndPointControl, IndexWithKeyFrame, KeyFrame, KeyFramePosition, Knot, Path, Spline, Vertex } from '../math/Path';
+import { IndexWithKeyFrame, KeyFrame, KeyFramePosition, Knot, Path, Vertex } from '../math/Path';
 import Konva from 'konva';
-import { Circle, Image, Layer, Line, Rect, Stage, Text } from 'react-konva';
-import { SplineElement } from "./SplineElement";
+import { Circle, Layer, Line, Rect, Stage, Text } from 'react-konva';
 import { AppProps } from "../App";
 import React from "react";
 import { SpeedConfig } from "../format/Config";
@@ -47,9 +46,10 @@ export class GraphCanvasConverter {
     const y = px.y;
 
     let index = this.toIndexNumber(x);
-    if (index >= this.path.cachedKnots.length - 1) {
-      index = this.path.cachedKnots.length - 1;
-    } else if (index < 0) {
+    if (index >= this.path.cachedKnots.length - 2) {
+      index = this.path.cachedKnots.length - 2;
+    }
+    if (index < 0) {
       index = 0;
     }
 
@@ -145,6 +145,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
     if (canvasPos === undefined) return;
 
     // UX: Calculate the position of the control point by the client mouse position
+    // UX: Allow to drag the control point outside of the graph
     const kfPos = gcc.toPos(new Vertex(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top));
     if (kfPos === undefined) {
       evt.preventDefault();
