@@ -71,11 +71,9 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
 
     const oldCpInUOL = props.cp.clone();
 
-    let canvasPos = event.target.getStage()?.container().getBoundingClientRect();
-    if (canvasPos === undefined) return;
-
     // UX: Calculate the position of the control point by the client mouse position
-    let cpInPx = new Vertex(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top);
+    let cpInPx = props.cc.getUnboundedPxFromEvent(event);
+    if (cpInPx === undefined) return;
     let cpInUOL = props.cc.toUOL(cpInPx);
     cpInUOL.fixPrecision();
     // first set the position of the control point so we can calculate the position of the follower control points

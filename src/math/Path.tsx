@@ -119,6 +119,10 @@ export class Control extends Vertex implements InteractiveEntity {
     this.uid = makeId(10);
   }
 
+  isWithinArea(from: Vertex, to: Vertex) {
+    return this.x >= from.x && this.x <= to.x && this.y >= from.y && this.y <= to.y;
+  }
+
   clone(): Control {
     return new Control(this.x, this.y);
   }

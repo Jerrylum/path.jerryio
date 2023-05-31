@@ -1,6 +1,6 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { EndPointControl, Path, Spline } from '../math/Path';
+import { EndPointControl, Path, Spline, Vertex } from '../math/Path';
 import Konva from 'konva';
 import { Circle, Image, Layer, Line, Stage } from 'react-konva';
 import { SplineElement } from "./SplineElement";
@@ -10,6 +10,7 @@ import useImage from "use-image";
 
 import fieldImageUrl from '../static/field2023.png'
 import { SplineControlElement } from "./SplineControlElement";
+import { AreaElement } from "./AreaElement";
 
 const FieldCanvasElement = observer((props: AppProps) => {
   // useTimer(1000 / 30);
@@ -19,8 +20,59 @@ const FieldCanvasElement = observer((props: AppProps) => {
 
   const [fieldImage] = useImage(fieldImageUrl);
 
+  const [areaSelectionStart, setAreaSelectionStart] = React.useState<Vertex | undefined>(undefined);
+  const [areaSelectionEnd, setAreaSelectionEnd] = React.useState<Vertex | undefined>(undefined);
+  const [isAddingControl, setIsAddingControl] = React.useState(false);
+
+  function onMouseDownFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
+    const evt = event.evt;
+
+    setIsAddingControl(true);
+
+    if (evt.button === 0) {
+
+      if (evt.shiftKey === false) {
+        // UX: Clear selection if: left click without shift
+        props.app.selected = [];
+      }
+
+      // UX: selectedBefore is empty if: left click without shift
+      props.app.startAreaSelection();
+
+      const posInPx = props.cc.getUnboundedPxFromEvent(event);
+      if (posInPx === undefined) return;
+      setAreaSelectionStart(posInPx);
+    }
+  }
+
+  function onMouseMoveCanvas(event: Konva.KonvaEventObject<MouseEvent>) {
+    const evt = event.evt;
+
+    setIsAddingControl(false);
+
+    if (evt.button === 0) { // left click
+      // UX: Select control point if: left click
+
+      const posInPx = props.cc.getUnboundedPxFromEvent(event);
+      if (posInPx === undefined) return;
+
+      if (areaSelectionStart !== undefined) {
+        setAreaSelectionEnd(posInPx);
+        props.app.updateAreaSelection(props.cc.toUOL(areaSelectionStart), props.cc.toUOL(posInPx));
+      }
+    }
+  }
+
+  function onMouseUpCanvas(event: Konva.KonvaEventObject<MouseEvent>) {
+    setAreaSelectionStart(undefined);
+    setAreaSelectionEnd(undefined);
+  }
+
   function onClickFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
+
+    // UX: Add control point if: left click or right click, except the mouse moved
+    if (!isAddingControl) return;
 
     const cpInUOL = cc.toUOL(new EndPointControl(evt.offsetX, evt.offsetY, 0));
 
@@ -54,9 +106,14 @@ const FieldCanvasElement = observer((props: AppProps) => {
   const knotRadius = props.cc.pixelWidth / 320;
 
   return (
-    <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight} onContextMenu={(e) => e.evt.preventDefault()}>
+    <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight}
+      onContextMenu={(e) => e.evt.preventDefault()}
+      onMouseMove={action(onMouseMoveCanvas)}
+      onMouseUp={action(onMouseUpCanvas)}>
       <Layer>
-        <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight} onClick={action(onClickFieldImage)} />
+        <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight}
+          onClick={action(onClickFieldImage)}
+          onMouseDown={action(onMouseDownFieldImage)} />
         {
           props.app.magnet.x !== Infinity ? (
             <Line points={[magnetInPx.x, 0, magnetInPx.x, cc.pixelHeight]} stroke="red" strokeWidth={lineWidth} />
@@ -117,6 +174,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
             </React.Fragment>
           ))
         }
+        <AreaElement from={areaSelectionStart} to={areaSelectionEnd} />
       </Layer>
     </Stage>
   )

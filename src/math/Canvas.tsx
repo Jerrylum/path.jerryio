@@ -1,3 +1,4 @@
+import Konva from 'konva';
 import { Vertex } from "./Path";
 
 export interface CanvasEntity {
@@ -34,5 +35,14 @@ export class CanvasConverter {
         rtn.x = (inPx.x - this.pixelWidthHalf) * this.pixel2uol;
         rtn.y = -(inPx.y - this.pixelHeightHalf) * this.pixel2uol;
         return rtn.fixPrecision() as T;
+    }
+
+    getUnboundedPxFromEvent(event: Konva.KonvaEventObject<DragEvent | MouseEvent>): Vertex | undefined {
+        const evt = event.evt;
+        const canvasPos = event.target.getStage()?.container().getBoundingClientRect();
+        if (canvasPos === undefined) return;
+
+        // UX: Calculate the position of the control point by the client mouse position
+        return new Vertex(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top);
     }
 }

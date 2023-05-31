@@ -9,6 +9,9 @@ import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-transformer';
 import { UnitOfLength } from "../math/Unit";
 
+export interface AreaSelectionData {
+  selectedBefore: string[];
+}
 
 // observable class
 export class MainApp {
@@ -20,8 +23,9 @@ export class MainApp {
   public oc: OutputConfig = this.format.buildOutputConfig(); // a.k.a Output
 
   public paths: Path[] = [];
-  public selected: string[] = [];
-  public expanded: string[] = [];
+  public selected: string[] = []; // ALGO: Not using Set because order matters
+  public selectedBefore: string[] = []; // ALGO: For area selection
+  public expanded: string[] = []; // ALGO: Order doesn't matter but anyway
   public magnet: Vertex = new Vertex(Infinity, Infinity);
 
   constructor() {
@@ -52,7 +56,28 @@ export class MainApp {
     return removeFromArray(this.expanded, typeof x === "string" ? x : x.uid);
   }
 
-  @computed get selectedControl() : EndPointControl | Control | undefined {
+  startAreaSelection(): void {
+    this.selectedBefore = [...this.selected];
+  }
+
+  updateAreaSelection(from: Vertex, to: Vertex): void {
+    const fixedFrom = new Vertex(Math.min(from.x, to.x), Math.min(from.y, to.y));
+    const fixedTo = new Vertex(Math.max(from.x, to.x), Math.max(from.y, to.y));
+
+    // ALGO: Select all controls that are within the area
+    const highlighted = this.paths
+      .flatMap((path) => path.getControlsSet().filter((control) => control.isWithinArea(fixedFrom, fixedTo)))
+      .map((cp) => cp.uid);
+
+    // UX: select all highlighted controls except the ones that were selected before the area selection
+    // outer-excluding-join
+    const selected = [...this.selectedBefore, ...highlighted].filter((uid) => !(this.selectedBefore.includes(uid) && highlighted.includes(uid)));
+
+    // remove duplicates
+    this.selected = Array.from(new Set(selected));
+  }
+
+  @computed get selectedControl(): EndPointControl | Control | undefined {
     return this.paths.map(
       (path) => path.getControlsSet().find((control) => control.uid === this.selected[0])
     ).find((control) => control !== undefined);
@@ -72,6 +97,7 @@ export class MainApp {
   private setPathFileData(format: Format, pfd: PathFileData): void {
     const purify = DOMPurify();
 
+    this.expanded = [];
     for (const path of pfd.paths) {
       // SECURITY: Sanitize path names, beware of XSS attack from the path file
       const temp = purify.sanitize(path.name);
@@ -81,6 +107,9 @@ export class MainApp {
       for (let j = 1; j < path.splines.length; j++) {
         path.splines[j].setFirst(path.splines[j - 1].last());
       }
+
+      // UX: expand all paths
+      this.expanded.push(path.uid);
     }
 
     this.format = format;
@@ -90,7 +119,6 @@ export class MainApp {
     this.paths = pfd.paths;
 
     this.selected = [];
-    this.expanded = [];
   }
 
   importPathFileData(data: Record<string, any>): void {
