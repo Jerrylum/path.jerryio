@@ -195,7 +195,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
   const lineWidth = props.cc.pixelWidth / 600;
   const cpRadius = props.cc.pixelWidth / 40;
   const cpInPx = props.cc.toPx(props.cp);
-  const fillColor = props.app.isSelected(props.cp.uid) ? "#0000ff8f" : "#0000ff2f";
+  const fillColor = props.app.isSelected(props.cp.uid) ? "#5C469Cdf" : "#5C469C6f";
   const isMainControl = props.cp instanceof EndPointControl;
 
   function onClickFirstOrLastControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
