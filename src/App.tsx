@@ -2,9 +2,8 @@ import { useEffect } from 'react';
 import './App.css';
 
 import { Path } from './math/Path';
-import { CanvasConverter } from './math/Canvas';
 
-import { reaction, action, makeAutoObservable } from "mobx"
+import { reaction, action } from "mobx"
 
 import { observer } from "mobx-react-lite"
 
@@ -22,46 +21,16 @@ import { MainApp } from './app/MainApp';
 import { PathTreeAccordion } from './app/PathTreeAccordion';
 import { GraphCanvasElement } from './app/GraphCanvasElement';
 
-// observable class
-class UserBehavior {
-  public isPressingCtrl: boolean = false;
-  public isPressingShift: boolean = false;
-  public mouseX: number = 0;
-  public mouseY: number = 0;
-
-  constructor() {
-    makeAutoObservable(this);
-  }
-}
-
-let ub = new UserBehavior();
 let app = new MainApp();
 
 export interface AppProps {
   paths: Path[];
 
-  cc: CanvasConverter;
-  ub: UserBehavior;
   app: MainApp;
 }
 
 const App = observer(() => {
   useTimer(1000 / 30);
-
-  const uc = new UnitConverter(UnitOfLength.Foot, app.gc.uol);
-  const canvasSizeInPx = window.innerHeight * 0.78;
-  const canvasSizeInUOL = uc.fromAtoB(12);
-  const cc = new CanvasConverter(canvasSizeInPx, canvasSizeInPx, canvasSizeInUOL, canvasSizeInUOL);
-
-  const onKeyDown = action((event: KeyboardEvent) => {
-    ub.isPressingCtrl = event.ctrlKey || event.metaKey;
-    ub.isPressingShift = event.shiftKey;
-  });
-
-  const onKeyUp = action((event: KeyboardEvent) => {
-    ub.isPressingCtrl = event.ctrlKey || event.metaKey;
-    ub.isPressingShift = event.shiftKey;
-  });
 
   function initFormat() {
     if (app.format.isInit) return;
@@ -88,16 +57,6 @@ const App = observer(() => {
   useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
     app.paths.map(path => path.calculateKnots(app.gc));
   }), undefined);
-
-  useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
-    document.body.addEventListener('keydown', onKeyDown);
-    document.body.addEventListener('keyup', onKeyUp);
-
-    return () => {
-      document.body.removeEventListener('keydown', onKeyDown);
-      document.body.removeEventListener('keyup', onKeyUp);
-    }
-  }), []);
 
   useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
     initFormat();
@@ -150,7 +109,7 @@ const App = observer(() => {
 
   useEffect(action(initFormat), [app.format]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const appProps: AppProps = { paths: app.paths, cc, ub, app };
+  const appProps: AppProps = { paths: app.paths, app };
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (

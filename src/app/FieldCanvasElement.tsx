@@ -11,11 +11,17 @@ import useImage from "use-image";
 import fieldImageUrl from '../static/field2023.png'
 import { SplineControlElement } from "./SplineControlElement";
 import { AreaElement } from "./AreaElement";
+import { UnitConverter, UnitOfLength } from "../math/Unit";
+import { CanvasConverter } from "../math/Canvas";
 
 const FieldCanvasElement = observer((props: AppProps) => {
   // useTimer(1000 / 30);
 
-  const cc = props.cc;
+  const uc = new UnitConverter(UnitOfLength.Foot, props.app.gc.uol);
+  const canvasSizeInPx = window.innerHeight * 0.78;
+  const canvasSizeInUOL = uc.fromAtoB(12);
+  const cc = new CanvasConverter(canvasSizeInPx, canvasSizeInPx, canvasSizeInUOL, canvasSizeInUOL);
+
   const paths = props.paths;
 
   const [fieldImage] = useImage(fieldImageUrl);
@@ -23,6 +29,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
   const [areaSelectionStart, setAreaSelectionStart] = React.useState<Vertex | undefined>(undefined);
   const [areaSelectionEnd, setAreaSelectionEnd] = React.useState<Vertex | undefined>(undefined);
   const [isAddingControl, setIsAddingControl] = React.useState(false);
+  // const 
 
   function onMouseDownFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
@@ -39,7 +46,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
       // UX: selectedBefore is empty if: left click without shift
       props.app.startAreaSelection();
 
-      const posInPx = props.cc.getUnboundedPxFromEvent(event);
+      const posInPx = cc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
       setAreaSelectionStart(posInPx);
     }
@@ -53,12 +60,12 @@ const FieldCanvasElement = observer((props: AppProps) => {
     if (evt.button === 0) { // left click
       // UX: Select control point if: left click
 
-      const posInPx = props.cc.getUnboundedPxFromEvent(event);
+      const posInPx = cc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
 
       if (areaSelectionStart !== undefined) {
         setAreaSelectionEnd(posInPx);
-        props.app.updateAreaSelection(props.cc.toUOL(areaSelectionStart), props.cc.toUOL(posInPx));
+        props.app.updateAreaSelection(cc.toUOL(areaSelectionStart), cc.toUOL(posInPx));
       }
     }
   }
@@ -103,10 +110,10 @@ const FieldCanvasElement = observer((props: AppProps) => {
   const magnetInPx = cc.toPx(props.app.magnet);
   const visiblePaths = paths.filter((path) => path.visible);
 
-  const knotRadius = props.cc.pixelWidth / 320;
+  const knotRadius = cc.pixelWidth / 320;
 
   return (
-    <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight}
+    <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight} scale={new Vertex(1, 1)} offset={new Vertex(-100, -100)}
       onContextMenu={(e) => e.evt.preventDefault()}
       onMouseMove={action(onMouseMoveCanvas)}
       onMouseUp={action(onMouseUpCanvas)}>
@@ -134,7 +141,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
                   const speedFrom = sc.speedLimit.from;
                   const speedTo = sc.speedLimit.to;
 
-                  const knotInPx = props.cc.toPx(knotInUOL);
+                  const knotInPx = cc.toPx(knotInUOL);
                   const percentage = (knotInUOL.speed - speedFrom) / (speedTo - speedFrom);
                   // h => hue
                   // s => saturation
@@ -151,7 +158,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
             <React.Fragment key={index}>
               {
                 path.splines.map((spline) => {
-                  if (spline.isVisible()) return <SplineElement key={spline.uid} {...{ spline, path, ...props }} />
+                  if (spline.isVisible()) return <SplineElement key={spline.uid} {...{ spline, path, cc, ...props }} />
                   else return null;
                 })
               }
@@ -166,7 +173,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
                   spline.controls.map((cp, cpIdx) => {
                     const isFirstSpline = path.splines[0] === spline;
                     if (!isFirstSpline && cpIdx === 0) return null;
-                    if (cp.visible) return <SplineControlElement key={cpIdx} {...{ spline, path, cp, ...props }} />;
+                    if (cp.visible) return <SplineControlElement key={cpIdx} {...{ spline, path, cc, cp, ...props }} />;
                     else return null;
                   })
                 )

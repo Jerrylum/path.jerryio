@@ -3,11 +3,13 @@ import { Path, Spline } from '../math/Path';
 import { AppProps } from "../App";
 import { SplineControlVisualLineElement } from "./SplineControlVisualLineElement";
 import { SplineKnotsHitBoxElement } from "./SplineKnotsHitBoxElement";
+import { CanvasConverter } from "../math/Canvas";
 
 
 export interface SplineElementProps extends AppProps {
   spline: Spline;
   path: Path;
+  cc: CanvasConverter;
 }
 
 const SplineElement = observer((props: SplineElementProps) => {

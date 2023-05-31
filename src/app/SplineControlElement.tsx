@@ -26,7 +26,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
     if (evt.button === 0) { // left click
       setPosBeforeDrag(props.cp.clone());
 
-      if (props.ub.isPressingShift) {
+      if (evt.shiftKey) {
         // UX: Add selected control point if: left click + shift
         // UX: Prevent the control point from being removed when the mouse is released at the same round it is added
         setJustSelected(props.app.addSelected(props.cp.uid));
@@ -48,7 +48,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
     }
 
     // UX: Remove selected entity if: release left click + shift + not being added recently
-    if (evt.button === 0 && props.ub.isPressingShift && !justSelected) {
+    if (evt.button === 0 && evt.shiftKey && !justSelected) {
       if (!justSelected) props.app.removeSelected(props.cp.uid);
     }
   }
@@ -81,7 +81,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
 
     // UX: CP 1 should follow CP 0, CP 2 should follow CP 3
     const isMainControl = props.cp instanceof EndPointControl;
-    const shouldControlFollow = !props.ub.isPressingCtrl;
+    const shouldControlFollow = !evt.ctrlKey;
     const index = props.path.splines.indexOf(props.spline);
     const isLastOne = index + 1 === props.path.splines.length;
     const isCurve = props.spline.controls.length === 4;
@@ -120,7 +120,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
       }
     }
 
-    if (props.ub.isPressingShift) {
+    if (evt.shiftKey) {
       let magnetX = cpInUOL.x;
       let magnetXDistance = Infinity;
       let magnetY = cpInUOL.y;
