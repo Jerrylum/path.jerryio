@@ -35,6 +35,9 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
         props.app.selected = [props.cp.uid];
         setJustSelected(false);
       }
+    } else if (evt.button === 1) { // middle click
+      // UX: Do not interact with control points if not left click
+      event.target.stopDrag();
     }
   }
 

@@ -16,7 +16,10 @@ export class CanvasConverter {
     public uol2pixel: number; // in pixel/uol
     public pixel2uol: number; // in uol/pixel
 
-    constructor(public pixelWidth: number, public pixelHeight: number, public fieldWidth: number, public fieldHeight: number) {
+    constructor(
+        public pixelWidth: number, public pixelHeight: number,
+        public fieldWidth: number, public fieldHeight: number,
+        public offset: Vertex) {
         this.pixelWidthHalf = pixelWidth / 2;
         this.pixelHeightHalf = pixelHeight / 2;
         this.uol2pixel = pixelWidth / fieldWidth;
@@ -37,12 +40,17 @@ export class CanvasConverter {
         return rtn.fixPrecision() as T;
     }
 
-    getUnboundedPxFromEvent(event: Konva.KonvaEventObject<DragEvent | MouseEvent>): Vertex | undefined {
+    getUnboundedPxFromEvent(event: Konva.KonvaEventObject<DragEvent | MouseEvent>, useOffset = true): Vertex | undefined {
         const evt = event.evt;
         const canvasPos = event.target.getStage()?.container().getBoundingClientRect();
         if (canvasPos === undefined) return;
 
+        const offset = this.offset;
+
         // UX: Calculate the position of the control point by the client mouse position
-        return new Vertex(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top);
+        if (useOffset)
+            return new Vertex(evt.clientX - canvasPos.left + offset.x, evt.clientY - canvasPos.top + offset.y);
+        else
+            return new Vertex(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top);
     }
 }

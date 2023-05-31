@@ -621,7 +621,6 @@ export class Path implements InteractiveEntity {
     // ALGO: No need to calculate speed for the final knot, it is always 0
     result.knots.push(finalKnot);
 
-    // console.log(result.knots.length);
     return this.cachedResult = result;
   }
 }

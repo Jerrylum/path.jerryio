@@ -20,7 +20,6 @@ const FieldCanvasElement = observer((props: AppProps) => {
   const uc = new UnitConverter(UnitOfLength.Foot, props.app.gc.uol);
   const canvasSizeInPx = window.innerHeight * 0.78;
   const canvasSizeInUOL = uc.fromAtoB(12);
-  const cc = new CanvasConverter(canvasSizeInPx, canvasSizeInPx, canvasSizeInUOL, canvasSizeInUOL);
 
   const paths = props.paths;
 
@@ -29,7 +28,10 @@ const FieldCanvasElement = observer((props: AppProps) => {
   const [areaSelectionStart, setAreaSelectionStart] = React.useState<Vertex | undefined>(undefined);
   const [areaSelectionEnd, setAreaSelectionEnd] = React.useState<Vertex | undefined>(undefined);
   const [isAddingControl, setIsAddingControl] = React.useState(false);
-  // const 
+  const [offsetStart, setOffsetStart] = React.useState<Vertex | undefined>(undefined); // [px
+  const [offset, setOffset] = React.useState<Vertex>(new Vertex(0, 0));
+
+  const cc = new CanvasConverter(canvasSizeInPx, canvasSizeInPx, canvasSizeInUOL, canvasSizeInUOL, offset);
 
   function onMouseDownFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
@@ -52,27 +54,43 @@ const FieldCanvasElement = observer((props: AppProps) => {
     }
   }
 
+  function onMouseDownCanvas(event: Konva.KonvaEventObject<MouseEvent>) {
+    const evt = event.evt;
+
+    if (evt.button === 1) { // middle click
+      evt.preventDefault();
+
+      const posInPx = cc.getUnboundedPxFromEvent(event, false);
+      if (posInPx === undefined) return;
+
+      setOffsetStart(posInPx.add(offset));
+    }
+  }
+
   function onMouseMoveCanvas(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
     setIsAddingControl(false);
 
-    if (evt.button === 0) { // left click
-      // UX: Select control point if: left click
 
+    if (areaSelectionStart !== undefined) { // UX: Select control point if mouse down on field image
       const posInPx = cc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
 
-      if (areaSelectionStart !== undefined) {
-        setAreaSelectionEnd(posInPx);
-        props.app.updateAreaSelection(cc.toUOL(areaSelectionStart), cc.toUOL(posInPx));
-      }
+      setAreaSelectionEnd(posInPx);
+      props.app.updateAreaSelection(cc.toUOL(areaSelectionStart), cc.toUOL(posInPx));
+    } else if (offsetStart !== undefined) { // UX: Move field if: middle click
+      const posInPx = cc.getUnboundedPxFromEvent(event, false);
+      if (posInPx === undefined) return;
+
+      setOffset(offsetStart.subtract(posInPx));
     }
   }
 
   function onMouseUpCanvas(event: Konva.KonvaEventObject<MouseEvent>) {
     setAreaSelectionStart(undefined);
     setAreaSelectionEnd(undefined);
+    setOffsetStart(undefined);
   }
 
   function onClickFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -81,7 +99,10 @@ const FieldCanvasElement = observer((props: AppProps) => {
     // UX: Add control point if: left click or right click, except the mouse moved
     if (!isAddingControl) return;
 
-    const cpInUOL = cc.toUOL(new EndPointControl(evt.offsetX, evt.offsetY, 0));
+    const posInPx = cc.getUnboundedPxFromEvent(event);
+    if (posInPx === undefined) return;
+
+    const cpInUOL = cc.toUOL(new EndPointControl(posInPx.x, posInPx.y, 0));
 
     // UX: Set target path to the first path if: no path is selected
     let targetPath: Path | undefined = props.app.selectedPath || paths[0];
@@ -93,10 +114,10 @@ const FieldCanvasElement = observer((props: AppProps) => {
       paths.push(targetPath);
     } else if (targetPath.visible && !targetPath.lock) {
       // UX: Add control point if: path is selected and visible and not locked
-      if (evt.button === 2) { // right click
+      if (evt.button === 2) {
         // UX: Add straight line if: right click
         targetPath.addLine(cpInUOL);
-      } else {
+      } else if (evt.button === 0) {
         // UX: Add 4-controls curve if: left click
         targetPath.add4ControlsCurve(cpInUOL);
       }
@@ -113,8 +134,11 @@ const FieldCanvasElement = observer((props: AppProps) => {
   const knotRadius = cc.pixelWidth / 320;
 
   return (
-    <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight} scale={new Vertex(1, 1)} offset={new Vertex(-100, -100)}
+    <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight}
+      scale={new Vertex(1, 1)} offset={offset}
+      style={{ cursor: offsetStart ? 'grab' : '' }}
       onContextMenu={(e) => e.evt.preventDefault()}
+      onMouseDown={action(onMouseDownCanvas)}
       onMouseMove={action(onMouseMoveCanvas)}
       onMouseUp={action(onMouseUpCanvas)}>
       <Layer>
