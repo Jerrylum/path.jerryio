@@ -122,6 +122,8 @@ export class Control extends Vertex implements InteractiveEntity {
     makeObservable(this, {
       x: observable,
       y: observable,
+      lock: observable,
+      visible: observable
     });
   }
 
