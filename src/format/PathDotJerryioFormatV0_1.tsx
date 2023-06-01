@@ -13,7 +13,7 @@ class GeneralConfigImpl implements GeneralConfig {
   robotHeight: number = 30;
   showRobot: boolean = true;
   uol: UnitOfLength = UnitOfLength.Centimeter;
-  knotDensity: number = 2;
+  pointDensity: number = 2;
   controlMagnetDistance: number = 5;
 
   constructor() {
@@ -113,16 +113,16 @@ export class PathDotJerryioFormatV0_1 implements Format {
     const uc = new UnitConverter(app.gc.uol, UnitOfLength.Centimeter);
 
     for (const path of app.paths) {
-      rtn += `#PATH-KNOTS-START ${path.name}\n`;
+      rtn += `#PATH-POINTS-START ${path.name}\n`;
 
-      const knots = path.calculateKnots(app.gc).knots;
-      for (const knot of knots) {
-        const x = uc.fromAtoB(knot.x);
-        const y = uc.fromAtoB(knot.y);
-        if (knot.heading !== undefined)
-          rtn += `${x},${y},${knot.speed.toFixed(3)},${knot.heading}\n`;
+      const points = path.calculatePoints(app.gc).points;
+      for (const point of points) {
+        const x = uc.fromAtoB(point.x);
+        const y = uc.fromAtoB(point.y);
+        if (point.heading !== undefined)
+          rtn += `${x},${y},${point.speed.toFixed(3)},${point.heading}\n`;
         else
-          rtn += `${x},${y},${knot.speed.toFixed(3)}\n`;
+          rtn += `${x},${y},${point.speed.toFixed(3)}\n`;
       }
     }
 

@@ -14,7 +14,7 @@ class GeneralConfigImpl implements GeneralConfig {
   robotHeight: number = 12;
   showRobot: boolean = true;
   uol: UnitOfLength = UnitOfLength.Inch;
-  knotDensity: number = 2; // inches
+  pointDensity: number = 2; // inches
   controlMagnetDistance: number = 5 / 2.54;
 
   constructor() {
@@ -189,15 +189,15 @@ export class LemLibFormatV0_4 implements Format {
 
     const uc = new UnitConverter(app.gc.uol, UnitOfLength.Inch);
 
-    const knots = path.calculateKnots(app.gc).knots;
-    for (const knot of knots) {
+    const points = path.calculatePoints(app.gc).points;
+    for (const point of points) {
       // ALGO: heading is not supported in LemLib V0.4 format.
-      rtn += `${uc.fromAtoB(knot.x)}, ${uc.fromAtoB(knot.y)}, ${uc.fixPrecision(knot.speed)}\n`;
+      rtn += `${uc.fromAtoB(point.x)}, ${uc.fromAtoB(point.y)}, ${uc.fixPrecision(point.speed)}\n`;
     }
 
-    if (knots.length > 1) {
+    if (points.length > 1) {
       /*
-      Here is the original code of how the ghost knot is calculated:
+      Here is the original code of how the ghost point is calculated:
 
       ```cpp
       // create a "ghost point" at the end of the path to make stopping nicer
@@ -207,13 +207,13 @@ export class LemLibFormatV0_4 implements Format {
       ```
 
       Notice that the variable "lastControl" is not the last control point, but the second last control point.
-      This implementation is different from the original implementation by using the last knot and the second last knot.
+      This implementation is different from the original implementation by using the last point and the second last point.
       */
-      const last2 = knots[knots.length - 2]; // second last knot, last knot by the calculation
-      const last1 = knots[knots.length - 1]; // last knot, also the last control point
+      const last2 = points[points.length - 2]; // second last point, last point by the calculation
+      const last1 = points[points.length - 1]; // last point, also the last control point
       // ALGO: The 20 inches constant is a constant value in the original LemLib-Path-Gen implementation.
-      const ghostKnot = last2.interpolate(last1, last2.distance(last1) + uc.fromBtoA(20));
-      rtn += `${uc.fromAtoB(ghostKnot.x)}, ${uc.fromAtoB(ghostKnot.y)}, 0\n`;
+      const ghostPoint = last2.interpolate(last1, last2.distance(last1) + uc.fromBtoA(20));
+      rtn += `${uc.fromAtoB(ghostPoint.x)}, ${uc.fromAtoB(ghostPoint.y)}, 0\n`;
     }
 
     rtn += `endData\n`;

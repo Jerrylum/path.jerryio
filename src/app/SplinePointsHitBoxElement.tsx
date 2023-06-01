@@ -4,7 +4,7 @@ import { Line } from 'react-konva';
 import { EndPointControl } from '../math/Path';
 import { SplineElementProps } from "./SplineElement";
 
-const SplineKnotsHitBoxElement = observer((props: SplineElementProps) => {
+const SplinePointsHitBoxElement = observer((props: SplineElementProps) => {
   function onLineClick(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
@@ -38,11 +38,11 @@ const SplineKnotsHitBoxElement = observer((props: SplineElementProps) => {
     points.push(cpInPx.y);
   }
 
-  const knotWidth = props.cc.pixelWidth / 320 * 8;
+  const pointWidth = props.cc.pixelWidth / 320 * 8;
 
   return (
-    <Line points={points} strokeWidth={knotWidth} stroke={"red"} opacity={0} bezier={props.spline.controls.length > 2} onClick={onLineClick} />
+    <Line points={points} strokeWidth={pointWidth} stroke={"red"} opacity={0} bezier={props.spline.controls.length > 2} onClick={onLineClick} />
   )
 });
 
-export { SplineKnotsHitBoxElement };
+export { SplinePointsHitBoxElement };

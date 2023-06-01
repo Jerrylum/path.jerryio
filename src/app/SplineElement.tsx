@@ -2,7 +2,7 @@ import { observer } from "mobx-react-lite";
 import { Path, Spline } from '../math/Path';
 import { AppProps } from "../App";
 import { SplineControlVisualLineElement } from "./SplineControlVisualLineElement";
-import { SplineKnotsHitBoxElement } from "./SplineKnotsHitBoxElement";
+import { SplinePointsHitBoxElement } from "./SplinePointsHitBoxElement";
 import { CanvasConverter } from "../math/Canvas";
 
 
@@ -15,7 +15,7 @@ export interface SplineElementProps extends AppProps {
 const SplineElement = observer((props: SplineElementProps) => {
   return (
     <>
-      {/* ALGO: Do not calculate knots here */}
+      {/* ALGO: Do not calculate points here */}
       {
         props.spline.controls.length === 4 ? (
           <>
@@ -24,7 +24,7 @@ const SplineElement = observer((props: SplineElementProps) => {
           </>
         ) : null
       }
-      <SplineKnotsHitBoxElement {...props} />
+      <SplinePointsHitBoxElement {...props} />
       {/* UX: Do not render control point here due to z-index */}
     </>
   )

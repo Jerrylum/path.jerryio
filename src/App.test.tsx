@@ -52,7 +52,7 @@ class CustomGeneralConfig implements GeneralConfig {
   robotHeight: number = 12;
   showRobot: boolean = true;
   uol: UnitOfLength = UnitOfLength.Inch;
-  knotDensity: number = 2; // inches
+  pointDensity: number = 2; // inches
   controlMagnetDistance: number = 5 / 2.54;
 
   constructor() {

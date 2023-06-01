@@ -55,7 +55,7 @@ const App = observer(() => {
   }
 
   useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
-    app.paths.map(path => path.calculateKnots(app.gc));
+    app.paths.map(path => path.calculatePoints(app.gc));
   }), undefined);
 
   useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
@@ -69,7 +69,7 @@ const App = observer(() => {
       app.selected = [];
       app.expanded = [];
 
-      app.gc.knotDensity = uc.fromAtoB(app.gc.knotDensity);
+      app.gc.pointDensity = uc.fromAtoB(app.gc.pointDensity);
       app.gc.controlMagnetDistance = uc.fromAtoB(app.gc.controlMagnetDistance);
       app.gc.robotWidth = uc.fromAtoB(app.gc.robotWidth);
       app.gc.robotHeight = uc.fromAtoB(app.gc.robotHeight);
@@ -84,7 +84,7 @@ const App = observer(() => {
       app.usingUOL = newUOL;
     }));
 
-    const disposer2 = reaction(() => app.gc.knotDensity, action((val: number, oldVal: number) => {
+    const disposer2 = reaction(() => app.gc.pointDensity, action((val: number, oldVal: number) => {
       const newMaxLimit = parseFloat((val * 2).toFixed(3));
 
       for (const path of app.paths) {

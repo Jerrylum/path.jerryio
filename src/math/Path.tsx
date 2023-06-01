@@ -83,19 +83,19 @@ export class Vector {
   }
 }
 
-export class Knot extends Vector {
-  public isLastKnotOfSplines: boolean = false;
+export class Point extends Vector {
+  public isLastPointOfSplines: boolean = false;
 
   constructor(x: number, y: number,
-    public delta: number, // distance to the previous knot
-    public integral: number, // integral distance from the first knot
+    public delta: number, // distance to the previous point
+    public integral: number, // integral distance from the first point
     public speed: number = 0,
     public heading?: number) {
     super(x, y);
   }
 
-  clone(): Knot {
-    return new Knot(this.x, this.y, this.delta, this.integral, this.speed, this.heading);
+  clone(): Point {
+    return new Point(this.x, this.y, this.delta, this.integral, this.speed, this.heading);
   }
 }
 
@@ -179,7 +179,7 @@ export class KeyFrame {
     this.uid = makeId(10);
   }
 
-  process(sc: SpeedConfig, responsible: Knot[], nextFrame?: KeyFrame): void {
+  process(sc: SpeedConfig, responsible: Point[], nextFrame?: KeyFrame): void {
     const limitFrom = sc.speedLimit.from;
     const limitTo = sc.speedLimit.to;
     const limitDiff = limitTo - limitFrom;
@@ -194,18 +194,18 @@ export class KeyFrame {
 
     const length = responsible.length;
     for (let i = 0; i < length; i++) {
-      const knot = responsible[i];
+      const point = responsible[i];
       const y = yFrom + yDiff * i / length; // length - 1 + 1
       let speed = limitFrom + limitDiff * y;
 
       if (this.followCurve) {
-        const delta = knot.delta;
+        const delta = point.delta;
         if (delta < sc.applicationRange.from && delta !== 0) speed = Math.min(speed, limitFrom);
         else if (delta > sc.applicationRange.to) speed = Math.min(speed, limitTo);
         else if (useRatio && delta !== 0) speed = Math.min(speed, limitFrom + (delta - sc.applicationRange.from) * applicationRatio);
       }
 
-      knot.speed = speed;
+      point.speed = speed;
     }
   }
 }
@@ -259,30 +259,30 @@ export class Spline implements CanvasEntity {
     return rtn;
   }
 
-  calculateKnots(gc: GeneralConfig, sc: SpeedConfig, integral = 0): Knot[] {
-    // ALGO: Calculate the target interval based on the density of knots to generate knots more than enough
-    const targetInterval = new UnitConverter(gc.uol, UnitOfLength.Centimeter).fromAtoB(gc.knotDensity) / 200;
+  calculatePoints(gc: GeneralConfig, sc: SpeedConfig, integral = 0): Point[] {
+    // ALGO: Calculate the target interval based on the density of points to generate points more than enough
+    const targetInterval = new UnitConverter(gc.uol, UnitOfLength.Centimeter).fromAtoB(gc.pointDensity) / 200;
 
-    // The density of knots is NOT uniform along the curve
-    let knots: Knot[] = this.calculateBezierCurveKnots(targetInterval, integral);
+    // The density of points is NOT uniform along the curve
+    let points: Point[] = this.calculateBezierCurvePoints(targetInterval, integral);
 
-    const lastKnot = knots[knots.length - 1];
+    const lastPoint = points[points.length - 1];
     const lastControl = this.last();
-    const distance = lastKnot.distance(lastControl);
-    const integralDistance = lastKnot.integral + distance;
-    const finalKnot = new Knot(lastControl.x, lastControl.y, distance, integralDistance, 0, this.last().heading);
-    finalKnot.isLastKnotOfSplines = true;
-    knots.push(finalKnot);
+    const distance = lastPoint.distance(lastControl);
+    const integralDistance = lastPoint.integral + distance;
+    const finalPoint = new Point(lastControl.x, lastControl.y, distance, integralDistance, 0, this.last().heading);
+    finalPoint.isLastPointOfSplines = true;
+    points.push(finalPoint);
 
-    const splineDeltaRatio = (1 / targetInterval) / ((integralDistance - integral) / gc.knotDensity);
+    const splineDeltaRatio = (1 / targetInterval) / ((integralDistance - integral) / gc.pointDensity);
     if (splineDeltaRatio !== Infinity) {
-      for (const knot of knots) {
-        knot.delta *= splineDeltaRatio;
+      for (const point of points) {
+        point.delta *= splineDeltaRatio;
       }
     }
 
-    // At least 2 knots are returned
-    return knots;
+    // At least 2 points are returned
+    return points;
   }
 
   first(): EndPointControl {
@@ -309,8 +309,8 @@ export class Spline implements CanvasEntity {
     return this.controls.some((cp) => cp.visible);
   }
 
-  private calculateBezierCurveKnots(interval: number, integral = 0): Knot[] {
-    let knots: Knot[] = [];
+  private calculateBezierCurvePoints(interval: number, integral = 0): Point[] {
+    let points: Point[] = [];
 
     // Bezier curve implementation
     let totalDistance = integral;
@@ -327,11 +327,11 @@ export class Spline implements CanvasEntity {
         point.y += controlPoint.y * bernstein;
       }
       let delta = point.distance(lastPoint);
-      knots.push(new Knot(point.x, point.y, delta, totalDistance += delta));
+      points.push(new Point(point.x, point.y, delta, totalDistance += delta));
       lastPoint = point;
     }
 
-    return knots;
+    return points;
   }
 
   private bernstein(n: number, i: number, t: number): number {
@@ -358,11 +358,11 @@ export class KeyFrameIndexing {
   constructor(public index: number, public spline: Spline | undefined, public keyFrame: KeyFrame) { }
 }
 
-export interface KnotCalculationResult {
+export interface PointCalculationResult {
   ttd: number; // total travel distance
 
-  knots: Knot[]; // gen2
-  // ALGO: An array of index ranges, each range represents a set of knots calculated by a spline in gen2
+  points: Point[]; // gen2
+  // ALGO: An array of index ranges, each range represents a set of points calculated by a spline in gen2
   splineRanges: IndexRange[];
   keyframeIndexes: KeyFrameIndexing[];
 }
@@ -378,9 +378,9 @@ export class Path implements InteractiveEntity {
   public visible: boolean = true;
 
   @Exclude()
-  public cachedResult: KnotCalculationResult = {
+  public cachedResult: PointCalculationResult = {
     ttd: 0,
-    knots: [],
+    points: [],
     splineRanges: [],
     keyframeIndexes: []
   };
@@ -528,15 +528,15 @@ export class Path implements InteractiveEntity {
     return [];
   }
 
-  private getAllSplineKnots(gc: GeneralConfig, result: KnotCalculationResult): Knot[] {
-    // ALGO: The density of knots is NOT uniform along the curve, and we are using this to decelerate the robot
-    const gen1: Knot[] = [];
+  private getAllSplinePoints(gc: GeneralConfig, result: PointCalculationResult): Point[] {
+    // ALGO: The density of points is NOT uniform along the curve, and we are using this to decelerate the robot
+    const gen1: Point[] = [];
     let pathTTD = 0; // total travel distance
     for (let spline of this.splines) {
-      const [firstKnot, ...knots] = spline.calculateKnots(gc, this.sc, pathTTD);
-      // ALGO: Ignore the first knot, it is (too close) the last knot of the previous spline
-      if (pathTTD === 0) gen1.push(firstKnot); // Except for the first spline
-      gen1.push(...knots);
+      const [firstPoint, ...points] = spline.calculatePoints(gc, this.sc, pathTTD);
+      // ALGO: Ignore the first point, it is (too close) the last point of the previous spline
+      if (pathTTD === 0) gen1.push(firstPoint); // Except for the first spline
+      gen1.push(...points);
       pathTTD = gen1[gen1.length - 1].integral;
     }
     result.ttd = pathTTD;
@@ -544,23 +544,23 @@ export class Path implements InteractiveEntity {
     return gen1;
   }
 
-  private spaceKnotsEvenly(gc: GeneralConfig, result: KnotCalculationResult, gen1: Knot[]) {
-    // ALGO: gen1 must have at least 2 knots, ttd must be greater than 0
-    const targetInterval = 1 / (result.ttd / gc.knotDensity);
+  private spacePointsEvenly(gc: GeneralConfig, result: PointCalculationResult, gen1: Point[]) {
+    // ALGO: gen1 must have at least 2 points, ttd must be greater than 0
+    const targetInterval = 1 / (result.ttd / gc.pointDensity);
 
     let closestIdx = 1;
-    let splineFirstKnotIdx = 0;
+    let splineFirstPointIdx = 0;
 
     for (let t = 0; t < 1; t += targetInterval) {
       const integral = t * result.ttd;
 
       let heading: number | undefined;
-      let isLastKnotOfSplines = false; // flag
+      let isLastPointOfSplines = false; // flag
       while (gen1[closestIdx].integral < integral) { // ALGO: ClosestIdx never exceeds the array length
         // ALGO: Obtain the heading value if it is available
-        // ALGO: the last knot with heading and isLastKnotOfSplines flag is not looped
+        // ALGO: the last point with heading and isLastPointOfSplines flag is not looped
         if (gen1[closestIdx].heading !== undefined) heading = gen1[closestIdx].heading;
-        isLastKnotOfSplines = isLastKnotOfSplines || gen1[closestIdx].isLastKnotOfSplines;
+        isLastPointOfSplines = isLastPointOfSplines || gen1[closestIdx].isLastPointOfSplines;
         closestIdx++;
       }
 
@@ -570,31 +570,31 @@ export class Path implements InteractiveEntity {
       const p3X = p1.x + (p2.x - p1.x) * pRatio;
       const p3Y = p1.y + (p2.y - p1.y) * pRatio;
       const p3Delta = p1.delta + (p2.delta - p1.delta) * pRatio;
-      const p3 = isNaN(pRatio) ? new Knot(p1.x, p1.y, p1.delta, integral, 0, heading) : new Knot(p3X, p3Y, p3Delta, integral, 0, heading);
+      const p3 = isNaN(pRatio) ? new Point(p1.x, p1.y, p1.delta, integral, 0, heading) : new Point(p3X, p3Y, p3Delta, integral, 0, heading);
 
-      // ALGO: Create a new spline range if the knot is the last knot of splines
-      if ((p3.isLastKnotOfSplines = isLastKnotOfSplines) === true) {
-        result.splineRanges.push(new IndexRange(splineFirstKnotIdx, result.knots.length));
-        splineFirstKnotIdx = result.knots.length;
+      // ALGO: Create a new spline range if the point is the last point of splines
+      if ((p3.isLastPointOfSplines = isLastPointOfSplines) === true) {
+        result.splineRanges.push(new IndexRange(splineFirstPointIdx, result.points.length));
+        splineFirstPointIdx = result.points.length;
       }
 
-      result.knots.push(p3);
+      result.points.push(p3);
     }
     // ALGO: The last spline is not looped
-    result.splineRanges.push(new IndexRange(splineFirstKnotIdx, result.knots.length));
+    result.splineRanges.push(new IndexRange(splineFirstPointIdx, result.points.length));
   }
 
-  private processKeyFrames(gc: GeneralConfig, result: KnotCalculationResult) {
+  private processKeyFrames(gc: GeneralConfig, result: PointCalculationResult) {
     // ALGO: result.splineRanges must have at least x ranges (x = number of splines)
     const ikf: KeyFrameIndexing[] = [new KeyFrameIndexing(0, undefined, new KeyFrame(0, 1))];
 
     for (let splineIdx = 0; splineIdx < this.splines.length; splineIdx++) {
       const spline = this.splines[splineIdx];
-      const knotIdxRange = result.splineRanges[splineIdx];
+      const pointIdxRange = result.splineRanges[splineIdx];
       // ALGO: Assume the keyframes are sorted
       spline.speedProfiles.forEach((kf) => {
-        const knotIdx = knotIdxRange.from + Math.floor((knotIdxRange.to - knotIdxRange.from) * kf.xPos);
-        ikf.push(new KeyFrameIndexing(knotIdx, spline, kf));
+        const pointIdx = pointIdxRange.from + Math.floor((pointIdxRange.to - pointIdxRange.from) * kf.xPos);
+        ikf.push(new KeyFrameIndexing(pointIdx, spline, kf));
       });
     }
 
@@ -602,36 +602,36 @@ export class Path implements InteractiveEntity {
       const current = ikf[i];
       const next = ikf[i + 1];
       const from = current.index;
-      const to = next === undefined ? result.knots.length : next.index;
-      const responsibleKnots = result.knots.slice(from, to);
+      const to = next === undefined ? result.points.length : next.index;
+      const responsiblePoints = result.points.slice(from, to);
 
-      current.keyFrame.process(this.sc, responsibleKnots, next?.keyFrame);
+      current.keyFrame.process(this.sc, responsiblePoints, next?.keyFrame);
     }
     result.keyframeIndexes = ikf.slice(1);
   }
 
-  calculateKnots(gc: GeneralConfig): KnotCalculationResult {
-    const result: KnotCalculationResult = { ttd: 20, knots: [], splineRanges: [], keyframeIndexes: [] };
+  calculatePoints(gc: GeneralConfig): PointCalculationResult {
+    const result: PointCalculationResult = { ttd: 20, points: [], splineRanges: [], keyframeIndexes: [] };
 
     if (this.splines.length === 0) return this.cachedResult = result;
 
-    const gen1 = this.getAllSplineKnots(gc, result);
+    const gen1 = this.getAllSplinePoints(gc, result);
 
-    this.spaceKnotsEvenly(gc, result, gen1);
+    this.spacePointsEvenly(gc, result, gen1);
 
     this.processKeyFrames(gc, result);
 
-    // ALGO: gen2 must have at least 1 knots
+    // ALGO: gen2 must have at least 1 points
     // ALGO: The first should have heading information
-    result.knots[0].heading = gen1[0].heading;
+    result.points[0].heading = gen1[0].heading;
 
-    // ALGO: The final knot should be the last end control point in the path
+    // ALGO: The final point should be the last end control point in the path
     // ALGO: At this point, we know splines has at least 1 spline
     const lastControl = this.splines[this.splines.length - 1].last();
-    // ALGO: No need to calculate delta and integral for the final knot, it is always 0
-    const finalKnot = new Knot(lastControl.x, lastControl.y, 0, 0, 0, lastControl.heading);
-    // ALGO: No need to calculate speed for the final knot, it is always 0
-    result.knots.push(finalKnot);
+    // ALGO: No need to calculate delta and integral for the final point, it is always 0
+    const finalPoint = new Point(lastControl.x, lastControl.y, 0, 0, 0, lastControl.heading);
+    // ALGO: No need to calculate speed for the final point, it is always 0
+    result.points.push(finalPoint);
 
     return this.cachedResult = result;
   }

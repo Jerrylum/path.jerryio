@@ -1,6 +1,6 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { KeyFrameIndexing, KeyFrame, KeyFramePos, Knot, Path, Vector } from '../math/Path';
+import { KeyFrameIndexing, KeyFrame, KeyFramePos, Point, Path, Vector } from '../math/Path';
 import Konva from 'konva';
 import { Circle, Layer, Line, Rect, Stage, Text } from 'react-konva';
 import { AppProps } from "../App";
@@ -10,9 +10,9 @@ import { clamp } from "./Util";
 
 
 export class GraphCanvasConverter {
-  public knotsOnPage: number = 200;
-  public knotWidth: number;
-  public knotRadius: number;
+  public pointsOnPage: number = 200;
+  public pointWidth: number;
+  public pointRadius: number;
   public lineWidth: number = 0.5;
   public twoSidePaddingWidth: number;
   public rightPaddingStart: number;
@@ -24,22 +24,22 @@ export class GraphCanvasConverter {
   constructor(public pixelWidth: number, public pixelHeight: number,
     public xOffset: number,
     public path: Path) {
-    this.knotWidth = pixelWidth / this.knotsOnPage;
-    this.knotRadius = this.knotWidth / 2;
-    this.twoSidePaddingWidth = this.knotWidth * 14;
+    this.pointWidth = pixelWidth / this.pointsOnPage;
+    this.pointRadius = this.pointWidth / 2;
+    this.twoSidePaddingWidth = this.pointWidth * 14;
     this.rightPaddingStart = this.pixelWidth - this.twoSidePaddingWidth;
-    this.axisTitleWidth = this.knotWidth * 10;
+    this.axisTitleWidth = this.pointWidth * 10;
     this.axisLineTopX = this.pixelHeight * 0.2;
     this.bodyHeight = this.pixelHeight * 0.6;
     this.axisLineBottomX = this.pixelHeight * 0.8;
   }
 
   toPxNumber(index: number): number {
-    return (index) * this.knotWidth + this.knotWidth * 14 - this.xOffset;
+    return (index) * this.pointWidth + this.pointWidth * 14 - this.xOffset;
   }
 
   toIndexNumber(px: number): number {
-    return Math.floor((px + this.xOffset - this.twoSidePaddingWidth) / this.knotWidth);
+    return Math.floor((px + this.xOffset - this.twoSidePaddingWidth) / this.pointWidth);
   }
 
   toPos(px: Vector): KeyFramePos | undefined {
@@ -47,8 +47,8 @@ export class GraphCanvasConverter {
     const y = px.y;
 
     let index = this.toIndexNumber(x);
-    if (index >= this.path.cachedResult.knots.length - 2) {
-      index = this.path.cachedResult.knots.length - 2;
+    if (index >= this.path.cachedResult.points.length - 2) {
+      index = this.path.cachedResult.points.length - 2;
     }
     if (index < 0) {
       index = 0;
@@ -83,8 +83,8 @@ export class GraphCanvasConverter {
   }
 }
 
-const KnotElement = observer((props: { knot: Knot, index: number, sc: SpeedConfig, gcc: GraphCanvasConverter }) => {
-  const { knot, index, sc, gcc } = props;
+const PointElement = observer((props: { point: Point, index: number, sc: SpeedConfig, gcc: GraphCanvasConverter }) => {
+  const { point, index, sc, gcc } = props;
 
   const speedFrom = sc.speedLimit.from;
   const speedTo = sc.speedLimit.to;
@@ -92,18 +92,18 @@ const KnotElement = observer((props: { knot: Knot, index: number, sc: SpeedConfi
   const densityHigh = sc.applicationRange.to;
   const densityLow = sc.applicationRange.from;
 
-  let p1 = (knot.delta - densityLow) / (densityHigh - densityLow);
-  let p2 = (knot.speed - speedFrom) / (speedTo - speedFrom);
+  let p1 = (point.delta - densityLow) / (densityHigh - densityLow);
+  let p2 = (point.speed - speedFrom) / (speedTo - speedFrom);
   let x = gcc.toPxNumber(index);
   let y1 = (1 - p1) * (gcc.pixelHeight * 0.6) + (gcc.axisLineTopX);
   let y2 = (1 - p2) * (gcc.pixelHeight * 0.6) + (gcc.axisLineTopX);
   const color = `hsl(${p2 * 90}, 70%, 50%)`; // red = min speed, green = max speed
 
   return <>
-    <Circle x={x} y={y1} radius={gcc.knotRadius} fill={"grey"} />
-    <Circle x={x} y={y2} radius={gcc.knotRadius} fill={color} />
+    <Circle x={x} y={y1} radius={gcc.pointRadius} fill={"grey"} />
+    <Circle x={x} y={y2} radius={gcc.pointRadius} fill={color} />
     {
-      knot.isLastKnotOfSplines
+      point.isLastPointOfSplines
         ? <Line points={[x, 0, x, gcc.pixelHeight]} stroke="grey" strokeWidth={gcc.lineWidth} />
         : null
     }
@@ -164,7 +164,7 @@ const KeyFrameElement = observer((props: { ikf: KeyFrameIndexing, gcc: GraphCanv
   const x = gcc.toPxNumber(ikf.index);
   const y = (1 - ikf.keyFrame.yPos) * gcc.bodyHeight + gcc.axisLineTopX;
   return (
-    <Circle x={x} y={y} radius={gcc.knotRadius * 4} fill={"#D7B301"} opacity={0.75} draggable
+    <Circle x={x} y={y} radius={gcc.pointRadius * 4} fill={"#D7B301"} opacity={0.75} draggable
       onDragMove={action(onDragKeyFrame)} onClick={action(onClickKeyFrame)} />
   );
 });
@@ -213,7 +213,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
     if (path === undefined) {
       setXOffset(0);
     } else {
-      const maxScrollPos = gcc.knotWidth * (path.cachedResult.knots.length - 2);
+      const maxScrollPos = gcc.pointWidth * (path.cachedResult.points.length - 2);
       setXOffset((prev) => clamp(prev + delta, 0, maxScrollPos));
     }
   };
@@ -225,7 +225,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
         <Line points={[0, gcc.axisLineBottomX, gcc.pixelWidth, gcc.axisLineBottomX]} stroke="grey" strokeWidth={gcc.lineWidth} />
 
         {
-          path?.cachedResult.knots.map((knot, index) => <KnotElement key={index} sc={path.sc} {...{ knot, index, gcc }} />)
+          path?.cachedResult.points.map((point, index) => <PointElement key={index} sc={path.sc} {...{ point, index, gcc }} />)
         }
 
         <Rect x={0} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill="white" />
@@ -241,11 +241,11 @@ const GraphCanvasElement = observer((props: AppProps) => {
         <Text text={speedFrom + ""} x={0} y={gcc.axisLineBottomX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill="#444" align="right" width={gcc.axisTitleWidth} />
 
         <Rect x={gcc.rightPaddingStart} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill="white" />
-        <Text text={densityHigh + ""} x={gcc.rightPaddingStart + gcc.knotWidth} y={gcc.axisLineTopX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill="#444" width={gcc.axisTitleWidth} />
-        <Text text={densityLow + ""} x={gcc.rightPaddingStart + gcc.knotWidth} y={gcc.axisLineBottomX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill="#444" width={gcc.axisTitleWidth} />
+        <Text text={densityHigh + ""} x={gcc.rightPaddingStart + gcc.pointWidth} y={gcc.axisLineTopX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill="#444" width={gcc.axisTitleWidth} />
+        <Text text={densityLow + ""} x={gcc.rightPaddingStart + gcc.pointWidth} y={gcc.axisLineBottomX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill="#444" width={gcc.axisTitleWidth} />
 
         <Text text={"Speed"} x={0} y={gcc.pixelHeight} fontSize={fontSize} fontFamily="Roboto" fill="#444" width={gcc.pixelHeight} height={fontSize} align="center" rotation={270} />
-        <Text text={"Density"} x={gcc.pixelWidth - gcc.knotWidth} y={0} fontSize={fontSize} fontFamily="Roboto" fill="#444" width={gcc.pixelHeight} height={fontSize} align="center" rotation={90} />
+        <Text text={"Density"} x={gcc.pixelWidth - gcc.pointWidth} y={0} fontSize={fontSize} fontFamily="Roboto" fill="#444" width={gcc.pixelHeight} height={fontSize} align="center" rotation={90} />
 
       </Layer>
     </Stage>

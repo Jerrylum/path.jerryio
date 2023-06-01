@@ -10,7 +10,7 @@ export interface GeneralConfig extends ConfigSection {
   robotHeight: number;
   showRobot: boolean;
   uol: UnitOfLength;
-  knotDensity: number;
+  pointDensity: number;
   controlMagnetDistance: number;
 }
 

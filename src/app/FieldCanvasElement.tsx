@@ -215,7 +215,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
   const magnetInPx = cc.toPx(props.app.magnet);
   const visiblePaths = paths.filter((path) => path.visible);
 
-  const knotRadius = cc.pixelWidth / 320;
+  const pointRadius = cc.pixelWidth / 320;
 
   return (
     <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight}
@@ -245,19 +245,19 @@ const FieldCanvasElement = observer((props: AppProps) => {
           visiblePaths.map((path, index) => (
             <React.Fragment key={index}>
               {
-                path.cachedResult.knots.map((knotInUOL, index) => {
+                path.cachedResult.points.map((pointInUOL, index) => {
                   const sc = path.sc;
 
                   const speedFrom = sc.speedLimit.from;
                   const speedTo = sc.speedLimit.to;
 
-                  const knotInPx = cc.toPx(knotInUOL);
-                  const percentage = (knotInUOL.speed - speedFrom) / (speedTo - speedFrom);
+                  const pointInPx = cc.toPx(pointInUOL);
+                  const percentage = (pointInUOL.speed - speedFrom) / (speedTo - speedFrom);
                   // h => hue
                   // s => saturation
                   // l => lightness
                   const color = `hsl(${percentage * 90}, 70%, 50%)`; // red = min speed, green = max speed
-                  return <Circle key={index} x={knotInPx.x} y={knotInPx.y} radius={knotRadius} fill={color} />
+                  return <Circle key={index} x={pointInPx.x} y={pointInPx.y} radius={pointRadius} fill={color} />
                 })
               }
             </React.Fragment>

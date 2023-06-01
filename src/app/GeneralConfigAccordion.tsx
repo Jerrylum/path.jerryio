@@ -43,10 +43,10 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
             </Select>
           </FormControl>
           <ObserverInput
-            sx={{ width: "6rem" }}
-            label="Knot Density"
-            getValue={() => gc.knotDensity + ""}
-            setValue={(value: string) => gc.knotDensity = parseNumberInString(value, gc.uol,
+            sx={{ width: "7rem" }}
+            label="Point Density"
+            getValue={() => gc.pointDensity + ""}
+            setValue={(value: string) => gc.pointDensity = parseNumberInString(value, gc.uol,
               new NumberInUnit(0.1, UnitOfLength.Centimeter), new NumberInUnit(100, UnitOfLength.Centimeter))
             }
             isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
