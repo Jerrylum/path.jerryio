@@ -45,7 +45,10 @@ const App = observer(() => {
     app.gc = app.format.buildGeneralConfig();
     app.oc = app.format.buildOutputConfig();
 
-    // UX: Keep robot width and height
+    const uc = new UnitConverter(app.usingUOL, app.gc.uol, 5);
+
+    // UX: Keep some values
+    app.gc.pointDensity = uc.fromBtoA(app.gc.pointDensity);
     app.gc.robotWidth = robotWidth;
     app.gc.robotHeight = robotHeight;
 
@@ -68,7 +71,6 @@ const App = observer(() => {
 
       app.selected = [];
       app.expanded = [];
-
       app.gc.pointDensity = uc.fromAtoB(app.gc.pointDensity);
       app.gc.controlMagnetDistance = uc.fromAtoB(app.gc.controlMagnetDistance);
       app.gc.robotWidth = uc.fromAtoB(app.gc.robotWidth);
