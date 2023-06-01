@@ -65,8 +65,8 @@ export class MainApp {
     const fixedTo = new Vertex(Math.max(from.x, to.x), Math.max(from.y, to.y));
 
     // ALGO: Select all controls that are within the area
-    const highlighted = this.paths
-      .flatMap((path) => path.getControlsSet().filter((control) => control.isWithinArea(fixedFrom, fixedTo)))
+    const highlighted = this.selectableControls
+      .filter((control) => control.isWithinArea(fixedFrom, fixedTo))
       .map((cp) => cp.uid);
 
     // UX: select all highlighted controls except the ones that were selected before the area selection
@@ -75,6 +75,14 @@ export class MainApp {
 
     // remove duplicates
     this.selected = Array.from(new Set(selected));
+  }
+
+  @computed get selectableControls(): Control[] {
+    return this.selectablePaths.flatMap((path) => path.getControlsSet().filter((control) => control.visible && !control.lock));
+  }
+
+  @computed get selectablePaths(): Path[] {
+    return this.paths.filter((path) => path.visible && !path.lock);
   }
 
   @computed get selectedControl(): EndPointControl | Control | undefined {
