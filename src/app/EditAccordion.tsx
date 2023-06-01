@@ -33,8 +33,8 @@ const PathsAccordion = observer((props: AppProps) => {
                 control.x = parseNumberInString(value, props.app.gc.uol,
                   new NumberInUnit(-1000, UnitOfLength.Centimeter), new NumberInUnit(1000, UnitOfLength.Centimeter))
               }}
-              isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
-              isValidValue={(candidate: string) => new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+              isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
+              isValidValue={(candidate: string) => new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
               disabled={props.app.selected.length !== 1 || props.app.selectedControl === undefined}
               numeric
             />
@@ -55,8 +55,8 @@ const PathsAccordion = observer((props: AppProps) => {
                 control.y = parseNumberInString(value, props.app.gc.uol,
                   new NumberInUnit(-1000, UnitOfLength.Centimeter), new NumberInUnit(1000, UnitOfLength.Centimeter))
               }}
-              isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
-              isValidValue={(candidate: string) => new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+              isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
+              isValidValue={(candidate: string) => new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
               disabled={props.app.selected.length !== 1 || props.app.selectedControl === undefined}
               numeric
             />
@@ -77,8 +77,8 @@ const PathsAccordion = observer((props: AppProps) => {
                 control.heading = parseFloat(value);
                 control.fixPrecision();
               }}
-              isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
-              isValidValue={(candidate: string) => new RegExp(/^-?[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+              isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
+              isValidValue={(candidate: string) => new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
               disabled={props.app.selected.length !== 1 || props.app.selectedControl === undefined}
               sx={{ visibility: props.app.selected.length === 1 && !(props.app.selectedControl instanceof EndPointControl) ? "hidden" : "" }}
               numeric
