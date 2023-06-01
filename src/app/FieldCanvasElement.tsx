@@ -128,7 +128,10 @@ const FieldCanvasElement = observer((props: AppProps) => {
       const posInPx = cc.getUnboundedPxFromEvent(event, false);
       if (posInPx === undefined) return;
 
-      setOffset(offsetStart.subtract(posInPx));
+      const newOffset = offsetStart.subtract(posInPx);
+      newOffset.x = clamp(newOffset.x, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
+      newOffset.y = clamp(newOffset.y, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
+      setOffset(newOffset);
     }
   }
 
