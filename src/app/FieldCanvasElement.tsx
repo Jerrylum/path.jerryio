@@ -11,7 +11,7 @@ import useImage from "use-image";
 import fieldImageUrl from '../static/field2023.png'
 import { SplineControlElement } from "./SplineControlElement";
 import { AreaElement } from "./AreaElement";
-import { UnitConverter, UnitOfLength } from "../math/Unit";
+import { UnitConverter, UnitOfLength, clamp } from "../math/Unit";
 import { CanvasConverter } from "../math/Canvas";
 
 const FieldCanvasElement = observer((props: AppProps) => {
@@ -30,8 +30,9 @@ const FieldCanvasElement = observer((props: AppProps) => {
   const [isAddingControl, setIsAddingControl] = React.useState(false);
   const [offsetStart, setOffsetStart] = React.useState<Vertex | undefined>(undefined); // [px
   const [offset, setOffset] = React.useState<Vertex>(new Vertex(0, 0));
+  const [scale, setScale] = React.useState(1);
 
-  const cc = new CanvasConverter(canvasSizeInPx, canvasSizeInPx, canvasSizeInUOL, canvasSizeInUOL, offset);
+  const cc = new CanvasConverter(canvasSizeInPx, canvasSizeInPx, canvasSizeInUOL, canvasSizeInUOL, offset, scale);
 
   function onMouseDownFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
@@ -54,6 +55,43 @@ const FieldCanvasElement = observer((props: AppProps) => {
     }
   }
 
+  function onWheelCanvas(event: Konva.KonvaEventObject<WheelEvent>) {
+    const evt = event.evt;
+
+    const wheel = evt.deltaY;
+    // UX: Zoom in/out if: wheel while ctrl key down
+    if (wheel === 0 || !evt.ctrlKey) return;
+    
+    evt.preventDefault();
+
+    const pos = cc.getUnboundedPxFromEvent(event, false, false);
+    if (pos === undefined) return;
+
+    const negative1 = new Vertex(-1, -1);
+
+    const newScale = clamp(scale * (1 - wheel / 1000), 1, 3);
+    const scaleVertex = new Vertex(scale, scale);
+    const newScaleVertex = new Vertex(newScale, newScale);
+    
+    // offset is offset in Knova coordinate system (KC)
+    // offsetInCC is offset in HTML Canvas coordinate system (CC)
+    const offsetInCC = offset.multiply(scaleVertex).multiply(negative1);
+
+    const canvasHalfSizeWithScale = (cc.pixelWidth * scale) / 2;
+    const newCanvasHalfSizeWithScale = (cc.pixelWidth * newScale) / 2;
+
+    // UX: Zoom in/out "on" mouse position
+    const fieldCenter = offsetInCC.add(new Vertex(canvasHalfSizeWithScale, canvasHalfSizeWithScale));
+    const newFieldCenter = offsetInCC.add(new Vertex(newCanvasHalfSizeWithScale, newCanvasHalfSizeWithScale));
+    const relativePos = pos.subtract(fieldCenter).divide(scaleVertex);
+    const newPos = newFieldCenter.add(relativePos.multiply(newScaleVertex));
+    const newOffsetInCC = pos.subtract(newPos).add(offsetInCC);
+    const newOffsetInKC = newOffsetInCC.multiply(negative1).divide(newScaleVertex);
+
+    setScale(newScale);
+    setOffset(newOffsetInKC);
+  }
+
   function onMouseDownCanvas(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
@@ -71,7 +109,6 @@ const FieldCanvasElement = observer((props: AppProps) => {
     const evt = event.evt;
 
     setIsAddingControl(false);
-
 
     if (areaSelectionStart !== undefined) { // UX: Select control point if mouse down on field image
       const posInPx = cc.getUnboundedPxFromEvent(event);
@@ -135,9 +172,10 @@ const FieldCanvasElement = observer((props: AppProps) => {
 
   return (
     <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight}
-      scale={new Vertex(1, 1)} offset={offset}
+      scale={new Vertex(scale, scale)} offset={offset}
       style={{ cursor: offsetStart ? 'grab' : '' }}
       onContextMenu={(e) => e.evt.preventDefault()}
+      onWheel={action(onWheelCanvas)}
       onMouseDown={action(onMouseDownCanvas)}
       onMouseMove={action(onMouseMoveCanvas)}
       onMouseUp={action(onMouseUpCanvas)}>

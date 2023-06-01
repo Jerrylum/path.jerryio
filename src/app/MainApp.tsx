@@ -86,9 +86,9 @@ export class MainApp {
   @computed get selectedPath(): Path | undefined {
     if (this.selected.length === 0) return undefined;
 
-    // ALGO: return the first selected path if: some path is selected
+    // ALGO: Return the first selected path if: some path is selected
     let rtn = this.paths.find((path) => this.isSelected(path.uid));
-    // ALGO: return the first selected control point's path if: some control point is selected, the path visible and not locked
+    // ALGO: Return the first selected control point's path if: some control point is selected, the path visible and not locked
     if (rtn === undefined) rtn = this.paths.find((path) => path.getControlsSet().some((control) => this.isSelected(control.uid)));
 
     return rtn;
@@ -108,7 +108,7 @@ export class MainApp {
         path.splines[j].setFirst(path.splines[j - 1].last());
       }
 
-      // UX: expand all paths
+      // UX: Expand all paths
       this.expanded.push(path.uid);
     }
 

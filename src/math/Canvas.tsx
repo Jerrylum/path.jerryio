@@ -19,7 +19,8 @@ export class CanvasConverter {
     constructor(
         public pixelWidth: number, public pixelHeight: number,
         public fieldWidth: number, public fieldHeight: number,
-        public offset: Vertex) {
+        public offset: Vertex,
+        public scale: number) {
         this.pixelWidthHalf = pixelWidth / 2;
         this.pixelHeightHalf = pixelHeight / 2;
         this.uol2pixel = pixelWidth / fieldWidth;
@@ -40,17 +41,18 @@ export class CanvasConverter {
         return rtn.fixPrecision() as T;
     }
 
-    getUnboundedPxFromEvent(event: Konva.KonvaEventObject<DragEvent | MouseEvent>, useOffset = true): Vertex | undefined {
+    getUnboundedPxFromEvent(event: Konva.KonvaEventObject<DragEvent | MouseEvent>, useOffset = true, useScale = true): Vertex | undefined {
         const evt = event.evt;
         const canvasPos = event.target.getStage()?.container().getBoundingClientRect();
         if (canvasPos === undefined) return;
 
-        const offset = this.offset;
+        const offset = useOffset ? this.offset : new Vertex(0, 0);
+        
+        const scale = useScale ? this.scale : 1;
+
+        const rtn = new Vertex(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top);
 
         // UX: Calculate the position of the control point by the client mouse position
-        if (useOffset)
-            return new Vertex(evt.clientX - canvasPos.left + offset.x, evt.clientY - canvasPos.top + offset.y);
-        else
-            return new Vertex(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top);
+        return rtn.divide(new Vertex(scale, scale)).add(new Vertex(offset.x, offset.y));
     }
 }
