@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx"
 import { MainApp } from '../app/MainApp';
-import { makeId } from "../app/Util";
+import { clamp, makeId } from "../app/Util";
 import { Control, EndPointControl, Path, Spline, Vertex } from "../math/Path";
 import { UnitOfLength, UnitConverter } from "../math/Unit";
 import { GeneralConfig, OutputConfig, SpeedConfig } from "./Config";
@@ -140,7 +140,7 @@ export class LemLibFormatV0_4 implements Format {
       // check if there is a path
       if (paths.length === 0) {
         const path = new Path(this.buildSpeedConfig(), spline);
-        path.sc.speedLimit.to = Math.max(Math.min(Number(maxSpeed.toFixed(3)), path.sc.speedLimit.maxLimit.value), path.sc.speedLimit.minLimit.value);
+        path.sc.speedLimit.to = clamp(Number(maxSpeed.toFixed(3)), path.sc.speedLimit.minLimit.value, path.sc.speedLimit.maxLimit.value);
         paths.push(path);
       } else {
         const path = paths[paths.length - 1];

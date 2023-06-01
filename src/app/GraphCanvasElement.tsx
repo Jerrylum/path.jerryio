@@ -6,6 +6,7 @@ import { Circle, Layer, Line, Rect, Stage, Text } from 'react-konva';
 import { AppProps } from "../App";
 import React from "react";
 import { SpeedConfig } from "../format/Config";
+import { clamp } from "./Util";
 
 
 export class GraphCanvasConverter {
@@ -213,7 +214,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
       setXOffset(0);
     } else {
       const maxScrollPos = gcc.knotWidth * (path.cachedResult.knots.length - 2);
-      setXOffset((prev) => Math.min(Math.max(prev + delta, 0), maxScrollPos));
+      setXOffset((prev) => clamp(prev + delta, 0, maxScrollPos));
     }
   };
 

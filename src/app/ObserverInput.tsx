@@ -3,6 +3,7 @@ import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useRef } from "react";
 import { NumberInUnit, UnitConverter, UnitOfLength } from "../math/Unit";
+import { clamp } from "./Util";
 
 export function parseNumberInString(value: string, uol: UnitOfLength,
   min = new NumberInUnit(-Infinity, UnitOfLength.Centimeter),
@@ -12,7 +13,7 @@ export function parseNumberInString(value: string, uol: UnitOfLength,
 
   const valueInUOL = parseFloat(value);
 
-  return parseFloat(Math.min(Math.max(valueInUOL, minInUOL), maxInUOL).toFixed(3));
+  return parseFloat(clamp(valueInUOL, minInUOL, maxInUOL).toFixed(3));
 }
 
 const ObserverInput = observer((props: TextFieldProps & {

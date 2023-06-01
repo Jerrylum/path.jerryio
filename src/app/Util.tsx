@@ -25,6 +25,10 @@ export function makeId(length: number) {
   return result;
 }
 
+export function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
 export function addToArray<T>(array: T[], item: T): boolean {
   if (array.includes(item)) {
     return false;

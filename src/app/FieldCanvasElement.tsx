@@ -11,8 +11,9 @@ import useImage from "use-image";
 import fieldImageUrl from '../static/field2023.png'
 import { SplineControlElement } from "./SplineControlElement";
 import { AreaElement } from "./AreaElement";
-import { UnitConverter, UnitOfLength, clamp } from "../math/Unit";
+import { UnitConverter, UnitOfLength } from "../math/Unit";
 import { CanvasConverter } from "../math/Canvas";
+import { clamp } from "./Util";
 
 const FieldCanvasElement = observer((props: AppProps) => {
   // useTimer(1000 / 30);
@@ -83,7 +84,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
     const canvasHalfSizeWithScale = (cc.pixelWidth * scale) / 2;
     const newCanvasHalfSizeWithScale = (cc.pixelWidth * newScale) / 2;
 
-    // UX: Zoom in/out "on" mouse position
+    // UX: Maintain zoom center at mouse pointer
     const fieldCenter = offsetInCC.add(new Vertex(canvasHalfSizeWithScale, canvasHalfSizeWithScale));
     const newFieldCenter = offsetInCC.add(new Vertex(newCanvasHalfSizeWithScale, newCanvasHalfSizeWithScale));
     const relativePos = pos.subtract(fieldCenter).divide(scaleVertex);

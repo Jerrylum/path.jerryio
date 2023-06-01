@@ -17,10 +17,6 @@ export class NumberInUnit {
   constructor(public value: number, public unit: UnitOfLength) { }
 }
 
-export function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
-}
-
 export class UnitConverter {
   private aRatio: number;
   private bRatio: number;
