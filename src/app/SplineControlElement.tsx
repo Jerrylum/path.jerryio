@@ -8,20 +8,31 @@ import { SplineElementProps } from "./SplineElement";
 
 export interface SplineControlElementProps extends SplineElementProps {
   cp: EndPointControl | Control;
+  isGrabAndMove: boolean;
 }
 
 const SplineControlElement = observer((props: SplineControlElementProps) => {
   const [justSelected, setJustSelected] = useState(false);
   const [posBeforeDrag, setPosBeforeDrag] = useState(new Vertex(0, 0));
 
-  function onMouseDownControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
+  function shouldInteract(event: Konva.KonvaEventObject<MouseEvent>): boolean {
     const evt = event.evt;
 
     // UX: Do not interact with control points if itself or the path is locked
-    if (props.cp.lock || props.path.lock) {
+    // UX: Do not interact with control points if middle click
+    if (props.cp.lock || props.path.lock || props.isGrabAndMove) {
       evt.preventDefault();
-      return;
+      event.target.stopDrag();
+      return false;
     }
+
+    return true;
+  }
+
+  function onMouseDownControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
+    const evt = event.evt;
+
+    if (!shouldInteract(event)) return;
 
     if (evt.button === 0) { // left click
       setPosBeforeDrag(props.cp.clone());
@@ -44,11 +55,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
   function onClickControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
-    // UX: Do not interact with control points if itself or the path is locked
-    if (props.cp.lock || props.path.lock) {
-      evt.preventDefault();
-      return;
-    }
+    if (!shouldInteract(event)) return;
 
     // UX: Remove selected entity if: release left click + shift + not being added recently
     if (evt.button === 0 && evt.shiftKey && !justSelected) {
@@ -169,11 +176,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
   function onMouseUpControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
-    // UX: Do not interact with control points if itself or the path is locked
-    if (props.cp.lock || props.path.lock) {
-      evt.preventDefault();
-      return;
-    }
+    if (!shouldInteract(event)) return;
 
     props.app.magnet = new Vertex(Infinity, Infinity);
   }
@@ -181,11 +184,8 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
   function onWheel(event: Konva.KonvaEventObject<WheelEvent>) {
     const evt = event.evt;
 
-    // UX: Do not interact with control points if itself or the path is locked
-    if (props.cp.lock || props.path.lock) {
-      evt.preventDefault();
-      return;
-    }
+    // UX: Do not interact with control points if it is zooming
+    if (!shouldInteract(event) || evt.ctrlKey) return;
 
     const epc = props.cp as EndPointControl;
     epc.heading += evt.deltaY / 10;
@@ -203,6 +203,8 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
     const evt = event.evt;
 
     onClickControlPoint(event);
+
+    if (!shouldInteract(event)) return;
 
     // UX: Remove end point from the path, selected and expanded list if: right click
     if (evt.button === 2) {
@@ -228,7 +230,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
               draggable onDragMove={action(onDragControlPoint)}
               onMouseDown={action(onMouseDownControlPoint)}
               onMouseUp={action(onMouseUpControlPoint)}
-              onWheel={onWheel}
+              onWheel={action(onWheel)}
               onClick={action(onClickFirstOrLastControlPoint)} />
           </>
         ) : (

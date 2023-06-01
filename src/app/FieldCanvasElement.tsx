@@ -28,7 +28,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
   const [areaSelectionStart, setAreaSelectionStart] = React.useState<Vertex | undefined>(undefined);
   const [areaSelectionEnd, setAreaSelectionEnd] = React.useState<Vertex | undefined>(undefined);
   const [isAddingControl, setIsAddingControl] = React.useState(false);
-  const [offsetStart, setOffsetStart] = React.useState<Vertex | undefined>(undefined); // [px
+  const [offsetStart, setOffsetStart] = React.useState<Vertex | undefined>(undefined); // ALGO: For "Grab & Move"
   const [offset, setOffset] = React.useState<Vertex>(new Vertex(0, 0));
   const [scale, setScale] = React.useState(1);
 
@@ -37,9 +37,12 @@ const FieldCanvasElement = observer((props: AppProps) => {
   function onMouseDownFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
+    // UX: this will set to false if mouse is moved
     setIsAddingControl(true);
 
-    if (evt.button === 0) {
+    // UX: Only start selection if: left click on the field image
+    // UX: Do not start selection if it is in "Grab & Move"
+    if (evt.button === 0 && offsetStart === undefined) { // left click
 
       if (evt.shiftKey === false) {
         // UX: Clear selection if: left click without shift
@@ -61,7 +64,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
     const wheel = evt.deltaY;
     // UX: Zoom in/out if: wheel while ctrl key down
     if (wheel === 0 || !evt.ctrlKey) return;
-    
+
     evt.preventDefault();
 
     const pos = cc.getUnboundedPxFromEvent(event, false, false);
@@ -72,7 +75,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
     const newScale = clamp(scale * (1 - wheel / 1000), 1, 3);
     const scaleVertex = new Vertex(scale, scale);
     const newScaleVertex = new Vertex(newScale, newScale);
-    
+
     // offset is offset in Knova coordinate system (KC)
     // offsetInCC is offset in HTML Canvas coordinate system (CC)
     const offsetInCC = offset.multiply(scaleVertex).multiply(negative1);
@@ -95,8 +98,12 @@ const FieldCanvasElement = observer((props: AppProps) => {
   function onMouseDownCanvas(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
+    // UX: Start "Grab & Move" if: middle click at any position
     if (evt.button === 1) { // middle click
       evt.preventDefault();
+
+      // UX: Do not start "Grab & Move" if it is in area selection, but prevent default
+      if (areaSelectionStart !== undefined) return;
 
       const posInPx = cc.getUnboundedPxFromEvent(event, false);
       if (posInPx === undefined) return;
@@ -125,16 +132,21 @@ const FieldCanvasElement = observer((props: AppProps) => {
   }
 
   function onMouseUpCanvas(event: Konva.KonvaEventObject<MouseEvent>) {
-    setAreaSelectionStart(undefined);
-    setAreaSelectionEnd(undefined);
-    setOffsetStart(undefined);
+    // UX: Only reset selection or "Grab & Move" if: left click or middle click released respectively
+
+    if (event.evt.button == 0) { // left click
+      setAreaSelectionStart(undefined);
+      setAreaSelectionEnd(undefined);
+    } else if (event.evt.button == 1) { // middle click
+      setOffsetStart(undefined);
+    }
   }
 
   function onClickFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
-    // UX: Add control point if: left click or right click, except the mouse moved
-    if (!isAddingControl) return;
+    // UX: Add control point if: left click or right click without moving the mouse
+    if (!(isAddingControl && (evt.button === 0 || evt.button === 2))) return;
 
     const posInPx = cc.getUnboundedPxFromEvent(event);
     if (posInPx === undefined) return;
@@ -151,12 +163,12 @@ const FieldCanvasElement = observer((props: AppProps) => {
       paths.push(targetPath);
     } else if (targetPath.visible && !targetPath.lock) {
       // UX: Add control point if: path is selected and visible and not locked
-      if (evt.button === 2) {
-        // UX: Add straight line if: right click
-        targetPath.addLine(cpInUOL);
-      } else if (evt.button === 0) {
+      if (evt.button === 0) {
         // UX: Add 4-controls curve if: left click
         targetPath.add4ControlsCurve(cpInUOL);
+      } else if (evt.button === 2) {
+        // UX: Add straight line if: right click
+        targetPath.addLine(cpInUOL);
       }
     }
 
@@ -235,7 +247,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
                   spline.controls.map((cp, cpIdx) => {
                     const isFirstSpline = path.splines[0] === spline;
                     if (!isFirstSpline && cpIdx === 0) return null;
-                    if (cp.visible) return <SplineControlElement key={cpIdx} {...{ spline, path, cc, cp, ...props }} />;
+                    if (cp.visible) return <SplineControlElement key={cpIdx} isGrabAndMove={offsetStart !== undefined} {...{ spline, path, cc, cp, ...props }} />;
                     else return null;
                   })
                 )
