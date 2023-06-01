@@ -2,7 +2,7 @@ import { makeAutoObservable, computed } from "mobx"
 import DOMPurify from 'dompurify';
 import { GeneralConfig, OutputConfig } from "../format/Config";
 import { InteractiveEntity } from "../math/Canvas";
-import { Control, EndPointControl, Path, Vertex } from "../math/Path";
+import { Control, EndPointControl, Path, Vector } from "../math/Path";
 import { addToArray, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
@@ -26,7 +26,7 @@ export class MainApp {
   public selected: string[] = []; // ALGO: Not using Set because order matters
   public selectedBefore: string[] = []; // ALGO: For area selection
   public expanded: string[] = []; // ALGO: Order doesn't matter but anyway
-  public magnet: Vertex = new Vertex(Infinity, Infinity);
+  public magnet: Vector = new Vector(Infinity, Infinity);
 
   constructor() {
     makeAutoObservable(this);
@@ -60,9 +60,9 @@ export class MainApp {
     this.selectedBefore = [...this.selected];
   }
 
-  updateAreaSelection(from: Vertex, to: Vertex): void {
-    const fixedFrom = new Vertex(Math.min(from.x, to.x), Math.min(from.y, to.y));
-    const fixedTo = new Vertex(Math.max(from.x, to.x), Math.max(from.y, to.y));
+  updateAreaSelection(from: Vector, to: Vector): void {
+    const fixedFrom = new Vector(Math.min(from.x, to.x), Math.min(from.y, to.y));
+    const fixedTo = new Vector(Math.max(from.x, to.x), Math.max(from.y, to.y));
 
     // ALGO: Select all controls that are within the area
     const highlighted = this.selectableControls
@@ -111,7 +111,7 @@ export class MainApp {
       const temp = purify.sanitize(path.name);
       path.name = temp === "" ? "Path" : temp;
 
-      // ALGO: Link the first vertex of each spline to the last vertex of the previous spline
+      // ALGO: Link the first vector of each spline to the last vector of the previous spline
       for (let j = 1; j < path.splines.length; j++) {
         path.splines[j].setFirst(path.splines[j - 1].last());
       }

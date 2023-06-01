@@ -1,6 +1,6 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { EndPointControl, Path, Spline, Vertex } from '../math/Path';
+import { EndPointControl, Path, Spline, Vector } from '../math/Path';
 import Konva from 'konva';
 import { Circle, Image, Layer, Line, Stage } from 'react-konva';
 import { SplineElement } from "./SplineElement";
@@ -26,11 +26,11 @@ const FieldCanvasElement = observer((props: AppProps) => {
 
   const [fieldImage] = useImage(fieldImageUrl);
 
-  const [areaSelectionStart, setAreaSelectionStart] = React.useState<Vertex | undefined>(undefined);
-  const [areaSelectionEnd, setAreaSelectionEnd] = React.useState<Vertex | undefined>(undefined);
+  const [areaSelectionStart, setAreaSelectionStart] = React.useState<Vector | undefined>(undefined);
+  const [areaSelectionEnd, setAreaSelectionEnd] = React.useState<Vector | undefined>(undefined);
   const [isAddingControl, setIsAddingControl] = React.useState(false);
-  const [offsetStart, setOffsetStart] = React.useState<Vertex | undefined>(undefined); // ALGO: For "Grab & Move"
-  const [offset, setOffset] = React.useState<Vertex>(new Vertex(0, 0));
+  const [offsetStart, setOffsetStart] = React.useState<Vector | undefined>(undefined); // ALGO: For "Grab & Move"
+  const [offset, setOffset] = React.useState<Vector>(new Vector(0, 0));
   const [scale, setScale] = React.useState(1);
 
   const cc = new CanvasConverter(canvasSizeInPx, canvasSizeInPx, canvasSizeInUOL, canvasSizeInUOL, offset, scale);
@@ -47,26 +47,26 @@ const FieldCanvasElement = observer((props: AppProps) => {
     const pos = cc.getUnboundedPxFromEvent(event, false, false);
     if (pos === undefined) return;
 
-    const negative1 = new Vertex(-1, -1);
+    const negative1 = new Vector(-1, -1);
 
     const newScale = clamp(scale * (1 - wheel / 1000), 1, 3);
-    const scaleVertex = new Vertex(scale, scale);
-    const newScaleVertex = new Vertex(newScale, newScale);
+    const scaleVector = new Vector(scale, scale);
+    const newScaleVector = new Vector(newScale, newScale);
 
     // offset is offset in Konva coordinate system (KC)
     // offsetInCC is offset in HTML Canvas coordinate system (CC)
-    const offsetInCC = offset.multiply(scaleVertex).multiply(negative1);
+    const offsetInCC = offset.multiply(scaleVector).multiply(negative1);
 
     const canvasHalfSizeWithScale = (cc.pixelWidth * scale) / 2;
     const newCanvasHalfSizeWithScale = (cc.pixelWidth * newScale) / 2;
 
     // UX: Maintain zoom center at mouse pointer
-    const fieldCenter = offsetInCC.add(new Vertex(canvasHalfSizeWithScale, canvasHalfSizeWithScale));
-    const newFieldCenter = offsetInCC.add(new Vertex(newCanvasHalfSizeWithScale, newCanvasHalfSizeWithScale));
-    const relativePos = pos.subtract(fieldCenter).divide(scaleVertex);
-    const newPos = newFieldCenter.add(relativePos.multiply(newScaleVertex));
+    const fieldCenter = offsetInCC.add(new Vector(canvasHalfSizeWithScale, canvasHalfSizeWithScale));
+    const newFieldCenter = offsetInCC.add(new Vector(newCanvasHalfSizeWithScale, newCanvasHalfSizeWithScale));
+    const relativePos = pos.subtract(fieldCenter).divide(scaleVector);
+    const newPos = newFieldCenter.add(relativePos.multiply(newScaleVector));
     const newOffsetInCC = pos.subtract(newPos).add(offsetInCC);
-    const newOffsetInKC = newOffsetInCC.multiply(negative1).divide(newScaleVertex);
+    const newOffsetInKC = newOffsetInCC.multiply(negative1).divide(newScaleVector);
 
     setScale(newScale);
     setOffset(newOffsetInKC);
@@ -121,7 +121,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
     */
 
     // UX: It is not actually dragged, but the event is triggered even the mouse is outside the canvas
-    if (event.target instanceof Konva.Stage) event.target.setPosition(new Vertex(0, 0));
+    if (event.target instanceof Konva.Stage) event.target.setPosition(new Vector(0, 0));
 
     setIsAddingControl(false);
 
@@ -219,7 +219,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
 
   return (
     <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight}
-      scale={new Vertex(scale, scale)} offset={offset} draggable
+      scale={new Vector(scale, scale)} offset={offset} draggable
       style={{ cursor: offsetStart ? 'grab' : '' }}
       onContextMenu={(e) => e.evt.preventDefault()}
       onWheel={action(onWheelStage)}

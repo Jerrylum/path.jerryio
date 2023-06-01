@@ -3,7 +3,7 @@ import { makeAutoObservable } from "mobx"
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MainApp } from './app/MainApp';
-import { Control, EndPointControl, Path, Spline, Vertex } from './math/Path';
+import { Control, EndPointControl, Path, Spline, Vector } from './math/Path';
 
 import { plainToClassFromExist, plainToInstance } from 'class-transformer';
 import { instanceToPlain } from 'class-transformer';

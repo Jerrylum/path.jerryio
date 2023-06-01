@@ -1,6 +1,6 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { Control, EndPointControl, Vertex } from '../math/Path';
+import { Control, EndPointControl, Vector } from '../math/Path';
 import Konva from 'konva';
 import { Circle, Line } from 'react-konva';
 import { useState } from "react";
@@ -13,7 +13,7 @@ export interface SplineControlElementProps extends SplineElementProps {
 
 const SplineControlElement = observer((props: SplineControlElementProps) => {
   const [justSelected, setJustSelected] = useState(false);
-  const [posBeforeDrag, setPosBeforeDrag] = useState(new Vertex(0, 0));
+  const [posBeforeDrag, setPosBeforeDrag] = useState(new Vector(0, 0));
 
   function shouldInteract(event: Konva.KonvaEventObject<MouseEvent>): boolean {
     const evt = event.evt;
@@ -152,7 +152,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
         }
       }
 
-      let magnetGuide = new Vertex(Infinity, Infinity);
+      let magnetGuide = new Vector(Infinity, Infinity);
       if (cpInUOL.x !== magnetX) magnetGuide.x = magnetX;
       if (cpInUOL.y !== magnetY) magnetGuide.y = magnetY;
       props.app.magnet = magnetGuide;
@@ -160,7 +160,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
       cpInUOL.x = magnetX;
       cpInUOL.y = magnetY;
     } else {
-      props.app.magnet = new Vertex(Infinity, Infinity);
+      props.app.magnet = new Vector(Infinity, Infinity);
     }
 
     for (let cp of followers) {
@@ -178,7 +178,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
 
     if (!shouldInteract(event)) return;
 
-    props.app.magnet = new Vertex(Infinity, Infinity);
+    props.app.magnet = new Vector(Infinity, Infinity);
   }
 
   function onWheel(event: Konva.KonvaEventObject<WheelEvent>) {

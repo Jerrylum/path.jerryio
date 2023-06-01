@@ -1,6 +1,6 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { KeyFrameIndexing, KeyFrame, KeyFramePos, Knot, Path, Vertex } from '../math/Path';
+import { KeyFrameIndexing, KeyFrame, KeyFramePos, Knot, Path, Vector } from '../math/Path';
 import Konva from 'konva';
 import { Circle, Layer, Line, Rect, Stage, Text } from 'react-konva';
 import { AppProps } from "../App";
@@ -42,7 +42,7 @@ export class GraphCanvasConverter {
     return Math.floor((px + this.xOffset - this.twoSidePaddingWidth) / this.knotWidth);
   }
 
-  toPos(px: Vertex): KeyFramePos | undefined {
+  toPos(px: Vector): KeyFramePos | undefined {
     const x = px.x;
     const y = px.y;
 
@@ -71,7 +71,7 @@ export class GraphCanvasConverter {
     return { spline, xPos, yPos };
   }
 
-  toPx(pos: KeyFramePos): Vertex {
+  toPx(pos: KeyFramePos): Vector {
     const spline = pos.spline;
     const splineIndex = this.path.splines.findIndex((s) => s === spline);
     const range = this.path.cachedResult.splineRanges[splineIndex];
@@ -79,7 +79,7 @@ export class GraphCanvasConverter {
     const x = range.from + pos.xPos * (range.to - range.from);
     const y = this.axisLineTopX + (1 - pos.yPos) * (this.axisLineBottomX - this.axisLineTopX);
 
-    return new Vertex(this.toPxNumber(x), y);
+    return new Vector(this.toPxNumber(x), y);
   }
 }
 
@@ -121,7 +121,7 @@ const KeyFrameElement = observer((props: { ikf: KeyFrameIndexing, gcc: GraphCanv
 
     // UX: Calculate the position of the control point by the client mouse position
     // UX: Allow to drag the control point outside of the graph
-    const kfPos = gcc.toPos(new Vertex(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top));
+    const kfPos = gcc.toPos(new Vector(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top));
     if (kfPos === undefined) {
       evt.preventDefault();
 
@@ -198,7 +198,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
 
     if (path === undefined) return;
 
-    const kfPos = gcc.toPos(new Vertex(e.evt.offsetX, e.evt.offsetY));
+    const kfPos = gcc.toPos(new Vector(e.evt.offsetX, e.evt.offsetY));
     if (kfPos === undefined) return;
 
     // sort and push

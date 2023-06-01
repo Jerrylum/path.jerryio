@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { clamp, makeId } from "../app/Util";
-import { Control, EndPointControl, Path, Spline, Vertex } from "../math/Path";
+import { Control, EndPointControl, Path, Spline, Vector } from "../math/Path";
 import { UnitOfLength, UnitConverter } from "../math/Unit";
 import { GeneralConfig, OutputConfig, SpeedConfig } from "./Config";
 import { Format, PathFileData } from "./Format";
@@ -221,7 +221,7 @@ export class LemLibFormatV0_4 implements Format {
     rtn += `${path.sc.speedLimit.to}\n`;
     rtn += `200\n`; // Not supported
 
-    function output(control: Vertex, postfix: string = ", ") {
+    function output(control: Vector, postfix: string = ", ") {
       rtn += `${uc.fromAtoB(control.x)}, ${uc.fromAtoB(control.y)}${postfix}`;
     }
 
@@ -232,7 +232,7 @@ export class LemLibFormatV0_4 implements Format {
         output(spline.controls[2]);
         output(spline.controls[3], "\n");
       } else if (spline.controls.length === 2) {
-        const center = spline.controls[0].add(spline.controls[1]).divide(new Vertex(2, 2));
+        const center = spline.controls[0].add(spline.controls[1]).divide(new Vector(2, 2));
         output(spline.controls[0]);
         output(center);
         output(center);

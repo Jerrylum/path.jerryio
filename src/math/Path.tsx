@@ -7,47 +7,47 @@ import { UnitConverter, UnitOfLength } from './Unit';
 
 import 'reflect-metadata';
 
-export class Vertex {
+export class Vector {
 
   constructor(public x: number, public y: number) { }
 
-  add<T extends Vertex>(vector: T): T {
+  add<T extends Vector>(vector: T): T {
     let rtn = vector.clone() as T;
     rtn.x += this.x;
     rtn.y += this.y;
     return rtn.fixPrecision() as T;
   }
 
-  subtract<T extends Vertex>(vector: T): T {
+  subtract<T extends Vector>(vector: T): T {
     let rtn = vector.clone() as T;
     rtn.x = this.x - rtn.x;
     rtn.y = this.y - rtn.y;
     return rtn.fixPrecision() as T;
   }
 
-  multiply<T extends Vertex>(vector: T): T {
+  multiply<T extends Vector>(vector: T): T {
     let rtn = vector.clone() as T;
     rtn.x *= this.x;
     rtn.y *= this.y;
     return rtn.fixPrecision() as T;
   }
 
-  divide<T extends Vertex>(vector: T): T {
+  divide<T extends Vector>(vector: T): T {
     let rtn = vector.clone() as T;
     rtn.x = this.x / rtn.x;
     rtn.y = this.y / rtn.y;
     return rtn.fixPrecision() as T;
   }
 
-  dot(vector: Vertex): number {
+  dot(vector: Vector): number {
     return this.x * vector.x + this.y * vector.y;
   }
 
-  distance(vector: Vertex): number {
+  distance(vector: Vector): number {
     return Math.sqrt(Math.pow(this.x - vector.x, 2) + Math.pow(this.y - vector.y, 2));
   }
 
-  interpolate<T extends Vertex>(other: T, distance: number): T {
+  interpolate<T extends Vector>(other: T, distance: number): T {
     // "this" as the center
     let rtn = other.clone() as T;
     // use trig to find the angle between the two points
@@ -58,7 +58,7 @@ export class Vertex {
     return rtn.fixPrecision() as T;
   }
 
-  mirror<T extends Vertex>(other: T): T {
+  mirror<T extends Vector>(other: T): T {
     // "this" as the center
     let rtn = other.clone() as T;
     rtn.x = 2 * this.x - other.x;
@@ -66,24 +66,24 @@ export class Vertex {
     return rtn.fixPrecision() as T;
   }
 
-  setXY(other: Vertex): void {
+  setXY(other: Vector): void {
     this.x = other.x;
     this.y = other.y;
     this.fixPrecision();
   }
 
-  fixPrecision(p = 3): Vertex {
+  fixPrecision(p = 3): Vector {
     this.x = parseFloat(this.x.toFixed(p));
     this.y = parseFloat(this.y.toFixed(p));
     return this;
   }
 
-  clone(): Vertex {
-    return new Vertex(this.x, this.y);
+  clone(): Vector {
+    return new Vector(this.x, this.y);
   }
 }
 
-export class Knot extends Vertex {
+export class Knot extends Vector {
   public isLastKnotOfSplines: boolean = false;
 
   constructor(x: number, y: number,
@@ -99,7 +99,7 @@ export class Knot extends Vertex {
   }
 }
 
-export interface Position extends Vertex {
+export interface Position extends Vector {
   heading: number;
 
   headingInRadian(): number;
@@ -110,7 +110,7 @@ export interface Position extends Vertex {
 }
 
 // observable class
-export class Control extends Vertex implements InteractiveEntity {
+export class Control extends Vector implements InteractiveEntity {
   public uid: string;
   public lock: boolean = false;
   public visible: boolean = true;
@@ -127,7 +127,7 @@ export class Control extends Vertex implements InteractiveEntity {
     });
   }
 
-  isWithinArea(from: Vertex, to: Vertex) {
+  isWithinArea(from: Vector, to: Vector) {
     return this.x >= from.x && this.x <= to.x && this.y >= from.y && this.y <= to.y;
   }
 
@@ -242,9 +242,9 @@ export class Spline implements CanvasEntity {
     let rtn = 0;
 
     const n = this.controls.length - 1;
-    let prev: Vertex = this.controls[0];
+    let prev: Vector = this.controls[0];
     for (let t = 0; t <= 1; t += 0.05) {
-      let point = new Vertex(0, 0);
+      let point = new Vector(0, 0);
       for (let i = 0; i <= n; i++) {
         const bernstein = this.bernstein(n, i, t);
         const controlPoint = this.controls[i];
@@ -314,11 +314,11 @@ export class Spline implements CanvasEntity {
 
     // Bezier curve implementation
     let totalDistance = integral;
-    let lastPoint: Vertex = this.controls[0];
+    let lastPoint: Vector = this.controls[0];
 
     const n = this.controls.length - 1;
     for (let t = 0; t <= 1; t += interval) {
-      let point = new Vertex(0, 0);
+      let point = new Vector(0, 0);
       for (let i = 0; i <= n; i++) {
         const bernstein = this.bernstein(n, i, t);
         const controlPoint = this.controls[i];
