@@ -78,7 +78,7 @@ export class MainApp {
   }
 
   @computed get selectableControls(): Control[] {
-    return this.selectablePaths.flatMap((path) => path.getControlsSet().filter((control) => control.visible && !control.lock));
+    return this.selectablePaths.flatMap((path) => path.controls.filter((control) => control.visible && !control.lock));
   }
 
   @computed get selectablePaths(): Path[] {
@@ -87,7 +87,7 @@ export class MainApp {
 
   @computed get selectedControl(): EndPointControl | Control | undefined {
     return this.paths.map(
-      (path) => path.getControlsSet().find((control) => control.uid === this.selected[0])
+      (path) => path.controls.find((control) => control.uid === this.selected[0])
     ).find((control) => control !== undefined);
   }
 
@@ -97,7 +97,7 @@ export class MainApp {
     // ALGO: Return the first selected path if: some path is selected
     let rtn = this.paths.find((path) => this.isSelected(path.uid));
     // ALGO: Return the first selected control point's path if: some control point is selected, the path visible and not locked
-    if (rtn === undefined) rtn = this.paths.find((path) => path.getControlsSet().some((control) => this.isSelected(control.uid)));
+    if (rtn === undefined) rtn = this.paths.find((path) => path.controls.some((control) => this.isSelected(control.uid)));
 
     return rtn;
   }
@@ -113,7 +113,7 @@ export class MainApp {
 
       // ALGO: Link the first vector of each spline to the last vector of the previous spline
       for (let j = 1; j < path.splines.length; j++) {
-        path.splines[j].setFirst(path.splines[j - 1].last());
+        path.splines[j].first = path.splines[j - 1].last;
       }
 
       // UX: Expand all paths

@@ -145,8 +145,8 @@ export class LemLibFormatV0_4 implements Format {
       } else {
         const path = paths[paths.length - 1];
         const lastSpline = path.splines[path.splines.length - 1];
-        const a = lastSpline.last();
-        const b = spline.first();
+        const a = lastSpline.last;
+        const b = spline.first;
 
         if (a.x !== b.x || a.y !== b.y) error();
 

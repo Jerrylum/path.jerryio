@@ -95,12 +95,12 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
     const index = props.path.splines.indexOf(props.spline);
     const isLastOne = index + 1 === props.path.splines.length;
     const isCurve = props.spline.controls.length === 4;
-    const isFirstCp = props.spline.first() === props.cp;
+    const isFirstCp = props.spline.first === props.cp;
 
     let followers: Control[] = [];
     let others: Control[] = [];
     for (let path of props.paths) {
-      for (let control of path.getControlsSet()) {
+      for (let control of path.controls) {
         if (control === props.cp) continue;
         if (control.visible === false || path.visible === false) continue;
         if (

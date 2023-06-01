@@ -75,7 +75,7 @@ const App = observer(() => {
       app.gc.robotHeight = uc.fromAtoB(app.gc.robotHeight);
 
       for (const path of app.paths) {
-        for (const control of path.getControlsSet()) {
+        for (const control of path.controls) {
           control.x = uc.fromAtoB(control.x);
           control.y = uc.fromAtoB(control.y);
         }

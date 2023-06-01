@@ -37,7 +37,7 @@ const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
 
     if (props.app.isSelected(entity.uid)) { // UX: batch operation only if the entity is selected
       for (let path of props.paths) {
-        for (let control of path.getControlsSet()) {
+        for (let control of path.controls) {
           if (props.app.isSelected(control.uid)) control.visible = setTo;
         }
       }
@@ -52,7 +52,7 @@ const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
 
     if (props.app.isSelected(entity.uid)) { // UX: batch operation only if the entity is selected
       for (let path of props.paths) {
-        for (let control of path.getControlsSet()) {
+        for (let control of path.controls) {
           if (props.app.isSelected(control.uid)) control.lock = setTo;
         }
       }
@@ -142,7 +142,7 @@ const PathTreeItem = observer((props: PathTreeProps) => {
       </PathTreeItemLabel>
     } >
       {
-        path.getControlsSet().map((control) => {
+        path.controls.map((control) => {
           return (
             <TreeItem nodeId={control.uid} key={control.uid}
               label={control instanceof EndPointControl

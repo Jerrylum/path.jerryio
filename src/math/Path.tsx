@@ -1,5 +1,5 @@
 import { Exclude, Type } from 'class-transformer';
-import { observable, makeAutoObservable, makeObservable } from "mobx"
+import { observable, makeAutoObservable, makeObservable, computed } from "mobx"
 import { makeId } from "../app/Util";
 import { GeneralConfig, SpeedConfig } from "../format/Config";
 import { InteractiveEntity, CanvasEntity } from "./Canvas";
@@ -267,10 +267,10 @@ export class Spline implements CanvasEntity {
     let points: Point[] = this.calculateBezierCurvePoints(targetInterval, integral);
 
     const lastPoint = points[points.length - 1];
-    const lastControl = this.last();
+    const lastControl = this.last;
     const distance = lastPoint.distance(lastControl);
     const integralDistance = lastPoint.integral + distance;
-    const finalPoint = new Point(lastControl.x, lastControl.y, distance, integralDistance, 0, this.last().heading);
+    const finalPoint = new Point(lastControl.x, lastControl.y, distance, integralDistance, 0, this.last.heading);
     finalPoint.isLastPointOfSplines = true;
     points.push(finalPoint);
 
@@ -285,19 +285,19 @@ export class Spline implements CanvasEntity {
     return points;
   }
 
-  first(): EndPointControl {
+  get first(): EndPointControl {
     return this.controls[0] as EndPointControl;
   }
 
-  setFirst(point: EndPointControl): void {
+  set first(point: EndPointControl) {
     this.controls[0] = point;
   }
 
-  last(): EndPointControl {
+  get last(): EndPointControl {
     return this.controls[this.controls.length - 1] as EndPointControl;
   }
 
-  setLast(point: EndPointControl): void {
+  set last(point: EndPointControl) {
     this.controls[this.controls.length - 1] = point;
   }
 
@@ -392,11 +392,11 @@ export class Path implements InteractiveEntity {
     makeAutoObservable(this);
   }
 
-  getControlsSet(): (EndPointControl | Control)[] {
+  @computed get controls(): (EndPointControl | Control)[] {
     let rtn: (EndPointControl | Control)[] = [];
     for (let i = 0; i < this.splines.length; i++) {
       let spline = this.splines[i];
-      if (i === 0) rtn.push(spline.first());
+      if (i === 0) rtn.push(spline.first);
       for (let j = 1; j < spline.controls.length; j++) {
         rtn.push(spline.controls[j]);
       }
@@ -410,7 +410,7 @@ export class Path implements InteractiveEntity {
       spline = new Spline(new EndPointControl(0, 0, 0), [], end);
     } else {
       const last = this.splines[this.splines.length - 1];
-      spline = new Spline(last.last(), [], end);
+      spline = new Spline(last.last, [], end);
     }
     this.splines.push(spline);
   }
@@ -424,7 +424,7 @@ export class Path implements InteractiveEntity {
       spline = new Spline(p0, [p1, p2], p3);
     } else {
       const last = this.splines[this.splines.length - 1];
-      let p0 = last.last();
+      let p0 = last.last;
       let c = last.controls.length < 4 ? last.controls[0] : last.controls[2];
       let p1 = p0.mirror(new Control(c.x, c.y));
       let p2 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
@@ -449,8 +449,8 @@ export class Path implements InteractiveEntity {
       next = this.splines[index + 1];
     }
 
-    let p0 = spline.first();
-    let p3 = spline.last();
+    let p0 = spline.first;
+    let p3 = spline.last;
 
     let p1: Control;
     if (prev !== null) {
@@ -482,8 +482,8 @@ export class Path implements InteractiveEntity {
 
     let cp_count = spline.controls.length;
     if (cp_count === 2) {
-      let last = spline.last();
-      spline.setLast(point);
+      let last = spline.last;
+      spline.last = point;
       let new_spline = new Spline(point, [], last);
       this.splines.splice(index + 1, 0, new_spline);
     } else if (cp_count === 4) {
@@ -504,13 +504,13 @@ export class Path implements InteractiveEntity {
   removeSpline(point: EndPointControl): (EndPointControl | Control)[] {
     for (let i = 0; i < this.splines.length; i++) {
       let spline = this.splines[i];
-      if (spline.first() === point) { // pointer comparison
+      if (spline.first === point) { // pointer comparison
         if (i > 0) {
           let prev = this.splines[i - 1];
-          prev.setLast(spline.last()); // pointer assignment
+          prev.last = spline.last; // pointer assignment
         }
         this.splines.splice(i, 1);
-      } else if (i + 1 === this.splines.length && spline.last() === point) { // pointer comparison
+      } else if (i + 1 === this.splines.length && spline.last === point) { // pointer comparison
         this.splines.splice(i, 1);
       } else {
         continue;
@@ -627,7 +627,7 @@ export class Path implements InteractiveEntity {
 
     // ALGO: The final point should be the last end control point in the path
     // ALGO: At this point, we know splines has at least 1 spline
-    const lastControl = this.splines[this.splines.length - 1].last();
+    const lastControl = this.splines[this.splines.length - 1].last;
     // ALGO: No need to calculate delta and integral for the final point, it is always 0
     const finalPoint = new Point(lastControl.x, lastControl.y, 0, 0, 0, lastControl.heading);
     // ALGO: No need to calculate speed for the final point, it is always 0
