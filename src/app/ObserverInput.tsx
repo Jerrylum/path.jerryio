@@ -1,5 +1,5 @@
 import { TextField, TextFieldProps } from "@mui/material";
-import { reaction, action } from "mobx"
+import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useRef } from "react";
 import { NumberInUnit, UnitConverter, UnitOfLength } from "../math/Unit";

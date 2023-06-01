@@ -1,5 +1,5 @@
 import { Exclude, Type } from 'class-transformer';
-import { makeAutoObservable } from "mobx"
+import { observable, makeAutoObservable, makeObservable } from "mobx"
 import { makeId } from "../app/Util";
 import { GeneralConfig, SpeedConfig } from "../format/Config";
 import { InteractiveEntity, CanvasEntity } from "./Canvas";
@@ -109,6 +109,7 @@ export interface Position extends Vertex {
   clone(): Position;
 }
 
+// observable class
 export class Control extends Vertex implements InteractiveEntity {
   public uid: string;
   public lock: boolean = false;
@@ -117,6 +118,11 @@ export class Control extends Vertex implements InteractiveEntity {
   constructor(x: number, y: number) {
     super(x, y);
     this.uid = makeId(10);
+
+    makeObservable(this, {
+      x: observable,
+      y: observable,
+    });
   }
 
   isWithinArea(from: Vertex, to: Vertex) {
@@ -128,10 +134,14 @@ export class Control extends Vertex implements InteractiveEntity {
   }
 }
 
+// observable class
 export class EndPointControl extends Control implements Position {
 
   constructor(x: number, y: number, public heading: number) {
     super(x, y);
+    makeObservable(this, {
+      heading: observable
+    });
   }
 
   headingInRadian(): number {
