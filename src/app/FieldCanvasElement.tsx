@@ -35,31 +35,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
 
   const cc = new CanvasConverter(canvasSizeInPx, canvasSizeInPx, canvasSizeInUOL, canvasSizeInUOL, offset, scale);
 
-  function onMouseDownFieldImage(event: Konva.KonvaEventObject<MouseEvent>) {
-    const evt = event.evt;
-
-    // UX: this will set to false if mouse is moved
-    setIsAddingControl(true);
-
-    // UX: Only start selection if: left click on the field image
-    // UX: Do not start selection if it is in "Grab & Move"
-    if (evt.button === 0 && offsetStart === undefined) { // left click
-
-      if (evt.shiftKey === false) {
-        // UX: Clear selection if: left click without shift
-        props.app.selected = [];
-      }
-
-      // UX: selectedBefore is empty if: left click without shift
-      props.app.startAreaSelection();
-
-      const posInPx = cc.getUnboundedPxFromEvent(event);
-      if (posInPx === undefined) return;
-      setAreaSelectionStart(posInPx);
-    }
-  }
-
-  function onWheelCanvas(event: Konva.KonvaEventObject<WheelEvent>) {
+  function onWheelStage(event: Konva.KonvaEventObject<WheelEvent>) {
     const evt = event.evt;
 
     const wheel = evt.deltaY;
@@ -77,7 +53,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
     const scaleVertex = new Vertex(scale, scale);
     const newScaleVertex = new Vertex(newScale, newScale);
 
-    // offset is offset in Knova coordinate system (KC)
+    // offset is offset in Konva coordinate system (KC)
     // offsetInCC is offset in HTML Canvas coordinate system (CC)
     const offsetInCC = offset.multiply(scaleVertex).multiply(negative1);
 
@@ -96,25 +72,56 @@ const FieldCanvasElement = observer((props: AppProps) => {
     setOffset(newOffsetInKC);
   }
 
-  function onMouseDownCanvas(event: Konva.KonvaEventObject<MouseEvent>) {
+  function onMouseDownStage(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
-    // UX: Start "Grab & Move" if: middle click at any position
-    if (evt.button === 1) { // middle click
-      evt.preventDefault();
+    if (evt.button === 0 && offsetStart === undefined &&
+      (event.target instanceof Konva.Stage || event.target instanceof Konva.Image)) { // left click
+      // UX: Only start selection if: left click on the canvas or field image
+      // UX: Do not start selection if it is in "Grab & Move"
 
-      // UX: Do not start "Grab & Move" if it is in area selection, but prevent default
-      if (areaSelectionStart !== undefined) return;
+      // UX: this will set to false if mouse is moved
+      // UX: onClickFieldImage will check this state, control can only be added inside the field image because of this
+      setIsAddingControl(true);
+
+      if (evt.shiftKey === false) {
+        // UX: Clear selection if: left click without shift
+        props.app.selected = [];
+      }
+
+      // UX: selectedBefore is empty if: left click without shift
+      props.app.startAreaSelection();
+
+      const posInPx = cc.getUnboundedPxFromEvent(event);
+      if (posInPx === undefined) return;
+      setAreaSelectionStart(posInPx);
+    } else if (evt.button === 1 && areaSelectionStart === undefined) { // middle click
+      // UX: Start "Grab & Move" if: middle click at any position
+      evt.preventDefault(); // UX: Prevent default action (scrolling)
 
       const posInPx = cc.getUnboundedPxFromEvent(event, false);
       if (posInPx === undefined) return;
 
       setOffsetStart(posInPx.add(offset));
+    } else if (evt.button === 1 && areaSelectionStart !== undefined) { // middle click
+      // UX: Do not start "Grab & Move" if it is in area selection, but still prevent default
+      evt.preventDefault(); // UX: Prevent default action (scrolling)
     }
   }
 
-  function onMouseMoveCanvas(event: Konva.KonvaEventObject<MouseEvent>) {
-    const evt = event.evt;
+  function onMouseMoveOrDragStage(event: Konva.KonvaEventObject<DragEvent | MouseEvent>) {
+    /*
+    UX:
+    Both mouse move and drag events will trigger this function. it allows users to perform area selection and 
+    "Grab & Move" outside the canvas. Both events are needed to maximize usability.
+
+    Normally, both events will be triggered at the same time. (but I don't know why onDragMove returns MouseEvent)
+    After the mouse is dragged outside the canvas, only drag event will be triggered. Also, the dragging state will 
+    come to an end when any mouse button is down. When it is happened only mouse move event will be triggered.
+    */
+
+    // UX: It is not actually dragged, but the event is triggered even the mouse is outside the canvas
+    if (event.target instanceof Konva.Stage) event.target.setPosition(new Vertex(0, 0));
 
     setIsAddingControl(false);
 
@@ -135,13 +142,37 @@ const FieldCanvasElement = observer((props: AppProps) => {
     }
   }
 
-  function onMouseUpCanvas(event: Konva.KonvaEventObject<MouseEvent>) {
+  function onMouseUpStage(event: Konva.KonvaEventObject<MouseEvent>) {
+    // UX: This event is triggered only if the mouse is up inside the canvas.
     // UX: Only reset selection or "Grab & Move" if: left click or middle click released respectively
 
     if (event.evt.button == 0) { // left click
       setAreaSelectionStart(undefined);
       setAreaSelectionEnd(undefined);
     } else if (event.evt.button == 1) { // middle click
+      setOffsetStart(undefined);
+    }
+  }
+
+  function onDragEndStage(event: Konva.KonvaEventObject<DragEvent>) {
+    /*
+    UX:
+    If the mouse is down(any buttons), the drag end event is triggered.
+    After that, without dragging, we lose the information of the mouse position outside the canvas.
+    We reset everything if the mouse is down outside the canvas.
+    */
+
+    const rect = event.target.getStage()?.container().getBoundingClientRect();
+    if (rect === undefined) return;
+
+    if (event.evt === undefined) return; // XXX: Drag end event from spline control
+
+    const clientX = event.evt.clientX;
+    const clientY = event.evt.clientY;
+
+    if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
+      setAreaSelectionStart(undefined);
+      setAreaSelectionEnd(undefined);
       setOffsetStart(undefined);
     }
   }
@@ -188,17 +219,18 @@ const FieldCanvasElement = observer((props: AppProps) => {
 
   return (
     <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight}
-      scale={new Vertex(scale, scale)} offset={offset}
+      scale={new Vertex(scale, scale)} offset={offset} draggable
       style={{ cursor: offsetStart ? 'grab' : '' }}
       onContextMenu={(e) => e.evt.preventDefault()}
-      onWheel={action(onWheelCanvas)}
-      onMouseDown={action(onMouseDownCanvas)}
-      onMouseMove={action(onMouseMoveCanvas)}
-      onMouseUp={action(onMouseUpCanvas)}>
+      onWheel={action(onWheelStage)}
+      onMouseDown={action(onMouseDownStage)}
+      onMouseMove={action(onMouseMoveOrDragStage)}
+      onMouseUp={action(onMouseUpStage)}
+      onDragMove={action(onMouseMoveOrDragStage)}
+      onDragEnd={action(onDragEndStage)}>
       <Layer>
         <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight}
-          onClick={action(onClickFieldImage)}
-          onMouseDown={action(onMouseDownFieldImage)} />
+          onClick={action(onClickFieldImage)} />
         {
           props.app.magnet.x !== Infinity ? (
             <Line points={[magnetInPx.x, 0, magnetInPx.x, cc.pixelHeight]} stroke="red" strokeWidth={lineWidth} />

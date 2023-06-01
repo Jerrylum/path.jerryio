@@ -30,7 +30,7 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
             }
           </Select>
         </Box>
-        <Box className="flex-editor-panel" sx={{ marginTop: "2vh" }} >
+        <Box className="flex-editor-panel" sx={{ marginTop: "2vh" }}>
           <FormControl sx={{ width: "8rem" }}>
             <InputLabel id="uol-label">Unit of Length</InputLabel>
             <Select labelId="uol-label" label="Unit of Length" size="small" value={gc.uol} onChange={action((e: SelectChangeEvent<UnitOfLength>) => gc.uol = e.target.value as UnitOfLength)}>
