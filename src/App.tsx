@@ -9,6 +9,8 @@ import { observer } from "mobx-react-lite"
 
 import Card from '@mui/material/Card';
 
+import { ThemeProvider } from '@mui/material/styles';
+
 import { Box } from '@mui/material';
 import { PathsAccordion as EditAccordion } from './app/EditAccordion';
 import { FieldCanvasElement } from './app/FieldCanvasElement';
@@ -20,6 +22,9 @@ import { OutputConfigAccordion } from './app/OutputAccordion';
 import { MainApp } from './app/MainApp';
 import { PathTreeAccordion } from './app/PathTreeAccordion';
 import { GraphCanvasElement } from './app/GraphCanvasElement';
+
+import { darkTheme, lightTheme } from './app/Theme';
+import { MainAccordion } from './app/MainAccordion';
 
 let app = new MainApp();
 
@@ -113,28 +118,36 @@ const App = observer(() => {
 
   const appProps: AppProps = { paths: app.paths, app };
 
+  const themeClass = app.theme.palette.mode === lightTheme.palette.mode ? "light-theme" : "dark-theme";
+
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
-    <div className='App' key={app.format.uid + "-" + app.gc.uol}>
-      <PathTreeAccordion {...appProps} />
+    <div className={["App", themeClass].join(" ")} key={app.format.uid + "-" + app.gc.uol}>
+      <ThemeProvider theme={app.theme}>
+        <Box className='left-editor-container'>
+          <MainAccordion {...appProps} />
+          <PathTreeAccordion {...appProps} />
+        </Box>
 
-      <Box className='middle-container'>
-        <Card className='field-container'>
-          <FieldCanvasElement {...appProps} />
-        </Card>
-        <Card className='graph-container'>
-          <GraphCanvasElement {...appProps} />
-        </Card>
-      </Box>
+        <Box className='middle-container'>
+          <Card className='field-container'>
+            <FieldCanvasElement {...appProps} />
+          </Card>
+          <Card className='graph-container'>
+            <GraphCanvasElement {...appProps} />
+          </Card>
+        </Box>
 
-      <Box className='right-editor-container'>
-        <GeneralConfigAccordion {...appProps} />
-        <EditAccordion {...appProps} />
-        <SpeedConfigAccordion sc={(app.selectedPath || app.paths[0])?.sc} />
-        <OutputConfigAccordion {...appProps} />
-      </Box>
+        <Box className='right-editor-container'>
+          <GeneralConfigAccordion {...appProps} />
+          <EditAccordion {...appProps} />
+          <SpeedConfigAccordion sc={(app.selectedPath || app.paths[0])?.sc} />
+          <OutputConfigAccordion {...appProps} />
+        </Box>
+      </ThemeProvider>
     </div>
   );
 });
 
 export default App;
+

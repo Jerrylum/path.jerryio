@@ -44,6 +44,7 @@
   padding-top: 4px;
   font-size: 1.5vh;
   overflow-y: scroll;
+  height: calc(97vh - 4px);
 }
 
 .left-editor-container {
@@ -51,10 +52,12 @@
   flex-grow: 1;
   min-width: 18rem;
   max-width: 18rem;
-  margin: 1vh !important;
+  margin: calc(1vh - 4px) !important;
   padding-top: 4px;
   font-size: 1.5vh;
   overflow-y: scroll !important;
+  height: calc(97vh - 4px);
+  border-radius: 4px;
 }
 
 .left-editor-container::-webkit-scrollbar,
@@ -92,7 +95,7 @@
   margin-bottom: 3vh;
   position: sticky;
   top: -0.5vh;
-  background-color: white;
+  /* background-color: white; */
   z-index: 100;
   padding-top: 1vh;
 }
@@ -103,6 +106,18 @@
 
 .tree-node-label {
   padding-right: 0.4em;
+}
+
+.main-menu {
+  margin-bottom: 2vh !important;
+  padding: 1vh;
+}
+
+.main-menu > * {
+  text-transform: none !important;
+  min-width: 32px !important;
+  font-weight: 400 !important;
+  padding: 0.2rem 0.4rem !important;
 }
 
 .panel-box {
@@ -119,4 +134,12 @@
 
 .tree-node-func-icon.show {
   visibility: visible;
+}
+
+.light-theme {
+  background-color: #ffffff;
+}
+
+.dark-theme {
+  background: linear-gradient(300deg, #292929, #242424);
 }

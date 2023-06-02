@@ -29,7 +29,7 @@ const PathTreeAccordion = observer((props: AppProps) => {
   }
 
   return (
-    <Card className='left-editor-container'>
+    <Card>
       <AccordionSummary>
         <Typography>Paths</Typography>
       </AccordionSummary>

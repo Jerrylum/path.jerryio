@@ -28,7 +28,7 @@ export class GraphCanvasConverter {
     this.pointRadius = this.pointWidth / 2;
     this.twoSidePaddingWidth = this.pointWidth * 14;
     this.rightPaddingStart = this.pixelWidth - this.twoSidePaddingWidth;
-    this.axisTitleWidth = this.pointWidth * 10;
+    this.axisTitleWidth = this.pointWidth * 12;
     this.axisLineTopX = this.pixelHeight * 0.2;
     this.bodyHeight = this.pixelHeight * 0.6;
     this.axisLineBottomX = this.pixelHeight * 0.8;
@@ -185,6 +185,8 @@ const GraphCanvasElement = observer((props: AppProps) => {
   const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, xOffset, path);
 
   const fontSize = canvasHeight / 8;
+  const fgColor = props.app.isLightTheme ? "grey" : "#a4a4a4";
+  const bgColor = props.app.isLightTheme ? "#ffffff" : "#353535";
 
   const speedFrom = path.sc.speedLimit.from;
   const speedTo = path.sc.speedLimit.to;
@@ -206,7 +208,6 @@ const GraphCanvasElement = observer((props: AppProps) => {
     kfPos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
   }
 
-
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     const delta = e.evt.deltaY / 5;
 
@@ -221,31 +222,31 @@ const GraphCanvasElement = observer((props: AppProps) => {
   return (
     <Stage width={canvasWidth} height={canvasHeight} onWheel={handleWheel} onContextMenu={(e) => e.evt.preventDefault()}>
       <Layer>
-        <Line points={[0, gcc.axisLineTopX, gcc.pixelWidth, gcc.axisLineTopX]} stroke="grey" strokeWidth={gcc.lineWidth} />
-        <Line points={[0, gcc.axisLineBottomX, gcc.pixelWidth, gcc.axisLineBottomX]} stroke="grey" strokeWidth={gcc.lineWidth} />
+        <Line points={[0, gcc.axisLineTopX, gcc.pixelWidth, gcc.axisLineTopX]} stroke={fgColor} strokeWidth={gcc.lineWidth} />
+        <Line points={[0, gcc.axisLineBottomX, gcc.pixelWidth, gcc.axisLineBottomX]} stroke={fgColor} strokeWidth={gcc.lineWidth} />
 
         {
           path?.cachedResult.points.map((point, index) => <PointElement key={index} sc={path.sc} {...{ point, index, gcc }} />)
         }
 
-        <Rect x={0} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill="white" />
-        <Rect x={gcc.rightPaddingStart} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill="white" />
+        <Rect x={0} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill={bgColor} />
+        <Rect x={gcc.rightPaddingStart} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill={bgColor} />
 
         <Rect x={gcc.twoSidePaddingWidth} y={0} width={gcc.pixelWidth - gcc.twoSidePaddingWidth * 2} height={gcc.pixelHeight} onClick={action(onGraphClick)} />
         {
           path?.cachedResult.keyframeIndexes.map((ikf) => <KeyFrameElement key={ikf.keyFrame.uid} {...{ ikf, gcc }} />)
         }
 
-        <Rect x={0} y={0} width={gcc.axisTitleWidth} height={gcc.pixelHeight} fill="white" />
-        <Text text={speedTo + ""} x={0} y={gcc.axisLineTopX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill="#444" align="right" width={gcc.axisTitleWidth} />
-        <Text text={speedFrom + ""} x={0} y={gcc.axisLineBottomX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill="#444" align="right" width={gcc.axisTitleWidth} />
+        <Rect x={0} y={0} width={gcc.axisTitleWidth} height={gcc.pixelHeight} fill={bgColor} />
+        <Text text={speedTo + ""} x={0} y={gcc.axisLineTopX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill={fgColor} align="right" width={gcc.axisTitleWidth * 0.9} />
+        <Text text={speedFrom + ""} x={0} y={gcc.axisLineBottomX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill={fgColor} align="right" width={gcc.axisTitleWidth * 0.9} />
 
-        <Rect x={gcc.rightPaddingStart} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill="white" />
-        <Text text={densityHigh + ""} x={gcc.rightPaddingStart + gcc.pointWidth} y={gcc.axisLineTopX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill="#444" width={gcc.axisTitleWidth} />
-        <Text text={densityLow + ""} x={gcc.rightPaddingStart + gcc.pointWidth} y={gcc.axisLineBottomX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill="#444" width={gcc.axisTitleWidth} />
+        <Rect x={gcc.rightPaddingStart} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill={bgColor} />
+        <Text text={densityHigh + ""} x={gcc.rightPaddingStart + gcc.pointWidth} y={gcc.axisLineTopX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill={fgColor} width={gcc.axisTitleWidth} />
+        <Text text={densityLow + ""} x={gcc.rightPaddingStart + gcc.pointWidth} y={gcc.axisLineBottomX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill={fgColor} width={gcc.axisTitleWidth} />
 
-        <Text text={"Speed"} x={0} y={gcc.pixelHeight} fontSize={fontSize} fontFamily="Roboto" fill="#444" width={gcc.pixelHeight} height={fontSize} align="center" rotation={270} />
-        <Text text={"Density"} x={gcc.pixelWidth - gcc.pointWidth} y={0} fontSize={fontSize} fontFamily="Roboto" fill="#444" width={gcc.pixelHeight} height={fontSize} align="center" rotation={90} />
+        <Text text={"Speed"} x={0} y={gcc.pixelHeight} fontSize={fontSize} fontFamily="Roboto" fill={fgColor} width={gcc.pixelHeight} height={fontSize} align="center" rotation={270} />
+        <Text text={"Density"} x={gcc.pixelWidth - gcc.pointWidth} y={0} fontSize={fontSize} fontFamily="Roboto" fill={fgColor} width={gcc.pixelHeight} height={fontSize} align="center" rotation={90} />
 
       </Layer>
     </Stage>

@@ -1,9 +1,8 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Accordion, AccordionDetails, AccordionSummary, Button, Typography } from "@mui/material";
-import { action } from "mobx"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import { AppProps } from '../App';
-import { EndPointControl, Path, Spline } from '../math/Path';
+import { EndPointControl } from '../math/Path';
 import { ObserverInput, parseNumberInString } from './ObserverInput';
 import { NumberInUnit, UnitOfLength } from '../math/Unit';
 
@@ -14,8 +13,8 @@ const PathsAccordion = observer((props: AppProps) => {
         <Typography>Edit</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <div className='path-editor'>
-          <div className='flex-editor-panel'>
+        <Box className='path-editor'>
+          <Box className='flex-editor-panel'>
             <ObserverInput
               label="X"
               getValue={() => {
@@ -83,8 +82,8 @@ const PathsAccordion = observer((props: AppProps) => {
               sx={{ visibility: props.app.selected.length === 1 && !(props.app.selectedControl instanceof EndPointControl) ? "hidden" : "" }}
               numeric
             />
-          </div>
-        </div>
+          </Box>
+        </Box>
       </AccordionDetails>
     </Accordion>
   )

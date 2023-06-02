@@ -8,6 +8,8 @@ import { PathFileData, Format, getAllFormats } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-transformer';
 import { UnitOfLength } from "../math/Unit";
+import { Theme } from "@mui/material";
+import { darkTheme, lightTheme } from "./Theme";
 
 export interface AreaSelectionData {
   selectedBefore: string[];
@@ -28,8 +30,14 @@ export class MainApp {
   public expanded: string[] = []; // ALGO: Order doesn't matter but anyway
   public magnet: Vector = new Vector(Infinity, Infinity);
 
+  public theme: Theme = lightTheme;
+
   constructor() {
     makeAutoObservable(this);
+  }
+
+  @computed get isLightTheme(): boolean {
+    return this.theme.palette.mode === "light";
   }
 
   isSelected(x: InteractiveEntity | string): boolean {

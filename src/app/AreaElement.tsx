@@ -1,4 +1,3 @@
-import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { Vector } from '../math/Path';
 import Konva from 'konva';
