@@ -116,20 +116,22 @@ const OutputConfigAccordion = observer((props: AppProps) => {
   }
 
   return (
-    <Accordion defaultExpanded>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography>Output</Typography>
-      </AccordionSummary>
-      <AccordionDetails>
-        <Box>
-          <Button variant="text" onClick={onSave}>Save</Button>
-          <Button variant="text" onClick={onSaveAs}>Save As</Button>
-          <Button variant="text" onClick={onOpen}>Open</Button>
-          <Button variant="text" onClick={onDownload}>Download</Button>
-        </Box>
-        {oc.getConfigPanel()}
-      </AccordionDetails>
-    </Accordion>
+    <Box className="padding-box">
+      <Accordion defaultExpanded>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>Output</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <Button variant="text" onClick={onSave}>Save</Button>
+            <Button variant="text" onClick={onSaveAs}>Save As</Button>
+            <Button variant="text" onClick={onOpen}>Open</Button>
+            <Button variant="text" onClick={onDownload}>Download</Button>
+          </Box>
+          {oc.getConfigPanel()}
+        </AccordionDetails>
+      </Accordion>
+    </Box>
   )
 });
 

@@ -11,6 +11,10 @@
   margin: 1vh;
 }
 
+.padding-box {
+  padding-bottom: 4px;
+}
+
 .middle-container {
   display: flex;
   width: 80vh;
@@ -44,7 +48,7 @@
   padding-top: 4px;
   font-size: 1.5vh;
   overflow-y: scroll;
-  height: calc(97vh - 4px);
+  height: calc(97vh);
 }
 
 .left-editor-container {
@@ -56,7 +60,7 @@
   padding-top: 4px;
   font-size: 1.5vh;
   overflow-y: scroll !important;
-  height: calc(97vh - 4px);
+  height: calc(97vh);
   border-radius: 4px;
 }
 
