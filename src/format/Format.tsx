@@ -2,7 +2,7 @@ import { MainApp } from '../app/MainApp';
 import { Path } from "../math/Path";
 import { LemLibFormatV0_4 } from './LemLibFormatV0_4';
 import { PathDotJerryioFormatV0_1 } from './PathDotJerryioFormatV0_1';
-import { GeneralConfig, OutputConfig, SpeedConfig } from "./Config";
+import { GeneralConfig, OutputConfig, PathConfig } from "./Config";
 
 export interface Format {
   isInit: boolean;
@@ -14,7 +14,7 @@ export interface Format {
 
   buildGeneralConfig(): GeneralConfig;
 
-  buildSpeedConfig(): SpeedConfig;
+  buildPathConfig(): PathConfig;
 
   buildOutputConfig(): OutputConfig;
 

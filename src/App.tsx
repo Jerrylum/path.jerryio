@@ -12,11 +12,11 @@ import Card from '@mui/material/Card';
 import { ThemeProvider } from '@mui/material/styles';
 
 import { Box } from '@mui/material';
-import { PathsAccordion as EditAccordion } from './app/EditAccordion';
+import { ControlAccordion } from './app/ControlAccordion';
 import { FieldCanvasElement } from './app/FieldCanvasElement';
 import { useTimer } from './app/Util';
 import { GeneralConfigAccordion } from './app/GeneralConfigAccordion';
-import { SpeedConfigAccordion } from './app/SpeedControlAccordion';
+import { PathConfigAccordion } from './app/PathAccordion';
 import { UnitConverter, UnitOfLength } from './math/Unit';
 import { OutputConfigAccordion } from './app/OutputAccordion';
 import { MainApp } from './app/MainApp';
@@ -58,7 +58,7 @@ const App = observer(() => {
     app.gc.robotHeight = robotHeight;
 
     for (const path of app.paths) {
-      path.sc = app.format.buildSpeedConfig();
+      path.pc = app.format.buildPathConfig();
     }
   }
 
@@ -95,15 +95,15 @@ const App = observer(() => {
       const newMaxLimit = parseFloat((val * 2).toFixed(3));
 
       for (const path of app.paths) {
-        path.sc.applicationRange.maxLimit.label = newMaxLimit + "";
-        path.sc.applicationRange.maxLimit.value = newMaxLimit;
+        path.pc.applicationRange.maxLimit.label = newMaxLimit + "";
+        path.pc.applicationRange.maxLimit.value = newMaxLimit;
 
         const ratio = val / oldVal;
 
-        path.sc.applicationRange.from *= ratio;
-        path.sc.applicationRange.from = parseFloat(path.sc.applicationRange.from.toFixed(3));
-        path.sc.applicationRange.to *= ratio;
-        path.sc.applicationRange.to = parseFloat(path.sc.applicationRange.to.toFixed(3));
+        path.pc.applicationRange.from *= ratio;
+        path.pc.applicationRange.from = parseFloat(path.pc.applicationRange.from.toFixed(3));
+        path.pc.applicationRange.to *= ratio;
+        path.pc.applicationRange.to = parseFloat(path.pc.applicationRange.to.toFixed(3));
       }
 
     }));
@@ -124,24 +124,24 @@ const App = observer(() => {
   return (
     <div className={["App", themeClass].join(" ")} key={app.format.uid + "-" + app.gc.uol}>
       <ThemeProvider theme={app.theme}>
-        <Box className='left-editor-container'>
+        <Box id='left-editor-container'>
           <MenuAccordion {...appProps} />
           <PathTreeAccordion {...appProps} />
         </Box>
 
-        <Box className='middle-container'>
-          <Card className='field-container'>
+        <Box id='middle-container'>
+          <Card id='field-container'>
             <FieldCanvasElement {...appProps} />
           </Card>
-          <Card className='graph-container'>
+          <Card id='graph-container'>
             <GraphCanvasElement {...appProps} />
           </Card>
         </Box>
 
-        <Box className='right-editor-container'>
+        <Box id='right-editor-container'>
           <GeneralConfigAccordion {...appProps} />
-          <EditAccordion {...appProps} />
-          <SpeedConfigAccordion sc={(app.selectedPath || app.paths[0])?.sc} />
+          <ControlAccordion {...appProps} />
+          <PathConfigAccordion pc={app.selectedPath?.pc} />
           <OutputConfigAccordion {...appProps} />
         </Box>
       </ThemeProvider>

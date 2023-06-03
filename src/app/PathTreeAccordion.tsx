@@ -13,7 +13,7 @@ import { Spline, EndPointControl, Path } from '../math/Path';
 
 const PathTreeAccordion = observer((props: AppProps) => {
   function onAddPathClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    const newPath = new Path(props.app.format.buildSpeedConfig(), new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)));
+    const newPath = new Path(props.app.format.buildPathConfig(), new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)));
     props.paths.push(newPath);
     props.app.addExpanded(newPath);
   }

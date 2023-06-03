@@ -1,20 +1,20 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import { SpeedConfig } from '../format/Config';
+import { PathConfig } from '../format/Config';
 
-const SpeedConfigAccordion = observer((props: { sc: SpeedConfig | undefined }) => {
-  const sc = props.sc;
+const PathConfigAccordion = observer((props: { pc: PathConfig | undefined }) => {
+  const pc = props.pc;
   return (
     <Accordion defaultExpanded>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography>Speed Control</Typography>
+        <Typography>Path</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        {sc?.getConfigPanel()}
+        {pc?.getConfigPanel()}
       </AccordionDetails>
     </Accordion>
   )
 });
 
-export { SpeedConfigAccordion };
+export { PathConfigAccordion };

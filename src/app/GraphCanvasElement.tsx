@@ -5,7 +5,7 @@ import Konva from 'konva';
 import { Circle, Layer, Line, Rect, Stage, Text } from 'react-konva';
 import { AppProps } from "../App";
 import React from "react";
-import { SpeedConfig } from "../format/Config";
+import { PathConfig } from "../format/Config";
 import { clamp } from "./Util";
 
 
@@ -83,14 +83,14 @@ export class GraphCanvasConverter {
   }
 }
 
-const PointElement = observer((props: { point: Point, index: number, sc: SpeedConfig, gcc: GraphCanvasConverter }) => {
-  const { point, index, sc, gcc } = props;
+const PointElement = observer((props: { point: Point, index: number, pc: PathConfig, gcc: GraphCanvasConverter }) => {
+  const { point, index, pc, gcc } = props;
 
-  const speedFrom = sc.speedLimit.from;
-  const speedTo = sc.speedLimit.to;
+  const speedFrom = pc.speedLimit.from;
+  const speedTo = pc.speedLimit.to;
 
-  const densityHigh = sc.applicationRange.to;
-  const densityLow = sc.applicationRange.from;
+  const densityHigh = pc.applicationRange.to;
+  const densityLow = pc.applicationRange.from;
 
   let p1 = (point.delta - densityLow) / (densityHigh - densityLow);
   let p2 = (point.speed - speedFrom) / (speedTo - speedFrom);
@@ -188,11 +188,11 @@ const GraphCanvasElement = observer((props: AppProps) => {
   const fgColor = props.app.isLightTheme ? "grey" : "#a4a4a4";
   const bgColor = props.app.isLightTheme ? "#ffffff" : "#353535";
 
-  const speedFrom = path.sc.speedLimit.from;
-  const speedTo = path.sc.speedLimit.to;
+  const speedFrom = path.pc.speedLimit.from;
+  const speedTo = path.pc.speedLimit.to;
 
-  const densityHigh = path.sc.applicationRange.to;
-  const densityLow = path.sc.applicationRange.from;
+  const densityHigh = path.pc.applicationRange.to;
+  const densityLow = path.pc.applicationRange.from;
 
   const onGraphClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
     // UX: Allow to add keyframes only with left mouse button
@@ -226,7 +226,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
         <Line points={[0, gcc.axisLineBottomX, gcc.pixelWidth, gcc.axisLineBottomX]} stroke={fgColor} strokeWidth={gcc.lineWidth} />
 
         {
-          path?.cachedResult.points.map((point, index) => <PointElement key={index} sc={path.sc} {...{ point, index, gcc }} />)
+          path?.cachedResult.points.map((point, index) => <PointElement key={index} pc={path.pc} {...{ point, index, gcc }} />)
         }
 
         <Rect x={0} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill={bgColor} />

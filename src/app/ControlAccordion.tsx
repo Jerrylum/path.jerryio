@@ -6,14 +6,14 @@ import { EndPointControl } from '../math/Path';
 import { ObserverInput, parseNumberInString } from './ObserverInput';
 import { NumberInUnit, UnitOfLength } from '../math/Unit';
 
-const PathsAccordion = observer((props: AppProps) => {
+const ControlAccordion = observer((props: AppProps) => {
   return (
     <Accordion defaultExpanded>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography>Edit</Typography>
+        <Typography>Control</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <Box className='path-editor'>
+        <Box id='control-editor'>
           <Box className='flex-editor-panel'>
             <ObserverInput
               label="X"
@@ -89,4 +89,4 @@ const PathsAccordion = observer((props: AppProps) => {
   )
 });
 
-export { PathsAccordion };
+export { ControlAccordion };

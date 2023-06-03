@@ -1,7 +1,7 @@
 import { Exclude, Type } from 'class-transformer';
 import { observable, makeAutoObservable, makeObservable, computed } from "mobx"
 import { makeId } from "../app/Util";
-import { GeneralConfig, SpeedConfig } from "../format/Config";
+import { GeneralConfig, PathConfig } from "../format/Config";
 import { InteractiveEntity, CanvasEntity } from "./Canvas";
 import { UnitConverter, UnitOfLength } from './Unit';
 
@@ -179,12 +179,12 @@ export class KeyFrame {
     this.uid = makeId(10);
   }
 
-  process(sc: SpeedConfig, responsible: Point[], nextFrame?: KeyFrame): void {
-    const limitFrom = sc.speedLimit.from;
-    const limitTo = sc.speedLimit.to;
+  process(pc: PathConfig, responsible: Point[], nextFrame?: KeyFrame): void {
+    const limitFrom = pc.speedLimit.from;
+    const limitTo = pc.speedLimit.to;
     const limitDiff = limitTo - limitFrom;
 
-    const applicationDiff = sc.applicationRange.to - sc.applicationRange.from;
+    const applicationDiff = pc.applicationRange.to - pc.applicationRange.from;
     const useRatio = limitDiff !== 0 && applicationDiff !== 0;
     const applicationRatio = limitDiff / applicationDiff;
 
@@ -200,9 +200,9 @@ export class KeyFrame {
 
       if (this.followCurve) {
         const delta = point.delta;
-        if (delta < sc.applicationRange.from && delta !== 0) speed = Math.min(speed, limitFrom);
-        else if (delta > sc.applicationRange.to) speed = Math.min(speed, limitTo);
-        else if (useRatio && delta !== 0) speed = Math.min(speed, limitFrom + (delta - sc.applicationRange.from) * applicationRatio);
+        if (delta < pc.applicationRange.from && delta !== 0) speed = Math.min(speed, limitFrom);
+        else if (delta > pc.applicationRange.to) speed = Math.min(speed, limitTo);
+        else if (useRatio && delta !== 0) speed = Math.min(speed, limitFrom + (delta - pc.applicationRange.from) * applicationRatio);
       }
 
       point.speed = speed;
@@ -259,7 +259,7 @@ export class Spline implements CanvasEntity {
     return rtn;
   }
 
-  calculatePoints(gc: GeneralConfig, sc: SpeedConfig, integral = 0): Point[] {
+  calculatePoints(gc: GeneralConfig, pc: PathConfig, integral = 0): Point[] {
     // ALGO: Calculate the target interval based on the density of points to generate points more than enough
     const targetInterval = new UnitConverter(gc.uol, UnitOfLength.Centimeter).fromAtoB(gc.pointDensity) / 200;
 
@@ -371,7 +371,7 @@ export interface PointCalculationResult {
 export class Path implements InteractiveEntity {
   @Type(() => Spline)
   public splines: Spline[];
-  public sc: SpeedConfig;
+  public pc: PathConfig;
   public name: string = "Path";
   public uid: string;
   public lock: boolean = false;
@@ -385,9 +385,9 @@ export class Path implements InteractiveEntity {
     keyframeIndexes: []
   };
 
-  constructor(sc: SpeedConfig, firstSpline: Spline) {
+  constructor(pc: PathConfig, firstSpline: Spline) {
     this.splines = [firstSpline];
-    this.sc = sc;
+    this.pc = pc;
     this.uid = makeId(10);
     makeAutoObservable(this);
   }
@@ -533,7 +533,7 @@ export class Path implements InteractiveEntity {
     const gen1: Point[] = [];
     let pathTTD = 0; // total travel distance
     for (let spline of this.splines) {
-      const [firstPoint, ...points] = spline.calculatePoints(gc, this.sc, pathTTD);
+      const [firstPoint, ...points] = spline.calculatePoints(gc, this.pc, pathTTD);
       // ALGO: Ignore the first point, it is (too close) the last point of the previous spline
       if (pathTTD === 0) gen1.push(firstPoint); // Except for the first spline
       gen1.push(...points);
@@ -605,7 +605,7 @@ export class Path implements InteractiveEntity {
       const to = next === undefined ? result.points.length : next.index;
       const responsiblePoints = result.points.slice(from, to);
 
-      current.keyFrame.process(this.sc, responsiblePoints, next?.keyFrame);
+      current.keyFrame.process(this.pc, responsiblePoints, next?.keyFrame);
     }
     result.keyframeIndexes = ikf.slice(1);
   }

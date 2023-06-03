@@ -3,7 +3,7 @@ import { MainApp } from '../app/MainApp';
 import { clamp, makeId } from "../app/Util";
 import { Control, EndPointControl, Path, Spline, Vector } from "../math/Path";
 import { UnitOfLength, UnitConverter } from "../math/Unit";
-import { GeneralConfig, OutputConfig, SpeedConfig } from "./Config";
+import { GeneralConfig, OutputConfig, PathConfig } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { Box, Typography } from "@mui/material";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
@@ -27,7 +27,7 @@ class GeneralConfigImpl implements GeneralConfig {
 }
 
 // observable class
-class SpeedConfigImpl implements SpeedConfig {
+class PathConfigImpl implements PathConfig {
   speedLimit: NumberRange = {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 127, label: "127" },
@@ -96,8 +96,8 @@ export class LemLibFormatV0_4 implements Format {
     return new GeneralConfigImpl();
   }
 
-  buildSpeedConfig(): SpeedConfig {
-    return new SpeedConfigImpl();
+  buildPathConfig(): PathConfig {
+    return new PathConfigImpl();
   }
 
   buildOutputConfig(): OutputConfig {
@@ -139,8 +139,8 @@ export class LemLibFormatV0_4 implements Format {
     const push = (spline: Spline) => {
       // check if there is a path
       if (paths.length === 0) {
-        const path = new Path(this.buildSpeedConfig(), spline);
-        path.sc.speedLimit.to = clamp(Number(maxSpeed.toFixed(3)), path.sc.speedLimit.minLimit.value, path.sc.speedLimit.maxLimit.value);
+        const path = new Path(this.buildPathConfig(), spline);
+        path.pc.speedLimit.to = clamp(Number(maxSpeed.toFixed(3)), path.pc.speedLimit.minLimit.value, path.pc.speedLimit.maxLimit.value);
         paths.push(path);
       } else {
         const path = paths[paths.length - 1];
@@ -218,7 +218,7 @@ export class LemLibFormatV0_4 implements Format {
 
     rtn += `endData\n`;
     rtn += `200\n`; // Not supported
-    rtn += `${path.sc.speedLimit.to}\n`;
+    rtn += `${path.pc.speedLimit.to}\n`;
     rtn += `200\n`; // Not supported
 
     function output(control: Vector, postfix: string = ", ") {

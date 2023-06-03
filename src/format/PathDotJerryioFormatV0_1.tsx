@@ -2,7 +2,7 @@ import { makeAutoObservable } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { makeId } from "../app/Util";
 import { UnitConverter, UnitOfLength } from "../math/Unit";
-import { GeneralConfig, OutputConfig, SpeedConfig } from "./Config";
+import { GeneralConfig, OutputConfig, PathConfig } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
 import { Box, Typography } from "@mui/material";
@@ -26,7 +26,7 @@ class GeneralConfigImpl implements GeneralConfig {
 }
 
 // observable class
-class SpeedConfigImpl implements SpeedConfig {
+class PathConfigImpl implements PathConfig {
   speedLimit: NumberRange = {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 600, label: "600" },
@@ -95,8 +95,8 @@ export class PathDotJerryioFormatV0_1 implements Format {
     return new GeneralConfigImpl();
   }
 
-  buildSpeedConfig(): SpeedConfig {
-    return new SpeedConfigImpl();
+  buildPathConfig(): PathConfig {
+    return new PathConfigImpl();
   }
 
   buildOutputConfig(): OutputConfig {

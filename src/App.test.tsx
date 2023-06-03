@@ -7,7 +7,7 @@ import { Control, EndPointControl, Path, Spline, Vector } from './math/Path';
 
 import { plainToClassFromExist, plainToInstance } from 'class-transformer';
 import { instanceToPlain } from 'class-transformer';
-import { GeneralConfig, OutputConfig, SpeedConfig } from './format/Config';
+import { GeneralConfig, OutputConfig, PathConfig } from './format/Config';
 import { Format, PathFileData } from './format/Format';
 import { UnitOfLength } from "./math/Unit";
 import DOMPurify from "dompurify";
@@ -31,8 +31,8 @@ class CustomFormat implements Format {
   buildGeneralConfig(): GeneralConfig {
     return new CustomGeneralConfig();
   }
-  buildSpeedConfig(): SpeedConfig {
-    return new CustomSpeedConfig();
+  buildPathConfig(): PathConfig {
+    return new CustomPathConfig();
   }
   buildOutputConfig(): OutputConfig {
     throw new Error("Method not implemented.");
@@ -64,7 +64,7 @@ class CustomGeneralConfig implements GeneralConfig {
   }
 }
 
-class CustomSpeedConfig implements SpeedConfig {
+class CustomPathConfig implements PathConfig {
   public custom: string = "custom";
 
   speedLimit: NumberRange = {
@@ -140,7 +140,7 @@ test('Spline serialize', () => {
 
 test('Path serialize', () => {
   let format = new CustomFormat();
-  let r = new Path(format.buildSpeedConfig(), new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)));
+  let r = new Path(format.buildPathConfig(), new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)));
   let p = instanceToPlain(r);
   let r2 = plainToInstance(Path, p);
   let p2 = instanceToPlain(r2);
@@ -150,7 +150,7 @@ test('Path serialize', () => {
 
 test('Path[] serialize', () => {
   let format = new CustomFormat();
-  let r = [new Path(format.buildSpeedConfig(), new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)))];
+  let r = [new Path(format.buildPathConfig(), new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)))];
   let p = instanceToPlain(r);
   let r2 = plainToInstance(Path, p);
   let p2 = instanceToPlain(r2);

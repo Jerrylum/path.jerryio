@@ -193,7 +193,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
     if (targetPath === undefined) {
       // UX: Create new path if: no path exists
       // UX: Use user mouse position as the last control point
-      targetPath = new Path(props.app.format.buildSpeedConfig(), new Spline(new EndPointControl(0, 0, 0), [], cpInUOL));
+      targetPath = new Path(props.app.format.buildPathConfig(), new Spline(new EndPointControl(0, 0, 0), [], cpInUOL));
       props.app.addExpanded(targetPath);
       paths.push(targetPath);
     } else if (targetPath.visible && !targetPath.lock) {
@@ -246,10 +246,10 @@ const FieldCanvasElement = observer((props: AppProps) => {
             <React.Fragment key={index}>
               {
                 path.cachedResult.points.map((pointInUOL, index) => {
-                  const sc = path.sc;
+                  const pc = path.pc;
 
-                  const speedFrom = sc.speedLimit.from;
-                  const speedTo = sc.speedLimit.to;
+                  const speedFrom = pc.speedLimit.from;
+                  const speedTo = pc.speedLimit.to;
 
                   const pointInPx = cc.toPx(pointInUOL);
                   const percentage = (pointInUOL.speed - speedFrom) / (speedTo - speedFrom);

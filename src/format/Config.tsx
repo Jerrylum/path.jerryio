@@ -14,7 +14,7 @@ export interface GeneralConfig extends ConfigSection {
   controlMagnetDistance: number;
 }
 
-export interface SpeedConfig extends ConfigSection {
+export interface PathConfig extends ConfigSection {
   speedLimit: NumberRange;
   applicationRange: NumberRange;
 }

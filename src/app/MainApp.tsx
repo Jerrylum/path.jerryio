@@ -153,7 +153,8 @@ export class MainApp {
     const paths = plainToInstance(Path, data.paths);
 
     for (const path of paths) {
-      path.sc = plainToClassFromExist(format.buildSpeedConfig(), path.sc);
+      if (typeof path.pc !== "object") throw new Error("Invalid data format: pc is not an object.");
+      path.pc = plainToClassFromExist(format.buildPathConfig(), path.pc);
     }
 
     this.setPathFileData(format, {
