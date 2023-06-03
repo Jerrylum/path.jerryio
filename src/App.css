@@ -201,3 +201,14 @@
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 0.2rem;
 }
+
+.MuiMenuItem-root {
+  padding-left: 4px !important;
+}
+
+.MuiMenuItem-root svg {
+  height: 1rem;
+  margin-right: 4px;
+  position: relative;
+  top: -1px;
+}
