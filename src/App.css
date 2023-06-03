@@ -12,7 +12,7 @@
 }
 
 .padding-box {
-  padding-bottom: 4px;
+  padding-bottom: 1px;
 }
 
 .middle-container {
@@ -45,7 +45,9 @@
   min-width: 22rem;
   max-width: 22rem;
   margin: calc(1vh - 4px);
-  padding-top: 4px;
+  margin-bottom: 0;
+  border-top: 4px solid var(--main-bg-color);
+  border-bottom: 4px solid var(--main-bg-color);
   font-size: 1.5vh;
   overflow-y: scroll;
   height: calc(97vh);
@@ -59,7 +61,7 @@
   margin: calc(1vh - 4px) !important;
   padding-top: 4px;
   font-size: 1.5vh;
-  overflow-y: scroll !important;
+  /* overflow-y: scroll !important; */
   height: calc(97vh);
   border-radius: 4px;
 }
@@ -112,16 +114,52 @@
   padding-right: 0.4em;
 }
 
-.main-menu {
+#main-menu {
   margin-bottom: 2vh !important;
   padding: 1vh;
+  height: calc(10px + 0.8125rem);
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  align-items: center;
 }
 
-.main-menu > * {
-  text-transform: none !important;
-  min-width: 32px !important;
-  font-weight: 400 !important;
-  padding: 0.2rem 0.4rem !important;
+#main-menu > * {
+  text-transform: none;
+  min-width: 32px;
+  font-weight: 400;
+  padding: 0.2rem 0.4rem;
+  line-height: 1;
+}
+
+#path-tree {
+  height: calc(92vh - (10px + 0.8125rem));
+  position: relative;
+}
+
+#path-tree .MuiAccordionSummary-root {
+  cursor: unset;
+}
+
+#path-tree .MuiAccordionSummary-content {
+  justify-content: space-between;
+}
+
+#path-tree .MuiAccordionSummary-content .icon {
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.2rem;
+}
+
+#path-tree .MuiAccordionDetails-root {
+  overflow-y: auto;
+  position: absolute;
+  top: 48px;
+  bottom: 0.1rem;
+  right: 0.1rem;
+  left: 0;
+  scrollbar-gutter: stable;
+  padding-right: calc(16px - 0.4rem);
 }
 
 .panel-box {
@@ -142,8 +180,25 @@
 
 .light-theme {
   background-color: #ffffff;
+  /* variable */
+  --main-bg-color: #ffffff;
 }
 
 .dark-theme {
-  background: linear-gradient(300deg, #292929, #242424);
+  background-color: #292929;
+  /* variable */
+  --main-bg-color: #292929;
+}
+
+*::-webkit-scrollbar {
+  width: 0.4rem;
+}
+
+*::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0);
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 0.2rem;
 }

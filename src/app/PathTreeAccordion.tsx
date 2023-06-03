@@ -1,6 +1,9 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { AccordionDetails, AccordionSummary, Button, Card, Typography } from "@mui/material";
+import AddIcon from '@mui/icons-material/Add';
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
+import { AccordionDetails, AccordionSummary, Box, Button, Card, IconButton, Tooltip, Typography } from "@mui/material";
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { TreeView } from '@mui/lab';
@@ -29,19 +32,27 @@ const PathTreeAccordion = observer((props: AppProps) => {
   }
 
   return (
-    <Card>
+    <Card id='path-tree'>
       <AccordionSummary>
         <Typography>Paths</Typography>
+        <Box>
+          <Tooltip title='Add New Path'>
+            <IconButton className='icon' onClick={action(onAddPathClick)}>
+              <AddIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={props.app.expanded.length !== props.paths.length ? 'Expand All' : 'Collapse All'}>
+            <IconButton className='icon' onClick={action(onExpandAllClick)} disabled={props.paths.length == 0}>
+              {
+                props.app.expanded.length !== props.paths.length
+                  ? <KeyboardDoubleArrowDownIcon />
+                  : <KeyboardDoubleArrowUpIcon />
+              }
+            </IconButton>
+          </Tooltip>
+        </Box>
       </AccordionSummary>
       <AccordionDetails>
-        <div style={{ marginTop: "1vh" }}>
-          <Button variant="text" onClick={action(onAddPathClick)}>Add Path</Button>
-          {
-            props.paths.length > 0
-              ? <Button variant="text" onClick={action(onExpandAllClick)}>{props.app.expanded.length !== props.paths.length ? "Expand All" : "Collapse All"}</Button>
-              : null
-          }
-        </div>
         <TreeView
           defaultCollapseIcon={<ExpandMoreIcon />}
           defaultExpandIcon={<ChevronRightIcon />}

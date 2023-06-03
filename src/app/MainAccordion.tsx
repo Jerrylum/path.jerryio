@@ -12,7 +12,7 @@ const MainAccordion = observer((props: AppProps) => {
   }
 
   return (
-    <Card className="main-menu">
+    <Card id="main-menu">
       <Button size="small" color="inherit" variant="text">File</Button>
       <Button size="small" color="inherit" variant="text">Edit</Button>
       <Button size="small" color="inherit" variant="text">View</Button>

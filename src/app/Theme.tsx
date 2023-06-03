@@ -1,4 +1,6 @@
-import { createTheme } from "@mui/material";
+import { Components, Theme, createTheme } from "@mui/material";
+
+const componentsStyleOverrides: Components<Omit<Theme, 'components'>> = { };
 
 const darkTheme = createTheme({
   palette: {
@@ -13,7 +15,8 @@ const darkTheme = createTheme({
       default: '#1E1E1E',
       paper: '#2A2A2A'
     },
-  }
+  },
+  components: componentsStyleOverrides
 });
 
 const lightTheme = createTheme({
@@ -23,6 +26,7 @@ const lightTheme = createTheme({
       main: '#5C469C'
     }
   },
+  components: componentsStyleOverrides
 });
 
 export { darkTheme, lightTheme };
