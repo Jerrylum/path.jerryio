@@ -146,10 +146,10 @@ const FieldCanvasElement = observer((props: AppProps) => {
     // UX: This event is triggered only if the mouse is up inside the canvas.
     // UX: Only reset selection or "Grab & Move" if: left click or middle click released respectively
 
-    if (event.evt.button == 0) { // left click
+    if (event.evt.button === 0) { // left click
       setAreaSelectionStart(undefined);
       setAreaSelectionEnd(undefined);
-    } else if (event.evt.button == 1) { // middle click
+    } else if (event.evt.button === 1) { // middle click
       setOffsetStart(undefined);
     }
   }
