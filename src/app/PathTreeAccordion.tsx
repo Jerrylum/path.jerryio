@@ -42,7 +42,7 @@ const PathTreeAccordion = observer((props: AppProps) => {
             </IconButton>
           </Tooltip>
           <Tooltip title={props.app.expanded.length !== props.paths.length ? 'Expand All' : 'Collapse All'}>
-            <IconButton className='icon' onClick={action(onExpandAllClick)} disabled={props.paths.length == 0}>
+            <IconButton className='icon' onClick={action(onExpandAllClick)} disabled={props.paths.length === 0}>
               {
                 props.app.expanded.length !== props.paths.length
                   ? <KeyboardDoubleArrowDownIcon />

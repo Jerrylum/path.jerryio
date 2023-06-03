@@ -5,7 +5,7 @@ import { AppProps } from "../App";
 
 import { lightTheme, darkTheme } from "./Theme";
 
-const MainAccordion = observer((props: AppProps) => {
+const MenuAccordion = observer((props: AppProps) => {
 
   function onThemeChange() {
     props.app.theme = props.app.theme.palette.mode === lightTheme.palette.mode ? darkTheme : lightTheme;
@@ -21,4 +21,4 @@ const MainAccordion = observer((props: AppProps) => {
   );
 });
 
-export { MainAccordion };
+export { MenuAccordion };

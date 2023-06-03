@@ -24,7 +24,7 @@ import { PathTreeAccordion } from './app/PathTreeAccordion';
 import { GraphCanvasElement } from './app/GraphCanvasElement';
 
 import { darkTheme, lightTheme } from './app/Theme';
-import { MainAccordion } from './app/MainAccordion';
+import { MenuAccordion } from './app/MenuAccordion';
 
 let app = new MainApp();
 
@@ -125,7 +125,7 @@ const App = observer(() => {
     <div className={["App", themeClass].join(" ")} key={app.format.uid + "-" + app.gc.uol}>
       <ThemeProvider theme={app.theme}>
         <Box className='left-editor-container'>
-          <MainAccordion {...appProps} />
+          <MenuAccordion {...appProps} />
           <PathTreeAccordion {...appProps} />
         </Box>
 
