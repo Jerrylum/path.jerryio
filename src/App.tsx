@@ -1,30 +1,27 @@
-import { useEffect } from 'react';
 import './App.css';
 
 import { Path } from './math/Path';
 
 import { reaction, action } from "mobx"
-
 import { observer } from "mobx-react-lite"
-
-import Card from '@mui/material/Card';
 
 import { ThemeProvider } from '@mui/material/styles';
 
-import { Box } from '@mui/material';
-import { ControlAccordion } from './app/ControlAccordion';
-import { FieldCanvasElement } from './app/FieldCanvasElement';
+import { Box, Card } from '@mui/material';
 import { useTimer } from './app/Util';
+import { MenuAccordion } from './app/MenuAccordion';
+import { PathTreeAccordion } from './app/PathTreeAccordion';
 import { GeneralConfigAccordion } from './app/GeneralConfigAccordion';
 import { PathConfigAccordion } from './app/PathAccordion';
-import { UnitConverter, UnitOfLength } from './math/Unit';
+import { ControlAccordion } from './app/ControlAccordion';
 import { OutputConfigAccordion } from './app/OutputAccordion';
-import { MainApp } from './app/MainApp';
-import { PathTreeAccordion } from './app/PathTreeAccordion';
 import { GraphCanvasElement } from './app/GraphCanvasElement';
+import { FieldCanvasElement } from './app/FieldCanvasElement';
+import { UnitConverter, UnitOfLength } from './math/Unit';
+import { MainApp } from './app/MainApp';
 
 import { darkTheme, lightTheme } from './app/Theme';
-import { MenuAccordion } from './app/MenuAccordion';
+import React from 'react';
 
 let app = new MainApp();
 
@@ -62,11 +59,11 @@ const App = observer(() => {
     }
   }
 
-  useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
+  React.useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
     app.paths.map(path => path.calculatePoints(app.gc));
   }), undefined);
 
-  useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
+  React.useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
     initFormat();
 
     const disposer = reaction(() => app.gc.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
@@ -114,7 +111,7 @@ const App = observer(() => {
     }
   }), []);
 
-  useEffect(action(initFormat), [app.format]); // eslint-disable-line react-hooks/exhaustive-deps
+  React.useEffect(action(initFormat), [app.format]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const appProps: AppProps = { paths: app.paths, app };
 

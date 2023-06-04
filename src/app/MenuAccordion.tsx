@@ -25,7 +25,7 @@ const MenuAccordion = observer((props: AppProps) => {
       <Menu anchorEl={document.getElementById('menu-edit-btn')} MenuListProps={{ dense: true }}
         open={isOpenEditMenu} onClose={() => setIsOpenEditMenu(false)}>
         <MenuItem>
-          <DoneIcon />
+          <DoneIcon sx={{visibility: "hidden"}} />
           <ListItemText>Undo</ListItemText>
           <Typography variant="body2" color="text.secondary">Ctrl+Z</Typography>
         </MenuItem>
