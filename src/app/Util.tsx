@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import React from "react";
 
 export function useTimer(ms: number) {
-  const [time, setTime] = useState(Date.now());
+  const [time, setTime] = React.useState(Date.now());
 
-  useEffect(() => {
+  React.useEffect(() => {
     const interval = setInterval(() => setTime(Date.now()), ms);
     return () => {
       clearInterval(interval);
@@ -11,6 +11,23 @@ export function useTimer(ms: number) {
   }, [ms]);
 
   return time;
+}
+
+export function useIsMacOS() {
+  return React.useMemo(() => {
+    const os = navigator.userAgent;
+    if (os.search('Windows') !== -1) {
+      return false;
+    } else if (os.search('Mac') !== -1) {
+      return true;
+    } else {
+      return false;
+    }
+  }, []);
+}
+
+export function useKeyName(key: string) {
+  return useIsMacOS() ? key.replaceAll("Ctrl", "⌘") : key;
 }
 
 export function makeId(length: number) {
