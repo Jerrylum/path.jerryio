@@ -3,7 +3,7 @@ import DOMPurify from 'dompurify';
 import { GeneralConfig } from "../format/Config";
 import { InteractiveEntity } from "../math/Canvas";
 import { Control, EndPointControl, Path, Vector } from "../math/Path";
-import { addToArray, removeFromArray } from "./Util";
+import { addToArray, clamp, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-transformer';
@@ -29,12 +29,18 @@ export class MainApp {
   public expanded: string[] = []; // ALGO: Order doesn't matter but anyway
   public magnet: Vector = new Vector(Infinity, Infinity);
 
-  public theme: Theme = lightTheme;
-
   public view = {
     showSpeedCanvas: true,
     showRightPanel: true
   }
+
+  private fieldDisplay = {
+    offset: new Vector(0, 0), // Clamp user input only
+    scale: 1, // 1 = 100%, [1..3]
+  }
+
+  public theme: Theme = lightTheme;
+
 
   constructor() {
     makeAutoObservable(this);
@@ -112,6 +118,29 @@ export class MainApp {
     if (rtn === undefined) rtn = this.paths.find((path) => path.controls.some((control) => this.isSelected(control.uid)));
 
     return rtn;
+  }
+
+  @computed get fieldOffset() {
+    return this.fieldDisplay.offset;
+  }
+
+  @computed get fieldScale() {
+    return this.fieldDisplay.scale;
+  }
+
+  set fieldOffset(offset: Vector) {
+    this.fieldDisplay.offset = offset;
+  }
+
+  set fieldScale(scale: number) {
+    this.fieldDisplay.scale = clamp(scale, 1, 3);
+  }
+
+  resetFieldDisplay(): void {
+    this.fieldDisplay = {
+      offset: new Vector(0, 0),
+      scale: 1
+    }
   }
 
   private setPathFileData(format: Format, pfd: PathFileData): void {

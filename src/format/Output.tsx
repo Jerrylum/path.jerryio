@@ -83,6 +83,7 @@ export async function onNew(app: MainApp) {
   app.usingUOL = app.gc.uol;
   app.selected = [];
   app.expanded = [];
+  app.resetFieldDisplay();
 }
 
 export async function onSave(app: MainApp) {

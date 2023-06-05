@@ -113,7 +113,14 @@ const App = observer(() => {
   }), []);
 
   React.useEffect(action(() => {
+    const browserHotkeysEvent = (evt: KeyboardEvent) => {
+      if (evt.ctrlKey) evt.preventDefault();
+    }
+    document.addEventListener("keydown", browserHotkeysEvent);
 
+    return () => {
+      document.removeEventListener("keydown", browserHotkeysEvent);
+    }
   }), []);
 
   React.useEffect(action(initFormat), [app.format]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -143,8 +150,12 @@ const App = observer(() => {
   useHotkeys(useKeyName("Ctrl+Shift+A"), onKeybind(() => console.log("Select Inverse")));
   useHotkeys(useKeyName("Esc"), onKeybind(() => console.log("Select None")));
 
-  useHotkeys(useKeyName("Ctrl+J"), onKeybind(() => app.view.showSpeedCanvas = !app.view.showSpeedCanvas));
-  useHotkeys(useKeyName("Ctrl+B"), onKeybind(() => app.view.showRightPanel = !app.view.showRightPanel));
+  useHotkeys(useKeyName("Ctrl+B"), onKeybind(() => app.view.showSpeedCanvas = !app.view.showSpeedCanvas));
+  useHotkeys(useKeyName("Ctrl+J"), onKeybind(() => app.view.showRightPanel = !app.view.showRightPanel));
+
+  useHotkeys(useKeyName("Ctrl+Add,Ctrl+Equal"), onKeybind(() => app.fieldScale += 0.5));
+  useHotkeys(useKeyName("Ctrl+Subtract,Ctrl+Minus"), onKeybind(() => app.fieldScale -= 0.5));
+  useHotkeys(useKeyName("Ctrl+0"), onKeybind(() => app.resetFieldDisplay()));
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (

@@ -30,8 +30,8 @@ const FieldCanvasElement = observer((props: AppProps) => {
   const [areaSelectionEnd, setAreaSelectionEnd] = React.useState<Vector | undefined>(undefined);
   const [isAddingControl, setIsAddingControl] = React.useState(false);
   const [offsetStart, setOffsetStart] = React.useState<Vector | undefined>(undefined); // ALGO: For "Grab & Move"
-  const [offset, setOffset] = React.useState<Vector>(new Vector(0, 0));
-  const [scale, setScale] = React.useState(1);
+  const offset = props.app.fieldOffset;
+  const scale = props.app.fieldScale;
 
   const cc = new CanvasConverter(canvasSizeInPx, canvasSizeInPx, canvasSizeInUOL, canvasSizeInUOL, offset, scale);
 
@@ -68,8 +68,8 @@ const FieldCanvasElement = observer((props: AppProps) => {
     const newOffsetInCC = pos.subtract(newPos).add(offsetInCC);
     const newOffsetInKC = newOffsetInCC.multiply(negative1).divide(newScaleVector);
 
-    setScale(newScale);
-    setOffset(newOffsetInKC);
+    props.app.fieldScale = newScale;
+    props.app.fieldOffset = newOffsetInKC;
   }
 
   function onMouseDownStage(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -138,7 +138,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
       const newOffset = offsetStart.subtract(posInPx);
       newOffset.x = clamp(newOffset.x, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
       newOffset.y = clamp(newOffset.y, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
-      setOffset(newOffset);
+      props.app.fieldOffset = newOffset;
     }
   }
 

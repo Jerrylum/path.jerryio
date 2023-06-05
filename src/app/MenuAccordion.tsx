@@ -71,17 +71,21 @@ const MenuAccordion = observer((props: AppProps) => {
         <CustomMenuItem done={false} text="Undo" hotkey={useKeyName("Ctrl+Z")} />
         <CustomMenuItem done={false} text="Redo" hotkey={useKeyName("Ctrl+Y")} />
         <Divider />
-        <CustomMenuItem done={false} text="Select all" hotkey={useKeyName("Ctrl+A")} />
-        <CustomMenuItem done={false} text="Select none" hotkey="Esc" />
-        <CustomMenuItem done={false} text="Select inverse" hotkey={useKeyName("Ctrl+Shift+A")} />
+        <CustomMenuItem done={false} text="Select All" hotkey={useKeyName("Ctrl+A")} />
+        <CustomMenuItem done={false} text="Select None" hotkey="Esc" />
+        <CustomMenuItem done={false} text="Select Inverse" hotkey={useKeyName("Ctrl+Shift+A")} />
       </Menu>
 
       <Menu anchorEl={document.getElementById('menu-view-btn')} MenuListProps={{ dense: true }}
         open={isOpenViewMenu} onClose={() => setIsOpenViewMenu(false)}>
-        <CustomMenuItem done={props.app.view.showSpeedCanvas} text="Speed Canvas" hotkey={useKeyName("Ctrl+J")}
+        <CustomMenuItem done={props.app.view.showSpeedCanvas} text="Speed Canvas" hotkey={useKeyName("Ctrl+B")}
           onClick={onMenuClick(() => props.app.view.showSpeedCanvas = !props.app.view.showSpeedCanvas)} />
-        <CustomMenuItem done={props.app.view.showRightPanel} text="Right Panel" hotkey={useKeyName("Ctrl+B")}
+        <CustomMenuItem done={props.app.view.showRightPanel} text="Right Panel" hotkey={useKeyName("Ctrl+J")}
           onClick={onMenuClick(() => props.app.view.showRightPanel = !props.app.view.showRightPanel)} />
+        <Divider />
+        <CustomMenuItem done={false} text="Zoom In" hotkey="Ctrl+Add" onClick={onMenuClick(() => props.app.fieldScale += 0.5)} />
+        <CustomMenuItem done={false} text="Zoom Out" hotkey="Ctrl+Minus" onClick={onMenuClick(() => props.app.fieldScale -= 0.5)} />
+        <CustomMenuItem done={false} text="Zoom to Fit" hotkey="Ctrl+0" onClick={onMenuClick(() => props.app.resetFieldDisplay())} />
         <Divider />
         <CustomMenuItem done={props.app.theme.palette.mode === lightTheme.palette.mode} text="Light Theme (Default)"
           onClick={onMenuClick(() => props.app.theme = lightTheme)} />
