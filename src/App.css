@@ -15,7 +15,7 @@
   padding-bottom: 1px;
 }
 
-#middle-container {
+#middle-panel {
   display: flex;
   width: 80vh;
   height: 100vh;
@@ -24,14 +24,14 @@
   align-content: flex-start;
 }
 
-#field-container {
+#field-panel {
   width: 78vh;
   height: 78vh;
   padding: 1vh;
   overflow: hidden;
 }
 
-#graph-container {
+#graph-panel {
   width: 78vh;
   height: 12vh;
   padding: 1vh;
@@ -39,7 +39,7 @@
   margin-top: 2vh;
 }
 
-#right-editor-container {
+#right-editor-panel {
   float: left;
   flex-grow: 1;
   min-width: 22rem;
@@ -53,7 +53,7 @@
   height: calc(97vh);
 }
 
-#left-editor-container {
+#left-editor-panel {
   float: left;
   flex-grow: 1;
   min-width: 18rem;
@@ -66,24 +66,24 @@
   border-radius: 4px;
 }
 
-#left-editor-container::-webkit-scrollbar,
-#right-editor-container::-webkit-scrollbar {
+#left-editor-panel::-webkit-scrollbar,
+#right-editor-panel::-webkit-scrollbar {
   width: 0;
 }
 
-#left-editor-container > *,
-#right-editor-container > * {
+#left-editor-panel > *,
+#right-editor-panel > * {
   margin: 0 4px !important;
 }
 
-#left-editor-container h3,
-#right-editor-container h3 {
+#left-editor-panel h3,
+#right-editor-panel h3 {
   margin: 0;
   font-weight: 100;
 }
 
-#left-editor-container > *::before,
-#right-editor-container > *::before {
+#left-editor-panel > *::before,
+#right-editor-panel > *::before {
   background-color: transparent !important;
 }
 

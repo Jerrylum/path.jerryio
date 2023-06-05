@@ -147,21 +147,21 @@ const App = observer(() => {
   return (
     <div className={["App", themeClass].join(" ")} key={app.format.uid + "-" + app.gc.uol}>
       <ThemeProvider theme={app.theme}>
-        <Box id='left-editor-container'>
+        <Box id='left-editor-panel'>
           <MenuAccordion {...appProps} />
           <PathTreeAccordion {...appProps} />
         </Box>
 
-        <Box id='middle-container'>
-          <Card id='field-container'>
+        <Box id='middle-panel'>
+          <Card id='field-panel'>
             <FieldCanvasElement {...appProps} />
           </Card>
-          <Card id='graph-container'>
+          <Card id='graph-panel'>
             <GraphCanvasElement {...appProps} />
           </Card>
         </Box>
 
-        <Box id='right-editor-container'>
+        <Box id='right-editor-panel'>
           <GeneralConfigAccordion {...appProps} />
           <ControlAccordion {...appProps} />
           <PathConfigAccordion pc={app.selectedPath?.pc} />
