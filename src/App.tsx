@@ -21,8 +21,8 @@ import { MainApp } from './app/MainApp';
 
 import { darkTheme, lightTheme } from './app/Theme';
 import React from 'react';
-import Hotkeys from 'react-hot-keys';
-import { HotkeysEvent } from 'hotkeys-js';
+import { useHotkeys } from 'react-hotkeys-hook'
+import { HotkeysEvent } from 'react-hotkeys-hook/dist/types'
 import { onDownload, onNew, onOpen, onSave, onSaveAs } from './format/Output';
 
 let app = new MainApp();
@@ -123,29 +123,30 @@ const App = observer(() => {
   const themeClass = app.theme.palette.mode === lightTheme.palette.mode ? "light-theme" : "dark-theme";
 
   function onKeybind(func: (app: MainApp) => void) {
-    return function (shortcut: string, evn: KeyboardEvent, handle: HotkeysEvent) {
-      evn.preventDefault();
-      evn.stopPropagation();
+    return function (kvEvt: KeyboardEvent, hkEvt: HotkeysEvent) {
+      kvEvt.preventDefault();
+      kvEvt.stopPropagation();
       runInAction(() => func(app));
     }
   }
+
+  useHotkeys(useKeyName("Ctrl+N"), onKeybind(onNew));
+  useHotkeys(useKeyName("Ctrl+O"), onKeybind(onOpen));
+  useHotkeys(useKeyName("Ctrl+S"), onKeybind(onSave));
+  useHotkeys(useKeyName("Ctrl+Shift+S"), onKeybind(onSaveAs));
+  useHotkeys(useKeyName("Ctrl+D"), onKeybind(onDownload));
+  useHotkeys(useKeyName("Ctrl+,"), onKeybind(() => console.log("Preferences")));
+
+  useHotkeys(useKeyName("Ctrl+Z"), onKeybind(() => console.log("Undo")));
+  useHotkeys(useKeyName("Ctrl+Y,Ctrl+Shift+Z"), onKeybind(() => console.log("Redo")));
+  useHotkeys(useKeyName("Ctrl+A"), onKeybind(() => console.log("Select All")));
+  useHotkeys(useKeyName("Ctrl+Shift+A"), onKeybind(() => console.log("Select Inverse")));
+  useHotkeys(useKeyName("Esc"), onKeybind(() => console.log("Select None")));
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
     <div className={["App", themeClass].join(" ")} key={app.format.uid + "-" + app.gc.uol}>
       <ThemeProvider theme={app.theme}>
-        <Hotkeys keyName={useKeyName("Ctrl+Z")} onKeyDown={() => console.log("Undo")} />
-        <Hotkeys keyName={useKeyName("Ctrl+Y,Ctrl+Shift+Z")} onKeyDown={() => console.log("Redo")} />
-        <Hotkeys keyName={useKeyName("Ctrl+A")} onKeyDown={() => console.log("Select All")} />
-        <Hotkeys keyName={useKeyName("Ctrl+Shift+A")} onKeyDown={() => console.log("Select Inverse")} />
-        <Hotkeys keyName={useKeyName("Esc")} onKeyDown={() => console.log("Select None")} />
-        <Hotkeys keyName={useKeyName("Ctrl+N")} onKeyDown={onKeybind(onNew)} />
-        <Hotkeys keyName={useKeyName("Ctrl+O")} onKeyDown={onKeybind(onOpen)} />
-        <Hotkeys keyName={useKeyName("Ctrl+S")} onKeyDown={onKeybind(onSave)} />
-        <Hotkeys keyName={useKeyName("Ctrl+Shift+S")} onKeyDown={onKeybind(onSaveAs)} />
-        <Hotkeys keyName={useKeyName("Ctrl+Shift+D")} onKeyDown={onKeybind(onDownload)} />
-        <Hotkeys keyName={useKeyName("Ctrl+,")} onKeyDown={() => console.log("Preferences")} />
-
         <Box id='left-editor-container'>
           <MenuAccordion {...appProps} />
           <PathTreeAccordion {...appProps} />

@@ -61,7 +61,7 @@ const MenuAccordion = observer((props: AppProps) => {
         <Divider />
         <CustomMenuItem done={false} text="Save" hotkey={useKeyName("Ctrl+S")} onClick={onMenuClick(onSave)} />
         <CustomMenuItem done={false} text="Save As" hotkey={useKeyName("Ctrl+Shift+S")} onClick={onMenuClick(onSaveAs)} />
-        <CustomMenuItem done={false} text="Download" hotkey={useKeyName("Ctrl+Shift+D")} onClick={onMenuClick(onDownload)} />
+        <CustomMenuItem done={false} text="Download" hotkey={useKeyName("Ctrl+D")} onClick={onMenuClick(onDownload)} />
         <Divider />
         <CustomMenuItem done={false} text="Preferences" hotkey={useKeyName("Ctrl+,")} />
       </Menu>
