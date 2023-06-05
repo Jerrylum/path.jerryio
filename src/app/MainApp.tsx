@@ -31,6 +31,11 @@ export class MainApp {
 
   public theme: Theme = lightTheme;
 
+  public view = {
+    showSpeedCanvas: true,
+    showRightPanel: true
+  }
+
   constructor() {
     makeAutoObservable(this);
   }

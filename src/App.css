@@ -18,7 +18,7 @@
 #middle-panel {
   display: flex;
   width: 80vh;
-  height: 100vh;
+  height: 96vh;
   flex-direction: row;
   flex-wrap: wrap;
   align-content: flex-start;
@@ -29,6 +29,15 @@
   height: 78vh;
   padding: 1vh;
   overflow: hidden;
+}
+
+#middle-panel.fullscreen {
+  width: 96vh;
+}
+
+#middle-panel.fullscreen #field-panel {
+  width: 94vh;
+  height: 94vh;
 }
 
 #graph-panel {

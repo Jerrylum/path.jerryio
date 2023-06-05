@@ -143,6 +143,9 @@ const App = observer(() => {
   useHotkeys(useKeyName("Ctrl+Shift+A"), onKeybind(() => console.log("Select Inverse")));
   useHotkeys(useKeyName("Esc"), onKeybind(() => console.log("Select None")));
 
+  useHotkeys(useKeyName("Ctrl+J"), onKeybind(() => app.view.showSpeedCanvas = !app.view.showSpeedCanvas));
+  useHotkeys(useKeyName("Ctrl+B"), onKeybind(() => app.view.showRightPanel = !app.view.showRightPanel));
+
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
     <div className={["App", themeClass].join(" ")} key={app.format.uid + "-" + app.gc.uol}>
@@ -152,20 +155,28 @@ const App = observer(() => {
           <PathTreeAccordion {...appProps} />
         </Box>
 
-        <Box id='middle-panel'>
+        <Box id='middle-panel' className={app.view.showSpeedCanvas ? "" : "fullscreen"}>
           <Card id='field-panel'>
             <FieldCanvasElement {...appProps} />
           </Card>
-          <Card id='graph-panel'>
-            <GraphCanvasElement {...appProps} />
-          </Card>
+          {
+            app.view.showSpeedCanvas && (
+              <Card id='graph-panel'>
+                <GraphCanvasElement {...appProps} />
+              </Card>
+            )
+          }
         </Box>
+        {
+          app.view.showRightPanel && (
+            <Box id='right-editor-panel'>
+              <GeneralConfigAccordion {...appProps} />
+              <ControlAccordion {...appProps} />
+              <PathConfigAccordion pc={app.selectedPath?.pc} />
+            </Box>
+          )
+        }
 
-        <Box id='right-editor-panel'>
-          <GeneralConfigAccordion {...appProps} />
-          <ControlAccordion {...appProps} />
-          <PathConfigAccordion pc={app.selectedPath?.pc} />
-        </Box>
       </ThemeProvider>
     </div>
   );

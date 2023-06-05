@@ -75,6 +75,19 @@ const MenuAccordion = observer((props: AppProps) => {
         <CustomMenuItem done={false} text="Select none" hotkey="Esc" />
         <CustomMenuItem done={false} text="Select inverse" hotkey={useKeyName("Ctrl+Shift+A")} />
       </Menu>
+
+      <Menu anchorEl={document.getElementById('menu-view-btn')} MenuListProps={{ dense: true }}
+        open={isOpenViewMenu} onClose={() => setIsOpenViewMenu(false)}>
+        <CustomMenuItem done={props.app.view.showSpeedCanvas} text="Speed Canvas" hotkey={useKeyName("Ctrl+J")}
+          onClick={onMenuClick(() => props.app.view.showSpeedCanvas = !props.app.view.showSpeedCanvas)} />
+        <CustomMenuItem done={props.app.view.showRightPanel} text="Right Panel" hotkey={useKeyName("Ctrl+B")}
+          onClick={onMenuClick(() => props.app.view.showRightPanel = !props.app.view.showRightPanel)} />
+        <Divider />
+        <CustomMenuItem done={props.app.theme.palette.mode === lightTheme.palette.mode} text="Light Theme (Default)"
+          onClick={onMenuClick(() => props.app.theme = lightTheme)} />
+        <CustomMenuItem done={props.app.theme.palette.mode === darkTheme.palette.mode} text="Dark Theme"
+          onClick={onMenuClick(() => props.app.theme = darkTheme)} />
+      </Menu>
     </Card>
   );
 });

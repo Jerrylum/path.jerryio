@@ -19,7 +19,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
   // useTimer(1000 / 30);
 
   const uc = new UnitConverter(UnitOfLength.Foot, props.app.gc.uol);
-  const canvasSizeInPx = window.innerHeight * 0.78;
+  const canvasSizeInPx = window.innerHeight * (props.app.view.showSpeedCanvas ? 0.78 : 0.94);
   const canvasSizeInUOL = uc.fromAtoB(12);
 
   const paths = props.paths;
