@@ -47,7 +47,6 @@ const App = observer(() => {
     const robotHeight = app.gc.robotHeight;
 
     app.gc = app.format.buildGeneralConfig();
-    app.oc = app.format.buildOutputConfig();
 
     const uc = new UnitConverter(app.usingUOL, app.gc.uol, 5);
 

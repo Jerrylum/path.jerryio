@@ -79,7 +79,6 @@ export async function onNew(app: MainApp) {
 
   app.format = newFormat;
   app.gc = app.format.buildGeneralConfig();
-  app.oc = app.format.buildOutputConfig();
   app.paths = [];
   app.usingUOL = app.gc.uol;
   app.selected = [];

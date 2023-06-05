@@ -2,7 +2,7 @@ import { MainApp } from '../app/MainApp';
 import { Path } from "../math/Path";
 import { LemLibFormatV0_4 } from './LemLibFormatV0_4';
 import { PathDotJerryioFormatV0_1 } from './PathDotJerryioFormatV0_1';
-import { GeneralConfig, OutputConfig, PathConfig } from "./Config";
+import { GeneralConfig, PathConfig } from "./Config";
 
 export interface Format {
   isInit: boolean;
@@ -16,8 +16,6 @@ export interface Format {
 
   buildPathConfig(): PathConfig;
 
-  buildOutputConfig(): OutputConfig;
-
   recoverPathFileData(fileContent: string): PathFileData;
 
   exportPathFile(app: MainApp): string;
@@ -26,7 +24,6 @@ export interface Format {
 export interface PathFileData {
   format: string;
   gc: GeneralConfig;
-  oc: OutputConfig;
   paths: Path[];
 }
 

@@ -2,7 +2,7 @@ import { makeAutoObservable } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { makeId } from "../app/Util";
 import { UnitConverter, UnitOfLength } from "../math/Unit";
-import { GeneralConfig, OutputConfig, PathConfig } from "./Config";
+import { GeneralConfig, PathConfig } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
 import { Box, Typography } from "@mui/material";
@@ -62,18 +62,6 @@ class PathConfigImpl implements PathConfig {
   }
 }
 
-// observable class
-class OutputConfigImpl implements OutputConfig {
-
-  constructor() {
-    makeAutoObservable(this);
-  }
-
-  getConfigPanel() {
-    return <></>
-  }
-}
-
 export class PathDotJerryioFormatV0_1 implements Format {
   isInit: boolean = false;
   uid: string;
@@ -97,10 +85,6 @@ export class PathDotJerryioFormatV0_1 implements Format {
 
   buildPathConfig(): PathConfig {
     return new PathConfigImpl();
-  }
-
-  buildOutputConfig(): OutputConfig {
-    return new OutputConfigImpl();
   }
 
   recoverPathFileData(fileContent: string): PathFileData {

@@ -1,6 +1,6 @@
 import { makeAutoObservable, computed } from "mobx"
 import DOMPurify from 'dompurify';
-import { GeneralConfig, OutputConfig } from "../format/Config";
+import { GeneralConfig } from "../format/Config";
 import { InteractiveEntity } from "../math/Canvas";
 import { Control, EndPointControl, Path, Vector } from "../math/Path";
 import { addToArray, removeFromArray } from "./Util";
@@ -22,7 +22,6 @@ export class MainApp {
   public mountingFile: FileSystemFileHandle | null = null;
 
   public gc: GeneralConfig = this.format.buildGeneralConfig(); // a.k.a Configuration
-  public oc: OutputConfig = this.format.buildOutputConfig(); // a.k.a Output
 
   public paths: Path[] = [];
   public selected: string[] = []; // ALGO: Not using Set because order matters
@@ -131,7 +130,6 @@ export class MainApp {
     this.format = format;
     this.usingUOL = pfd.gc.uol;
     this.gc = pfd.gc;
-    this.oc = pfd.oc;
     this.paths = pfd.paths;
 
     this.selected = [];
@@ -143,12 +141,8 @@ export class MainApp {
     format.init(); // ALGO: Suspend initFormat()
 
     if (typeof data.gc !== "object") throw new Error("Invalid data format: gc is not an object.");
-    if (typeof data.oc !== "object") throw new Error("Invalid data format: oc is not an object.");
-
     const gc = plainToClassFromExist(format.buildGeneralConfig(), data.gc);
-    const oc = plainToClassFromExist(format.buildOutputConfig(), data.oc);
 
-    // check data.paths is an array
     if (!Array.isArray(data.paths)) throw new Error("Invalid data format: paths is not an array.");
     const paths = plainToInstance(Path, data.paths);
 
@@ -160,7 +154,6 @@ export class MainApp {
     this.setPathFileData(format, {
       format: format.getName(),
       gc: gc,
-      oc: oc,
       paths: paths
     });
   }
@@ -169,7 +162,6 @@ export class MainApp {
     const data: PathFileData = {
       format: this.format.getName(),
       gc: this.gc,
-      oc: this.oc,
       paths: this.paths
     };
 

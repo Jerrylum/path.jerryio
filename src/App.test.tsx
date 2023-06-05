@@ -7,7 +7,7 @@ import { Control, EndPointControl, Path, Spline, Vector } from './math/Path';
 
 import { plainToClassFromExist, plainToInstance } from 'class-transformer';
 import { instanceToPlain } from 'class-transformer';
-import { GeneralConfig, OutputConfig, PathConfig } from './format/Config';
+import { GeneralConfig, PathConfig } from './format/Config';
 import { Format, PathFileData } from './format/Format';
 import { UnitOfLength } from "./math/Unit";
 import DOMPurify from "dompurify";
@@ -33,9 +33,6 @@ class CustomFormat implements Format {
   }
   buildPathConfig(): PathConfig {
     return new CustomPathConfig();
-  }
-  buildOutputConfig(): OutputConfig {
-    throw new Error("Method not implemented.");
   }
   recoverPathFileData(fileContent: string): PathFileData {
     throw new Error("Method not implemented.");

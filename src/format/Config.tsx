@@ -18,7 +18,3 @@ export interface PathConfig extends ConfigSection {
   speedLimit: NumberRange;
   applicationRange: NumberRange;
 }
-
-export interface OutputConfig extends ConfigSection {
-
-}

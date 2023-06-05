@@ -3,7 +3,7 @@ import { MainApp } from '../app/MainApp';
 import { clamp, makeId } from "../app/Util";
 import { Control, EndPointControl, Path, Spline, Vector } from "../math/Path";
 import { UnitOfLength, UnitConverter } from "../math/Unit";
-import { GeneralConfig, OutputConfig, PathConfig } from "./Config";
+import { GeneralConfig, PathConfig } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { Box, Typography } from "@mui/material";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
@@ -63,18 +63,6 @@ class PathConfigImpl implements PathConfig {
   }
 }
 
-// observable class
-class OutputConfigImpl implements OutputConfig {
-
-  constructor() {
-    makeAutoObservable(this);
-  }
-
-  getConfigPanel() {
-    return <></>
-  }
-}
-
 export class LemLibFormatV0_4 implements Format {
   isInit: boolean = false;
   uid: string;
@@ -100,16 +88,11 @@ export class LemLibFormatV0_4 implements Format {
     return new PathConfigImpl();
   }
 
-  buildOutputConfig(): OutputConfig {
-    return new OutputConfigImpl();
-  }
-
   recoverPathFileData(fileContent: string): PathFileData {
     // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.
 
     const paths: Path[] = [];
     const gc = new GeneralConfigImpl();
-    const oc = new OutputConfigImpl();
 
     // find the first line that is "endData"
     const lines = fileContent.split("\n");
@@ -172,7 +155,6 @@ export class LemLibFormatV0_4 implements Format {
     return {
       format: this.getName(),
       gc,
-      oc,
       paths
     };
   }
