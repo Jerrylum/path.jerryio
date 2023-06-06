@@ -58,6 +58,7 @@
   border-top: 4px solid var(--main-bg-color);
   border-bottom: 4px solid var(--main-bg-color);
   font-size: 1.5vh;
+  overflow-x: hidden;
   overflow-y: scroll;
   height: calc(97vh);
 }
@@ -70,7 +71,7 @@
   margin: calc(1vh - 4px) !important;
   padding-top: 4px;
   font-size: 1.5vh;
-  /* overflow-y: scroll !important; */
+  overflow-x: hidden;
   height: calc(97vh);
   border-radius: 4px;
 }
