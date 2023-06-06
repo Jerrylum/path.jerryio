@@ -75,14 +75,16 @@ const FieldCanvasElement = observer((props: AppProps) => {
   function onMouseDownStage(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
+    if ((evt.button === 0 || evt.button === 2) && event.target instanceof Konva.Image) {
+      // UX: A flag to indicate that the user is adding a control, this will set to false if mouse is moved
+      // UX: onClickFieldImage will check this state, control can only be added inside the field image because of this
+      setIsAddingControl(true);
+    }
+
     if (evt.button === 0 && offsetStart === undefined &&
       (event.target instanceof Konva.Stage || event.target instanceof Konva.Image)) { // left click
       // UX: Only start selection if: left click on the canvas or field image
       // UX: Do not start selection if it is in "Grab & Move"
-
-      // UX: this will set to false if mouse is moved
-      // UX: onClickFieldImage will check this state, control can only be added inside the field image because of this
-      setIsAddingControl(true);
 
       if (evt.shiftKey === false) {
         // UX: Clear selection if: left click without shift
@@ -182,6 +184,8 @@ const FieldCanvasElement = observer((props: AppProps) => {
 
     // UX: Add control point if: left click or right click without moving the mouse
     if (!(isAddingControl && (evt.button === 0 || evt.button === 2))) return;
+
+    setIsAddingControl(false);
 
     const posInPx = cc.getUnboundedPxFromEvent(event);
     if (posInPx === undefined) return;
