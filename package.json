@@ -21,6 +21,7 @@
     "class-transformer": "^0.5.1",
     "dompurify": "^3.0.3",
     "mobx-react-lite": "^3.4.3",
+    "notistack": "^3.0.1",
     "react": "^18.2.0",
     "react-contenteditable": "^3.3.7",
     "react-dom": "^18.2.0",
