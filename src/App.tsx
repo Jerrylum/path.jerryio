@@ -1,6 +1,6 @@
 import './App.css';
 
-import { Path } from './math/Path';
+import { Path, Vector } from './math/Path';
 
 import { reaction, action } from "mobx"
 import { observer } from "mobx-react-lite"
@@ -72,7 +72,10 @@ const App = observer(() => {
       const uc = new UnitConverter(oldUOL, newUOL);
 
       app.selected = [];
+      app.selectedBefore = [];
       app.expanded = [];
+      app.magnet = new Vector(Infinity, Infinity);
+
       app.gc.pointDensity = uc.fromAtoB(app.gc.pointDensity);
       app.gc.controlMagnetDistance = uc.fromAtoB(app.gc.controlMagnetDistance);
       app.gc.robotWidth = uc.fromAtoB(app.gc.robotWidth);
