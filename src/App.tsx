@@ -138,7 +138,7 @@ const App = observer(() => {
     }
   }
 
-  useHotkeys(useKeyName("Ctrl+N"), onKeybind(onNew));
+  useHotkeys(useKeyName("Ctrl+P"), onKeybind(onNew));
   useHotkeys(useKeyName("Ctrl+O"), onKeybind(onOpen));
   useHotkeys(useKeyName("Ctrl+S"), onKeybind(onSave));
   useHotkeys(useKeyName("Ctrl+Shift+S"), onKeybind(onSaveAs));

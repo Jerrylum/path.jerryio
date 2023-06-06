@@ -55,7 +55,7 @@ const MenuAccordion = observer((props: AppProps) => {
 
       <Menu anchorEl={document.getElementById('menu-file-btn')} MenuListProps={{ dense: true }}
         open={isOpenFileMenu} onClose={() => setIsOpenFileMenu(false)}>
-        <CustomMenuItem done={false} text="New File" hotkey={useKeyName("Ctrl+N")} onClick={onMenuClick(onNew)} />
+        <CustomMenuItem done={false} text="New File" hotkey={useKeyName("Ctrl+P")} onClick={onMenuClick(onNew)} />
         <Divider />
         <CustomMenuItem done={false} text="Open File" hotkey={useKeyName("Ctrl+O")} onClick={onMenuClick(onOpen)} />
         <Divider />
