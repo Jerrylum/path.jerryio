@@ -211,11 +211,11 @@
   border-radius: 0.2rem;
 }
 
-.MuiMenuItem-root {
+.menu-item.MuiMenuItem-root {
   padding-left: 4px !important;
 }
 
-.MuiMenuItem-root svg {
+.menu-item.MuiMenuItem-root svg {
   height: 1rem;
   margin-right: 4px;
   position: relative;
