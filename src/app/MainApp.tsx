@@ -11,22 +11,19 @@ import { UnitOfLength } from "../math/Unit";
 import { Theme } from "@mui/material";
 import { darkTheme, lightTheme } from "./Theme";
 
-export interface AreaSelectionData {
-  selectedBefore: string[];
-}
 
 // observable class
 export class MainApp {
   public format: Format = new PathDotJerryioFormatV0_1();
   public usingUOL: UnitOfLength = UnitOfLength.Centimeter;
-  public mountingFile: FileSystemFileHandle | null = null;
+  public mountingFile: FileSystemFileHandle | null = null; // This is intended to be modified outside the class
 
   public gc: GeneralConfig = this.format.buildGeneralConfig(); // a.k.a Configuration
 
   public paths: Path[] = [];
   public selected: string[] = []; // ALGO: Not using Set because order matters
-  public selectedBefore: string[] = []; // ALGO: For area selection
-  private lastSelectedPath: Path | undefined = undefined;
+  private selectedBefore: string[] = []; // ALGO: For area selection
+  private lastSelectedPath: Path | undefined = undefined; // ALGO: For adding controls
   public expanded: string[] = []; // ALGO: Order doesn't matter but anyway
   public magnet: Vector = new Vector(Infinity, Infinity);
 
@@ -145,6 +142,13 @@ export class MainApp {
     this.fieldDisplay.scale = clamp(scale, 1, 3);
   }
 
+  resetUserControl(): void {
+    this.selected = [];
+    this.expanded = [];
+    this.lastSelectedPath = undefined;
+    this.magnet = new Vector(Infinity, Infinity);
+  }
+
   resetFieldDisplay(): void {
     this.fieldDisplay = {
       offset: new Vector(0, 0),
@@ -175,10 +179,7 @@ export class MainApp {
     this.gc = pfd.gc;
     this.paths = pfd.paths;
 
-    this.selected = [];
-    this.selectedBefore = [];
-    this.expanded = [];
-    this.magnet = new Vector(Infinity, Infinity);
+    this.resetUserControl();
     this.resetFieldDisplay();
   }
 
@@ -219,17 +220,13 @@ export class MainApp {
     const newFormat = getAllFormats().find(format => format.getName() === this.format.getName());
     if (newFormat === undefined) return;
 
-    newFormat.init();
+    newFormat.init(); // ALGO: Suspend initFormat()
 
     this.format = newFormat;
     this.gc = this.format.buildGeneralConfig();
-    this.mountingFile = null;
     this.usingUOL = this.gc.uol;
     this.paths = [];
-    this.selected = [];
-    this.selectedBefore = [];
-    this.expanded = [];
-    this.magnet = new Vector(Infinity, Infinity);
+    this.resetUserControl();
     this.resetFieldDisplay();
   }
 

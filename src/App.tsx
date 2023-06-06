@@ -57,6 +57,8 @@ const App = observer(() => {
     for (const path of app.paths) {
       path.pc = app.format.buildPathConfig();
     }
+
+    app.resetUserControl();
   }
 
   React.useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
@@ -70,11 +72,6 @@ const App = observer(() => {
       if (app.usingUOL === newUOL) return;
 
       const uc = new UnitConverter(oldUOL, newUOL);
-
-      app.selected = [];
-      app.selectedBefore = [];
-      app.expanded = [];
-      app.magnet = new Vector(Infinity, Infinity);
 
       app.gc.pointDensity = uc.fromAtoB(app.gc.pointDensity);
       app.gc.controlMagnetDistance = uc.fromAtoB(app.gc.controlMagnetDistance);

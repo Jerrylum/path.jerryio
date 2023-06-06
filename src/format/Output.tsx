@@ -69,6 +69,7 @@ export async function onNew(app: MainApp) {
   // TODO: check unsaved change?
 
   app.newPathFile();
+  app.mountingFile = null;
 }
 
 export async function onSave(app: MainApp) {
