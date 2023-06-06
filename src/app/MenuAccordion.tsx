@@ -51,7 +51,7 @@ const MenuAccordion = observer((props: AppProps) => {
       <Button size="small" color="inherit" variant="text" id="menu-file-btn" onClick={() => setIsOpenFileMenu(!isOpenFileMenu)}>File</Button>
       <Button size="small" color="inherit" variant="text" id="menu-edit-btn" onClick={() => setIsOpenEditMenu(!isOpenEditMenu)}>Edit</Button>
       <Button size="small" color="inherit" variant="text" id="menu-view-btn" onClick={() => setIsOpenViewMenu(!isOpenViewMenu)}>View</Button>
-      <Button size="small" color="inherit" variant="text" onClick={action(onThemeChange)}>Help</Button>
+      <Button size="small" color="inherit" variant="text" id="menu-help-btn" onClick={() => setIsOpenHelpMenu(!isOpenHelpMenu)}>Help</Button>
 
       <Menu anchorEl={document.getElementById('menu-file-btn')} MenuListProps={{ dense: true }}
         open={isOpenFileMenu} onClose={() => setIsOpenFileMenu(false)}>
@@ -91,6 +91,13 @@ const MenuAccordion = observer((props: AppProps) => {
           onClick={onMenuClick(() => props.app.theme = lightTheme)} />
         <CustomMenuItem done={props.app.theme.palette.mode === darkTheme.palette.mode} text="Dark Theme"
           onClick={onMenuClick(() => props.app.theme = darkTheme)} />
+      </Menu>
+
+      <Menu anchorEl={document.getElementById('menu-help-btn')} MenuListProps={{ dense: true }}
+        open={isOpenHelpMenu} onClose={() => setIsOpenHelpMenu(false)}>
+        <CustomMenuItem done={false} text="Help Page" />
+        <CustomMenuItem done={false} text="View License" />
+        <CustomMenuItem done={false} text="About" />
       </Menu>
     </Card>
   );
