@@ -1,4 +1,7 @@
 import React from "react";
+import { runInAction } from "mobx"
+import { useHotkeys } from 'react-hotkeys-hook'
+import { HotkeysEvent, HotkeyCallback, OptionsOrDependencyArray, RefType } from 'react-hotkeys-hook/dist/types';
 
 export function useTimer(ms: number) {
   const [time, setTime] = React.useState(Date.now());
@@ -26,6 +29,36 @@ export function useIsMacOS() {
   }, []);
 }
 
+export function useCustomHotkeys<T extends HTMLElement>(
+  keys: string, callback: () => void,
+  options?: OptionsOrDependencyArray, dependencies?: OptionsOrDependencyArray): React.MutableRefObject<RefType<T>> {
+  const timeRef = React.useRef<number | null>(null);
+
+  function onKeydown(func: () => void): HotkeyCallback {
+    return function (kvEvt: KeyboardEvent, hkEvt: HotkeysEvent) {
+      // This might not be needed as preventDefault is set to true in the options
+      kvEvt.preventDefault();
+      kvEvt.stopPropagation();
+      /*
+      UX: Debounce the keydown event to prevent the callback from being called multiple times.
+      If the user holds down the key, the callback will only be called once until the key is released.
+      However, it auto resets after 800ms of no keydown events to prevent the case where the keyup event is missed.
+      */
+
+      if (kvEvt.type === "keyup") {
+        timeRef.current = null;
+      } else if (kvEvt.type === "keydown") {
+        if (timeRef.current === null || (Date.now() - timeRef.current) > 800) { // it is randomly chosen
+          runInAction(func);
+        }
+        timeRef.current = Date.now();
+      }
+    }
+  }
+
+  return useHotkeys(useKeyName(keys), onKeydown(callback), { ...options, keydown: true, keyup: true, preventDefault: true }, dependencies);
+}
+
 export function useKeyName(key: string) {
   return useIsMacOS() ? key.replaceAll("Ctrl", "⌘") : key;
 }
@@ -36,8 +69,8 @@ export function makeId(length: number) {
   const charactersLength = characters.length;
   let counter = 0;
   while (counter < length) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-      counter += 1;
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    counter += 1;
   }
   return result;
 }

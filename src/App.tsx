@@ -2,13 +2,13 @@ import './App.css';
 
 import { Path } from './math/Path';
 
-import { reaction, action, runInAction } from "mobx"
+import { reaction, action } from "mobx"
 import { observer } from "mobx-react-lite"
 
 import { ThemeProvider } from '@mui/material/styles';
 
 import { Box, Card } from '@mui/material';
-import { useKeyName, useTimer } from './app/Util';
+import { useCustomHotkeys, useTimer } from './app/Util';
 import { MenuAccordion } from './app/MenuAccordion';
 import { PathTreeAccordion } from './app/PathTreeAccordion';
 import { GeneralConfigAccordion } from './app/GeneralConfigAccordion';
@@ -21,8 +21,6 @@ import { MainApp } from './app/MainApp';
 
 import { darkTheme, lightTheme } from './app/Theme';
 import React from 'react';
-import { useHotkeys } from 'react-hotkeys-hook'
-import { HotkeysEvent } from 'react-hotkeys-hook/dist/types'
 import { onDownload, onNew, onOpen, onSave, onSaveAs } from './format/Output';
 import { NoticeProvider } from './app/Notice';
 
@@ -113,50 +111,37 @@ const App = observer(() => {
     }
   }), []);
 
-  React.useEffect(action(() => {
-    const browserHotkeysEvent = (evt: KeyboardEvent) => {
-      if (evt.ctrlKey) evt.preventDefault();
-    }
-    document.addEventListener("keydown", browserHotkeysEvent);
-
-    return () => {
-      document.removeEventListener("keydown", browserHotkeysEvent);
-    }
-  }), []);
-
   React.useEffect(action(initFormat), [app.format]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const appProps: AppProps = { paths: app.paths, app };
 
   const themeClass = app.theme.palette.mode === lightTheme.palette.mode ? "light-theme" : "dark-theme";
 
-  function onKeybind(func: (app: MainApp) => void) {
-    return function (kvEvt: KeyboardEvent, hkEvt: HotkeysEvent) {
-      kvEvt.preventDefault();
-      kvEvt.stopPropagation();
-      runInAction(() => func(app));
-    }
-  }
+  // UX: Enable custom hotkeys on input fields (e.g. Ctrl+S) to prevent accidentally triggering the browser default
+  // hotkeys when focusing them (e.g. Save page). However, we do not apply it to all hotkeys, because we want to keep
+  // some browser default hotkeys on input fields (e.g. Ctrl+Z to undo user input) instead of triggering custom hotkeys
+  // (e.g. Ctrl+Z to undo field change)
+  const optionsToEnableHotkeysOnInputFields = { enableOnContentEditable: true, enableOnFormTags: true };
 
-  useHotkeys(useKeyName("Ctrl+P"), onKeybind(onNew));
-  useHotkeys(useKeyName("Ctrl+O"), onKeybind(onOpen));
-  useHotkeys(useKeyName("Ctrl+S"), onKeybind(onSave));
-  useHotkeys(useKeyName("Ctrl+Shift+S"), onKeybind(onSaveAs));
-  useHotkeys(useKeyName("Ctrl+D"), onKeybind(onDownload));
-  useHotkeys(useKeyName("Ctrl+,"), onKeybind(() => console.log("Preferences")));
+  useCustomHotkeys("Ctrl+P", onNew.bind(null, app), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Ctrl+O", onOpen.bind(null, app), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Ctrl+S", onSave.bind(null, app), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Ctrl+Shift+S", onSaveAs.bind(null, app), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Ctrl+D", onDownload.bind(null, app), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Ctrl+,", () => console.log("Preferences"));
 
-  useHotkeys(useKeyName("Ctrl+Z"), onKeybind(() => console.log("Undo")));
-  useHotkeys(useKeyName("Ctrl+Y,Ctrl+Shift+Z"), onKeybind(() => console.log("Redo")));
-  useHotkeys(useKeyName("Ctrl+A"), onKeybind(() => console.log("Select All")));
-  useHotkeys(useKeyName("Ctrl+Shift+A"), onKeybind(() => console.log("Select Inverse")));
-  useHotkeys(useKeyName("Esc"), onKeybind(() => console.log("Select None")));
+  useCustomHotkeys("Ctrl+Z", () => console.log("Undo"));
+  useCustomHotkeys("Ctrl+Y,Ctrl+Shift+Z", () => console.log("Redo"));
+  useCustomHotkeys("Ctrl+A", () => console.log("Select All"));
+  useCustomHotkeys("Ctrl+Shift+A", () => console.log("Select Inverse"));
+  useCustomHotkeys("Esc", () => console.log("Select None"));
 
-  useHotkeys(useKeyName("Ctrl+B"), onKeybind(() => app.view.showSpeedCanvas = !app.view.showSpeedCanvas));
-  useHotkeys(useKeyName("Ctrl+J"), onKeybind(() => app.view.showRightPanel = !app.view.showRightPanel));
+  useCustomHotkeys("Ctrl+B", () => app.view.showSpeedCanvas = !app.view.showSpeedCanvas);
+  useCustomHotkeys("Ctrl+J", () => app.view.showRightPanel = !app.view.showRightPanel);
 
-  useHotkeys(useKeyName("Ctrl+Add,Ctrl+Equal"), onKeybind(() => app.fieldScale += 0.5));
-  useHotkeys(useKeyName("Ctrl+Subtract,Ctrl+Minus"), onKeybind(() => app.fieldScale -= 0.5));
-  useHotkeys(useKeyName("Ctrl+0"), onKeybind(() => app.resetFieldDisplay()));
+  useCustomHotkeys("Ctrl+Add,Ctrl+Equal", () => app.fieldScale += 0.5);
+  useCustomHotkeys("Ctrl+Subtract,Ctrl+Minus", () => app.fieldScale -= 0.5);
+  useCustomHotkeys("Ctrl+0", () => app.resetFieldDisplay());
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
