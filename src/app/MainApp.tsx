@@ -1,4 +1,4 @@
-import { makeAutoObservable, computed, runInAction } from "mobx"
+import { makeAutoObservable, computed, runInAction, reaction, action } from "mobx"
 import DOMPurify from 'dompurify';
 import { GeneralConfig } from "../format/Config";
 import { InteractiveEntity } from "../math/Canvas";
@@ -7,7 +7,7 @@ import { addToArray, clamp, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-transformer';
-import { UnitOfLength } from "../math/Unit";
+import { UnitConverter, UnitOfLength } from "../math/Unit";
 import { Theme } from "@mui/material";
 import { darkTheme, lightTheme } from "./Theme";
 
@@ -15,7 +15,7 @@ import { darkTheme, lightTheme } from "./Theme";
 // observable class
 export class MainApp {
   public format: Format = new PathDotJerryioFormatV0_1();
-  public usingUOL: UnitOfLength = UnitOfLength.Centimeter;
+  private usingUOL: UnitOfLength = UnitOfLength.Centimeter;
   public mountingFile: FileSystemFileHandle | null = null; // This is intended to be modified outside the class
 
   public gc: GeneralConfig = this.format.buildGeneralConfig(); // a.k.a Configuration
@@ -42,6 +42,67 @@ export class MainApp {
 
   constructor() {
     makeAutoObservable(this);
+
+    reaction(() => this.format, action((newFormat: Format, oldFormat: Format) => {
+      if (newFormat.isInit) return;
+
+      // ALGO: this reaction should only be triggered when the format is changed by the user
+
+      newFormat.init();
+
+      const robotWidth = this.gc.robotWidth;
+      const robotHeight = this.gc.robotHeight;
+
+      this.gc = this.format.buildGeneralConfig();
+      this.gc.pointDensity = new UnitConverter(this.usingUOL, this.gc.uol, 5).fromBtoA(this.gc.pointDensity); // UX: Keep some values
+      this.gc.robotWidth = robotWidth;
+      this.gc.robotHeight = robotHeight;
+
+      for (const path of this.paths) {
+        path.pc = this.format.buildPathConfig();
+      }
+
+      this.resetUserControl();
+    }));
+
+    reaction(() => this.gc.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
+      if (this.usingUOL === newUOL) return;
+
+      const uc = new UnitConverter(oldUOL, newUOL);
+
+      this.gc.pointDensity = uc.fromAtoB(this.gc.pointDensity);
+      this.gc.controlMagnetDistance = uc.fromAtoB(this.gc.controlMagnetDistance);
+      this.gc.robotWidth = uc.fromAtoB(this.gc.robotWidth);
+      this.gc.robotHeight = uc.fromAtoB(this.gc.robotHeight);
+
+      for (const path of this.paths) {
+        for (const control of path.controls) {
+          control.x = uc.fromAtoB(control.x);
+          control.y = uc.fromAtoB(control.y);
+        }
+      }
+
+      this.usingUOL = newUOL;
+    }));
+
+    reaction(() => this.gc.pointDensity, action((val: number, oldVal: number) => {
+      const newMaxLimit = parseFloat((val * 2).toFixed(3));
+
+      for (const path of this.paths) {
+        path.pc.applicationRange.maxLimit.label = newMaxLimit + "";
+        path.pc.applicationRange.maxLimit.value = newMaxLimit;
+
+        const ratio = val / oldVal;
+
+        path.pc.applicationRange.from *= ratio;
+        path.pc.applicationRange.from = parseFloat(path.pc.applicationRange.from.toFixed(3));
+        path.pc.applicationRange.to *= ratio;
+        path.pc.applicationRange.to = parseFloat(path.pc.applicationRange.to.toFixed(3));
+      }
+
+    }));
+
+    this.newPathFile();
   }
 
   @computed get isLightTheme(): boolean {
@@ -212,7 +273,7 @@ export class MainApp {
   importPathFileData(data: Record<string, any>): void {
     const format = getAllFormats().find(f => f.getName() === data.format);
     if (format === undefined) throw new Error("Format not found.");
-    format.init(); // ALGO: Suspend initFormat()
+    format.init(); // ALGO: Suspend format reaction
 
     if (typeof data.gc !== "object") throw new Error("Invalid data format: gc is not an object.");
     const gc = plainToClassFromExist(format.buildGeneralConfig(), data.gc);
@@ -246,7 +307,7 @@ export class MainApp {
     const newFormat = getAllFormats().find(format => format.getName() === this.format.getName());
     if (newFormat === undefined) return;
 
-    newFormat.init(); // ALGO: Suspend initFormat()
+    newFormat.init(); // ALGO: Suspend format reaction
 
     this.format = newFormat;
     this.gc = this.format.buildGeneralConfig();
@@ -273,7 +334,7 @@ export class MainApp {
 
     // Clone format
     const format = getAllFormats().find(f => f.getName() === this.format.getName()) as Format;
-    format.init(); // ALGO: Suspend initFormat()
+    format.init(); // ALGO: Suspend format reaction
     const pfd = format.recoverPathFileData(fileContent);
 
     this.setPathFileData(format, pfd);
