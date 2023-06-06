@@ -172,7 +172,7 @@ const KeyFrameElement = observer((props: { ikf: KeyFrameIndexing, gcc: GraphCanv
 const GraphCanvasElement = observer((props: AppProps) => {
   const [xOffset, setXOffset] = React.useState(0);
 
-  const path = props.app.selectedPath || props.paths[0];
+  const path = props.app.interestedPath;
 
   React.useEffect(() => {
     setXOffset(0);

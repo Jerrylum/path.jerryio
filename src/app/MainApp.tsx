@@ -26,6 +26,7 @@ export class MainApp {
   public paths: Path[] = [];
   public selected: string[] = []; // ALGO: Not using Set because order matters
   public selectedBefore: string[] = []; // ALGO: For area selection
+  private lastSelectedPath: Path | undefined = undefined;
   public expanded: string[] = []; // ALGO: Order doesn't matter but anyway
   public magnet: Vector = new Vector(Infinity, Infinity);
 
@@ -117,6 +118,14 @@ export class MainApp {
     // ALGO: Return the first selected control point's path if: some control point is selected, the path visible and not locked
     if (rtn === undefined) rtn = this.paths.find((path) => path.controls.some((control) => this.isSelected(control.uid)));
 
+    if (rtn !== undefined) this.lastSelectedPath = rtn;
+
+    return rtn;
+  }
+
+  @computed get interestedPath(): Path | undefined {
+    const rtn = this.selectedPath ?? this.lastSelectedPath ?? this.paths[0];
+    if (!this.paths.some((path) => path.uid === rtn?.uid)) this.lastSelectedPath = undefined;
     return rtn;
   }
 

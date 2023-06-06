@@ -189,7 +189,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
     const cpInUOL = cc.toUOL(new EndPointControl(posInPx.x, posInPx.y, 0));
 
     // UX: Set target path to the first path if: no path is selected
-    let targetPath: Path | undefined = props.app.selectedPath || paths[0];
+    let targetPath: Path | undefined = props.app.interestedPath;
     if (targetPath === undefined) {
       // UX: Create new path if: no path exists
       // UX: Use user mouse position as the last control point
