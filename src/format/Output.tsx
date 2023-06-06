@@ -1,13 +1,12 @@
 import { MainApp } from "../app/MainApp";
-import { getAllFormats } from "./Format";
+import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from '../app/Notice';
 
 function exportPathFile(app: MainApp): string | undefined {
   try {
     return app.format.exportPathFile(app);
   } catch (err) {
     console.log(err);
-    alert("Error: Cannot export path file"); // TODO better error handling
-
+    enqueueErrorSnackbar(err);
     return undefined;
   }
 }
@@ -21,12 +20,11 @@ async function writeFile(app: MainApp, contents: string): Promise<boolean> {
     await writable.write(contents);
     await writable.close();
 
-    // TODO Show save notification
+    enqueueSuccessSnackbar("Saved");
     return true;
   } catch (err) {
-    console.log(err);
-
-    alert("Error: Cannot save path file"); // TODO better error handling
+    if (err instanceof DOMException) enqueueErrorSnackbar("Failed to save file");
+    else enqueueErrorSnackbar(err);
     return false;
   }
 }
@@ -45,9 +43,9 @@ async function readFile(app: MainApp): Promise<string | undefined> {
 
     return contents;
   } catch (err) {
-    console.log(err);
+    if (err instanceof DOMException) console.log(err); // ignore error
+    else enqueueErrorSnackbar(err);
 
-    alert("Error: Cannot read path file"); // TODO better error handling
     return undefined;
   }
 }
@@ -62,9 +60,7 @@ async function choiceSave(app: MainApp): Promise<boolean> {
     app.mountingFile = fileHandle;
     return true;
   } catch (err) {
-    console.log(err);
-
-    // ignore error
+    console.log(err); // ignore error
     return false;
   }
 }
@@ -72,18 +68,7 @@ async function choiceSave(app: MainApp): Promise<boolean> {
 export async function onNew(app: MainApp) {
   // TODO: check unsaved change?
 
-  const newFormat = getAllFormats().find(format => format.getName() === app.format.getName());
-  if (newFormat === undefined) return;
-
-  newFormat.init();
-
-  app.format = newFormat;
-  app.gc = app.format.buildGeneralConfig();
-  app.paths = [];
-  app.usingUOL = app.gc.uol;
-  app.selected = [];
-  app.expanded = [];
-  app.resetFieldDisplay();
+  app.newPathFile();
 }
 
 export async function onSave(app: MainApp) {
@@ -110,9 +95,7 @@ export async function onOpen(app: MainApp) {
   try {
     app.importPathFile(contents);
   } catch (err) {
-    console.log(err);
-
-    alert("Error: Cannot import path file"); // TODO better error handling
+    enqueueErrorSnackbar(err);
   }
 }
 

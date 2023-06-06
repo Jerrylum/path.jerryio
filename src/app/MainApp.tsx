@@ -202,6 +202,24 @@ export class MainApp {
     return instanceToPlain(data);
   }
 
+  newPathFile() {
+    const newFormat = getAllFormats().find(format => format.getName() === this.format.getName());
+    if (newFormat === undefined) return;
+
+    newFormat.init();
+
+    this.format = newFormat;
+    this.gc = this.format.buildGeneralConfig();
+    this.mountingFile = null;
+    this.usingUOL = this.gc.uol;
+    this.paths = [];
+    this.selected = [];
+    this.selectedBefore = [];
+    this.expanded = [];
+    this.magnet = new Vector(0, 0);
+    this.resetFieldDisplay();
+  }
+
   importPathFile(fileContent: string): void {
     // ALGO: This function throws error
     // ALGO: Just find the first line that starts with "#PATH.JERRYIO-DATA"

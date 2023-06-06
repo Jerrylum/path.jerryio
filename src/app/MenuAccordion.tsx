@@ -18,7 +18,7 @@ const CustomMenuItem = observer((props: DefaultComponentProps<MenuItemTypeMap> &
 }) => {
   const { done, text, hotkey, ...rest } = props;
 
-  return (<MenuItem {...rest}>
+  return (<MenuItem {...rest} className="menu-item">
     <DoneIcon sx={{ visibility: !done ? "hidden" : "" }} />
     <ListItemText sx={{ marginRight: "1rem" }}>{text}</ListItemText>
     <Typography variant="body2" color="text.secondary">{hotkey || ""}</Typography>

@@ -24,6 +24,7 @@ import React from 'react';
 import { useHotkeys } from 'react-hotkeys-hook'
 import { HotkeysEvent } from 'react-hotkeys-hook/dist/types'
 import { onDownload, onNew, onOpen, onSave, onSaveAs } from './format/Output';
+import { NoticeProvider } from './app/Notice';
 
 let app = new MainApp();
 
@@ -161,6 +162,7 @@ const App = observer(() => {
   return (
     <div className={["App", themeClass].join(" ")} key={app.format.uid + "-" + app.gc.uol}>
       <ThemeProvider theme={app.theme}>
+        <NoticeProvider />
         <Box id='left-editor-panel'>
           <MenuAccordion {...appProps} />
           <PathTreeAccordion {...appProps} />
