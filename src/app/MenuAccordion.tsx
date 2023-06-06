@@ -1,6 +1,6 @@
 import { action } from "mobx"
 import DoneIcon from '@mui/icons-material/Done';
-import { Button, Card, Divider, ListItemIcon, ListItemText, Menu, MenuItem, MenuItemTypeMap, MenuList, Typography } from '@mui/material';
+import { Button, Card, Divider, ListItemText, Menu, MenuItem, MenuItemTypeMap, MenuList, Typography } from '@mui/material';
 import { observer } from "mobx-react-lite";
 import { AppProps } from "../App";
 
@@ -31,10 +31,6 @@ const MenuAccordion = observer((props: AppProps) => {
   const [isOpenEditMenu, setIsOpenEditMenu] = React.useState(false);
   const [isOpenViewMenu, setIsOpenViewMenu] = React.useState(false);
   const [isOpenHelpMenu, setIsOpenHelpMenu] = React.useState(false);
-
-  function onThemeChange() {
-    props.app.theme = props.app.theme.palette.mode === lightTheme.palette.mode ? darkTheme : lightTheme;
-  }
 
   function onMenuClick(func: (app: MainApp) => void) {
     return action(() => {

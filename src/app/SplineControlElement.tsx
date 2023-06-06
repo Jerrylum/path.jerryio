@@ -174,8 +174,6 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
   }
 
   function onMouseUpControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
-    const evt = event.evt;
-
     if (!shouldInteract(event)) return;
 
     props.app.magnet = new Vector(Infinity, Infinity);
