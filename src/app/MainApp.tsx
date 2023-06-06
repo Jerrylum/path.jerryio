@@ -167,6 +167,10 @@ export class MainApp {
     this.paths = pfd.paths;
 
     this.selected = [];
+    this.selectedBefore = [];
+    this.expanded = [];
+    this.magnet = new Vector(Infinity, Infinity);
+    this.resetFieldDisplay();
   }
 
   importPathFileData(data: Record<string, any>): void {
@@ -216,7 +220,7 @@ export class MainApp {
     this.selected = [];
     this.selectedBefore = [];
     this.expanded = [];
-    this.magnet = new Vector(0, 0);
+    this.magnet = new Vector(Infinity, Infinity);
     this.resetFieldDisplay();
   }
 
