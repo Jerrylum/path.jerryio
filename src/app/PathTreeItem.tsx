@@ -69,19 +69,19 @@ const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
         entity.visible
           ? (
             parent !== undefined && parent.visible === false
-              ? <FiberManualRecordOutlinedIcon className='tree-node-func-icon show' onClick={onVisibleClick} />
-              : <VisibilityIcon className='tree-node-func-icon' onClick={onVisibleClick} />
+              ? <FiberManualRecordOutlinedIcon className='tree-node-func-icon show' onClick={action(onVisibleClick)} />
+              : <VisibilityIcon className='tree-node-func-icon' onClick={action(onVisibleClick)} />
           )
-          : <VisibilityOffOutlinedIcon className='tree-node-func-icon show' onClick={onVisibleClick} />
+          : <VisibilityOffOutlinedIcon className='tree-node-func-icon show' onClick={action(onVisibleClick)} />
       }
       {
         entity.lock === false
           ? (
             parent !== undefined && parent.lock === true
-              ? <FiberManualRecordOutlinedIcon className='tree-node-func-icon show' onClick={onLockClick} />
-              : <LockOpenIcon className='tree-node-func-icon' onClick={onLockClick} />
+              ? <FiberManualRecordOutlinedIcon className='tree-node-func-icon show' onClick={action(onLockClick)} />
+              : <LockOpenIcon className='tree-node-func-icon' onClick={action(onLockClick)} />
           )
-          : <LockOutlinedIcon className='tree-node-func-icon show' onClick={onLockClick} />
+          : <LockOutlinedIcon className='tree-node-func-icon show' onClick={action(onLockClick)} />
       }
       {
         props.onDelete ? <DeleteIcon className='tree-node-func-icon' onClick={props.onDelete} /> : null

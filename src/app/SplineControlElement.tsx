@@ -43,7 +43,8 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
         setJustSelected(props.app.addSelected(props.cp.uid));
       } else {
         // UX: Select one control point if: left click + not pressing shift
-        props.app.selected = [props.cp.uid];
+        props.app.clearSelected();
+        props.app.addSelected(props.cp.uid);
         setJustSelected(false);
       }
     } else if (evt.button === 1) { // middle click

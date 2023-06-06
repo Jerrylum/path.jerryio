@@ -1,4 +1,4 @@
-import { makeAutoObservable, computed } from "mobx"
+import { makeAutoObservable, computed, runInAction } from "mobx"
 import DOMPurify from 'dompurify';
 import { GeneralConfig } from "../format/Config";
 import { InteractiveEntity } from "../math/Canvas";
@@ -21,10 +21,10 @@ export class MainApp {
   public gc: GeneralConfig = this.format.buildGeneralConfig(); // a.k.a Configuration
 
   public paths: Path[] = [];
-  public selected: string[] = []; // ALGO: Not using Set because order matters
+  private selected: string[] = []; // ALGO: Not using Set because order matters
   private selectedBefore: string[] = []; // ALGO: For area selection
-  private lastSelectedPath: Path | undefined = undefined; // ALGO: For adding controls
-  public expanded: string[] = []; // ALGO: Order doesn't matter but anyway
+  private lastInterestedPath: Path | undefined = undefined; // ALGO: For adding controls
+  private expanded: string[] = []; // ALGO: Order doesn't matter but anyway
   public magnet: Vector = new Vector(Infinity, Infinity);
 
   public view = {
@@ -60,6 +60,10 @@ export class MainApp {
     return removeFromArray(this.selected, typeof x === "string" ? x : x.uid);
   }
 
+  clearSelected(): void {
+    this.selected = [];
+  }
+
   isExpanded(x: InteractiveEntity | string): boolean {
     return typeof x === "string" ? this.expanded.includes(x) : this.expanded.includes(x.uid);
   }
@@ -70,6 +74,10 @@ export class MainApp {
 
   removeExpanded(x: InteractiveEntity | string): boolean {
     return removeFromArray(this.expanded, typeof x === "string" ? x : x.uid);
+  }
+
+  clearExpanded(): void {
+    this.expanded = [];
   }
 
   startAreaSelection(): void {
@@ -91,6 +99,14 @@ export class MainApp {
 
     // remove duplicates
     this.selected = Array.from(new Set(selected));
+  }
+
+  @computed get expandedEntityIds(): string[] {
+    return this.expanded.slice(); // ALGO: Return a copy
+  }
+
+  @computed get expandedEntityCount(): number {
+    return this.expanded.length;
   }
 
   @computed get selectableControls(): Control[] {
@@ -115,14 +131,24 @@ export class MainApp {
     // ALGO: Return the first selected control point's path if: some control point is selected, the path visible and not locked
     if (rtn === undefined) rtn = this.paths.find((path) => path.controls.some((control) => this.isSelected(control.uid)));
 
-    if (rtn !== undefined) this.lastSelectedPath = rtn;
-
     return rtn;
   }
 
-  @computed get interestedPath(): Path | undefined {
-    const rtn = this.selectedPath ?? this.lastSelectedPath ?? this.paths[0];
-    if (!this.paths.some((path) => path.uid === rtn?.uid)) this.lastSelectedPath = undefined;
+  @computed get selectedEntityIds(): string[] {
+    return this.selected.slice(); // ALGO: Return a copy
+  }
+
+  @computed get selectedEntityCount(): number {
+    return this.selected.length;
+  }
+
+  interestedPath(): Path | undefined {
+    // ALGO: Return the selected path or last selected path or first path
+    const check = this.selectedPath ?? this.lastInterestedPath ?? this.paths[0];
+    const rtn = this.paths.some((path) => path.uid === check?.uid) ? check : undefined;
+
+    runInAction(() => this.lastInterestedPath = rtn);
+
     return rtn;
   }
 
@@ -145,7 +171,7 @@ export class MainApp {
   resetUserControl(): void {
     this.selected = [];
     this.expanded = [];
-    this.lastSelectedPath = undefined;
+    this.lastInterestedPath = undefined;
     this.magnet = new Vector(Infinity, Infinity);
   }
 

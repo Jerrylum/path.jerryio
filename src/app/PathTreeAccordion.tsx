@@ -19,7 +19,12 @@ const PathTreeAccordion = observer((props: AppProps) => {
   }
 
   function onExpandAllClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    props.app.expanded = props.app.expanded.length !== props.paths.length ? props.paths.map((path) => path.uid) : [];
+    if (props.app.expandedEntityIds.length !== props.paths.length) {
+      props.app.clearExpanded();
+      props.paths.forEach((path) => props.app.addExpanded(path));
+    } else {
+      props.app.clearExpanded();
+    }
   }
 
   function onTreeViewNodeToggle(event: React.SyntheticEvent, nodeIds: string[]) {
@@ -27,7 +32,8 @@ const PathTreeAccordion = observer((props: AppProps) => {
     // UX: Expand/Collapse if: the icon is clicked
     let iconClicked = (event.target as HTMLElement).closest(".MuiTreeItem-iconContainer")
     if (iconClicked) {
-      props.app.expanded = nodeIds;
+      props.app.clearExpanded();
+      nodeIds.forEach((nodeId) => props.app.addExpanded(nodeId));
     }
   }
 
@@ -44,10 +50,10 @@ const PathTreeAccordion = observer((props: AppProps) => {
           {
             props.paths.length === 0
               ? <IconButton className='icon' onClick={action(onExpandAllClick)} disabled={props.paths.length === 0}><KeyboardDoubleArrowUpIcon /></IconButton>
-              : <Tooltip title={props.app.expanded.length !== props.paths.length ? 'Expand All' : 'Collapse All'}>
+              : <Tooltip title={props.app.expandedEntityIds.length !== props.paths.length ? 'Expand All' : 'Collapse All'}>
                 <IconButton className='icon' onClick={action(onExpandAllClick)}>
                   {
-                    props.app.expanded.length !== props.paths.length
+                    props.app.expandedEntityIds.length !== props.paths.length
                       ? <KeyboardDoubleArrowDownIcon />
                       : <KeyboardDoubleArrowUpIcon />
                   }
@@ -62,9 +68,12 @@ const PathTreeAccordion = observer((props: AppProps) => {
           defaultCollapseIcon={<ExpandMoreIcon />}
           defaultExpandIcon={<ChevronRightIcon />}
           multiSelect
-          expanded={props.app.expanded}
-          selected={props.app.selected}
-          onNodeSelect={action((event, nodeIds) => props.app.selected = nodeIds)}
+          expanded={props.app.expandedEntityIds}
+          selected={props.app.selectedEntityIds}
+          onNodeSelect={action((event, nodeIds) => {
+            props.app.clearSelected();
+            nodeIds.forEach((nodeId) => props.app.addSelected(nodeId));
+          })}
           onNodeToggle={action(onTreeViewNodeToggle)}
           sx={{ flexGrow: 1, maxWidth: "100%", overflowX: 'hidden', overflowY: 'auto', margin: "1vh 0 0" }}
         >

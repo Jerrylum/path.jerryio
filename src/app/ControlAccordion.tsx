@@ -18,14 +18,14 @@ const ControlAccordion = observer((props: AppProps) => {
             <ObserverInput
               label="X"
               getValue={() => {
-                if (props.app.selected.length === 0) return "";
-                if (props.app.selected.length > 1) return "(mixed)";
+                if (props.app.selectedEntityCount === 0) return "";
+                if (props.app.selectedEntityCount > 1) return "(mixed)";
                 const control = props.app.selectedControl;
                 if (control === undefined) return "";
                 return control.x.toString();
               }}
               setValue={(value: string) => {
-                if (props.app.selected.length !== 1) return;
+                if (props.app.selectedEntityCount !== 1) return;
                 const control = props.app.selectedControl;
                 if (control === undefined) return;
 
@@ -34,20 +34,20 @@ const ControlAccordion = observer((props: AppProps) => {
               }}
               isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
               isValidValue={(candidate: string) => new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
-              disabled={props.app.selected.length !== 1 || props.app.selectedControl === undefined}
+              disabled={props.app.selectedEntityCount !== 1 || props.app.selectedControl === undefined}
               numeric
             />
             <ObserverInput
               label="Y"
               getValue={() => {
-                if (props.app.selected.length === 0) return "";
-                if (props.app.selected.length > 1) return "(mixed)";
+                if (props.app.selectedEntityCount === 0) return "";
+                if (props.app.selectedEntityCount > 1) return "(mixed)";
                 const control = props.app.selectedControl;
                 if (control === undefined) return "";
                 return control.y.toString();
               }}
               setValue={(value: string) => {
-                if (props.app.selected.length !== 1) return;
+                if (props.app.selectedEntityCount !== 1) return;
                 const control = props.app.selectedControl;
                 if (control === undefined) return;
 
@@ -56,30 +56,30 @@ const ControlAccordion = observer((props: AppProps) => {
               }}
               isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
               isValidValue={(candidate: string) => new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
-              disabled={props.app.selected.length !== 1 || props.app.selectedControl === undefined}
+              disabled={props.app.selectedEntityCount !== 1 || props.app.selectedControl === undefined}
               numeric
             />
             <ObserverInput
               label="Heading"
               getValue={() => {
-                if (props.app.selected.length === 0) return "";
-                if (props.app.selected.length > 1) return "(mixed)";
+                if (props.app.selectedEntityCount === 0) return "";
+                if (props.app.selectedEntityCount > 1) return "(mixed)";
                 const control = props.app.selectedControl;
                 if (!(control instanceof EndPointControl)) return "";
                 return control.heading.toString();
               }}
               setValue={(value: string) => {
-                if (props.app.selected.length !== 1) return;
+                if (props.app.selectedEntityCount !== 1) return;
                 const control = props.app.selectedControl;
                 if (!(control instanceof EndPointControl)) return;
-                
+
                 control.heading = parseFloat(value);
                 control.fixPrecision();
               }}
               isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
               isValidValue={(candidate: string) => new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
-              disabled={props.app.selected.length !== 1 || props.app.selectedControl === undefined}
-              sx={{ visibility: props.app.selected.length === 1 && !(props.app.selectedControl instanceof EndPointControl) ? "hidden" : "" }}
+              disabled={props.app.selectedEntityCount !== 1 || props.app.selectedControl === undefined}
+              sx={{ visibility: props.app.selectedEntityCount === 1 && !(props.app.selectedControl instanceof EndPointControl) ? "hidden" : "" }}
               numeric
             />
           </Box>
