@@ -6,7 +6,7 @@ import { getAllFormats } from '../format/Format';
 import { ObserverInput, parseNumberInString } from './ObserverInput';
 import { NumberInUnit, UnitOfLength } from '../math/Unit';
 import { AppProps } from '../App';
-import { UpdatePropertyCommand } from '../math/Command';
+import { UpdatePropertiesCommand, UpdatePropertyCommand } from '../math/Command';
 
 const GeneralConfigAccordion = observer((props: AppProps) => {
   const app = props.app;
@@ -36,7 +36,7 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
           <FormControl sx={{ width: "8rem" }}>
             <InputLabel id="uol-label">Unit of Length</InputLabel>
             <Select labelId="uol-label" label="Unit of Length" size="small" value={gc.uol} onChange={
-              action((e: SelectChangeEvent<UnitOfLength>) => app.execute(new UpdatePropertyCommand(gc, "uol", e.target.value as UnitOfLength)))
+              action((e: SelectChangeEvent<UnitOfLength>) => app.execute(new UpdatePropertiesCommand(gc, { "uol": e.target.value as UnitOfLength })))
             }>
               {
                 Object.keys(UnitOfLength).filter((x) => !isNaN(parseInt(x))).map((x) => {
@@ -51,9 +51,14 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
             label="Point Density"
             getValue={() => gc.pointDensity + ""}
             setValue={
-              (value: string) => app.execute(new UpdatePropertyCommand(gc, "pointDensity",
-                parseNumberInString(value, gc.uol, new NumberInUnit(0.1, UnitOfLength.Centimeter), new NumberInUnit(100, UnitOfLength.Centimeter))
-              ))
+              (value: string) => app.execute(new UpdatePropertiesCommand(gc, {
+                "pointDensity": parseNumberInString(
+                  value,
+                  gc.uol,
+                  new NumberInUnit(0.1, UnitOfLength.Centimeter),
+                  new NumberInUnit(100, UnitOfLength.Centimeter)
+                )
+              }))
             }
             isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
             isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}

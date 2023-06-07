@@ -250,6 +250,9 @@ export class MainApp {
     command.execute();
     this.history.push(command);
     this.redoHistory = [];
+
+    console.log("execute", command, this.history.length, this.redoHistory.length);
+    
   }
 
   undo(): void {
@@ -258,6 +261,8 @@ export class MainApp {
       command.undo();
       this.redoHistory.push(command);
     }
+    console.log("undo", command, this.history.length, this.redoHistory.length);
+    
   }
 
   redo(): void {
@@ -266,6 +271,7 @@ export class MainApp {
       command.redo();
       this.history.push(command);
     }
+    console.log("redo", command, this.history.length, this.redoHistory.length);
   }
 
   private setPathFileData(format: Format, pfd: PathFileData): void {
