@@ -1,5 +1,50 @@
-import { MainApp } from "../app/MainApp";
-import { UnitOfLength } from "./Unit";
+
+export class CommandHistory {
+
+  private lastExecutionTitle: string | undefined = undefined;
+  private lastCommand: CancellableCommand | undefined = undefined;
+  private history: CancellableCommand[] = [];
+  private redoHistory: CancellableCommand[] = [];
+
+  execute(title: string, command: CancellableCommand): void {
+    command.execute();
+    if (title === this.lastExecutionTitle) {
+      // ALGO: Assume that the last command is the same type as the current one.
+      this.lastCommand!.merge(command);
+    } else {
+      if (this.lastCommand !== undefined) {
+        this.history.push(this.lastCommand);
+      }
+
+      this.lastExecutionTitle = title;
+      this.lastCommand = command;
+    }
+    this.redoHistory = [];
+  }
+
+  undo(): void {
+    if (this.lastCommand !== undefined) {
+      this.lastCommand.undo();
+      this.redoHistory.push(this.lastCommand);
+      this.lastExecutionTitle = undefined;
+      this.lastCommand = undefined;
+    } else if (this.history.length > 0) {
+      const command = this.history.pop()!;
+      command.undo();
+      this.redoHistory.push(command);
+    }
+    console.log("undo", this.history.length, this.redoHistory.length);
+  }
+
+  redo(): void {
+    const command = this.redoHistory.pop();
+    if (command !== undefined) {
+      command.redo();
+      this.history.push(command);
+    }
+    console.log("redo", command, this.history.length, this.redoHistory.length);
+  }
+}
 
 export interface Command {
   execute(): void;
@@ -8,74 +53,7 @@ export interface Command {
 export interface CancellableCommand extends Command {
   undo(): void;
   redo(): void;
-}
-
-// export class ChangeUOLCommand implements CancellableCommand {
-//   public oldUOL?: UnitOfLength;
-
-//   constructor(public app: MainApp, public newUOL: UnitOfLength) {
-//   }
-
-//   execute(): void {
-//     this.oldUOL = this.app.gc.uol;
-//     this.app.gc.uol = this.newUOL;
-//   }
-
-//   undo(): void {
-//     this.app.gc.uol = this.oldUOL!;
-//   }
-
-//   redo(): void {
-//     this.execute();
-//   }
-// }
-
-// export class ChangeDensityCommand implements CancellableCommand {
-//   public oldDensity?: number;
-
-//   constructor(public app: MainApp, public newDensity: number) {
-//   }
-
-//   execute(): void {
-//     this.oldDensity = this.app.gc.pointDensity;
-//     this.app.gc.pointDensity = this.newDensity;
-//   }
-
-//   undo(): void {
-//     this.app.gc.pointDensity = this.oldDensity!;
-//   }
-
-//   redo(): void {
-//     this.execute();
-//   }
-// }
-
-export class UpdatePropertyCommand<TTarget> implements CancellableCommand {
-  private previousValue?: any;
-
-  constructor(private target: TTarget, private propertyName: keyof (TTarget), private newValue?: any) { }
-
-  execute(): void {
-    this.previousValue = this.updateProperty(this.newValue);
-  }
-
-  undo(): void {
-    this.updateProperty(this.previousValue);
-    this.previousValue = undefined;
-  }
-
-  redo(): void {
-    this.execute();
-  }
-
-  private updateProperty(value?: any): any {
-    const target = this.target;
-    const key = this.propertyName;
-
-    const currentValue = target[key];
-    target[key] = value;
-    return currentValue;
-  }
+  merge(command: this): void;
 }
 
 export class UpdatePropertiesCommand<TTarget> implements CancellableCommand {
@@ -94,6 +72,11 @@ export class UpdatePropertiesCommand<TTarget> implements CancellableCommand {
 
   redo(): void {
     this.execute();
+  }
+
+  merge(latest: UpdatePropertiesCommand<TTarget>): void {
+    this.previousValue = { ...latest.previousValue,  ...this.previousValue };
+    this.newValues = { ...this.newValues, ...latest.newValues };
   }
 
   private updateProperties(values: Partial<Record<keyof (TTarget), any>>): Partial<Record<keyof (TTarget), any>> {

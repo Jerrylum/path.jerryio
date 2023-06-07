@@ -10,7 +10,7 @@ import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-t
 import { UnitConverter, UnitOfLength } from "../math/Unit";
 import { Theme } from "@mui/material";
 import { darkTheme, lightTheme } from "./Theme";
-import { CancellableCommand } from "../math/Command";
+import { CancellableCommand, CommandHistory } from "../math/Command";
 
 // observable class
 export class MainApp {
@@ -27,8 +27,7 @@ export class MainApp {
   private expanded: string[] = []; // ALGO: Order doesn't matter but anyway
   public magnet: Vector = new Vector(Infinity, Infinity);
 
-  private history: CancellableCommand[] = [];
-  private redoHistory: CancellableCommand[] = [];
+  private _history: CommandHistory = new CommandHistory();
 
   public view = {
     showSpeedCanvas: true,
@@ -66,6 +65,8 @@ export class MainApp {
       }
 
       this.resetUserControl();
+
+      this._history = new CommandHistory();
     }));
 
     reaction(() => this.gc.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
@@ -106,6 +107,10 @@ export class MainApp {
     }));
 
     this.newPathFile();
+  }
+
+  @computed get history(): CommandHistory {
+    return this._history;
   }
 
   @computed get isLightTheme(): boolean {
@@ -246,34 +251,6 @@ export class MainApp {
     }
   }
 
-  execute(command: CancellableCommand): void {
-    command.execute();
-    this.history.push(command);
-    this.redoHistory = [];
-
-    console.log("execute", command, this.history.length, this.redoHistory.length);
-    
-  }
-
-  undo(): void {
-    const command = this.history.pop();
-    if (command !== undefined) {
-      command.undo();
-      this.redoHistory.push(command);
-    }
-    console.log("undo", command, this.history.length, this.redoHistory.length);
-    
-  }
-
-  redo(): void {
-    const command = this.redoHistory.pop();
-    if (command !== undefined) {
-      command.redo();
-      this.history.push(command);
-    }
-    console.log("redo", command, this.history.length, this.redoHistory.length);
-  }
-
   private setPathFileData(format: Format, pfd: PathFileData): void {
     const purify = DOMPurify();
 
@@ -299,6 +276,8 @@ export class MainApp {
 
     this.resetUserControl();
     this.resetFieldDisplay();
+
+    this._history = new CommandHistory();
   }
 
   importPathFileData(data: Record<string, any>): void {
@@ -346,6 +325,8 @@ export class MainApp {
     this.paths = [];
     this.resetUserControl();
     this.resetFieldDisplay();
+
+    this._history = new CommandHistory();
   }
 
   importPathFile(fileContent: string): void {

@@ -48,18 +48,26 @@ class PathConfigImpl implements PathConfig {
   }
 
   getConfigPanel(app: MainApp) {
+    const pathUid = app.interestedPath()?.uid ?? "some-path-uid";
+
     return (
       <>
         <Box className="panel-box">
           <Typography>Min/Max Speed</Typography>
           <RangeSlider range={this.speedLimit} onChange={
-            (from, to) => app.execute(new UpdatePropertiesCommand(this.speedLimit, {from, to}))
+            (from, to) => app.history.execute(
+              `Change path ${pathUid} min/max speed`,
+              new UpdatePropertiesCommand(this.speedLimit, { from, to })
+            )
           } />
         </Box>
         <Box className="panel-box">
           <Typography>Curve Deceleration Range</Typography>
           <RangeSlider range={this.applicationRange} onChange={
-            (from, to) => app.execute(new UpdatePropertiesCommand(this.applicationRange, {from, to}))
+            (from, to) => app.history.execute(
+              `Change path ${pathUid} curve deceleration range`,
+              new UpdatePropertiesCommand(this.applicationRange, { from, to })
+            )
           } />
         </Box>
       </>

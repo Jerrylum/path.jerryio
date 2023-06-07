@@ -55,8 +55,8 @@ const App = observer(() => {
   useCustomHotkeys("Ctrl+D", onDownload.bind(null, app), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+,", () => console.log("Preferences"));
 
-  useCustomHotkeys("Ctrl+Z", () =>app.undo());
-  useCustomHotkeys("Ctrl+Y,Ctrl+Shift+Z", () => app.redo());
+  useCustomHotkeys("Ctrl+Z", () =>app.history.undo());
+  useCustomHotkeys("Ctrl+Y,Ctrl+Shift+Z", () => app.history.redo());
   useCustomHotkeys("Ctrl+A", () => console.log("Select All"));
   useCustomHotkeys("Ctrl+Shift+A", () => console.log("Select Inverse"));
   useCustomHotkeys("Esc", () => console.log("Select None"));

@@ -64,8 +64,8 @@ const MenuAccordion = observer((props: AppProps) => {
 
       <Menu anchorEl={document.getElementById('menu-edit-btn')} MenuListProps={{ dense: true }}
         open={isOpenEditMenu} onClose={() => setIsOpenEditMenu(false)}>
-        <CustomMenuItem done={false} text="Undo" hotkey={useKeyName("Ctrl+Z")} />
-        <CustomMenuItem done={false} text="Redo" hotkey={useKeyName("Ctrl+Y")} />
+        <CustomMenuItem done={false} text="Undo" hotkey={useKeyName("Ctrl+Z")} onClick={() => props.app.history.undo()} />
+        <CustomMenuItem done={false} text="Redo" hotkey={useKeyName("Ctrl+Y")} onClick={() => props.app.history.redo()}/>
         <Divider />
         <CustomMenuItem done={false} text="Select All" hotkey={useKeyName("Ctrl+A")} />
         <CustomMenuItem done={false} text="Select None" hotkey="Esc" />
