@@ -55,8 +55,8 @@ const App = observer(() => {
   useCustomHotkeys("Ctrl+D", onDownload.bind(null, app), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+,", () => console.log("Preferences"));
 
-  useCustomHotkeys("Ctrl+Z", () => console.log("Undo"));
-  useCustomHotkeys("Ctrl+Y,Ctrl+Shift+Z", () => console.log("Redo"));
+  useCustomHotkeys("Ctrl+Z", () =>app.undo());
+  useCustomHotkeys("Ctrl+Y,Ctrl+Shift+Z", () => app.redo());
   useCustomHotkeys("Ctrl+A", () => console.log("Select All"));
   useCustomHotkeys("Ctrl+Shift+A", () => console.log("Select Inverse"));
   useCustomHotkeys("Esc", () => console.log("Select None"));
@@ -95,7 +95,7 @@ const App = observer(() => {
             <Box id='right-editor-panel'>
               <GeneralConfigAccordion {...appProps} />
               <ControlAccordion {...appProps} />
-              <PathConfigAccordion pc={app.selectedPath?.pc} />
+              <PathConfigAccordion pc={app.selectedPath?.pc} app={app} />
             </Box>
           )
         }

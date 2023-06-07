@@ -10,7 +10,7 @@ import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-t
 import { UnitConverter, UnitOfLength } from "../math/Unit";
 import { Theme } from "@mui/material";
 import { darkTheme, lightTheme } from "./Theme";
-
+import { CancellableCommand } from "../math/Command";
 
 // observable class
 export class MainApp {
@@ -26,6 +26,9 @@ export class MainApp {
   private lastInterestedPath: Path | undefined = undefined; // ALGO: For adding controls
   private expanded: string[] = []; // ALGO: Order doesn't matter but anyway
   public magnet: Vector = new Vector(Infinity, Infinity);
+
+  private history: CancellableCommand[] = [];
+  private redoHistory: CancellableCommand[] = [];
 
   public view = {
     showSpeedCanvas: true,
@@ -240,6 +243,28 @@ export class MainApp {
     this.fieldDisplay = {
       offset: new Vector(0, 0),
       scale: 1
+    }
+  }
+
+  execute(command: CancellableCommand): void {
+    command.execute();
+    this.history.push(command);
+    this.redoHistory = [];
+  }
+
+  undo(): void {
+    const command = this.history.pop();
+    if (command !== undefined) {
+      command.undo();
+      this.redoHistory.push(command);
+    }
+  }
+
+  redo(): void {
+    const command = this.redoHistory.pop();
+    if (command !== undefined) {
+      command.redo();
+      this.history.push(command);
     }
   }
 

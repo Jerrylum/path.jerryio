@@ -6,9 +6,11 @@ import { getAllFormats } from '../format/Format';
 import { ObserverInput, parseNumberInString } from './ObserverInput';
 import { NumberInUnit, UnitOfLength } from '../math/Unit';
 import { AppProps } from '../App';
+import { UpdatePropertyCommand } from '../math/Command';
 
 const GeneralConfigAccordion = observer((props: AppProps) => {
-  const gc = props.app.gc;
+  const app = props.app;
+  const gc = app.gc;
 
   const formats = getAllFormats();
 
@@ -33,7 +35,9 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
         <Box className="flex-editor-panel" sx={{ marginTop: "2vh" }}>
           <FormControl sx={{ width: "8rem" }}>
             <InputLabel id="uol-label">Unit of Length</InputLabel>
-            <Select labelId="uol-label" label="Unit of Length" size="small" value={gc.uol} onChange={action((e: SelectChangeEvent<UnitOfLength>) => gc.uol = e.target.value as UnitOfLength)}>
+            <Select labelId="uol-label" label="Unit of Length" size="small" value={gc.uol} onChange={
+              action((e: SelectChangeEvent<UnitOfLength>) => app.execute(new UpdatePropertyCommand(gc, "uol", e.target.value as UnitOfLength)))
+            }>
               {
                 Object.keys(UnitOfLength).filter((x) => !isNaN(parseInt(x))).map((x) => {
                   return <MenuItem key={x} value={parseInt(x)}>{UnitOfLength[parseInt(x)]}
@@ -46,8 +50,10 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
             sx={{ width: "7rem" }}
             label="Point Density"
             getValue={() => gc.pointDensity + ""}
-            setValue={(value: string) => gc.pointDensity = parseNumberInString(value, gc.uol,
-              new NumberInUnit(0.1, UnitOfLength.Centimeter), new NumberInUnit(100, UnitOfLength.Centimeter))
+            setValue={
+              (value: string) => app.execute(new UpdatePropertyCommand(gc, "pointDensity",
+                parseNumberInString(value, gc.uol, new NumberInUnit(0.1, UnitOfLength.Centimeter), new NumberInUnit(100, UnitOfLength.Centimeter))
+              ))
             }
             isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
             isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
@@ -80,7 +86,7 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
             <Checkbox checked={gc.showRobot} onChange={action((e, c) => gc.showRobot = c)} />
           } label="Show Robot" sx={{ whiteSpace: "nowrap" }} />
         </Box>
-        {gc.getConfigPanel()}
+        {gc.getConfigPanel(app)}
       </AccordionDetails>
     </Accordion>
   )

@@ -1,8 +1,9 @@
+import { MainApp } from "../app/MainApp";
 import { NumberRange } from "../app/RangeSlider";
 import { UnitOfLength } from "../math/Unit";
 
 export interface ConfigSection {
-  getConfigPanel(): JSX.Element;
+  getConfigPanel(app: MainApp): JSX.Element;
 }
 
 export interface GeneralConfig extends ConfigSection {

@@ -7,6 +7,7 @@ import { GeneralConfig, PathConfig } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { Box, Typography } from "@mui/material";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
+import { UpdatePropertiesCommand } from "../math/Command";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -21,7 +22,7 @@ class GeneralConfigImpl implements GeneralConfig {
     makeAutoObservable(this);
   }
 
-  getConfigPanel() {
+  getConfigPanel(app: MainApp) {
     return <></>
   }
 }
@@ -47,16 +48,20 @@ class PathConfigImpl implements PathConfig {
     makeAutoObservable(this);
   }
 
-  getConfigPanel() {
+  getConfigPanel(app: MainApp) {
     return (
       <>
         <Box className="panel-box">
           <Typography>Min/Max Speed</Typography>
-          <RangeSlider range={this.speedLimit} />
+          <RangeSlider range={this.speedLimit} onChange={
+            (from, to) => app.execute(new UpdatePropertiesCommand(this.speedLimit, {from, to}))
+          } />
         </Box>
         <Box className="panel-box">
           <Typography>Curve Deceleration Range</Typography>
-          <RangeSlider range={this.applicationRange} />
+          <RangeSlider range={this.applicationRange} onChange={
+            (from, to) => app.execute(new UpdatePropertiesCommand(this.applicationRange, {from, to}))
+          } />
         </Box>
       </>
     )

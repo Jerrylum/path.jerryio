@@ -2,8 +2,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import { PathConfig } from '../format/Config';
+import { MainApp } from './MainApp';
 
-const PathConfigAccordion = observer((props: { pc: PathConfig | undefined }) => {
+const PathConfigAccordion = observer((props: { pc: PathConfig | undefined, app: MainApp }) => {
   const pc = props.pc;
   return (
     <Accordion defaultExpanded>
@@ -11,7 +12,7 @@ const PathConfigAccordion = observer((props: { pc: PathConfig | undefined }) => 
         <Typography>Path</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        {pc?.getConfigPanel()}
+        {pc?.getConfigPanel(props.app)}
       </AccordionDetails>
     </Accordion>
   )
