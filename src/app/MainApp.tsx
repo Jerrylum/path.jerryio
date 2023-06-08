@@ -18,8 +18,6 @@ export class MainApp {
   private usingUOL: UnitOfLength = UnitOfLength.Centimeter;
   public mountingFile: FileSystemFileHandle | null = null; // This is intended to be modified outside the class
 
-  public gc: GeneralConfig = this.format.getGeneralConfig(); // a.k.a Configuration
-
   public paths: Path[] = [];
   private selected: string[] = []; // ALGO: Not using Set because order matters
   private selectedBefore: string[] = []; // ALGO: For area selection
@@ -58,7 +56,6 @@ export class MainApp {
       const robotWidth = this.gc.robotWidth;
       const robotHeight = this.gc.robotHeight;
 
-      this.gc = this.format.getGeneralConfig();
       this.gc.pointDensity = new UnitConverter(this.usingUOL, this.gc.uol, 5).fromBtoA(this.gc.pointDensity); // UX: Keep some values
       this.gc.robotWidth = robotWidth;
       this.gc.robotHeight = robotHeight;
@@ -110,6 +107,10 @@ export class MainApp {
     }));
 
     this.newPathFile();
+  }
+
+  @computed get gc(): GeneralConfig {
+    return this.format.getGeneralConfig();
   }
 
   @computed get history(): CommandHistory {
@@ -273,8 +274,7 @@ export class MainApp {
     }
 
     this.format = format;
-    this.usingUOL = pfd.gc.uol;
-    this.gc = pfd.gc;
+    this.usingUOL = format.getGeneralConfig().uol;
     this.paths = pfd.paths;
 
     this.resetUserControl();
@@ -309,7 +309,7 @@ export class MainApp {
   exportPathFileData(): Record<string, any> {
     const data: PathFileData = {
       format: this.format.getName(),
-      gc: this.gc,
+      gc: this.format.getGeneralConfig(),
       paths: this.paths
     };
 
@@ -321,7 +321,6 @@ export class MainApp {
     newFormat.init(); // ALGO: Suspend format reaction
 
     this.format = newFormat;
-    this.gc = this.format.getGeneralConfig();
     this.usingUOL = this.gc.uol;
     this.paths = [];
     this.resetUserControl();

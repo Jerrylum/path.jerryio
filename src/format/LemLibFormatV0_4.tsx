@@ -206,14 +206,13 @@ export class LemLibFormatV0_4 implements Format {
 
     let rtn = "";
 
-    if (app.paths.length === 0) throw new Error("No path to export");
-
-    const path = app.paths[0]; // TODO use selected path
+    const path = app.interestedPath();
+    if (path === undefined) throw new Error("No path to export");
     if (path.splines.length === 0) throw new Error("No spline to export");
 
-    const uc = new UnitConverter(app.gc.uol, UnitOfLength.Inch);
+    const uc = new UnitConverter(this.gc.uol, UnitOfLength.Inch);
 
-    const points = path.calculatePoints(app.gc).points;
+    const points = path.calculatePoints(this.gc).points;
     for (const point of points) {
       // ALGO: heading is not supported in LemLib V0.4 format.
       rtn += `${uc.fromAtoB(point.x)}, ${uc.fromAtoB(point.y)}, ${uc.fixPrecision(point.speed)}\n`;

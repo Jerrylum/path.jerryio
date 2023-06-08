@@ -120,7 +120,6 @@ test('Format serialize', () => {
   const app = new MainApp();
 
   app.format = new CustomFormat();
-  app.gc = app.format.getGeneralConfig();
 
   let p = instanceToPlain(app.gc);
   let gc2 = plainToClassFromExist(app.format.getGeneralConfig(), p);
