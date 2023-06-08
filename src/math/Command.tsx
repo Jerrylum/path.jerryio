@@ -1,3 +1,4 @@
+import { InteractiveEntity } from "./Canvas";
 
 export class CommandHistory {
 
@@ -57,9 +58,9 @@ export interface CancellableCommand extends Command {
 }
 
 export class UpdatePropertiesCommand<TTarget> implements CancellableCommand {
-  private previousValue?: Partial<Record<keyof (TTarget), any>>;
+  protected previousValue?: Partial<TTarget>;
 
-  constructor(private target: TTarget, private newValues: Partial<Record<keyof (TTarget), any>>) { }
+  constructor(protected target: TTarget, protected newValues: Partial<TTarget>) { }
 
   execute(): void {
     this.previousValue = this.updateProperties(this.newValues);
@@ -79,16 +80,61 @@ export class UpdatePropertiesCommand<TTarget> implements CancellableCommand {
     this.newValues = { ...this.newValues, ...latest.newValues };
   }
 
-  private updateProperties(values: Partial<Record<keyof (TTarget), any>>): Partial<Record<keyof (TTarget), any>> {
+  protected updateProperties(values: Partial<TTarget>): Partial<TTarget> {
     const target = this.target;
 
-    const previousValues: Partial<Record<keyof (TTarget), any>> = {} as Partial<Record<keyof (TTarget), any>>;
+    const previousValues: Partial<TTarget> = {} as Partial<TTarget>;
     for (const key in values) {
       previousValues[key] = target[key];
-      target[key] = values[key];
+      target[key] = values[key]!;
     }
 
     return previousValues;
   }
 
+}
+
+export class UpdateInstancesPropertiesCommand<TTarget> implements CancellableCommand {
+  protected previousValue?: Partial<TTarget>[];
+
+  constructor(protected targets: TTarget[], protected newValues: Partial<TTarget>) { }
+
+  execute(): void {
+    this.previousValue = [];
+    for (let i = 0; i < this.targets.length; i++) {
+      this.previousValue.push(this.updatePropertiesForTarget(this.targets[i], this.newValues));
+    }
+  }
+
+  undo(): void {
+    for (let i = 0; i < this.targets.length; i++) {
+      this.updatePropertiesForTarget(this.targets[i], this.previousValue![i]);
+    }
+    this.previousValue = undefined;
+  }
+
+  redo(): void {
+    this.execute();
+  }
+
+  merge(latest: UpdateInstancesPropertiesCommand<TTarget>): void {
+    this.previousValue = [...latest.previousValue!, ...this.previousValue!];
+    this.newValues = { ...this.newValues, ...latest.newValues };
+  }
+
+  protected updatePropertiesForTarget(target: TTarget, values: Partial<TTarget>): Partial<TTarget> {
+    const previousValues: Partial<TTarget> = {} as Partial<TTarget>;
+    for (const key in values) {
+      previousValues[key] = target[key];
+      target[key] = values[key]!;
+    }
+
+    return previousValues;
+  }
+}
+
+export class UpdateInteractiveEntities<TTarget extends InteractiveEntity> extends UpdateInstancesPropertiesCommand<TTarget> {
+  constructor(protected targets: TTarget[], protected newValues: Partial<TTarget>) {
+    super(targets, newValues);
+  }
 }

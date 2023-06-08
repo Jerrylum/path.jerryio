@@ -5,6 +5,8 @@ import { AppProps } from '../App';
 import { EndPointControl } from '../math/Path';
 import { ObserverInput, parseNumberInString } from './ObserverInput';
 import { NumberInUnit, UnitOfLength } from '../math/Unit';
+import { makeId } from './Util';
+import { UpdateInteractiveEntities } from '../math/Command';
 
 const ControlAccordion = observer((props: AppProps) => {
   return (
@@ -29,8 +31,20 @@ const ControlAccordion = observer((props: AppProps) => {
                 const control = props.app.selectedControl;
                 if (control === undefined) return;
 
-                control.x = parseNumberInString(value, props.app.gc.uol,
-                  new NumberInUnit(-1000, UnitOfLength.Centimeter), new NumberInUnit(1000, UnitOfLength.Centimeter))
+                // control.x = parseNumberInString(value, props.app.gc.uol,
+                //   new NumberInUnit(-1000, UnitOfLength.Centimeter), new NumberInUnit(1000, UnitOfLength.Centimeter))
+
+                const controlUid = control.uid;
+                const finalVal = parseNumberInString(
+                  value,
+                  props.app.gc.uol,
+                  new NumberInUnit(-1000, UnitOfLength.Centimeter),
+                  new NumberInUnit(1000, UnitOfLength.Centimeter)
+                );
+
+                // TODO: refactor history execute, merge by time
+                props.app.history.execute(`Update control ${controlUid} x value (unique:${makeId(10)})`, 
+                  new UpdateInteractiveEntities([control], {x: finalVal}));
               }}
               isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
               isValidValue={(candidate: string) => new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
