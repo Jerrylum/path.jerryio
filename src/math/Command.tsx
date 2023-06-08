@@ -1,5 +1,6 @@
 import { MainApp } from "../app/MainApp";
 import { InteractiveEntity } from "./Canvas";
+import { Control, EndPointControl, Path, Spline, SplineVariant } from "./Path";
 
 export interface Execution {
   title: string;
@@ -20,7 +21,11 @@ export class CommandHistory {
 
     const exe = { title, command, time: Date.now(), mergeTimeout };
 
-    if (exe.title === this.lastExecution?.title && exe.time - this.lastExecution.time < exe.mergeTimeout) {
+    if (exe.title === this.lastExecution?.title &&
+      isMergeable(exe.command) &&
+      isMergeable(this.lastExecution.command) &&
+      typeof (exe.command) === typeof (this.lastExecution.command) &&
+      exe.time - this.lastExecution.time < exe.mergeTimeout) {
       this.lastExecution.command.merge(exe.command);
       this.lastExecution.time = exe.time;
     } else {
@@ -45,11 +50,9 @@ export class CommandHistory {
       command.undo();
       this.redoHistory.push(command);
 
-      if (command instanceof UpdateInteractiveEntities) {
-        this.app.setSelected(command.entities);
-      }
+      if (isInteractiveEntitiesCommand(command)) this.app.setSelected(command.entities);
     }
-    // console.log("undo", this.history.length, this.redoHistory.length);
+    console.log("undo", this.history.length, this.redoHistory.length);
   }
 
   redo(): void {
@@ -58,11 +61,9 @@ export class CommandHistory {
       command.redo();
       this.history.push(command);
 
-      if (command instanceof UpdateInteractiveEntities) {
-        this.app.setSelected(command.entities);
-      }
+      if (isInteractiveEntitiesCommand(command)) this.app.setSelected(command.entities);
     }
-    // console.log("redo", command, this.history.length, this.redoHistory.length);
+    console.log("redo", command, this.history.length, this.redoHistory.length);
   }
 }
 
@@ -70,13 +71,28 @@ export interface Command {
   execute(): void;
 }
 
+export interface MergeableCommand extends Command {
+  merge(command: MergeableCommand): void;
+}
+
 export interface CancellableCommand extends Command {
   undo(): void;
   redo(): void;
-  merge(command: this): void;
 }
 
-export class UpdatePropertiesCommand<TTarget> implements CancellableCommand {
+export interface InteractiveEntitiesCommand extends CancellableCommand {
+  entities: InteractiveEntity[];
+}
+
+export function isMergeable(object: Command): object is MergeableCommand {
+  return 'merge' in object;
+}
+
+export function isInteractiveEntitiesCommand(object: Command): object is InteractiveEntitiesCommand {
+  return 'entities' in object;
+}
+
+export class UpdateProperties<TTarget> implements CancellableCommand, MergeableCommand {
   protected previousValue?: Partial<TTarget>;
 
   constructor(protected target: TTarget, protected newValues: Partial<TTarget>) { }
@@ -94,7 +110,7 @@ export class UpdatePropertiesCommand<TTarget> implements CancellableCommand {
     this.execute();
   }
 
-  merge(latest: UpdatePropertiesCommand<TTarget>): void {
+  merge(latest: UpdateProperties<TTarget>): void {
     this.previousValue = { ...latest.previousValue, ...this.previousValue };
     this.newValues = { ...this.newValues, ...latest.newValues };
   }
@@ -113,7 +129,7 @@ export class UpdatePropertiesCommand<TTarget> implements CancellableCommand {
 
 }
 
-export class UpdateInstancesPropertiesCommand<TTarget> implements CancellableCommand {
+export class UpdateInstancesProperties<TTarget> implements CancellableCommand {
   protected previousValue?: Partial<TTarget>[];
 
   constructor(protected targets: TTarget[], protected newValues: Partial<TTarget>) { }
@@ -136,7 +152,7 @@ export class UpdateInstancesPropertiesCommand<TTarget> implements CancellableCom
     this.execute();
   }
 
-  merge(latest: UpdateInstancesPropertiesCommand<TTarget>): void {
+  merge(latest: UpdateInstancesProperties<TTarget>): void {
     // ALGO: Assume that the targets are the same and both commands are executed
     for (let i = 0; i < this.targets.length; i++) {
       this.previousValue![i] = { ...latest.previousValue![i], ...this.previousValue![i] };
@@ -155,12 +171,299 @@ export class UpdateInstancesPropertiesCommand<TTarget> implements CancellableCom
   }
 }
 
-export class UpdateInteractiveEntities<TTarget extends InteractiveEntity> extends UpdateInstancesPropertiesCommand<TTarget> {
+export class UpdateInteractiveEntities<TTarget extends InteractiveEntity> extends UpdateInstancesProperties<TTarget> implements InteractiveEntitiesCommand {
   constructor(protected targets: TTarget[], protected newValues: Partial<TTarget>) {
     super(targets, newValues);
   }
 
   get entities(): TTarget[] {
     return this.targets.slice();
+  }
+}
+
+export class AddSpline implements CancellableCommand, InteractiveEntitiesCommand {
+  protected _entities: InteractiveEntity[] = [];
+
+  protected forward: boolean = true;
+  protected spline?: Spline;
+
+  constructor(protected path: Path, protected end: EndPointControl, protected variant: SplineVariant) { }
+
+  protected addLine(): void {
+    if (this.path.splines.length === 0) {
+      this.spline = new Spline(new EndPointControl(0, 0, 0), [], this.end);
+      this._entities.push(this.end);
+    } else {
+      const last = this.path.splines[this.path.splines.length - 1];
+      this.spline = new Spline(last.last, [], this.end);
+      this._entities.push(this.end);
+    }
+    this.path.splines.push(this.spline);
+  }
+
+  protected addCurve(): void {
+    const p3 = this.end;
+
+    if (this.path.splines.length === 0) {
+      const p0 = new EndPointControl(0, 0, 0);
+      const p1 = new Control(p0.x, p0.y + 24);
+      const p2 = new Control(p3.x, p3.y - 24);
+      this.spline = new Spline(p0, [p1, p2], p3);
+      this._entities.push(p0, p1, p2, p3);
+    } else {
+      const last = this.path.splines[this.path.splines.length - 1];
+      const p0 = last.last;
+      const c = last.controls.length < 4 ? last.controls[0] : last.controls[2];
+      const p1 = p0.mirror(new Control(c.x, c.y));
+      const p2 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
+
+      this.spline = new Spline(p0, [p1, p2], p3);
+      this._entities.push(p1, p2, p3);
+    }
+    this.path.splines.push(this.spline);
+  }
+
+  execute(): void {
+    if (this.variant === SplineVariant.LINEAR) {
+      this.addLine();
+    } else if (this.variant === SplineVariant.CURVE) {
+      this.addCurve();
+    }
+    this.forward = true;
+  }
+
+  undo(): void {
+    this.path.splines.pop();
+    this.forward = false;
+  }
+
+  redo(): void {
+    // this.execute();
+    // ALGO: Instead of executing, we just add the spline back
+    // ALGO: Assume that the command is executed
+    this.path.splines.push(this.spline!);
+    this.forward = true;
+  }
+
+  get entities(): InteractiveEntity[] {
+    return this.forward ? this._entities : [];
+  }
+}
+
+export class ConvertSpline implements CancellableCommand, InteractiveEntitiesCommand {
+  protected previousControls: Control[] = [];
+
+  constructor(protected path: Path, protected spline: Spline, protected variant: SplineVariant) { }
+
+  protected convertToLine(): void {
+    this.spline.controls.splice(1, this.spline.controls.length - 2);
+  }
+
+  protected convertToCurve(): void {
+    let index = this.path.splines.indexOf(this.spline);
+    let found = index !== -1;
+    if (!found) return;
+
+    let prev: Spline | null = null;
+    if (index > 0) {
+      prev = this.path.splines[index - 1];
+    }
+
+    let next: Spline | null = null;
+    if (index + 1 < this.path.splines.length) {
+      next = this.path.splines[index + 1];
+    }
+
+    let p0 = this.spline.first;
+    let p3 = this.spline.last;
+
+    let p1: Control;
+    if (prev !== null) {
+      p1 = p0.mirror(prev.controls[prev.controls.length - 2]);
+      // ensure is a control point (not an end point)
+      p1 = new Control(p1.x, p1.y);
+    } else {
+      p1 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
+    }
+
+    let p2;
+    if (next !== null) {
+      p2 = p3.mirror(next.controls[1]);
+    } else {
+      p2 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
+    }
+
+    this.spline.controls = [p0, p1, p2, p3];
+  }
+
+  execute(): void {
+    this.previousControls = this.spline.controls.slice();
+    if (this.variant === SplineVariant.LINEAR) {
+      this.convertToLine();
+    } else if (this.variant === SplineVariant.CURVE) {
+      this.convertToCurve();
+    }
+  }
+
+  undo(): void {
+    this.spline.controls = this.previousControls.slice();
+  }
+
+  redo(): void {
+    this.execute();
+  }
+
+  get entities(): InteractiveEntity[] {
+    return this.spline.controls.slice(1, -1); // exclude first and last
+  }
+}
+
+export class SplitSpline implements CancellableCommand, InteractiveEntitiesCommand {
+  protected _entities: InteractiveEntity[] = [];
+
+  protected forward: boolean = true;
+
+  protected previousOriginalSplineControls: Control[] = [];
+  protected newOriginalSplineControls: Control[] = [];
+  protected newSpline?: Spline;
+
+  constructor(protected path: Path, protected originalSpline: Spline, protected point: EndPointControl) { }
+
+  execute(): void {
+    this.previousOriginalSplineControls = this.originalSpline.controls.slice();
+
+    const index = this.path.splines.indexOf(this.originalSpline);
+    const found = index !== -1;
+    if (!found) return;
+
+    const cp_count = this.originalSpline.controls.length;
+    if (cp_count === 2) {
+      const last = this.originalSpline.last;
+      this.originalSpline.last = this.point;
+      this.newSpline = new Spline(this.point, [], last);
+      this.path.splines.splice(index + 1, 0, this.newSpline);
+
+      this._entities = [this.point];
+    } else if (cp_count === 4) {
+      const p0 = this.originalSpline.controls[0] as EndPointControl;
+      const p1 = this.originalSpline.controls[1];
+      const p2 = this.originalSpline.controls[2];
+      const p3 = this.originalSpline.controls[3] as EndPointControl;
+
+      const a = p1.divide(new Control(2, 2)).add(this.point.divide(new Control(2, 2)));
+      const b = this.point;
+      const c = p2.divide(new Control(2, 2)).add(this.point.divide(new Control(2, 2)));
+      this.originalSpline.controls = [p0, p1, a, b];
+      this.newSpline = new Spline(b, [c, p2], p3);
+      this.path.splines.splice(index + 1, 0, this.newSpline);
+
+      this._entities = [a, this.point, c];
+    }
+
+    this.newOriginalSplineControls = this.originalSpline.controls.slice();
+    this.forward = true;
+  }
+
+  undo(): void {
+    this.originalSpline.controls = this.previousOriginalSplineControls;
+    const index = this.path.splines.indexOf(this.newSpline!);
+    this.path.splines.splice(index, 1);
+
+    this.forward = false;
+  }
+
+  redo(): void {
+    // this.execute();
+    // ALGO: Instead of executing, we just add the spline back
+    // ALGO: Assume that the command is executed
+    const index = this.path.splines.indexOf(this.originalSpline);
+    this.originalSpline.controls = this.newOriginalSplineControls.slice();
+    this.path.splines.splice(index + 1, 0, this.newSpline!);
+
+    this.forward = true;
+  }
+
+  get entities(): InteractiveEntity[] {
+    return this.forward ? this._entities : [];
+  }
+}
+
+export class RemoveSpline implements CancellableCommand, InteractiveEntitiesCommand {
+  protected _entities: InteractiveEntity[] = [];
+
+  protected forward: boolean = true;
+  protected index: number = -1;
+  protected spline?: Spline;
+
+  constructor(protected path: Path, protected point: EndPointControl) { }
+
+  execute(): void {
+    for (let i = 0; i < this.path.splines.length; i++) {
+      const spline = this.path.splines[i];
+      if (spline.first === this.point) { // pointer comparison
+        // ALGO: This is the first control of the spline
+        if (i !== 0) {
+          const prev = this.path.splines[i - 1];
+          prev.last = spline.last; // pointer assignment
+
+          this._entities = spline.controls.slice(0, -1); // keep the last control
+        } else {
+          this._entities = spline.controls.slice();
+        }
+        this.path.splines.splice(i, 1);
+      } else if (i + 1 === this.path.splines.length && spline.last === this.point) { // pointer comparison
+        // ALGO: This is the last control of the last spline
+        if (i !== 0) { // if this spline is not the first spline
+          this._entities = spline.controls.slice(1); // keep the first control
+        } else {
+          this._entities = spline.controls.slice();
+        }
+
+        this.path.splines.splice(i, 1);
+      } else {
+        continue;
+      }
+
+      this.index = i;
+      this.spline = spline;
+      break;
+    }
+
+    this.forward = true;
+  }
+
+  undo(): void {
+    if (this.index === -1) return;
+
+    this.path.splines.splice(this.index, 0, this.spline!);
+    if (this.spline?.first === this.point && this.index > 0) {
+      const prev = this.path.splines[this.index - 1];
+      prev.last = this.spline.first; // pointer assignment
+    }
+
+    this.forward = false;
+  }
+
+  redo(): void {
+    // this.execute();
+    // ALGO: Instead of executing, we just add the spline back
+    // ALGO: Assume that the command is executed
+    if (this.index === -1) return;
+
+    this.path.splines.splice(this.index, 1);
+    if (this.spline?.first === this.point && this.index > 0) {
+      const prev = this.path.splines[this.index - 1];
+      prev.last = this.spline.last; // pointer assignment
+    }
+
+    this.forward = true;
+  }
+
+  get removedEntities(): InteractiveEntity[] {
+    return this._entities;
+  }
+
+  get entities(): InteractiveEntity[] {
+    return this.forward ? [] : this._entities;
   }
 }

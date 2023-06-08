@@ -7,7 +7,7 @@ import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPo
 import { Format, PathFileData } from "./Format";
 import { Box, Typography } from "@mui/material";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
-import { UpdatePropertiesCommand } from "../math/Command";
+import { UpdateProperties } from "../math/Command";
 import { Exclude } from "class-transformer";
 
 // observable class
@@ -79,7 +79,7 @@ class PathConfigImpl implements PathConfig {
           <RangeSlider range={this.speedLimit} onChange={
             (from, to) => app.history.execute(
               `Update path ${pathUid} min/max speed`,
-              new UpdatePropertiesCommand(this.speedLimit, { from, to })
+              new UpdateProperties(this.speedLimit, { from, to })
             )
           } />
         </Box>
@@ -88,7 +88,7 @@ class PathConfigImpl implements PathConfig {
           <RangeSlider range={this.applicationRange} onChange={
             (from, to) => app.history.execute(
               `Update path ${pathUid} curve deceleration range`,
-              new UpdatePropertiesCommand(this.applicationRange, { from, to })
+              new UpdateProperties(this.applicationRange, { from, to })
             )
           } />
         </Box>

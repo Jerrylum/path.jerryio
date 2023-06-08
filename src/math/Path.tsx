@@ -210,6 +210,11 @@ export class KeyFrame {
   }
 }
 
+export enum SplineVariant {
+  LINEAR = 'linear',
+  CURVE = 'curve',
+}
+
 // observable class
 export class Spline implements CanvasEntity {
   @Type(() => Control, {
@@ -402,130 +407,6 @@ export class Path implements InteractiveEntity {
       }
     }
     return rtn;
-  }
-
-  addLine(end: EndPointControl): void {
-    let spline;
-    if (this.splines.length === 0) {
-      spline = new Spline(new EndPointControl(0, 0, 0), [], end);
-    } else {
-      const last = this.splines[this.splines.length - 1];
-      spline = new Spline(last.last, [], end);
-    }
-    this.splines.push(spline);
-  }
-
-  add4ControlsCurve(p3: EndPointControl): void {
-    let spline;
-    if (this.splines.length === 0) {
-      let p0 = new EndPointControl(0, 0, 0);
-      let p1 = new Control(p0.x, p0.y + 24);
-      let p2 = new Control(p3.x, p3.y - 24);
-      spline = new Spline(p0, [p1, p2], p3);
-    } else {
-      const last = this.splines[this.splines.length - 1];
-      let p0 = last.last;
-      let c = last.controls.length < 4 ? last.controls[0] : last.controls[2];
-      let p1 = p0.mirror(new Control(c.x, c.y));
-      let p2 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
-
-      spline = new Spline(p0, [p1, p2], p3);
-    }
-    this.splines.push(spline);
-  }
-
-  convertTo4ControlsCurve(spline: Spline) {
-    let index = this.splines.indexOf(spline);
-    let found = index !== -1;
-    if (!found) return;
-
-    let prev: Spline | null = null;
-    if (index > 0) {
-      prev = this.splines[index - 1];
-    }
-
-    let next: Spline | null = null;
-    if (index + 1 < this.splines.length) {
-      next = this.splines[index + 1];
-    }
-
-    let p0 = spline.first;
-    let p3 = spline.last;
-
-    let p1: Control;
-    if (prev !== null) {
-      p1 = p0.mirror(prev.controls[prev.controls.length - 2]);
-      // ensure is a control point (not an end point)
-      p1 = new Control(p1.x, p1.y);
-    } else {
-      p1 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
-    }
-
-    let p2;
-    if (next !== null) {
-      p2 = p3.mirror(next.controls[1]);
-    } else {
-      p2 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
-    }
-
-    spline.controls = [p0, p1, p2, p3];
-  }
-
-  convertToLine(spline: Spline) {
-    spline.controls.splice(1, spline.controls.length - 2);
-  }
-
-  splitSpline(spline: Spline, point: EndPointControl): void {
-    let index = this.splines.indexOf(spline);
-    let found = index !== -1;
-    if (!found) return;
-
-    let cp_count = spline.controls.length;
-    if (cp_count === 2) {
-      let last = spline.last;
-      spline.last = point;
-      let new_spline = new Spline(point, [], last);
-      this.splines.splice(index + 1, 0, new_spline);
-    } else if (cp_count === 4) {
-      let p0 = spline.controls[0] as EndPointControl;
-      let p1 = spline.controls[1];
-      let p2 = spline.controls[2];
-      let p3 = spline.controls[3] as EndPointControl;
-
-      let a = p1.divide(new Control(2, 2)).add(point.divide(new Control(2, 2)));
-      let b = point;
-      let c = p2.divide(new Control(2, 2)).add(point.divide(new Control(2, 2)));
-      spline.controls = [p0, p1, a, b];
-      let new_spline = new Spline(b, [c, p2], p3);
-      this.splines.splice(index + 1, 0, new_spline);
-    }
-  }
-
-  removeSpline(point: EndPointControl): (EndPointControl | Control)[] {
-    for (let i = 0; i < this.splines.length; i++) {
-      let spline = this.splines[i];
-      if (spline.first === point) { // pointer comparison
-        if (i > 0) {
-          let prev = this.splines[i - 1];
-          prev.last = spline.last; // pointer assignment
-        }
-        this.splines.splice(i, 1);
-      } else if (i + 1 === this.splines.length && spline.last === point) { // pointer comparison
-        this.splines.splice(i, 1);
-      } else {
-        continue;
-      }
-
-      let removedControls = [...spline.controls];
-      if (i > 0) {
-        removedControls.splice(0, 1); // keep the first control
-      }
-      if (i + 1 < this.splines.length) {
-        removedControls.splice(removedControls.length - 1, 1); // keep the last control
-      }
-      return removedControls;
-    }
-    return [];
   }
 
   private getAllSplinePoints(gc: GeneralConfig, result: PointCalculationResult): Point[] {

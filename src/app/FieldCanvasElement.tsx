@@ -1,6 +1,6 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { EndPointControl, Path, Spline, Vector } from '../math/Path';
+import { EndPointControl, Path, Spline, SplineVariant, Vector } from '../math/Path';
 import Konva from 'konva';
 import { Circle, Image, Layer, Line, Stage } from 'react-konva';
 import { SplineElement } from "./SplineElement";
@@ -14,6 +14,7 @@ import { AreaElement } from "./AreaElement";
 import { UnitConverter, UnitOfLength } from "../math/Unit";
 import { CanvasConverter } from "../math/Canvas";
 import { clamp } from "./Util";
+import { AddSpline } from "../math/Command";
 
 const FieldCanvasElement = observer((props: AppProps) => {
   // useTimer(1000 / 30);
@@ -193,7 +194,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
     const cpInUOL = cc.toUOL(new EndPointControl(posInPx.x, posInPx.y, 0));
 
 
-    // UX: Set target path to the first path if: no path is selected
+    // UX: Set target path to "interested path"
     let targetPath: Path | undefined = props.app.interestedPath();
     if (targetPath === undefined) {
       // UX: Create new path if: no path exists
@@ -205,10 +206,12 @@ const FieldCanvasElement = observer((props: AppProps) => {
       // UX: Add control point if: path is selected and visible and not locked
       if (evt.button === 0) {
         // UX: Add 4-controls curve if: left click
-        targetPath.add4ControlsCurve(cpInUOL);
+        props.app.history.execute(`Add curve spline with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
+          new AddSpline(targetPath, cpInUOL, SplineVariant.CURVE));
       } else if (evt.button === 2) {
         // UX: Add straight line if: right click
-        targetPath.addLine(cpInUOL);
+        props.app.history.execute(`Add linear spline with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
+          new AddSpline(targetPath, cpInUOL, SplineVariant.LINEAR));
       }
     }
 

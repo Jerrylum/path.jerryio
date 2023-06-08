@@ -6,7 +6,7 @@ import { getAllFormats } from '../format/Format';
 import { ObserverInput, parseNumberInString } from './ObserverInput';
 import { NumberInUnit, UnitOfLength } from '../math/Unit';
 import { AppProps } from '../App';
-import { UpdatePropertiesCommand } from '../math/Command';
+import { UpdateProperties } from '../math/Command';
 
 const GeneralConfigAccordion = observer((props: AppProps) => {
   const app = props.app;
@@ -38,7 +38,7 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
             <Select labelId="uol-label" label="Unit of Length" size="small" value={gc.uol} onChange={
               action((e: SelectChangeEvent<UnitOfLength>) => app.history.execute(
                 `Set Unit of Length`,
-                new UpdatePropertiesCommand(gc, { "uol": e.target.value as UnitOfLength })
+                new UpdateProperties(gc, { "uol": e.target.value as UnitOfLength })
               ))
             }>
               {
@@ -56,7 +56,7 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
             setValue={
               (value: string) => app.history.execute(
                 `Change point density`,
-                new UpdatePropertiesCommand(gc, {
+                new UpdateProperties(gc, {
                   "pointDensity": parseNumberInString(
                     value,
                     gc.uol,

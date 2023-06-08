@@ -5,6 +5,7 @@ import Konva from 'konva';
 import { Circle, Line } from 'react-konva';
 import { useState } from "react";
 import { SplineElementProps } from "./SplineElement";
+import { RemoveSpline } from "../math/Command";
 
 export interface SplineControlElementProps extends SplineElementProps {
   cp: EndPointControl | Control;
@@ -206,8 +207,9 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
 
     // UX: Remove end point from the path, selected and expanded list if: right click
     if (evt.button === 2) {
-      const removedControls = props.path.removeSpline(props.cp as EndPointControl);
-      for (const control of removedControls) {
+      const command = new RemoveSpline(props.path, props.cp as EndPointControl);
+      props.app.history.execute(`Remove spline with control ${props.cp.uid} in path ${props.path.uid}`, command);
+      for (const control of command.removedEntities) {
         props.app.unselect(control);
         props.app.removeExpanded(control);
       }

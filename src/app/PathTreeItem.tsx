@@ -12,7 +12,7 @@ import { AppProps } from '../App';
 import { EndPointControl, Path } from '../math/Path';
 import { useRef } from 'react';
 import { InteractiveEntity } from '../math/Canvas';
-import { UpdateInteractiveEntities } from '../math/Command';
+import { RemoveSpline, UpdateInteractiveEntities } from '../math/Command';
 
 export interface PathTreeProps extends AppProps {
   path: Path;
@@ -131,10 +131,19 @@ const PathTreeItem = observer((props: PathTreeProps) => {
     } >
       {
         path.controls.map((control) => {
+          function onControlDeleteClick() {
+            const command = new RemoveSpline(props.path, control as EndPointControl);
+            props.app.history.execute(`Remove spline with control ${control.uid} in path ${props.path.uid}`, command);
+            for (const control of command.removedEntities) {
+              props.app.unselect(control);
+              props.app.removeExpanded(control);
+            }
+          }
+
           return (
             <TreeItem nodeId={control.uid} key={control.uid}
               label={control instanceof EndPointControl
-                ? <PathTreeItemLabel entity={control} parent={path} onDelete={() => path.removeSpline(control)} {...props}>
+                ? <PathTreeItemLabel entity={control} parent={path} onDelete={action(onControlDeleteClick)} {...props}>
                   <span>End Control</span>
                 </PathTreeItemLabel>
                 : <PathTreeItemLabel entity={control} parent={path} {...props}>

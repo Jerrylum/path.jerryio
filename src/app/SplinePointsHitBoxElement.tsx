@@ -1,8 +1,10 @@
+import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import Konva from 'konva';
 import { Line } from 'react-konva';
-import { EndPointControl } from '../math/Path';
+import { EndPointControl, SplineVariant } from '../math/Path';
 import { SplineElementProps } from "./SplineElement";
+import { ConvertSpline, SplitSpline } from "../math/Command";
 
 const SplinePointsHitBoxElement = observer((props: SplineElementProps) => {
   function onLineClick(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -20,13 +22,16 @@ const SplinePointsHitBoxElement = observer((props: SplineElementProps) => {
 
     if (evt.button === 2) { // right click
       // UX: Split spline if: right click
-      props.path.splitSpline(props.spline, cpInUOL);
+      props.app.history.execute(`Split spline ${props.spline.uid} with control ${cpInUOL.uid}`,
+        new SplitSpline(props.path, props.spline, cpInUOL));
     } else if (evt.button === 0) {
       // UX: Convert spline if: left click
       if (props.spline.controls.length === 2)
-        props.path.convertTo4ControlsCurve(props.spline);
+        props.app.history.execute(`Convert spline ${props.spline.uid} to curve`,
+          new ConvertSpline(props.path, props.spline, SplineVariant.CURVE));
       else
-        props.path.convertToLine(props.spline);
+        props.app.history.execute(`Convert spline ${props.spline.uid} to line`,
+          new ConvertSpline(props.path, props.spline, SplineVariant.LINEAR));
     }
   }
 
@@ -41,7 +46,7 @@ const SplinePointsHitBoxElement = observer((props: SplineElementProps) => {
   const pointWidth = props.cc.pixelWidth / 320 * 8;
 
   return (
-    <Line points={points} strokeWidth={pointWidth} stroke={"red"} opacity={0} bezier={props.spline.controls.length > 2} onClick={onLineClick} />
+    <Line points={points} strokeWidth={pointWidth} stroke={"red"} opacity={0} bezier={props.spline.controls.length > 2} onClick={action(onLineClick)} />
   )
 });
 
