@@ -1,9 +1,9 @@
-import { makeAutoObservable } from "mobx"
+import { makeAutoObservable, reaction, action } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { clamp, makeId } from "../app/Util";
 import { Control, EndPointControl, Path, Spline, Vector } from "../math/Path";
 import { UnitOfLength, UnitConverter } from "../math/Unit";
-import { GeneralConfig, PathConfig } from "./Config";
+import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { Box, Typography } from "@mui/material";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
@@ -25,6 +25,10 @@ class GeneralConfigImpl implements GeneralConfig {
   constructor(format: LemLibFormatV0_4) {
     this.format = format;
     makeAutoObservable(this);
+
+    reaction(() => this.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
+      convertGeneralConfigUOL(this, oldUOL);
+    }));
   }
 
   getConfigPanel(app: MainApp) {
@@ -56,20 +60,13 @@ class PathConfigImpl implements PathConfig {
     this.format = format;
     makeAutoObservable(this);
 
-    const defaultDensity = 2;
-    const usingDensity = format.getGeneralConfig().pointDensity;
+    reaction(() => format.getGeneralConfig().pointDensity, action((val: number, oldVal: number) => {
+      convertPathConfigPointDensity(this, oldVal, val);
+    }));
 
-    const applyMaxLimit = parseFloat((usingDensity * 2).toFixed(3));
-
-    this.applicationRange.maxLimit.label = applyMaxLimit + "";
-    this.applicationRange.maxLimit.value = applyMaxLimit;
-
-    const ratio = usingDensity / defaultDensity;
-
-    this.applicationRange.from *= ratio;
-    this.applicationRange.from = parseFloat(this.applicationRange.from.toFixed(3));
-    this.applicationRange.to *= ratio;
-    this.applicationRange.to = parseFloat(this.applicationRange.to.toFixed(3));
+    // ALGO: Convert the default parameters to the current point density
+    // ALGO: This is only used when a new path is added, not when the path config is loaded
+    convertPathConfigPointDensity(this, 2, format.getGeneralConfig().pointDensity);
   }
 
   getConfigPanel(app: MainApp) {
@@ -100,6 +97,7 @@ class PathConfigImpl implements PathConfig {
   }
 }
 
+// observable class
 export class LemLibFormatV0_4 implements Format {
   isInit: boolean = false;
   uid: string;
@@ -108,6 +106,7 @@ export class LemLibFormatV0_4 implements Format {
 
   constructor() {
     this.uid = makeId(10);
+    makeAutoObservable(this);
   }
 
   createNewInstance(): Format {

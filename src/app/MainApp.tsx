@@ -1,6 +1,6 @@
 import { makeAutoObservable, computed, runInAction, reaction, action } from "mobx"
 import DOMPurify from 'dompurify';
-import { GeneralConfig } from "../format/Config";
+import { GeneralConfig, convertGeneralConfigUOL } from "../format/Config";
 import { InteractiveEntity } from "../math/Canvas";
 import { Control, EndPointControl, Path, Vector } from "../math/Path";
 import { addToArray, clamp, removeFromArray } from "./Util";
@@ -49,16 +49,18 @@ export class MainApp {
     reaction(() => this.format, action((newFormat: Format, oldFormat: Format) => {
       if (newFormat.isInit) return;
 
-      // ALGO: this reaction should only be triggered when the format is changed by the user
+      // ALGO: this reaction should only be triggered when the format is changed by the user, not loading a file
 
       newFormat.init();
 
-      const robotWidth = this.gc.robotWidth;
-      const robotHeight = this.gc.robotHeight;
+      const oldGC = oldFormat.getGeneralConfig();
 
-      this.gc.pointDensity = new UnitConverter(this.usingUOL, this.gc.uol, 5).fromBtoA(this.gc.pointDensity); // UX: Keep some values
-      this.gc.robotWidth = robotWidth;
-      this.gc.robotHeight = robotHeight;
+      const keepPointDensity = this.gc.pointDensity;
+
+      this.gc.robotWidth = oldGC.robotWidth;
+      this.gc.robotHeight = oldGC.robotHeight;
+      convertGeneralConfigUOL(this.gc, oldGC.uol);
+      this.gc.pointDensity = keepPointDensity; // UX: Keep some values
 
       for (const path of this.paths) {
         path.pc = this.format.buildPathConfig();
@@ -74,11 +76,6 @@ export class MainApp {
 
       const uc = new UnitConverter(oldUOL, newUOL);
 
-      this.gc.pointDensity = uc.fromAtoB(this.gc.pointDensity);
-      this.gc.controlMagnetDistance = uc.fromAtoB(this.gc.controlMagnetDistance);
-      this.gc.robotWidth = uc.fromAtoB(this.gc.robotWidth);
-      this.gc.robotHeight = uc.fromAtoB(this.gc.robotHeight);
-
       for (const path of this.paths) {
         for (const control of path.controls) {
           control.x = uc.fromAtoB(control.x);
@@ -87,23 +84,6 @@ export class MainApp {
       }
 
       this.usingUOL = newUOL;
-    }));
-
-    reaction(() => this.gc.pointDensity, action((val: number, oldVal: number) => {
-      const newMaxLimit = parseFloat((val * 2).toFixed(3));
-
-      for (const path of this.paths) {
-        path.pc.applicationRange.maxLimit.label = newMaxLimit + "";
-        path.pc.applicationRange.maxLimit.value = newMaxLimit;
-
-        const ratio = val / oldVal;
-
-        path.pc.applicationRange.from *= ratio;
-        path.pc.applicationRange.from = parseFloat(path.pc.applicationRange.from.toFixed(3));
-        path.pc.applicationRange.to *= ratio;
-        path.pc.applicationRange.to = parseFloat(path.pc.applicationRange.to.toFixed(3));
-      }
-
     }));
 
     this.newPathFile();

@@ -1,8 +1,8 @@
-import { makeAutoObservable } from "mobx"
+import { makeAutoObservable, reaction, action } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { makeId } from "../app/Util";
 import { UnitConverter, UnitOfLength } from "../math/Unit";
-import { GeneralConfig, PathConfig } from "./Config";
+import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
 import { Box, Typography } from "@mui/material";
@@ -24,6 +24,10 @@ class GeneralConfigImpl implements GeneralConfig {
   constructor(format: PathDotJerryioFormatV0_1) {
     this.format = format;
     makeAutoObservable(this);
+
+    reaction(() => this.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
+      convertGeneralConfigUOL(this, oldUOL);
+    }));
   }
 
   getConfigPanel(app: MainApp) {
@@ -54,24 +58,14 @@ class PathConfigImpl implements PathConfig {
   constructor(format: PathDotJerryioFormatV0_1) {
     this.format = format;
     makeAutoObservable(this);
-  
-    const defaultDensity = 2;
-    const usingDensity = format.getGeneralConfig().pointDensity;
 
-    console.log("defaultDensity", defaultDensity, "usingDensity", usingDensity);
-    
+    reaction(() => format.getGeneralConfig().pointDensity, action((val: number, oldVal: number) => {
+      convertPathConfigPointDensity(this, oldVal, val);
+    }));
 
-    const applyMaxLimit = parseFloat((usingDensity * 2).toFixed(3));
-
-    this.applicationRange.maxLimit.label = applyMaxLimit + "";
-    this.applicationRange.maxLimit.value = applyMaxLimit;
-
-    const ratio = usingDensity / defaultDensity;
-
-    this.applicationRange.from *= ratio;
-    this.applicationRange.from = parseFloat(this.applicationRange.from.toFixed(3));
-    this.applicationRange.to *= ratio;
-    this.applicationRange.to = parseFloat(this.applicationRange.to.toFixed(3));
+    // ALGO: Convert the default parameters to the current point density
+    // ALGO: This is only used when a new path is added, not when the path config is loaded
+    convertPathConfigPointDensity(this, 2, format.getGeneralConfig().pointDensity);
   }
 
   getConfigPanel(app: MainApp) {
@@ -102,6 +96,7 @@ class PathConfigImpl implements PathConfig {
   }
 }
 
+// observable class
 export class PathDotJerryioFormatV0_1 implements Format {
   isInit: boolean = false;
   uid: string;
@@ -110,6 +105,7 @@ export class PathDotJerryioFormatV0_1 implements Format {
 
   constructor() {
     this.uid = makeId(10);
+    makeAutoObservable(this);
   }
 
   createNewInstance(): Format {
