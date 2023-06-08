@@ -40,11 +40,10 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
       if (evt.shiftKey) {
         // UX: Add selected control point if: left click + shift
         // UX: Prevent the control point from being removed when the mouse is released at the same round it is added
-        setJustSelected(props.app.addSelected(props.cp.uid));
+        setJustSelected(props.app.select(props.cp));
       } else {
         // UX: Select one control point if: left click + not pressing shift
-        props.app.clearSelected();
-        props.app.addSelected(props.cp.uid);
+        props.app.setSelected([props.cp]);
         setJustSelected(false);
       }
     } else if (evt.button === 1) { // middle click
@@ -60,7 +59,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
 
     // UX: Remove selected entity if: release left click + shift + not being added recently
     if (evt.button === 0 && evt.shiftKey && !justSelected) {
-      if (!justSelected) props.app.removeSelected(props.cp.uid);
+      if (!justSelected) props.app.unselect(props.cp.uid);
     }
   }
 
@@ -119,14 +118,14 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
     if (isMainControl && shouldControlFollow) {
       if (isCurve) {
         let control = isFirstCp ? props.spline.controls[1] : props.spline.controls[2];
-        props.app.addSelected(control.uid);
+        props.app.select(control);
         if (!followers.includes(control)) followers.push(control);
       }
 
       const nextSpline = props.path.splines[index + 1];
       if (!isLastOne && !isFirstCp && nextSpline !== undefined && nextSpline.controls.length === 4) {
         let control = nextSpline.controls[1];
-        props.app.addSelected(control.uid);
+        props.app.select(control);
         if (!followers.includes(control)) followers.push(control);
       }
     }
@@ -209,7 +208,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
     if (evt.button === 2) {
       const removedControls = props.path.removeSpline(props.cp as EndPointControl);
       for (const control of removedControls) {
-        props.app.removeSelected(control.uid);
+        props.app.unselect(control.uid);
         props.app.removeExpanded(control.uid);
       }
     }

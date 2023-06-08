@@ -70,10 +70,7 @@ const PathTreeAccordion = observer((props: AppProps) => {
           multiSelect
           expanded={props.app.expandedEntityIds}
           selected={props.app.selectedEntityIds}
-          onNodeSelect={action((event, nodeIds) => {
-            props.app.clearSelected();
-            nodeIds.forEach((nodeId) => props.app.addSelected(nodeId));
-          })}
+          onNodeSelect={action((event, nodeIds) => props.app.setSelected(nodeIds))}
           onNodeToggle={action(onTreeViewNodeToggle)}
           sx={{ flexGrow: 1, maxWidth: "100%", overflowX: 'hidden', overflowY: 'auto', margin: "1vh 0 0" }}
         >

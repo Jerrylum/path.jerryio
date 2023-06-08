@@ -105,12 +105,16 @@ export class MainApp {
     return typeof x === "string" ? this.selected.includes(x) : this.selected.includes(x.uid);
   }
 
-  addSelected(x: InteractiveEntity | string): boolean {
+  select(x: InteractiveEntity | string): boolean {
     return addToArray(this.selected, typeof x === "string" ? x : x.uid);
   }
 
-  removeSelected(x: InteractiveEntity | string): boolean {
+  unselect(x: InteractiveEntity | string): boolean {
     return removeFromArray(this.selected, typeof x === "string" ? x : x.uid);
+  }
+
+  setSelected(x: InteractiveEntity[] | string[]): void {
+    this.selected = typeof x[0] === "string" ? (x as string[]).slice() : x.map((cp) => (cp as InteractiveEntity).uid);
   }
 
   clearSelected(): void {

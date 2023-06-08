@@ -123,7 +123,7 @@ const PathTreeItem = observer((props: PathTreeProps) => {
 
   function onPathDeleteClick() {
     props.paths.splice(props.paths.indexOf(path), 1);
-    props.app.removeSelected(path.uid);
+    props.app.unselect(path.uid);
     props.app.removeExpanded(path.uid);
   }
 

@@ -213,8 +213,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
     }
 
     // UX: Select the new control point
-    props.app.clearSelected();
-    props.app.addSelected(cpInUOL.uid);
+    props.app.setSelected([cpInUOL]);
   }
 
   const lineWidth = 1;
