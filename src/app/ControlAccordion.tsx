@@ -31,9 +31,6 @@ const ControlAccordion = observer((props: AppProps) => {
                 const control = props.app.selectedControl;
                 if (control === undefined) return;
 
-                // control.x = parseNumberInString(value, props.app.gc.uol,
-                //   new NumberInUnit(-1000, UnitOfLength.Centimeter), new NumberInUnit(1000, UnitOfLength.Centimeter))
-
                 const controlUid = control.uid;
                 const finalVal = parseNumberInString(
                   value,
@@ -42,8 +39,7 @@ const ControlAccordion = observer((props: AppProps) => {
                   new NumberInUnit(1000, UnitOfLength.Centimeter)
                 );
 
-                // TODO: refactor history execute, merge by time
-                props.app.history.execute(`Update control ${controlUid} x value (unique:${makeId(10)})`, 
+                props.app.history.execute(`Update control ${controlUid} x value`, 
                   new UpdateInteractiveEntities([control], {x: finalVal}));
               }}
               isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
@@ -65,8 +61,16 @@ const ControlAccordion = observer((props: AppProps) => {
                 const control = props.app.selectedControl;
                 if (control === undefined) return;
 
-                control.y = parseNumberInString(value, props.app.gc.uol,
-                  new NumberInUnit(-1000, UnitOfLength.Centimeter), new NumberInUnit(1000, UnitOfLength.Centimeter))
+                const controlUid = control.uid;
+                const finalVal = parseNumberInString(
+                  value,
+                  props.app.gc.uol,
+                  new NumberInUnit(-1000, UnitOfLength.Centimeter),
+                  new NumberInUnit(1000, UnitOfLength.Centimeter)
+                );
+
+                props.app.history.execute(`Update control ${controlUid} y value`,
+                  new UpdateInteractiveEntities([control], {y: finalVal}));
               }}
               isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
               isValidValue={(candidate: string) => new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
@@ -87,8 +91,11 @@ const ControlAccordion = observer((props: AppProps) => {
                 const control = props.app.selectedControl;
                 if (!(control instanceof EndPointControl)) return;
 
-                control.heading = parseFloat(value);
-                control.fixPrecision();
+                const controlUid = control.uid;
+                const finalVal = parseFloat(parseFloat(value).toFixed(3));
+
+                props.app.history.execute(`Update control ${controlUid} heading value`,
+                  new UpdateInteractiveEntities([control], {heading: finalVal}));
               }}
               isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}
               isValidValue={(candidate: string) => new RegExp(/^-?[0-9]*(\.[0-9]*)?$/g).test(candidate)}

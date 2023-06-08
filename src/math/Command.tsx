@@ -1,35 +1,43 @@
 import { InteractiveEntity } from "./Canvas";
 
-export class CommandHistory {
+export interface Execution {
+  title: string;
+  command: CancellableCommand;
+  time: number;
+  mergeTimeout: number;
+}
 
-  private lastExecutionTitle: string | undefined = undefined;
-  private lastCommand: CancellableCommand | undefined = undefined;
+export class CommandHistory {
+  private lastExecution: Execution | undefined = undefined;
   private history: CancellableCommand[] = [];
   private redoHistory: CancellableCommand[] = [];
 
-  execute(title: string, command: CancellableCommand): void {
+  execute(title: string, command: CancellableCommand, mergeTimeout = 500): void {
     command.execute();
-    if (title === this.lastExecutionTitle) {
-      // ALGO: Assume that the last command is the same type as the current one.
-      this.lastCommand!.merge(command);
-    } else {
-      if (this.lastCommand !== undefined) {
-        this.history.push(this.lastCommand);
-      }
 
-      this.lastExecutionTitle = title;
-      this.lastCommand = command;
+    const exe = { title, command, time: Date.now(), mergeTimeout };
+
+    if (exe.title === this.lastExecution?.title && exe.time - this.lastExecution.time < exe.mergeTimeout) {
+      this.lastExecution.command.merge(exe.command);
+      this.lastExecution.time = exe.time;
+    } else {
+      this.commit();
+      this.lastExecution = exe;
     }
+
     this.redoHistory = [];
   }
 
+  commit(): void {
+    if (this.lastExecution !== undefined) {
+      this.history.push(this.lastExecution.command);
+      this.lastExecution = undefined;
+    }
+  }
+
   undo(): void {
-    if (this.lastCommand !== undefined) {
-      this.lastCommand.undo();
-      this.redoHistory.push(this.lastCommand);
-      this.lastExecutionTitle = undefined;
-      this.lastCommand = undefined;
-    } else if (this.history.length > 0) {
+    this.commit();
+    if (this.history.length > 0) {
       const command = this.history.pop()!;
       command.undo();
       this.redoHistory.push(command);
@@ -76,7 +84,7 @@ export class UpdatePropertiesCommand<TTarget> implements CancellableCommand {
   }
 
   merge(latest: UpdatePropertiesCommand<TTarget>): void {
-    this.previousValue = { ...latest.previousValue,  ...this.previousValue };
+    this.previousValue = { ...latest.previousValue, ...this.previousValue };
     this.newValues = { ...this.newValues, ...latest.newValues };
   }
 
@@ -118,8 +126,11 @@ export class UpdateInstancesPropertiesCommand<TTarget> implements CancellableCom
   }
 
   merge(latest: UpdateInstancesPropertiesCommand<TTarget>): void {
-    this.previousValue = [...latest.previousValue!, ...this.previousValue!];
-    this.newValues = { ...this.newValues, ...latest.newValues };
+    // ALGO: Assume that the targets are the same and both commands are executed
+    for (let i = 0; i < this.targets.length; i++) {
+      this.previousValue![i] = { ...latest.previousValue![i], ...this.previousValue![i] };
+      this.newValues = { ...this.newValues, ...latest.newValues };
+    }
   }
 
   protected updatePropertiesForTarget(target: TTarget, values: Partial<TTarget>): Partial<TTarget> {
