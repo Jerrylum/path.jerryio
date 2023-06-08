@@ -59,7 +59,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
 
     // UX: Remove selected entity if: release left click + shift + not being added recently
     if (evt.button === 0 && evt.shiftKey && !justSelected) {
-      if (!justSelected) props.app.unselect(props.cp.uid);
+      if (!justSelected) props.app.unselect(props.cp); // TODO code review
     }
   }
 
@@ -105,7 +105,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
         if (control.visible === false || path.visible === false) continue;
         if (
           (!(control instanceof EndPointControl) && !shouldControlFollow) ||
-          (!props.app.isSelected(control.uid)) ||
+          (!props.app.isSelected(control)) ||
           (control.lock || path.lock)
         ) {
           others.push(control);
@@ -194,7 +194,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
   const lineWidth = props.cc.pixelWidth / 600;
   const cpRadius = props.cc.pixelWidth / 40;
   const cpInPx = props.cc.toPx(props.cp);
-  const fillColor = props.app.isSelected(props.cp.uid) ? "#5C469Cdf" : "#5C469C6f";
+  const fillColor = props.app.isSelected(props.cp) ? "#5C469Cdf" : "#5C469C6f";
   const isMainControl = props.cp instanceof EndPointControl;
 
   function onClickFirstOrLastControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -208,8 +208,8 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
     if (evt.button === 2) {
       const removedControls = props.path.removeSpline(props.cp as EndPointControl);
       for (const control of removedControls) {
-        props.app.unselect(control.uid);
-        props.app.removeExpanded(control.uid);
+        props.app.unselect(control);
+        props.app.removeExpanded(control);
       }
     }
   }

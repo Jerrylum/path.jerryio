@@ -35,10 +35,10 @@ const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
   function onVisibleClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
     const setTo = !entity.visible;
 
-    if (props.app.isSelected(entity.uid)) { // UX: batch operation only if the entity is selected
+    if (props.app.isSelected(entity)) { // UX: batch operation only if the entity is selected
       for (let path of props.paths) {
         for (let control of path.controls) {
-          if (props.app.isSelected(control.uid)) control.visible = setTo;
+          if (props.app.isSelected(control)) control.visible = setTo;
         }
       }
     }
@@ -50,10 +50,10 @@ const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
   function onLockClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
     const setTo = !entity.lock;
 
-    if (props.app.isSelected(entity.uid)) { // UX: batch operation only if the entity is selected
+    if (props.app.isSelected(entity)) { // UX: batch operation only if the entity is selected
       for (let path of props.paths) {
         for (let control of path.controls) {
-          if (props.app.isSelected(control.uid)) control.lock = setTo;
+          if (props.app.isSelected(control)) control.lock = setTo;
         }
       }
     }
@@ -123,8 +123,8 @@ const PathTreeItem = observer((props: PathTreeProps) => {
 
   function onPathDeleteClick() {
     props.paths.splice(props.paths.indexOf(path), 1);
-    props.app.unselect(path.uid);
-    props.app.removeExpanded(path.uid);
+    props.app.unselect(path);
+    props.app.removeExpanded(path);
   }
 
   return (
