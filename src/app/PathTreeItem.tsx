@@ -12,6 +12,7 @@ import { AppProps } from '../App';
 import { EndPointControl, Path } from '../math/Path';
 import { useRef } from 'react';
 import { InteractiveEntity } from '../math/Canvas';
+import { UpdateInteractiveEntities } from '../math/Command';
 
 export interface PathTreeProps extends AppProps {
   path: Path;
@@ -34,31 +35,18 @@ const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
 
   function onVisibleClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
     const setTo = !entity.visible;
+    const affected = props.app.isSelected(entity) ? props.app.selectedEntities : [entity];
 
-    if (props.app.isSelected(entity)) { // UX: batch operation only if the entity is selected
-      for (let path of props.paths) {
-        for (let control of path.controls) {
-          if (props.app.isSelected(control)) control.visible = setTo;
-        }
-      }
-    }
-
-
-    entity.visible = setTo;
+    props.app.history.execute(`Update entities visibility to ${setTo}`,
+      new UpdateInteractiveEntities(affected, { visible: setTo }), 0); // Disable merge
   }
 
   function onLockClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
     const setTo = !entity.lock;
+    const affected = props.app.isSelected(entity) ? props.app.selectedEntities : [entity];
 
-    if (props.app.isSelected(entity)) { // UX: batch operation only if the entity is selected
-      for (let path of props.paths) {
-        for (let control of path.controls) {
-          if (props.app.isSelected(control)) control.lock = setTo;
-        }
-      }
-    }
-
-    entity.lock = setTo;
+    props.app.history.execute(`Update entities lock to ${setTo}`,
+      new UpdateInteractiveEntities(affected, { lock: setTo }), 0); // Disable merge
   }
 
   return (

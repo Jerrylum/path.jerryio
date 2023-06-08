@@ -1,3 +1,4 @@
+import { MainApp } from "../app/MainApp";
 import { InteractiveEntity } from "./Canvas";
 
 export interface Execution {
@@ -11,6 +12,8 @@ export class CommandHistory {
   private lastExecution: Execution | undefined = undefined;
   private history: CancellableCommand[] = [];
   private redoHistory: CancellableCommand[] = [];
+
+  constructor(private app: MainApp) { }
 
   execute(title: string, command: CancellableCommand, mergeTimeout = 500): void {
     command.execute();
@@ -41,8 +44,12 @@ export class CommandHistory {
       const command = this.history.pop()!;
       command.undo();
       this.redoHistory.push(command);
+
+      if (command instanceof UpdateInteractiveEntities) {
+        this.app.setSelected(command.entities);
+      }
     }
-    console.log("undo", this.history.length, this.redoHistory.length);
+    // console.log("undo", this.history.length, this.redoHistory.length);
   }
 
   redo(): void {
@@ -50,8 +57,12 @@ export class CommandHistory {
     if (command !== undefined) {
       command.redo();
       this.history.push(command);
+
+      if (command instanceof UpdateInteractiveEntities) {
+        this.app.setSelected(command.entities);
+      }
     }
-    console.log("redo", command, this.history.length, this.redoHistory.length);
+    // console.log("redo", command, this.history.length, this.redoHistory.length);
   }
 }
 
@@ -147,5 +158,9 @@ export class UpdateInstancesPropertiesCommand<TTarget> implements CancellableCom
 export class UpdateInteractiveEntities<TTarget extends InteractiveEntity> extends UpdateInstancesPropertiesCommand<TTarget> {
   constructor(protected targets: TTarget[], protected newValues: Partial<TTarget>) {
     super(targets, newValues);
+  }
+
+  get entities(): TTarget[] {
+    return this.targets.slice();
   }
 }

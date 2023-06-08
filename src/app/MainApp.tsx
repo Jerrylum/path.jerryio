@@ -25,7 +25,7 @@ export class MainApp {
   private expanded: string[] = []; // ALGO: Order doesn't matter but anyway
   public magnet: Vector = new Vector(Infinity, Infinity);
 
-  private _history: CommandHistory = new CommandHistory();
+  private _history: CommandHistory = new CommandHistory(this);
 
   public view = {
     showSpeedCanvas: true,
@@ -68,7 +68,7 @@ export class MainApp {
 
       this.resetUserControl();
 
-      this._history = new CommandHistory();
+      this._history = new CommandHistory(this);
     }));
 
     reaction(() => this.gc.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
@@ -191,6 +191,17 @@ export class MainApp {
     return rtn;
   }
 
+  @computed get selectedEntities(): InteractiveEntity[] {
+    const rtn: InteractiveEntity[] = [];
+    for (const path of this.paths) {
+      if (this.isSelected(path)) rtn.push(path);
+      for (const control of path.controls) {
+        if (this.isSelected(control)) rtn.push(control);
+      }
+    }
+    return rtn;
+  }
+
   @computed get selectedEntityIds(): string[] {
     return this.selected.slice(); // ALGO: Return a copy
   }
@@ -264,7 +275,7 @@ export class MainApp {
     this.resetUserControl();
     this.resetFieldDisplay();
 
-    this._history = new CommandHistory();
+    this._history = new CommandHistory(this);
   }
 
   importPathFileData(data: Record<string, any>): void {
@@ -310,7 +321,7 @@ export class MainApp {
     this.resetUserControl();
     this.resetFieldDisplay();
 
-    this._history = new CommandHistory();
+    this._history = new CommandHistory(this);
   }
 
   importPathFile(fileContent: string): void {
