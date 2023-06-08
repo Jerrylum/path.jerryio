@@ -12,13 +12,15 @@ export interface Format {
 
   init(): void;
 
-  buildGeneralConfig(): GeneralConfig;
+  createNewInstance(): Format;
+
+  getGeneralConfig(): GeneralConfig;
 
   buildPathConfig(): PathConfig;
 
   recoverPathFileData(fileContent: string): PathFileData;
 
-  exportPathFile(app: MainApp): string;
+  exportPathFile(app: MainApp): string; // return file content
 }
 
 export interface PathFileData {

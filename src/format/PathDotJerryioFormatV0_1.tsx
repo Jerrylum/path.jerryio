@@ -7,6 +7,7 @@ import { Format, PathFileData } from "./Format";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
 import { Box, Typography } from "@mui/material";
 import { UpdatePropertiesCommand } from "../math/Command";
+import { Exclude } from "class-transformer";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -17,7 +18,11 @@ class GeneralConfigImpl implements GeneralConfig {
   pointDensity: number = 2;
   controlMagnetDistance: number = 5;
 
-  constructor() {
+  @Exclude()
+  private format: PathDotJerryioFormatV0_1;
+
+  constructor(format: PathDotJerryioFormatV0_1) {
+    this.format = format;
     makeAutoObservable(this);
   }
 
@@ -43,8 +48,30 @@ class PathConfigImpl implements PathConfig {
     to: 1.8,
   };
 
-  constructor() {
+  @Exclude()
+  private format: PathDotJerryioFormatV0_1;
+
+  constructor(format: PathDotJerryioFormatV0_1) {
+    this.format = format;
     makeAutoObservable(this);
+  
+    const defaultDensity = 2;
+    const usingDensity = format.getGeneralConfig().pointDensity;
+
+    console.log("defaultDensity", defaultDensity, "usingDensity", usingDensity);
+    
+
+    const applyMaxLimit = parseFloat((usingDensity * 2).toFixed(3));
+
+    this.applicationRange.maxLimit.label = applyMaxLimit + "";
+    this.applicationRange.maxLimit.value = applyMaxLimit;
+
+    const ratio = usingDensity / defaultDensity;
+
+    this.applicationRange.from *= ratio;
+    this.applicationRange.from = parseFloat(this.applicationRange.from.toFixed(3));
+    this.applicationRange.to *= ratio;
+    this.applicationRange.to = parseFloat(this.applicationRange.to.toFixed(3));
   }
 
   getConfigPanel(app: MainApp) {
@@ -79,8 +106,14 @@ export class PathDotJerryioFormatV0_1 implements Format {
   isInit: boolean = false;
   uid: string;
 
+  private gc = new GeneralConfigImpl(this);
+
   constructor() {
     this.uid = makeId(10);
+  }
+
+  createNewInstance(): Format {
+    return new PathDotJerryioFormatV0_1();
   }
 
   getName(): string {
@@ -92,12 +125,12 @@ export class PathDotJerryioFormatV0_1 implements Format {
     this.isInit = true;
   }
 
-  buildGeneralConfig(): GeneralConfig {
-    return new GeneralConfigImpl();
+  getGeneralConfig(): GeneralConfig {
+    return this.gc;
   }
 
   buildPathConfig(): PathConfig {
-    return new PathConfigImpl();
+    return new PathConfigImpl(this);
   }
 
   recoverPathFileData(fileContent: string): PathFileData {

@@ -31,8 +31,6 @@ const RangeSlider = observer((props: { range: NumberRange, inverted?: boolean, o
 
         if (value[0] > value[1]) value[0] = value[1];
 
-        // range.from = value[0];
-        // range.to = value[1];
         props.onChange(value[0], value[1]);
       })}
       { ...(props.inverted ? {track: "inverted"} : {})}

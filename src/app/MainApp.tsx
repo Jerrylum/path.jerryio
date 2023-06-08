@@ -18,7 +18,7 @@ export class MainApp {
   private usingUOL: UnitOfLength = UnitOfLength.Centimeter;
   public mountingFile: FileSystemFileHandle | null = null; // This is intended to be modified outside the class
 
-  public gc: GeneralConfig = this.format.buildGeneralConfig(); // a.k.a Configuration
+  public gc: GeneralConfig = this.format.getGeneralConfig(); // a.k.a Configuration
 
   public paths: Path[] = [];
   private selected: string[] = []; // ALGO: Not using Set because order matters
@@ -45,6 +45,9 @@ export class MainApp {
   constructor() {
     makeAutoObservable(this);
 
+    // NOTE: There is a reason why reactions are made here instead of in the constructor of the config class
+    // A lot of things need to be updated when the format is changed, and it's easier to do it here
+
     reaction(() => this.format, action((newFormat: Format, oldFormat: Format) => {
       if (newFormat.isInit) return;
 
@@ -55,7 +58,7 @@ export class MainApp {
       const robotWidth = this.gc.robotWidth;
       const robotHeight = this.gc.robotHeight;
 
-      this.gc = this.format.buildGeneralConfig();
+      this.gc = this.format.getGeneralConfig();
       this.gc.pointDensity = new UnitConverter(this.usingUOL, this.gc.uol, 5).fromBtoA(this.gc.pointDensity); // UX: Keep some values
       this.gc.robotWidth = robotWidth;
       this.gc.robotHeight = robotHeight;
@@ -286,7 +289,7 @@ export class MainApp {
     format.init(); // ALGO: Suspend format reaction
 
     if (typeof data.gc !== "object") throw new Error("Invalid data format: gc is not an object.");
-    const gc = plainToClassFromExist(format.buildGeneralConfig(), data.gc);
+    const gc = plainToClassFromExist(format.getGeneralConfig(), data.gc);
 
     if (!Array.isArray(data.paths)) throw new Error("Invalid data format: paths is not an array.");
     const paths = plainToInstance(Path, data.paths);
@@ -314,13 +317,11 @@ export class MainApp {
   }
 
   newPathFile() {
-    const newFormat = getAllFormats().find(format => format.getName() === this.format.getName());
-    if (newFormat === undefined) return;
-
+    const newFormat = this.format.createNewInstance();
     newFormat.init(); // ALGO: Suspend format reaction
 
     this.format = newFormat;
-    this.gc = this.format.buildGeneralConfig();
+    this.gc = this.format.getGeneralConfig();
     this.usingUOL = this.gc.uol;
     this.paths = [];
     this.resetUserControl();
@@ -345,7 +346,7 @@ export class MainApp {
     // Recover
 
     // Clone format
-    const format = getAllFormats().find(f => f.getName() === this.format.getName()) as Format;
+    const format = this.format.createNewInstance();
     format.init(); // ALGO: Suspend format reaction
     const pfd = format.recoverPathFileData(fileContent);
 

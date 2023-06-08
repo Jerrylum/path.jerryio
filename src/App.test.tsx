@@ -22,13 +22,17 @@ class CustomFormat implements Format {
     this.uid = "custom";
   }
 
+  createNewInstance(): Format {
+    return new CustomFormat();
+  }
+
   getName(): string {
     return "Custom";
   }
   init(): void {
     this.isInit = true;
   }
-  buildGeneralConfig(): GeneralConfig {
+  getGeneralConfig(): GeneralConfig {
     return new CustomGeneralConfig();
   }
   buildPathConfig(): PathConfig {
@@ -116,10 +120,10 @@ test('Format serialize', () => {
   const app = new MainApp();
 
   app.format = new CustomFormat();
-  app.gc = app.format.buildGeneralConfig();
+  app.gc = app.format.getGeneralConfig();
 
   let p = instanceToPlain(app.gc);
-  let gc2 = plainToClassFromExist(app.format.buildGeneralConfig(), p);
+  let gc2 = plainToClassFromExist(app.format.getGeneralConfig(), p);
   let p2 = instanceToPlain(gc2);
 
   expect(p).toEqual(p2);

@@ -8,6 +8,7 @@ import { Format, PathFileData } from "./Format";
 import { Box, Typography } from "@mui/material";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
 import { UpdatePropertiesCommand } from "../math/Command";
+import { Exclude } from "class-transformer";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -18,7 +19,11 @@ class GeneralConfigImpl implements GeneralConfig {
   pointDensity: number = 2; // inches
   controlMagnetDistance: number = 5 / 2.54;
 
-  constructor() {
+  @Exclude()
+  private format: LemLibFormatV0_4;
+
+  constructor(format: LemLibFormatV0_4) {
+    this.format = format;
     makeAutoObservable(this);
   }
 
@@ -44,8 +49,27 @@ class PathConfigImpl implements PathConfig {
     to: 1.8,
   };
 
-  constructor() {
+  @Exclude()
+  private format: LemLibFormatV0_4;
+
+  constructor(format: LemLibFormatV0_4) {
+    this.format = format;
     makeAutoObservable(this);
+
+    const defaultDensity = 2;
+    const usingDensity = format.getGeneralConfig().pointDensity;
+
+    const applyMaxLimit = parseFloat((usingDensity * 2).toFixed(3));
+
+    this.applicationRange.maxLimit.label = applyMaxLimit + "";
+    this.applicationRange.maxLimit.value = applyMaxLimit;
+
+    const ratio = usingDensity / defaultDensity;
+
+    this.applicationRange.from *= ratio;
+    this.applicationRange.from = parseFloat(this.applicationRange.from.toFixed(3));
+    this.applicationRange.to *= ratio;
+    this.applicationRange.to = parseFloat(this.applicationRange.to.toFixed(3));
   }
 
   getConfigPanel(app: MainApp) {
@@ -57,7 +81,7 @@ class PathConfigImpl implements PathConfig {
           <Typography>Min/Max Speed</Typography>
           <RangeSlider range={this.speedLimit} onChange={
             (from, to) => app.history.execute(
-              `Change path ${pathUid} min/max speed`,
+              `Update path ${pathUid} min/max speed`,
               new UpdatePropertiesCommand(this.speedLimit, { from, to })
             )
           } />
@@ -66,7 +90,7 @@ class PathConfigImpl implements PathConfig {
           <Typography>Curve Deceleration Range</Typography>
           <RangeSlider range={this.applicationRange} onChange={
             (from, to) => app.history.execute(
-              `Change path ${pathUid} curve deceleration range`,
+              `Update path ${pathUid} curve deceleration range`,
               new UpdatePropertiesCommand(this.applicationRange, { from, to })
             )
           } />
@@ -80,8 +104,14 @@ export class LemLibFormatV0_4 implements Format {
   isInit: boolean = false;
   uid: string;
 
+  private gc = new GeneralConfigImpl(this);
+
   constructor() {
     this.uid = makeId(10);
+  }
+
+  createNewInstance(): Format {
+    return new LemLibFormatV0_4();
   }
 
   getName(): string {
@@ -93,19 +123,18 @@ export class LemLibFormatV0_4 implements Format {
     this.isInit = true;
   }
 
-  buildGeneralConfig(): GeneralConfig {
-    return new GeneralConfigImpl();
+  getGeneralConfig(): GeneralConfig {
+    return this.gc;
   }
 
   buildPathConfig(): PathConfig {
-    return new PathConfigImpl();
+    return new PathConfigImpl(this);
   }
 
   recoverPathFileData(fileContent: string): PathFileData {
     // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.
 
     const paths: Path[] = [];
-    const gc = new GeneralConfigImpl();
 
     // find the first line that is "endData"
     const lines = fileContent.split("\n");
@@ -167,7 +196,7 @@ export class LemLibFormatV0_4 implements Format {
 
     return {
       format: this.getName(),
-      gc,
+      gc: this.gc,
       paths
     };
   }
