@@ -5,7 +5,7 @@ import Konva from 'konva';
 import { Circle, Line } from 'react-konva';
 import { useState } from "react";
 import { SplineElementProps } from "./SplineElement";
-import { RemoveSpline } from "../math/Command";
+import { DragControls, RemoveSpline } from "../math/Command";
 
 export interface SplineControlElementProps extends SplineElementProps {
   cp: EndPointControl | Control;
@@ -166,11 +166,9 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
       props.app.magnet = new Vector(Infinity, Infinity);
     }
 
-    for (let cp of followers) {
-      cp.setXY(cpInUOL.add(cp.subtract(oldCpInUOL)));
-    }
+    props.app.history.execute(`Move control ${props.cp.uid} with ${followers.length} followers`,
+      new DragControls(props.cp, oldCpInUOL, cpInUOL, followers), 5000);
 
-    props.cp.setXY(cpInUOL);
     cpInPx = props.cc.toPx(cpInUOL);
     event.target.x(cpInPx.x);
     event.target.y(cpInPx.y);

@@ -10,11 +10,12 @@ import { TreeView } from '@mui/lab';
 import { AppProps } from '../App';
 import { PathTreeItem } from './PathTreeItem';
 import { Spline, EndPointControl, Path } from '../math/Path';
+import { AddPath } from '../math/Command';
 
 const PathTreeAccordion = observer((props: AppProps) => {
   function onAddPathClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     const newPath = new Path(props.app.format.buildPathConfig(), new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)));
-    props.paths.push(newPath);
+    props.app.history.execute(`Add path ${newPath.uid}`, new AddPath(props.paths, newPath));
     props.app.addExpanded(newPath);
   }
 

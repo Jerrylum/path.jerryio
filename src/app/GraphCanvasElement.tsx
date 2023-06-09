@@ -149,7 +149,7 @@ const KeyframeElement = observer((props: AppProps & { ikf: KeyframeIndexing, gcc
       props.app.history.execute(`Update keyframe ${ikf.keyframe.uid} followCurve to ${setTo}`,
         new UpdateInstancesProperties([ikf.keyframe], {'followCurve': setTo}), 0);
     } else if (evt.button === 2) { // right click
-      props.app.history.execute(`Delete keyframe ${ikf.keyframe.uid} from path ${gcc.path.uid}`,
+      props.app.history.execute(`Remove keyframe ${ikf.keyframe.uid} from path ${gcc.path.uid}`,
         new RemoveKeyframe(gcc.path, ikf.keyframe));
     }
   };

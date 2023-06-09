@@ -1,6 +1,6 @@
 import { MainApp } from "../app/MainApp";
 import { InteractiveEntity } from "./Canvas";
-import { Control, EndPointControl, Keyframe, KeyframePos, Path, Spline, SplineVariant } from "./Path";
+import { Control, EndPointControl, Keyframe, KeyframePos, Path, Spline, SplineVariant, Vector } from "./Path";
 
 export interface Execution {
   title: string;
@@ -25,8 +25,8 @@ export class CommandHistory {
       isMergeable(exe.command) &&
       isMergeable(this.lastExecution.command) &&
       typeof (exe.command) === typeof (this.lastExecution.command) &&
-      exe.time - this.lastExecution.time < exe.mergeTimeout) {
-      this.lastExecution.command.merge(exe.command);
+      exe.time - this.lastExecution.time < exe.mergeTimeout &&
+      this.lastExecution.command.merge(exe.command)) {
       this.lastExecution.time = exe.time;
     } else {
       this.commit();
@@ -72,7 +72,7 @@ export interface Command {
 }
 
 export interface MergeableCommand extends Command {
-  merge(command: MergeableCommand): void;
+  merge(command: MergeableCommand): boolean;
 }
 
 export interface CancellableCommand extends Command {
@@ -80,7 +80,7 @@ export interface CancellableCommand extends Command {
   redo(): void;
 }
 
-export interface InteractiveEntitiesCommand extends CancellableCommand {
+export interface InteractiveEntitiesCommand extends Command {
   // The entities that are affected by this command, highlighted in the canvas when undo/redo
   entities: InteractiveEntity[];
 }
@@ -97,44 +97,7 @@ export function isInteractiveEntitiesCommand(object: Command): object is Interac
  * ALGO: Assume execute() function are called before undo(), redo() and other functions defined in the class
  */
 
-export class UpdateProperties<TTarget> implements CancellableCommand, MergeableCommand {
-  protected previousValue?: Partial<TTarget>;
-
-  constructor(protected target: TTarget, protected newValues: Partial<TTarget>) { }
-
-  execute(): void {
-    this.previousValue = this.updateProperties(this.newValues);
-  }
-
-  undo(): void {
-    this.updateProperties(this.previousValue!);
-    this.previousValue = undefined;
-  }
-
-  redo(): void {
-    this.execute();
-  }
-
-  merge(latest: UpdateProperties<TTarget>): void {
-    this.previousValue = { ...latest.previousValue, ...this.previousValue };
-    this.newValues = { ...this.newValues, ...latest.newValues };
-  }
-
-  protected updateProperties(values: Partial<TTarget>): Partial<TTarget> {
-    const target = this.target;
-
-    const previousValues: Partial<TTarget> = {} as Partial<TTarget>;
-    for (const key in values) {
-      previousValues[key] = target[key];
-      target[key] = values[key]!;
-    }
-
-    return previousValues;
-  }
-
-}
-
-export class UpdateInstancesProperties<TTarget> implements CancellableCommand {
+export class UpdateInstancesProperties<TTarget> implements CancellableCommand, MergeableCommand {
   protected previousValue?: Partial<TTarget>[];
 
   constructor(protected targets: TTarget[], protected newValues: Partial<TTarget>) { }
@@ -157,12 +120,13 @@ export class UpdateInstancesProperties<TTarget> implements CancellableCommand {
     this.execute();
   }
 
-  merge(latest: UpdateInstancesProperties<TTarget>): void {
+  merge(latest: UpdateInstancesProperties<TTarget>): boolean {
     // ALGO: Assume that the targets are the same and both commands are executed
     for (let i = 0; i < this.targets.length; i++) {
       this.previousValue![i] = { ...latest.previousValue![i], ...this.previousValue![i] };
       this.newValues = { ...this.newValues, ...latest.newValues };
     }
+    return true;
   }
 
   protected updatePropertiesForTarget(target: TTarget, values: Partial<TTarget>): Partial<TTarget> {
@@ -173,6 +137,12 @@ export class UpdateInstancesProperties<TTarget> implements CancellableCommand {
     }
 
     return previousValues;
+  }
+}
+
+export class UpdateProperties<TTarget> extends UpdateInstancesProperties<TTarget> {
+  constructor(protected target: TTarget, protected newValues: Partial<TTarget>) {
+    super([target], newValues);
   }
 }
 
@@ -257,6 +227,7 @@ export class AddSpline implements CancellableCommand, InteractiveEntitiesCommand
 
 export class ConvertSpline implements CancellableCommand, InteractiveEntitiesCommand {
   protected previousControls: Control[] = [];
+  protected newControls: Control[] = [];
 
   constructor(protected path: Path, protected spline: Spline, protected variant: SplineVariant) { }
 
@@ -308,6 +279,7 @@ export class ConvertSpline implements CancellableCommand, InteractiveEntitiesCom
     } else if (this.variant === SplineVariant.CURVE) {
       this.convertToCurve();
     }
+    this.newControls = this.spline.controls.slice();
   }
 
   undo(): void {
@@ -315,7 +287,7 @@ export class ConvertSpline implements CancellableCommand, InteractiveEntitiesCom
   }
 
   redo(): void {
-    this.execute();
+    this.spline.controls = this.newControls.slice();
   }
 
   get entities(): InteractiveEntity[] {
@@ -473,6 +445,51 @@ export class RemoveSpline implements CancellableCommand, InteractiveEntitiesComm
   }
 }
 
+export class DragControls implements CancellableCommand, MergeableCommand, InteractiveEntitiesCommand {
+
+  constructor(protected main: Control, protected from: Vector, protected to: Vector, protected followers: Control[]) { }
+
+  execute(): void {
+    for (let cp of this.followers) {
+      cp.setXY(this.to.add(cp.subtract(this.from)));
+    }
+
+    this.main.setXY(this.to);
+  }
+
+  undo() {
+    for (let cp of this.followers) {
+      cp.setXY(this.from.add(cp.subtract(this.to)));
+    }
+
+    this.main.setXY(this.from);
+  }
+
+  redo() {
+    this.execute();
+  }
+
+  merge(command: DragControls): boolean {
+    // check if followers are the same
+    if (this.followers.length !== command.followers.length) return false;
+
+    for (let i = 0; i < this.followers.length; i++) {
+      if (this.followers[i] !== command.followers[i]) return false;
+    }
+
+    // check if main is the same
+    if (this.main !== command.main) return false;
+
+    this.to = command.to;
+
+    return true;
+  }
+
+  get entities(): InteractiveEntity[] {
+    return [this.main, ...this.followers];
+  }
+}
+
 export class AddKeyframe implements CancellableCommand {
   protected kf?: Keyframe;
 
@@ -552,9 +569,11 @@ export class MoveKeyframe implements CancellableCommand, MergeableCommand {
   }
 
   merge(command: MoveKeyframe) {
-    if (command.kf !== this.kf) return;
+    if (command.kf !== this.kf) return false;
 
     this.newPos = command.newPos;
+
+    return true;
   }
 }
 
@@ -589,5 +608,57 @@ export class RemoveKeyframe implements CancellableCommand {
     if (this.spline === undefined || this.oldIdx === -1) return;
 
     this.spline.speedProfiles.splice(this.oldIdx, 1);
+  }
+}
+
+export class AddPath implements CancellableCommand, InteractiveEntitiesCommand {
+  protected forward: boolean = false;
+
+  constructor(protected paths: Path[], protected path: Path) { }
+
+  execute(): void {
+    this.paths.push(this.path);
+    this.forward = true;
+  }
+
+  undo(): void {
+    this.paths.splice(this.paths.indexOf(this.path), 1);
+    this.forward = false;
+  }
+
+  redo(): void {
+    this.paths.push(this.path);
+    this.forward = true;
+  }
+
+  get entities(): InteractiveEntity[] {
+    return this.forward ? [this.path, ...this.path.controls] : [];
+  }
+}
+
+export class RemovePath implements CancellableCommand, InteractiveEntitiesCommand {
+  protected index: number = -1;
+  protected forward: boolean = false;
+
+  constructor(protected paths: Path[], protected path: Path) { }
+
+  execute(): void {
+    this.index = this.paths.indexOf(this.path);
+    this.paths.splice(this.index, 1);
+    this.forward = true;
+  }
+
+  undo(): void {
+    this.paths.splice(this.index, 0, this.path);
+    this.forward = false;
+  }
+
+  redo(): void {
+    this.paths.splice(this.index, 1);
+    this.forward = true;
+  }
+
+  get entities(): InteractiveEntity[] {
+    return this.forward ? [] : [this.path, ...this.path.controls];
   }
 }

@@ -14,7 +14,7 @@ import { AreaElement } from "./AreaElement";
 import { UnitConverter, UnitOfLength } from "../math/Unit";
 import { CanvasConverter } from "../math/Canvas";
 import { clamp } from "./Util";
-import { AddSpline } from "../math/Command";
+import { AddPath, AddSpline } from "../math/Command";
 
 const FieldCanvasElement = observer((props: AppProps) => {
   // useTimer(1000 / 30);
@@ -200,7 +200,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
       // UX: Create new path if: no path exists
       // UX: Use user mouse position as the last control point
       targetPath = new Path(props.app.format.buildPathConfig(), new Spline(new EndPointControl(0, 0, 0), [], cpInUOL));
-      paths.push(targetPath);
+      props.app.history.execute(`Add path ${targetPath.uid}`, new AddPath(props.paths, targetPath));
     } else if (targetPath.visible && !targetPath.lock) {
       // UX: Add control point if: path is selected and visible and not locked
       if (evt.button === 0) {

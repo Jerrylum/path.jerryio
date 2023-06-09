@@ -12,7 +12,7 @@ import { AppProps } from '../App';
 import { EndPointControl, Path } from '../math/Path';
 import { useRef } from 'react';
 import { InteractiveEntity } from '../math/Canvas';
-import { RemoveSpline, UpdateInteractiveEntities } from '../math/Command';
+import { RemovePath, RemoveSpline, UpdateInteractiveEntities } from '../math/Command';
 
 export interface PathTreeProps extends AppProps {
   path: Path;
@@ -110,7 +110,7 @@ const PathTreeItem = observer((props: PathTreeProps) => {
   }
 
   function onPathDeleteClick() {
-    props.paths.splice(props.paths.indexOf(path), 1);
+    props.app.history.execute(`Remove path ${path.uid}`, new RemovePath(props.paths, path));
     props.app.unselect(path);
     props.app.removeExpanded(path);
   }
