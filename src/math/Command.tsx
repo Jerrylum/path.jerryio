@@ -1,6 +1,6 @@
 import { MainApp } from "../app/MainApp";
 import { InteractiveEntity } from "./Canvas";
-import { Control, EndPointControl, Path, Spline, SplineVariant } from "./Path";
+import { Control, EndPointControl, Keyframe, KeyframePos, Path, Spline, SplineVariant } from "./Path";
 
 export interface Execution {
   title: string;
@@ -81,6 +81,7 @@ export interface CancellableCommand extends Command {
 }
 
 export interface InteractiveEntitiesCommand extends CancellableCommand {
+  // The entities that are affected by this command, highlighted in the canvas when undo/redo
   entities: InteractiveEntity[];
 }
 
@@ -91,6 +92,10 @@ export function isMergeable(object: Command): object is MergeableCommand {
 export function isInteractiveEntitiesCommand(object: Command): object is InteractiveEntitiesCommand {
   return 'entities' in object;
 }
+
+/**
+ * ALGO: Assume execute() function are called before undo(), redo() and other functions defined in the class
+ */
 
 export class UpdateProperties<TTarget> implements CancellableCommand, MergeableCommand {
   protected previousValue?: Partial<TTarget>;
@@ -465,5 +470,124 @@ export class RemoveSpline implements CancellableCommand, InteractiveEntitiesComm
 
   get entities(): InteractiveEntity[] {
     return this.forward ? [] : this._entities;
+  }
+}
+
+export class AddKeyframe implements CancellableCommand {
+  protected kf?: Keyframe;
+
+  constructor(protected path: Path, protected pos: KeyframePos) { }
+
+  execute(): void {
+    // sort and push
+    this.kf = new Keyframe(this.pos.xPos, this.pos.yPos);
+    this.pos.spline.speedProfiles.push(this.kf);
+    this.pos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
+  }
+
+  undo(): void {
+    this.pos.spline.speedProfiles.splice(this.pos.spline.speedProfiles.indexOf(this.kf!), 1);
+  }
+
+  redo(): void {
+    // this.execute();
+    // ALGO: Instead of executing, we just add the keyframe back
+    // ALGO: Assume that the command is executed
+    this.pos.spline.speedProfiles.push(this.kf!);
+    this.pos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
+  }
+
+  get keyframe(): Keyframe {
+    return this.kf!;
+  }
+}
+
+export class MoveKeyframe implements CancellableCommand, MergeableCommand {
+  protected oldPos?: KeyframePos;
+
+  constructor(protected path: Path, protected newPos: KeyframePos, protected kf: Keyframe) { }
+
+  removeKeyframe(pos: KeyframePos) {
+    const idx = pos.spline.speedProfiles.indexOf(this.kf);
+    if (idx === -1) return;
+
+    pos.spline.speedProfiles.splice(idx, 1);
+  }
+
+  addKeyframe(pos: KeyframePos) {
+    this.kf.xPos = pos.xPos;
+    this.kf.yPos = pos.yPos;
+    pos.spline.speedProfiles.push(this.kf);
+    pos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
+  }
+
+  execute(): void {
+    // remove keyframe from oldSpline speed control
+    for (const spline of this.path.splines) {
+      const idx = spline.speedProfiles.indexOf(this.kf);
+      if (idx === -1) continue;
+
+      spline.speedProfiles.splice(idx, 1);
+      this.oldPos = { spline, xPos: this.kf.xPos, yPos: this.kf.yPos };
+      break;
+    }
+    this.addKeyframe(this.newPos);
+  }
+
+  undo(): void {
+    if (!this.oldPos) return;
+
+    this.removeKeyframe(this.newPos);
+    this.addKeyframe(this.oldPos);
+  }
+
+  redo(): void {
+    // this.execute();
+    // ALGO: Instead of executing, we just add the keyframe back
+    // ALGO: Assume that the command is executed
+    if (!this.oldPos) return;
+
+    this.removeKeyframe(this.oldPos);
+    this.addKeyframe(this.newPos);
+  }
+
+  merge(command: MoveKeyframe) {
+    if (command.kf !== this.kf) return;
+
+    this.newPos = command.newPos;
+  }
+}
+
+export class RemoveKeyframe implements CancellableCommand {
+  protected spline?: Spline;
+  protected oldIdx = -1;
+
+  constructor(protected path: Path, protected kf: Keyframe) { }
+
+  execute(): void {
+    for (const spline of this.path.splines) {
+      const idx = spline.speedProfiles.indexOf(this.kf);
+      if (idx === -1) continue;
+
+      spline.speedProfiles.splice(idx, 1);
+      this.spline = spline;
+      this.oldIdx = idx;
+      break;
+    }
+  }
+
+  undo(): void {
+    if (this.spline === undefined || this.oldIdx === -1) return;
+
+    this.spline.speedProfiles.splice(this.oldIdx, 0, this.kf);
+  }
+
+  redo(): void {
+    // this.execute();
+    // ALGO: Instead of executing, we just remove the keyframe
+    // ALGO: Assume that the command is executed
+    if (this.spline === undefined || this.oldIdx === -1) return;
+
+    this.spline.speedProfiles.splice(this.oldIdx, 1);
   }
 }
