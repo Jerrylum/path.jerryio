@@ -7,6 +7,7 @@ import { AppProps } from "../App";
 import React from "react";
 import { PathConfig } from "../format/Config";
 import { clamp } from "./Util";
+import { AddKeyframe, MoveKeyframe, RemoveKeyframe, RemoveSpline, UpdateInstancesProperties } from "../math/Command";
 
 
 export class GraphCanvasConverter {
@@ -110,8 +111,8 @@ const PointElement = observer((props: { point: Point, index: number, pc: PathCon
   </>
 });
 
-const KeyframeElement = observer((props: { ikf: KeyframeIndexing, gcc: GraphCanvasConverter }) => {
-  const { ikf, gcc } = props;
+const KeyframeElement = observer((props: AppProps & { ikf: KeyframeIndexing, gcc: GraphCanvasConverter }) => {
+  const { app, ikf, gcc } = props;
 
   const onDragKeyframe = (event: Konva.KonvaEventObject<DragEvent>) => {
     const evt = event.evt;
@@ -132,17 +133,8 @@ const KeyframeElement = observer((props: { ikf: KeyframeIndexing, gcc: GraphCanv
       return;
     }
 
-    // ALGO: Assume path is not undefined
-    // remove keyframe from oldSpline speed control
-    for (const spline of gcc.path.splines) {
-      spline.speedProfiles = spline.speedProfiles.filter((kf) => kf !== ikf.keyframe);
-    }
-
-    const kf = ikf.keyframe;
-    kf.xPos = kfPos.xPos;
-    kf.yPos = kfPos.yPos;
-    kfPos.spline.speedProfiles.push(kf);
-    kfPos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
+    props.app.history.execute(`Move keyframe ${ikf.keyframe.uid}`,
+      new MoveKeyframe(gcc.path, kfPos, ikf.keyframe));
 
     const posInPx = gcc.toPx(kfPos);
     event.target.x(posInPx.x);
@@ -153,11 +145,12 @@ const KeyframeElement = observer((props: { ikf: KeyframeIndexing, gcc: GraphCanv
     const evt = event.evt;
 
     if (evt.button === 0) { // left click
-      ikf.keyframe.followCurve = !ikf.keyframe.followCurve;
+      const setTo = !ikf.keyframe.followCurve;
+      props.app.history.execute(`Update keyframe ${ikf.keyframe.uid} followCurve to ${setTo}`,
+        new UpdateInstancesProperties([ikf.keyframe], {'followCurve': setTo}), 0);
     } else if (evt.button === 2) { // right click
-      for (const spline of gcc.path.splines) {
-        spline.speedProfiles = spline.speedProfiles.filter((kf) => kf !== ikf.keyframe);
-      }
+      props.app.history.execute(`Delete keyframe ${ikf.keyframe.uid} from path ${gcc.path.uid}`,
+        new RemoveKeyframe(gcc.path, ikf.keyframe));
     }
   };
 
@@ -203,9 +196,8 @@ const GraphCanvasElement = observer((props: AppProps) => {
     const kfPos = gcc.toPos(new Vector(e.evt.offsetX, e.evt.offsetY));
     if (kfPos === undefined) return;
 
-    // sort and push
-    kfPos.spline.speedProfiles.push(new Keyframe(kfPos.xPos, kfPos.yPos));
-    kfPos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
+    props.app.history.execute(`Add speed keyframe to path ${path.uid}`,
+      new AddKeyframe(path, kfPos));
   }
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
@@ -234,7 +226,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
 
         <Rect x={gcc.twoSidePaddingWidth} y={0} width={gcc.pixelWidth - gcc.twoSidePaddingWidth * 2} height={gcc.pixelHeight} onClick={action(onGraphClick)} />
         {
-          path?.cachedResult.keyframeIndexes.map((ikf) => <KeyframeElement key={ikf.keyframe.uid} {...{ ikf, gcc }} />)
+          path?.cachedResult.keyframeIndexes.map((ikf) => <KeyframeElement key={ikf.keyframe.uid} {...{...props, ikf, gcc }} />)
         }
 
         <Rect x={0} y={0} width={gcc.axisTitleWidth} height={gcc.pixelHeight} fill={bgColor} />
