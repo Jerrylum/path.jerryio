@@ -1,6 +1,6 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { KeyFrameIndexing, KeyFrame, KeyFramePos, Point, Path, Vector } from '../math/Path';
+import { KeyframeIndexing, Keyframe, KeyframePos, Point, Path, Vector } from '../math/Path';
 import Konva from 'konva';
 import { Circle, Layer, Line, Rect, Stage, Text } from 'react-konva';
 import { AppProps } from "../App";
@@ -42,7 +42,7 @@ export class GraphCanvasConverter {
     return Math.floor((px + this.xOffset - this.twoSidePaddingWidth) / this.pointWidth);
   }
 
-  toPos(px: Vector): KeyFramePos | undefined {
+  toPos(px: Vector): KeyframePos | undefined {
     const x = px.x;
     const y = px.y;
 
@@ -71,7 +71,7 @@ export class GraphCanvasConverter {
     return { spline, xPos, yPos };
   }
 
-  toPx(pos: KeyFramePos): Vector {
+  toPx(pos: KeyframePos): Vector {
     const spline = pos.spline;
     const splineIndex = this.path.splines.findIndex((s) => s === spline);
     const range = this.path.cachedResult.splineIndexes[splineIndex];
@@ -110,10 +110,10 @@ const PointElement = observer((props: { point: Point, index: number, pc: PathCon
   </>
 });
 
-const KeyFrameElement = observer((props: { ikf: KeyFrameIndexing, gcc: GraphCanvasConverter }) => {
+const KeyframeElement = observer((props: { ikf: KeyframeIndexing, gcc: GraphCanvasConverter }) => {
   const { ikf, gcc } = props;
 
-  const onDragKeyFrame = (event: Konva.KonvaEventObject<DragEvent>) => {
+  const onDragKeyframe = (event: Konva.KonvaEventObject<DragEvent>) => {
     const evt = event.evt;
 
     let canvasPos = event.target.getStage()?.container().getBoundingClientRect();
@@ -126,7 +126,7 @@ const KeyFrameElement = observer((props: { ikf: KeyFrameIndexing, gcc: GraphCanv
       evt.preventDefault();
 
       if (ikf.spline === undefined) return;
-      const posInPx = gcc.toPx({ spline: ikf.spline, xPos: ikf.keyFrame.xPos, yPos: ikf.keyFrame.yPos });
+      const posInPx = gcc.toPx({ spline: ikf.spline, xPos: ikf.keyframe.xPos, yPos: ikf.keyframe.yPos });
       event.target.x(posInPx.x);
       event.target.y(posInPx.y);
       return;
@@ -135,10 +135,10 @@ const KeyFrameElement = observer((props: { ikf: KeyFrameIndexing, gcc: GraphCanv
     // ALGO: Assume path is not undefined
     // remove keyframe from oldSpline speed control
     for (const spline of gcc.path.splines) {
-      spline.speedProfiles = spline.speedProfiles.filter((kf) => kf !== ikf.keyFrame);
+      spline.speedProfiles = spline.speedProfiles.filter((kf) => kf !== ikf.keyframe);
     }
 
-    const kf = ikf.keyFrame;
+    const kf = ikf.keyframe;
     kf.xPos = kfPos.xPos;
     kf.yPos = kfPos.yPos;
     kfPos.spline.speedProfiles.push(kf);
@@ -149,23 +149,23 @@ const KeyFrameElement = observer((props: { ikf: KeyFrameIndexing, gcc: GraphCanv
     event.target.y(posInPx.y);
   };
 
-  const onClickKeyFrame = (event: Konva.KonvaEventObject<MouseEvent>) => {
+  const onClickKeyframe = (event: Konva.KonvaEventObject<MouseEvent>) => {
     const evt = event.evt;
 
     if (evt.button === 0) { // left click
-      ikf.keyFrame.followCurve = !ikf.keyFrame.followCurve;
+      ikf.keyframe.followCurve = !ikf.keyframe.followCurve;
     } else if (evt.button === 2) { // right click
       for (const spline of gcc.path.splines) {
-        spline.speedProfiles = spline.speedProfiles.filter((kf) => kf !== ikf.keyFrame);
+        spline.speedProfiles = spline.speedProfiles.filter((kf) => kf !== ikf.keyframe);
       }
     }
   };
 
   const x = gcc.toPxNumber(ikf.index);
-  const y = (1 - ikf.keyFrame.yPos) * gcc.bodyHeight + gcc.axisLineTopX;
+  const y = (1 - ikf.keyframe.yPos) * gcc.bodyHeight + gcc.axisLineTopX;
   return (
     <Circle x={x} y={y} radius={gcc.pointRadius * 4} fill={"#D7B301"} opacity={0.75} draggable
-      onDragMove={action(onDragKeyFrame)} onClick={action(onClickKeyFrame)} />
+      onDragMove={action(onDragKeyframe)} onClick={action(onClickKeyframe)} />
   );
 });
 
@@ -204,7 +204,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
     if (kfPos === undefined) return;
 
     // sort and push
-    kfPos.spline.speedProfiles.push(new KeyFrame(kfPos.xPos, kfPos.yPos));
+    kfPos.spline.speedProfiles.push(new Keyframe(kfPos.xPos, kfPos.yPos));
     kfPos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
   }
 
@@ -234,7 +234,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
 
         <Rect x={gcc.twoSidePaddingWidth} y={0} width={gcc.pixelWidth - gcc.twoSidePaddingWidth * 2} height={gcc.pixelHeight} onClick={action(onGraphClick)} />
         {
-          path?.cachedResult.keyframeIndexes.map((ikf) => <KeyFrameElement key={ikf.keyFrame.uid} {...{ ikf, gcc }} />)
+          path?.cachedResult.keyframeIndexes.map((ikf) => <KeyframeElement key={ikf.keyframe.uid} {...{ ikf, gcc }} />)
         }
 
         <Rect x={0} y={0} width={gcc.axisTitleWidth} height={gcc.pixelHeight} fill={bgColor} />

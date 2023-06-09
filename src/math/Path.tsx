@@ -163,13 +163,13 @@ export class EndPointControl extends Control implements Position {
   }
 }
 
-export interface KeyFramePos {
+export interface KeyframePos {
   spline: Spline,
   xPos: number, // [0...1)
   yPos: number // [0...1]
 }
 
-export class KeyFrame {
+export class Keyframe {
   public uid: string;
 
   constructor(
@@ -179,7 +179,7 @@ export class KeyFrame {
     this.uid = makeId(10);
   }
 
-  process(pc: PathConfig, responsible: Point[], nextFrame?: KeyFrame): void {
+  process(pc: PathConfig, responsible: Point[], nextFrame?: Keyframe): void {
     const limitFrom = pc.speedLimit.from;
     const limitTo = pc.speedLimit.to;
     const limitDiff = limitTo - limitFrom;
@@ -228,8 +228,8 @@ export class Spline implements CanvasEntity {
     keepDiscriminatorProperty: true
   })
   public controls: (EndPointControl | Control)[];
-  @Type(() => KeyFrame)
-  public speedProfiles: KeyFrame[];
+  @Type(() => Keyframe)
+  public speedProfiles: Keyframe[];
   public uid: string;
 
   constructor(start: EndPointControl, middle: Control[], end: EndPointControl) {
@@ -359,8 +359,8 @@ class IndexRange {
   constructor(public from: number, public to: number) { } // to is exclusive
 }
 
-export class KeyFrameIndexing {
-  constructor(public index: number, public spline: Spline | undefined, public keyFrame: KeyFrame) { }
+export class KeyframeIndexing {
+  constructor(public index: number, public spline: Spline | undefined, public keyframe: Keyframe) { }
 }
 
 export interface PointCalculationResult {
@@ -370,7 +370,7 @@ export interface PointCalculationResult {
   // ALGO: An array of index ranges, the absolute range position in the gen2 points array
   splineIndexes: IndexRange[];
   // ALGO: An array of keyframe indexes, the absolute position in the gen2 points array
-  keyframeIndexes: KeyFrameIndexing[];
+  keyframeIndexes: KeyframeIndexing[];
 }
 
 // observable class
@@ -466,10 +466,10 @@ export class Path implements InteractiveEntity {
     result.splineIndexes.push(new IndexRange(splineFirstPointIdx, result.points.length));
   }
 
-  private processKeyFrames(gc: GeneralConfig, result: PointCalculationResult) {
+  private processKeyframes(gc: GeneralConfig, result: PointCalculationResult) {
     // ALGO: result.splineRanges must have at least x ranges (x = number of splines)
     // ALGO: Create a default keyframe at the beginning of the path with speed = 100%
-    const ikf: KeyFrameIndexing[] = [new KeyFrameIndexing(0, undefined, new KeyFrame(0, 1))];
+    const ikf: KeyframeIndexing[] = [new KeyframeIndexing(0, undefined, new Keyframe(0, 1))];
 
     for (let splineIdx = 0; splineIdx < this.splines.length; splineIdx++) {
       const spline = this.splines[splineIdx];
@@ -477,7 +477,7 @@ export class Path implements InteractiveEntity {
       // ALGO: Assume the keyframes are sorted
       spline.speedProfiles.forEach((kf) => {
         const pointIdx = pointIdxRange.from + Math.floor((pointIdxRange.to - pointIdxRange.from) * kf.xPos);
-        ikf.push(new KeyFrameIndexing(pointIdx, spline, kf));
+        ikf.push(new KeyframeIndexing(pointIdx, spline, kf));
       });
     }
 
@@ -488,7 +488,7 @@ export class Path implements InteractiveEntity {
       const to = next === undefined ? result.points.length : next.index;
       const responsiblePoints = result.points.slice(from, to);
 
-      current.keyFrame.process(this.pc, responsiblePoints, next?.keyFrame);
+      current.keyframe.process(this.pc, responsiblePoints, next?.keyframe);
     }
     result.keyframeIndexes = ikf.slice(1);
   }
@@ -502,7 +502,7 @@ export class Path implements InteractiveEntity {
 
     this.spacePointsEvenly(gc, result, gen1);
 
-    this.processKeyFrames(gc, result);
+    this.processKeyframes(gc, result);
 
     // ALGO: gen2 must have at least 1 points
     // ALGO: The first should have heading information
