@@ -67,9 +67,17 @@ const MenuAccordion = observer((props: AppProps) => {
         <CustomMenuItem done={false} text="Undo" hotkey={useKeyName("Ctrl+Z")} onClick={() => props.app.history.undo()} />
         <CustomMenuItem done={false} text="Redo" hotkey={useKeyName("Ctrl+Y")} onClick={() => props.app.history.redo()}/>
         <Divider />
-        <CustomMenuItem done={false} text="Select All" hotkey={useKeyName("Ctrl+A")} />
-        <CustomMenuItem done={false} text="Select None" hotkey="Esc" />
-        <CustomMenuItem done={false} text="Select Inverse" hotkey={useKeyName("Ctrl+Shift+A")} />
+        <CustomMenuItem done={false} text="Select All" hotkey={useKeyName("Ctrl+A")} onClick={() => {
+          const path = props.app.selectedPath;
+          const all = path !== undefined ? [path, ...path.controls] : props.app.allEntities;
+          props.app.setSelected(all);
+        }} />
+        <CustomMenuItem done={false} text="Select None" hotkey="Esc" onClick={() => props.app.clearSelected()} />
+        <CustomMenuItem done={false} text="Select Inverse" hotkey={useKeyName("Ctrl+Shift+A")} onClick={() => {
+          const path = props.app.selectedPath;
+          const all = path !== undefined ? [path, ...path.controls] : props.app.allEntities;
+          props.app.setSelected(all.filter(e => !props.app.selectedEntities.includes(e)));
+        }} />
       </Menu>
 
       <Menu anchorEl={document.getElementById('menu-view-btn')} MenuListProps={{ dense: true }}

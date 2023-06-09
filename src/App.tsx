@@ -55,11 +55,19 @@ const App = observer(() => {
   useCustomHotkeys("Ctrl+D", onDownload.bind(null, app), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+,", () => console.log("Preferences"));
 
-  useCustomHotkeys("Ctrl+Z", () =>app.history.undo());
+  useCustomHotkeys("Ctrl+Z", () => app.history.undo());
   useCustomHotkeys("Ctrl+Y,Ctrl+Shift+Z", () => app.history.redo());
-  useCustomHotkeys("Ctrl+A", () => console.log("Select All"));
-  useCustomHotkeys("Ctrl+Shift+A", () => console.log("Select Inverse"));
-  useCustomHotkeys("Esc", () => console.log("Select None"));
+  useCustomHotkeys("Ctrl+A", () => {
+    const path = app.selectedPath;
+    const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
+    app.setSelected(all);
+  });
+  useCustomHotkeys("Esc", () => app.clearSelected());
+  useCustomHotkeys("Ctrl+Shift+A", () => {
+    const path = app.selectedPath;
+    const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
+    app.setSelected(all.filter(e => !app.selectedEntities.includes(e)));
+  });
 
   useCustomHotkeys("Ctrl+B", () => app.view.showSpeedCanvas = !app.view.showSpeedCanvas);
   useCustomHotkeys("Ctrl+J", () => app.view.showRightPanel = !app.view.showRightPanel);
@@ -99,7 +107,6 @@ const App = observer(() => {
             </Box>
           )
         }
-
       </ThemeProvider>
     </div>
   );

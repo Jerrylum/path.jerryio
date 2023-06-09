@@ -158,6 +158,10 @@ export class MainApp {
     this.selected = Array.from(new Set(selected));
   }
 
+  @computed get allEntities(): InteractiveEntity[] {
+    return [...this.paths, ...this.paths.flatMap((path) => path.controls)];
+  }
+
   @computed get expandedEntityIds(): string[] {
     return this.expanded.slice(); // ALGO: Return a copy
   }
