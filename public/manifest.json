@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "path.jerryio",
+  "name": "path.jerryio",
+  "description": "The best path editor in the VEX Robotics Competition for designing skills routes and generating path files.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +21,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#5C469C",
+  "background_color": "#FFFFFF"
 }
