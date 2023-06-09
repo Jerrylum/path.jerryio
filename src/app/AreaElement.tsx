@@ -3,7 +3,7 @@ import { Vector } from '../math/Path';
 import Konva from 'konva';
 import { Rect } from 'react-konva';
 
-const AreaElement = observer((props: Konva.RectConfig & { from: Vector | undefined, to: Vector | undefined }) => {
+const AreaElement = observer((props: Konva.RectConfig & { from?: Vector, to?: Vector }) => {
   const { from, to, ...rest } = props;
 
   if (from === undefined || to === undefined) return null;

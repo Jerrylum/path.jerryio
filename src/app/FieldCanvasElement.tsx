@@ -200,7 +200,6 @@ const FieldCanvasElement = observer((props: AppProps) => {
       // UX: Create new path if: no path exists
       // UX: Use user mouse position as the last control point
       targetPath = new Path(props.app.format.buildPathConfig(), new Spline(new EndPointControl(0, 0, 0), [], cpInUOL));
-      props.app.addExpanded(targetPath);
       paths.push(targetPath);
     } else if (targetPath.visible && !targetPath.lock) {
       // UX: Add control point if: path is selected and visible and not locked
@@ -217,6 +216,8 @@ const FieldCanvasElement = observer((props: AppProps) => {
 
     // UX: Select the new control point
     props.app.setSelected([cpInUOL]);
+    // UX: Expand the path to show the new control point
+    props.app.addExpanded(targetPath);
   }
 
   const lineWidth = 1;

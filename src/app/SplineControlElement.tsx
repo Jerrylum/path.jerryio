@@ -42,6 +42,8 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
         // UX: Add selected control point if: left click + shift
         // UX: Prevent the control point from being removed when the mouse is released at the same round it is added
         setJustSelected(props.app.select(props.cp));
+        // UX: Expand the path as the same time to show the control points
+        props.app.addExpanded(props.path);
       } else {
         // UX: Select one control point if: left click + not pressing shift
         props.app.setSelected([props.cp]);
