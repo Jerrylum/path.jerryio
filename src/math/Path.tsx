@@ -367,8 +367,9 @@ export interface PointCalculationResult {
   ttd: number; // total travel distance
 
   points: Point[]; // gen2
-  // ALGO: An array of index ranges, each range represents a set of points calculated by a spline in gen2
-  splineRanges: IndexRange[];
+  // ALGO: An array of index ranges, the absolute range position in the gen2 points array
+  splineIndexes: IndexRange[];
+  // ALGO: An array of keyframe indexes, the absolute position in the gen2 points array
   keyframeIndexes: KeyFrameIndexing[];
 }
 
@@ -386,7 +387,7 @@ export class Path implements InteractiveEntity {
   public cachedResult: PointCalculationResult = {
     ttd: 0,
     points: [],
-    splineRanges: [],
+    splineIndexes: [],
     keyframeIndexes: []
   };
 
@@ -455,23 +456,24 @@ export class Path implements InteractiveEntity {
 
       // ALGO: Create a new spline range if the point is the last point of splines
       if ((p3.isLastPointOfSplines = isLastPointOfSplines) === true) {
-        result.splineRanges.push(new IndexRange(splineFirstPointIdx, result.points.length));
+        result.splineIndexes.push(new IndexRange(splineFirstPointIdx, result.points.length));
         splineFirstPointIdx = result.points.length;
       }
 
       result.points.push(p3);
     }
     // ALGO: The last spline is not looped
-    result.splineRanges.push(new IndexRange(splineFirstPointIdx, result.points.length));
+    result.splineIndexes.push(new IndexRange(splineFirstPointIdx, result.points.length));
   }
 
   private processKeyFrames(gc: GeneralConfig, result: PointCalculationResult) {
     // ALGO: result.splineRanges must have at least x ranges (x = number of splines)
+    // ALGO: Create a default keyframe at the beginning of the path with speed = 100%
     const ikf: KeyFrameIndexing[] = [new KeyFrameIndexing(0, undefined, new KeyFrame(0, 1))];
 
     for (let splineIdx = 0; splineIdx < this.splines.length; splineIdx++) {
       const spline = this.splines[splineIdx];
-      const pointIdxRange = result.splineRanges[splineIdx];
+      const pointIdxRange = result.splineIndexes[splineIdx];
       // ALGO: Assume the keyframes are sorted
       spline.speedProfiles.forEach((kf) => {
         const pointIdx = pointIdxRange.from + Math.floor((pointIdxRange.to - pointIdxRange.from) * kf.xPos);
@@ -492,7 +494,7 @@ export class Path implements InteractiveEntity {
   }
 
   calculatePoints(gc: GeneralConfig): PointCalculationResult {
-    const result: PointCalculationResult = { ttd: 20, points: [], splineRanges: [], keyframeIndexes: [] };
+    const result: PointCalculationResult = { ttd: 20, points: [], splineIndexes: [], keyframeIndexes: [] };
 
     if (this.splines.length === 0) return this.cachedResult = result;
 

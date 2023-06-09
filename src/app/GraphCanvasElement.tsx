@@ -54,10 +54,10 @@ export class GraphCanvasConverter {
       index = 0;
     }
 
-    const splineIndex = this.path.cachedResult.splineRanges.findIndex((range) => range.from <= index && range.to > index);
+    const splineIndex = this.path.cachedResult.splineIndexes.findIndex((range) => range.from <= index && range.to > index);
     if (splineIndex === -1) return;
 
-    const range = this.path.cachedResult.splineRanges[splineIndex];
+    const range = this.path.cachedResult.splineIndexes[splineIndex];
     const spline = this.path.splines[splineIndex];
 
     let xPos = (index - range.from) / (range.to - range.from);
@@ -74,7 +74,7 @@ export class GraphCanvasConverter {
   toPx(pos: KeyFramePos): Vector {
     const spline = pos.spline;
     const splineIndex = this.path.splines.findIndex((s) => s === spline);
-    const range = this.path.cachedResult.splineRanges[splineIndex];
+    const range = this.path.cachedResult.splineIndexes[splineIndex];
 
     const x = range.from + pos.xPos * (range.to - range.from);
     const y = this.axisLineTopX + (1 - pos.yPos) * (this.axisLineBottomX - this.axisLineTopX);
