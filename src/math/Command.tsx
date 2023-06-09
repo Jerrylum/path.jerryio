@@ -63,7 +63,7 @@ export class CommandHistory {
 
       if (isInteractiveEntitiesCommand(command)) this.app.setSelected(command.entities);
     }
-    console.log("redo", command, this.history.length, this.redoHistory.length);
+    console.log("redo", this.history.length, this.redoHistory.length);
   }
 }
 
