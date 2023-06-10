@@ -18,7 +18,6 @@ import { GraphCanvasElement } from './app/GraphCanvasElement';
 import { FieldCanvasElement } from './app/FieldCanvasElement';
 import { MainApp } from './app/MainApp';
 
-import { darkTheme, lightTheme } from './app/Theme';
 import React from 'react';
 import { onDownload, onNew, onOpen, onSave, onSaveAs } from './format/Output';
 import { NoticeProvider } from './app/Notice';
@@ -40,7 +39,7 @@ const App = observer(() => {
 
   const appProps: AppProps = { paths: app.paths, app };
 
-  const themeClass = app.theme.palette.mode === lightTheme.palette.mode ? "light-theme" : "dark-theme";
+  const themeClass = app.isLightTheme ? "light-theme" : "dark-theme";
 
   // UX: Enable custom hotkeys on input fields (e.g. Ctrl+S) to prevent accidentally triggering the browser default
   // hotkeys when focusing them (e.g. Save page). However, we do not apply it to all hotkeys, because we want to keep

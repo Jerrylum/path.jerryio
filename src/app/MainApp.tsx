@@ -37,7 +37,7 @@ export class MainApp {
     scale: 1, // 1 = 100%, [1..3]
   }
 
-  public theme: Theme = lightTheme;
+  public theme: Theme = darkTheme;
 
 
   constructor() {
