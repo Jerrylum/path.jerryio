@@ -60,7 +60,7 @@ export function useCustomHotkeys<T extends HTMLElement>(
 }
 
 export function useKeyName(key: string) {
-  return useIsMacOS() ? key.replaceAll("Ctrl", "⌘") : key;
+  return useIsMacOS() ? key.replaceAll("Ctrl", "Ctrl") : key;
 }
 
 export function makeId(length: number) {

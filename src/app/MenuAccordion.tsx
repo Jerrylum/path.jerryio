@@ -64,20 +64,20 @@ const MenuAccordion = observer((props: AppProps) => {
 
       <Menu anchorEl={document.getElementById('menu-edit-btn')} MenuListProps={{ dense: true }}
         open={isOpenEditMenu} onClose={() => setIsOpenEditMenu(false)}>
-        <CustomMenuItem done={false} text="Undo" hotkey={useKeyName("Ctrl+Z")} onClick={() => props.app.history.undo()} />
-        <CustomMenuItem done={false} text="Redo" hotkey={useKeyName("Ctrl+Y")} onClick={() => props.app.history.redo()}/>
+        <CustomMenuItem done={false} text="Undo" hotkey={useKeyName("Ctrl+Z")} onClick={onMenuClick(() => props.app.history.undo())} />
+        <CustomMenuItem done={false} text="Redo" hotkey={useKeyName("Ctrl+Y")} onClick={onMenuClick(() => props.app.history.redo())}/>
         <Divider />
-        <CustomMenuItem done={false} text="Select All" hotkey={useKeyName("Ctrl+A")} onClick={() => {
+        <CustomMenuItem done={false} text="Select All" hotkey={useKeyName("Ctrl+A")} onClick={onMenuClick(() => {
           const path = props.app.selectedPath;
           const all = path !== undefined ? [path, ...path.controls] : props.app.allEntities;
           props.app.setSelected(all);
-        }} />
-        <CustomMenuItem done={false} text="Select None" hotkey="Esc" onClick={() => props.app.clearSelected()} />
-        <CustomMenuItem done={false} text="Select Inverse" hotkey={useKeyName("Ctrl+Shift+A")} onClick={() => {
+        })} />
+        <CustomMenuItem done={false} text="Select None" hotkey="Esc" onClick={onMenuClick(() => props.app.clearSelected())} />
+        <CustomMenuItem done={false} text="Select Inverse" hotkey={useKeyName("Ctrl+Shift+A")} onClick={onMenuClick(() => {
           const path = props.app.selectedPath;
           const all = path !== undefined ? [path, ...path.controls] : props.app.allEntities;
           props.app.setSelected(all.filter(e => !props.app.selectedEntities.includes(e)));
-        }} />
+        })} />
       </Menu>
 
       <Menu anchorEl={document.getElementById('menu-view-btn')} MenuListProps={{ dense: true }}
@@ -91,10 +91,10 @@ const MenuAccordion = observer((props: AppProps) => {
         <CustomMenuItem done={false} text="Zoom Out" hotkey="Ctrl+Minus" onClick={onMenuClick(() => props.app.fieldScale -= 0.5)} />
         <CustomMenuItem done={false} text="Zoom to Fit" hotkey="Ctrl+0" onClick={onMenuClick(() => props.app.resetFieldDisplay())} />
         <Divider />
-        <CustomMenuItem done={props.app.theme.palette.mode === lightTheme.palette.mode} text="Light Theme (Default)"
-          onClick={onMenuClick(() => props.app.theme = lightTheme)} />
-        <CustomMenuItem done={props.app.theme.palette.mode === darkTheme.palette.mode} text="Dark Theme"
+        <CustomMenuItem done={props.app.theme.palette.mode === darkTheme.palette.mode} text="Dark Theme (Default)"
           onClick={onMenuClick(() => props.app.theme = darkTheme)} />
+        <CustomMenuItem done={props.app.theme.palette.mode === lightTheme.palette.mode} text="Light Theme"
+          onClick={onMenuClick(() => props.app.theme = lightTheme)} />
       </Menu>
 
       <Menu anchorEl={document.getElementById('menu-help-btn')} MenuListProps={{ dense: true }}
