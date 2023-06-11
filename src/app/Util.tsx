@@ -1,7 +1,7 @@
-import React from "react";
+import React, { DependencyList } from "react";
 import { runInAction } from "mobx"
 import { useHotkeys } from 'react-hotkeys-hook'
-import { HotkeysEvent, HotkeyCallback, OptionsOrDependencyArray, RefType } from 'react-hotkeys-hook/dist/types';
+import { HotkeysEvent, HotkeyCallback, Options, RefType, Trigger } from 'react-hotkeys-hook/dist/types';
 
 export function useTimer(ms: number) {
   const [time, setTime] = React.useState(Date.now());
@@ -31,14 +31,11 @@ export function useIsMacOS() {
 
 export function useCustomHotkeys<T extends HTMLElement>(
   keys: string, callback: () => void,
-  options?: OptionsOrDependencyArray, dependencies?: OptionsOrDependencyArray): React.MutableRefObject<RefType<T>> {
+  options?: Options, dependencies?: DependencyList): React.MutableRefObject<RefType<T>> {
   const timeRef = React.useRef<number | null>(null);
 
   function onKeydown(func: () => void): HotkeyCallback {
     return function (kvEvt: KeyboardEvent, hkEvt: HotkeysEvent) {
-      // This might not be needed as preventDefault is set to true in the options
-      kvEvt.preventDefault();
-      kvEvt.stopPropagation();
       /*
       UX: Debounce the keydown event to prevent the callback from being called multiple times.
       If the user holds down the key, the callback will only be called once until the key is released.
@@ -56,7 +53,26 @@ export function useCustomHotkeys<T extends HTMLElement>(
     }
   }
 
-  return useHotkeys(useKeyName(keys), onKeydown(callback), { ...options, keydown: true, keyup: true, preventDefault: true }, dependencies);
+  return useHotkeys(useKeyName(keys), onKeydown(callback), {
+    ...options, 
+    keydown: true, 
+    keyup: true, 
+    preventDefault: true ,
+    enabled: (kvEvt: KeyboardEvent, hkEvt: HotkeysEvent): boolean => {
+      // This is needed as preventDefault in the option list below does not work with disabled hotkeys
+      kvEvt.preventDefault();
+      kvEvt.stopPropagation();
+      
+      const enabledOptions: Trigger | undefined = options?.enabled;
+      if (enabledOptions === undefined) {
+        return true;
+      } else if (typeof enabledOptions === "function") {
+        return enabledOptions(kvEvt, hkEvt);
+      } else {
+        return enabledOptions;
+      }
+    }
+  }, dependencies);
 }
 
 export function useKeyName(key: string) {

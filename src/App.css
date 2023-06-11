@@ -230,3 +230,23 @@
 .notistack-SnackbarContainer {
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
 }
+
+.confirmation-card {
+  padding: 1rem;
+  width: 20vw;
+  min-width: 20rem;
+  max-width: 90vw;
+  min-height: 6rem;
+}
+
+.confirmation-card .button-box {
+  display: flex;
+  margin-top: 1rem;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 1vh;
+}
+
+.confirmation-card .button-box *.Mui-focusVisible {
+  background-color: rgba(255, 255, 255, 0.1);
+}

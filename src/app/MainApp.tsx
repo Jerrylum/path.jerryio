@@ -12,6 +12,7 @@ import { Theme } from "@mui/material";
 import { darkTheme } from "./Theme";
 import { CommandHistory } from "../math/Command";
 import { SemVer } from "semver";
+import { Confirmation } from "./Confirmation";
 
 // observable class
 export class MainApp {
@@ -42,6 +43,15 @@ export class MainApp {
 
   public theme: Theme = darkTheme;
 
+  public confirmation?: Confirmation = {
+    title: "Unsaved Changes",
+    description: "You have unsaved changes. Are you sure you want to continue?",
+    buttons: [
+      { label: "Save", color: "success", hotkey: "s", onClick: () => console.log("e") },
+      { label: "Don't Save", hotkey: "n" },
+      { label: "Cancel" },
+    ]
+  }
 
   constructor() {
     makeAutoObservable(this);
