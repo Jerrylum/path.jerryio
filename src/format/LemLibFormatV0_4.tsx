@@ -193,11 +193,7 @@ export class LemLibFormatV0_4 implements Format {
       i++;
     }
 
-    return {
-      format: this.getName(),
-      gc: this.gc,
-      paths
-    };
+    return { gc: this.gc, paths };
   }
 
   exportPathFile(app: MainApp): string {

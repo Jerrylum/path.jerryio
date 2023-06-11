@@ -24,7 +24,6 @@ export interface Format {
 }
 
 export interface PathFileData {
-  format: string;
   gc: GeneralConfig;
   paths: Path[];
 }

@@ -9,11 +9,14 @@ import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-transformer';
 import { UnitConverter, UnitOfLength } from "../math/Unit";
 import { Theme } from "@mui/material";
-import { darkTheme, lightTheme } from "./Theme";
-import { CancellableCommand, CommandHistory } from "../math/Command";
+import { darkTheme } from "./Theme";
+import { CommandHistory } from "../math/Command";
+import { SemVer } from "semver";
 
 // observable class
 export class MainApp {
+  readonly appVersion = new SemVer("0.1.0");
+
   public format: Format = new PathDotJerryioFormatV0_1();
   private usingUOL: UnitOfLength = UnitOfLength.Centimeter;
   public mountingFile: FileSystemFileHandle | null = null; // This is intended to be modified outside the class
@@ -287,6 +290,14 @@ export class MainApp {
     if (format === undefined) throw new Error("Format not found.");
     format.init(); // ALGO: Suspend format reaction
 
+    const appVersion = new SemVer(data.appVersion) // ALGO: Throw error if the app version is not a valid semver
+    const compareResult = appVersion.compare(this.appVersion);
+    if (compareResult > 0) {
+      throw new Error("The path file was created with a newer version of the editor. Please update the editor.");
+    } else if (compareResult < 0) {
+      // TODO: Resolve backward compatibility
+    }
+
     if (typeof data.gc !== "object") throw new Error("Invalid data format: gc is not an object.");
     const gc = plainToClassFromExist(format.getGeneralConfig(), data.gc);
 
@@ -298,21 +309,12 @@ export class MainApp {
       path.pc = plainToClassFromExist(format.buildPathConfig(), path.pc);
     }
 
-    this.setPathFileData(format, {
-      format: format.getName(),
-      gc: gc,
-      paths: paths
-    });
+    this.setPathFileData(format, { gc: gc, paths: paths });
   }
 
   exportPathFileData(): Record<string, any> {
-    const data: PathFileData = {
-      format: this.format.getName(),
-      gc: this.format.getGeneralConfig(),
-      paths: this.paths
-    };
-
-    return instanceToPlain(data);
+    const data: PathFileData = { gc: this.format.getGeneralConfig(), paths: this.paths };
+    return { ...{ appVersion: this.appVersion.version, format: this.format.getName() }, ...instanceToPlain(data) };
   }
 
   newPathFile() {
