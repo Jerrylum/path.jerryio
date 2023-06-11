@@ -79,6 +79,23 @@ const App = observer(() => {
   useCustomHotkeys("Ctrl+Subtract,Ctrl+Minus", () => app.fieldScale -= 0.5, optionsToEnableHotkeys);
   useCustomHotkeys("Ctrl+0", () => app.resetFieldDisplay(), optionsToEnableHotkeys);
 
+  React.useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (app.history.isModified()) {
+        // Cancel the event and show alert that
+        // the unsaved changes would be lost
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', onBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload);
+    };
+  }, []);
+
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
     <div tabIndex={-1} className={["App", themeClass].join(" ")} key={app.format.uid + "-" + app.gc.uol}>
