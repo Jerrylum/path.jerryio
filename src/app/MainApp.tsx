@@ -43,15 +43,7 @@ export class MainApp {
 
   public theme: Theme = darkTheme;
 
-  public confirmation?: Confirmation = {
-    title: "Unsaved Changes",
-    description: "You have unsaved changes. Are you sure you want to continue?",
-    buttons: [
-      { label: "Save", color: "success", hotkey: "s", onClick: () => console.log("e") },
-      { label: "Don't Save", hotkey: "n" },
-      { label: "Cancel" },
-    ]
-  }
+  public confirmation?: Confirmation = undefined;
 
   constructor() {
     makeAutoObservable(this);
@@ -81,7 +73,7 @@ export class MainApp {
 
       this.resetUserControl();
 
-      this._history = new CommandHistory(this);
+      this._history.clearHistory();
     }));
 
     reaction(() => this.gc.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
@@ -292,7 +284,7 @@ export class MainApp {
     this.resetUserControl();
     this.resetFieldDisplay();
 
-    this._history = new CommandHistory(this);
+    this._history.clearHistory();
   }
 
   importPathFileData(data: Record<string, any>): void {
@@ -337,7 +329,7 @@ export class MainApp {
     this.resetUserControl();
     this.resetFieldDisplay();
 
-    this._history = new CommandHistory(this);
+    this._history.clearHistory();
   }
 
   importPathFile(fileContent: string): void {

@@ -19,9 +19,9 @@ export interface Confirmation {
 }
 
 const ConfirmationBackdrop = observer((props: { app: MainApp }) => {
-  const ref = React.useRef<HTMLButtonElement | null>(null);
-
+  const buttons = React.useRef<HTMLButtonElement[]>([]);
   const cfm = props.app.confirmation;
+
   if (cfm === undefined) return (<></>);
 
   function onClick(idx: number) {
@@ -35,6 +35,20 @@ const ConfirmationBackdrop = observer((props: { app: MainApp }) => {
   function onKeydown(e: React.KeyboardEvent<HTMLDivElement>) {
     if (e.key === "Escape") {
       onClick(-1); // UX: Escape key always triggers the last button
+    } else if (e.key === "ArrowLeft") {
+      for (let i = 1; i < buttons.current.length; i++) {
+        if (document.activeElement === buttons.current[i]) {
+          buttons.current[i - 1].focus();
+          break;
+        }
+      }
+    } else if (e.key === "ArrowRight") {
+      for (let i = 0; i < buttons.current.length - 1; i++) {
+        if (document.activeElement === buttons.current[i]) {
+          buttons.current[i + 1].focus();
+          break;
+        }
+      }
     } else {
       for (let i = 0; i < cfm!.buttons.length; i++) {
         if (e.key === cfm!.buttons[i].hotkey) {
@@ -42,7 +56,7 @@ const ConfirmationBackdrop = observer((props: { app: MainApp }) => {
           break;
         }
       }
-    }    
+    }
   }
 
   return (
@@ -53,16 +67,24 @@ const ConfirmationBackdrop = observer((props: { app: MainApp }) => {
       onKeyDown={action(onKeydown)} >
       <Card className="confirmation-card" onClick={(e) => e.stopPropagation()} tabIndex={-1}>
         <Typography variant="h6" gutterBottom>{cfm.title}</Typography>
-        <Typography variant="body1" gutterBottom>{cfm.description}</Typography>
+        {/* https://stackoverflow.com/questions/9769587/set-div-to-have-its-siblings-width */}
+        <Box className="description-box">
+          <Typography variant="body1" gutterBottom>{cfm.description}</Typography>
+        </Box>
         <Box className="button-box">
           {
             cfm.buttons.map((btn, i) => {
-              return <Button disableRipple key={i} tabIndex={i + 1001} variant="text" color={btn.color ?? "inherit"} autoFocus={i === 0}
+              return <Button key={i}
+                disableRipple
+                tabIndex={i + 1001}
+                variant="text"
+                color={btn.color ?? "inherit"}
+                autoFocus={i === 0}
+                ref={(element) => buttons.current[i] = element!}
                 onClick={action(onClick.bind(null, i))}
                 {...(i + 1 === cfm.buttons.length ? {
-                  onFocus: () => { ref.current!.tabIndex = 1000 },
-                  onBlur: () => { ref.current!.tabIndex = i + 1001 },
-                  ref
+                  onFocus: () => { buttons.current[i].tabIndex = 1000 },
+                  onBlur: () => { buttons.current[i].tabIndex = i + 1001 },
                 } : {})}>{btn.label}{btn.hotkey ? `(${btn.hotkey.toUpperCase()})` : ""}</Button>
             })
           }

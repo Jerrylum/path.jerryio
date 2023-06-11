@@ -231,12 +231,26 @@
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
 }
 
+.MuiBackdrop-root {
+  margin: 0;
+  background-color: transparent !important;
+  backdrop-filter: blur(12px);
+}
+
 .confirmation-card {
   padding: 1rem;
-  width: 20vw;
   min-width: 20rem;
   max-width: 90vw;
   min-height: 6rem;
+}
+
+.confirmation-card .description-box {
+  display: flex;
+}
+
+.confirmation-card .description-box > * {
+  flex-grow: 1;
+  width: 0;
 }
 
 .confirmation-card .button-box {
@@ -247,6 +261,6 @@
   gap: 1vh;
 }
 
-.confirmation-card .button-box *.Mui-focusVisible {
+.confirmation-card .button-box *:focus {
   background-color: rgba(255, 255, 255, 0.1);
 }

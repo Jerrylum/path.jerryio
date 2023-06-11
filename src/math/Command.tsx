@@ -13,6 +13,7 @@ export class CommandHistory {
   private lastExecution: Execution | undefined = undefined;
   private history: CancellableCommand[] = [];
   private redoHistory: CancellableCommand[] = [];
+  private savedCommand: CancellableCommand | undefined = undefined;
 
   constructor(private app: MainApp) { }
 
@@ -64,6 +65,24 @@ export class CommandHistory {
       if (isInteractiveEntitiesCommand(command)) this.app.setSelected(command.entities);
     }
     console.log("redo", this.history.length, this.redoHistory.length);
+  }
+
+  clearHistory(): void {
+    this.lastExecution = undefined;
+    this.history = [];
+    this.redoHistory = [];
+    this.savedCommand = undefined;
+  }
+
+  save(): void {
+    this.commit();
+    this.savedCommand = this.history[this.history.length - 1];
+  }
+
+  isModified(): boolean {
+    this.commit();
+    // ALGO: savedCommand can be undefined and the function can return true if the history is empty but redoHistory is not
+    return this.savedCommand !== this.history[this.history.length - 1];
   }
 }
 

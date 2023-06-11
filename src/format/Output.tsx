@@ -1,6 +1,34 @@
 import { MainApp } from "../app/MainApp";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from '../app/Notice';
 
+async function saveConfirm(app: MainApp, callback: () => void) {
+  return new Promise<boolean>((resolve, reject) => {
+    app.confirmation = {
+      title: "Unsaved Changes",
+      description: "Do you want to save the changes made to " + (app.mountingFile?.name ?? "path.jerryio.txt") + "?",
+      buttons: [
+        {
+          label: "Save", color: "success", hotkey: "s", onClick: async () => {
+            if (await onSave(app)) {
+              callback();
+              resolve(true);
+            } else {
+              resolve(false);
+            }
+          }
+        },
+        {
+          label: "Don't Save", hotkey: "n", onClick: () => {
+            callback();
+            resolve(true);
+          }
+        },
+        { label: "Cancel", onClick: () => resolve(false) },
+      ]
+    };
+  });
+}
+
 function exportPathFile(app: MainApp): string | undefined {
   try {
     return app.format.exportPathFile(app);
@@ -31,7 +59,7 @@ async function writeFile(app: MainApp, contents: string): Promise<boolean> {
 
 async function readFile(app: MainApp): Promise<string | undefined> {
   const options = {
-    types: [{ description: 'Path Files', accept: { 'text/plain': [] } },],
+    types: [{ description: 'Path File', accept: { 'text/plain': [] } },],
   };
 
   try {
@@ -52,7 +80,8 @@ async function readFile(app: MainApp): Promise<string | undefined> {
 
 async function choiceSave(app: MainApp): Promise<boolean> {
   const options = {
-    types: [{ description: 'Path Files', accept: { 'text/plain': [] } },],
+    types: [{ description: 'Path File', accept: { 'text/plain': [] } },],
+    suggestedName: "path.jerryio"
   };
 
   try {
@@ -65,48 +94,65 @@ async function choiceSave(app: MainApp): Promise<boolean> {
   }
 }
 
-export async function onNew(app: MainApp) {
-  // TODO: check unsaved change?
+export async function onNew(app: MainApp, saveCheck: boolean = true): Promise<boolean> {
+  if (saveCheck && app.history.isModified()) return saveConfirm(app, onNew.bind(null, app, false));
 
   app.newPathFile();
   app.mountingFile = null;
+  return true;
 }
 
-export async function onSave(app: MainApp) {
+export async function onSave(app: MainApp): Promise<boolean> {
   if (app.mountingFile === null) return onSaveAs(app);
 
   const output = exportPathFile(app);
-  if (output === undefined) return;
+  if (output === undefined) return false;
 
-  await writeFile(app, output);
+  if (await writeFile(app, output)) {
+    app.history.save();
+    return true;
+  } else {
+    return false;
+  }
 }
 
-export async function onSaveAs(app: MainApp) {
+export async function onSaveAs(app: MainApp): Promise<boolean> {
   const output = exportPathFile(app);
-  if (output === undefined) return;
+  if (output === undefined) return false;
 
-  if (!await choiceSave(app)) return;
-  await writeFile(app, output);
+  if (!await choiceSave(app)) return false;
+
+  if (await writeFile(app, output)) {
+    app.history.save();
+    return true;
+  } else {
+    return false;
+  }
 }
 
-export async function onOpen(app: MainApp) {
+export async function onOpen(app: MainApp, saveCheck: boolean = true): Promise<boolean> {
+  if (saveCheck && app.history.isModified()) return saveConfirm(app, onOpen.bind(null, app, false));
+
   let contents = await readFile(app);
-  if (contents === undefined) return;
+  if (contents === undefined) return false;
 
   try {
     app.importPathFile(contents);
+    return true;
   } catch (err) {
     enqueueErrorSnackbar(err);
+    return false;
   }
 }
 
 export function onDownload(app: MainApp) {
   const output = exportPathFile(app);
-  if (output === undefined) return;
+  if (output === undefined) return false;
 
   const a = document.createElement("a");
   const file = new Blob([output], { type: "text/plain" });
   a.href = URL.createObjectURL(file);
   a.download = "path.jerryio.txt"; // TODO better file name
   a.click();
+  return true;
 }
