@@ -1,6 +1,6 @@
 import { makeAutoObservable, computed, runInAction, reaction, action } from "mobx"
 import DOMPurify from 'dompurify';
-import { GeneralConfig, convertGeneralConfigUOL } from "../format/Config";
+import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "../format/Config";
 import { InteractiveEntity } from "../math/Canvas";
 import { Control, EndPointControl, Path, Vector } from "../math/Path";
 import { addToArray, clamp, removeFromArray } from "./Util";
@@ -68,7 +68,14 @@ export class MainApp {
       this.gc.pointDensity = keepPointDensity; // UX: Keep some values
 
       for (const path of this.paths) {
-        path.pc = this.format.buildPathConfig();
+        const newPC = newFormat.buildPathConfig();
+
+        if (newPC.speedLimit.minLimit === path.pc.speedLimit.minLimit && newPC.speedLimit.maxLimit === path.pc.speedLimit.maxLimit) {
+          newPC.speedLimit = path.pc.speedLimit; // UX: Keep speed limit if the new format has the same speed limit range as the old one
+        }
+        newPC.applicationRange = path.pc.applicationRange; // UX: Keep application range
+        path.pc = newPC;
+        convertPathConfigPointDensity(newPC, oldGC.pointDensity, this.gc.pointDensity);
       }
 
       this.resetUserControl();
