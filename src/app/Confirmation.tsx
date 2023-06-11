@@ -22,6 +22,18 @@ const ConfirmationBackdrop = observer((props: { app: MainApp }) => {
   const buttons = React.useRef<HTMLButtonElement[]>([]);
   const cfm = props.app.confirmation;
 
+  if (buttons.current.length !== cfm?.buttons.length) {
+    buttons.current = [];
+  }
+
+  React.useEffect(() => {
+    if (cfm === undefined) return;  
+
+    if (buttons.current.length > 0) {
+      buttons.current[0].focus();
+    }
+  }, [cfm]);
+
   if (cfm === undefined) return (<></>);
 
   function onClick(idx: number) {
@@ -61,6 +73,7 @@ const ConfirmationBackdrop = observer((props: { app: MainApp }) => {
 
   return (
     <Backdrop
+      className="confirmation-backdrop"
       sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       open={true}
       onClick={action(onClick.bind(null, -1))}
