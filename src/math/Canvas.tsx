@@ -46,7 +46,7 @@ export class CanvasConverter {
         if (canvasPos === undefined) return;
 
         const offset = useOffset ? this.offset : new Vector(0, 0);
-        
+
         const scale = useScale ? this.scale : 1;
 
         const rtn = new Vector(event.clientX - canvasPos.left, event.clientY - canvasPos.top);

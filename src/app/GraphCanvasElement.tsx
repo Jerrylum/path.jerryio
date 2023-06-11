@@ -1,13 +1,13 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { KeyframeIndexing, Keyframe, KeyframePos, Point, Path, Vector } from '../math/Path';
+import { KeyframeIndexing, KeyframePos, Point, Path, Vector } from '../math/Path';
 import Konva from 'konva';
 import { Circle, Layer, Line, Rect, Stage, Text } from 'react-konva';
 import { AppProps } from "../App";
 import React from "react";
 import { PathConfig } from "../format/Config";
 import { clamp } from "./Util";
-import { AddKeyframe, MoveKeyframe, RemoveKeyframe, RemoveSpline, UpdateInstancesProperties } from "../math/Command";
+import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateInstancesProperties } from "../math/Command";
 
 
 export class GraphCanvasConverter {

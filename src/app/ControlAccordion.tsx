@@ -5,7 +5,6 @@ import { AppProps } from '../App';
 import { EndPointControl } from '../math/Path';
 import { ObserverInput, parseNumberInString } from './ObserverInput';
 import { NumberInUnit, UnitOfLength } from '../math/Unit';
-import { makeId } from './Util';
 import { UpdateInteractiveEntities } from '../math/Command';
 
 const ControlAccordion = observer((props: AppProps) => {
