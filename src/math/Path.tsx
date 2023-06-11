@@ -270,6 +270,8 @@ export class Spline implements CanvasEntity {
 
     // The density of points is NOT uniform along the curve
     let points: Point[] = this.calculateBezierCurvePoints(targetInterval, integral);
+    
+    points[0].heading = this.first.heading;
 
     const lastPoint = points[points.length - 1];
     const lastControl = this.last;
