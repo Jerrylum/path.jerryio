@@ -10,7 +10,7 @@ We will acknowledge your report within 24 hours, and we will provide an estimate
 
 ## Supported Versions
 
-We only support the latest version of the project. We encourage all users to use the latest version of the project by using the web app at [path.jerryio.com](path.jerryio.com), as it contains the latest security fixes and improvements.
+We only support the latest version of the project. We encourage all users to use the latest version of the project by using the web app at [path.jerryio.com](https://path.jerryio.com), as it contains the latest security fixes and improvements.
 
 ## Security Updates
 
