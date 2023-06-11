@@ -24,7 +24,17 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
         <Box className="panel-box">
           <Select size="small" sx={{ maxWidth: "100%" }}
             value={formats.findIndex((x) => x.getName() === props.app.format.getName())}
-            onChange={action((e: SelectChangeEvent<number>) => props.app.format = formats[parseInt(e.target.value + "")])}>
+            onChange={action((e: SelectChangeEvent<number>) => {
+              app.confirmation = {
+                title: "Change Format",
+                description: "Some incompatible path configurations will be discarded. Edit history will be reset. Are you sure?",
+                buttons: [
+                  { label: "Confirm", onClick: () => props.app.format = formats[parseInt(e.target.value + "")] },
+                  { label: "Cancel" },
+                ]
+              }
+              
+            })}>
             {
               formats.map((x, i) => {
                 return <MenuItem key={i} value={i}>{x.getName()}</MenuItem>
