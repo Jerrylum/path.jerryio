@@ -11,7 +11,7 @@ const StyledMaterialDesignContent = styled(MaterialDesignContent)(() => ({
 }));
 
 export function enqueueSuccessSnackbar(message: string) {
-  enqueueSnackbar(message, { variant: "success" });
+  enqueueSnackbar(message, { variant: "success", autoHideDuration: 2000 });
 }
 
 export function enqueueErrorSnackbar(err: unknown) {
