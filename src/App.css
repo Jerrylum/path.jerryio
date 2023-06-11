@@ -226,3 +226,7 @@
 .MuiPaper-root {
   transition: none !important;
 }
+
+.notistack-SnackbarContainer {
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+}
