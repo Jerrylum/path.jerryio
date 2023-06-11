@@ -222,3 +222,7 @@
   position: relative;
   top: -1px;
 }
+
+.MuiPaper-root {
+  transition: none !important;
+}
