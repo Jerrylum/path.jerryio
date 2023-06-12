@@ -164,7 +164,7 @@ const KeyframeElement = observer((props: { ikf: KeyframeIndexing, gcc: GraphCanv
 });
 
 const GraphCanvasElement = observer((props: {}) => {
-  const { app, preferences } = useAppStores();
+  const { app, appPreferences: preferences } = useAppStores();
 
   const [xOffset, setXOffset] = React.useState(0);
 

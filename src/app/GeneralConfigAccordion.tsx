@@ -7,6 +7,7 @@ import { ObserverInput, parseNumberInString } from './ObserverInput';
 import { NumberInUnit, UnitOfLength } from '../types/Unit';
 import { UpdateProperties } from '../types/Command';
 import { useAppStores } from './MainApp';
+import { ObserverEnumSelect } from './ObserverEnumSelect';
 
 const GeneralConfigAccordion = observer((props: {}) => {
   const { app, confirmation } = useAppStores();
@@ -43,22 +44,9 @@ const GeneralConfigAccordion = observer((props: {}) => {
           </Select>
         </Box>
         <Box className="flex-editor-panel" sx={{ marginTop: "2vh" }}>
-          <FormControl sx={{ width: "8rem" }}>
-            <InputLabel id="uol-label">Unit of Length</InputLabel>
-            <Select labelId="uol-label" label="Unit of Length" size="small" value={gc.uol} onChange={
-              action((e: SelectChangeEvent<UnitOfLength>) => app.history.execute(
-                `Set Unit of Length`,
-                new UpdateProperties(gc, { "uol": e.target.value as UnitOfLength })
-              ))
-            }>
-              {
-                Object.keys(UnitOfLength).filter((x) => !isNaN(parseInt(x))).map((x) => {
-                  return <MenuItem key={x} value={parseInt(x)}>{UnitOfLength[parseInt(x)]}
-                  </MenuItem>
-                })
-              }
-            </Select>
-          </FormControl>
+          <ObserverEnumSelect label="Unit of Length" enumValue={gc.uol} onEnumChange={
+            (v) => app.history.execute(`Set Unit of Length`, new UpdateProperties(gc, { "uol": v }))
+          } enumType={UnitOfLength} />
           <ObserverInput
             sx={{ width: "7rem" }}
             label="Point Density"

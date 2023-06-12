@@ -232,12 +232,14 @@
   margin: 0;
   background-color: transparent !important;
   backdrop-filter: blur(12px);
+  outline: none !important;
 
   .confirmation-card {
     padding: 1rem;
     min-width: 20rem;
     max-width: calc(90vw - 4rem);
     min-height: 6rem;
+    outline: none !important;
 
     .description-box {
       display: flex;
@@ -266,12 +268,14 @@
   margin: 0;
   background-color: transparent !important;
   backdrop-filter: blur(12px);
+  outline: none !important;
 
   .help-welcome-page {
     padding: 1rem;
     width: 48rem;
     max-width: calc(90vw - 4rem);
     min-height: 6rem;
+    outline: none !important;
   }
 
   .help-about-page {
@@ -279,6 +283,7 @@
     width: 32rem;
     max-width: calc(90vw - 4rem);
     min-height: 6rem;
+    outline: none !important;
 
     > img {
       margin: auto;
@@ -300,12 +305,26 @@
   margin: 0;
   background-color: transparent !important;
   backdrop-filter: blur(12px);
+  outline: none !important;
 
   .preferences-card {
     padding: 1rem;
     width: 32rem;
     max-width: calc(90vw - 4rem);
     min-height: 6rem;
+    outline: none !important;
+
+    hr {
+      margin: 2vh 0;
+    }
+
+    .title {
+      margin-top: 2vh;
+      margin-bottom: 2vh;
+    }
+
+    .title:first-child {
+      margin-top: 0;
+    }
   }
 }
-

@@ -26,7 +26,7 @@ const CustomMenuItem = observer((props: DefaultComponentProps<MenuItemTypeMap> &
 });
 
 const MenuAccordion = observer((props: {}) => {
-  const { app, confirmation, help, preferences } = useAppStores();
+  const { app, confirmation, help, appPreferences } = useAppStores();
 
   const [isOpenFileMenu, setIsOpenFileMenu] = React.useState(false);
   const [isOpenEditMenu, setIsOpenEditMenu] = React.useState(false);
@@ -60,7 +60,7 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem done={false} text="Save As" hotkey={useKeyName("Ctrl+Shift+S")} onClick={onMenuClick(onSaveAs)} />
         <CustomMenuItem done={false} text="Download" hotkey={useKeyName("Ctrl+D")} onClick={onMenuClick(onDownload)} />
         <Divider />
-        <CustomMenuItem done={false} text="Preferences" hotkey={useKeyName("Ctrl+,")} />
+        <CustomMenuItem done={false} text="Preferences" hotkey={useKeyName("Ctrl+,")} onClick={onMenuClick(() => appPreferences.open())}/>
       </Menu>
 
       <Menu anchorEl={document.getElementById('menu-edit-btn')} MenuListProps={{ dense: true }}
@@ -92,10 +92,10 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem done={false} text="Zoom Out" hotkey="Ctrl+Minus" onClick={onMenuClick(() => app.fieldScale -= 0.5)} />
         <CustomMenuItem done={false} text="Zoom to Fit" hotkey="Ctrl+0" onClick={onMenuClick(() => app.resetFieldDisplay())} />
         <Divider />
-        <CustomMenuItem done={preferences.themeType === AppTheme.Dark} text="Dark Theme (Default)"
-          onClick={onMenuClick(() => preferences.themeType = AppTheme.Dark)} />
-        <CustomMenuItem done={preferences.themeType === AppTheme.Light} text="Light Theme"
-          onClick={onMenuClick(() => preferences.themeType = AppTheme.Light)} />
+        <CustomMenuItem done={appPreferences.themeType === AppTheme.Dark} text="Dark Theme (Default)"
+          onClick={onMenuClick(() => appPreferences.themeType = AppTheme.Dark)} />
+        <CustomMenuItem done={appPreferences.themeType === AppTheme.Light} text="Light Theme"
+          onClick={onMenuClick(() => appPreferences.themeType = AppTheme.Light)} />
       </Menu>
 
       <Menu anchorEl={document.getElementById('menu-help-btn')} MenuListProps={{ dense: true }}

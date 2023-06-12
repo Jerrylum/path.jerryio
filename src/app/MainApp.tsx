@@ -361,7 +361,7 @@ export class MainApp {
 }
 
 const appStoresContext = React.createContext({
-  app: new MainApp(), confirmation: new Confirmation(), help: new Help(), preferences: new Preferences()
+  app: new MainApp(), confirmation: new Confirmation(), help: new Help(), appPreferences: new Preferences()
 });
 
 const useAppStores = () => React.useContext(appStoresContext);

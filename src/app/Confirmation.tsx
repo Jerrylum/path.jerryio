@@ -102,6 +102,8 @@ const ConfirmationDialog = observer((props: {}) => {
     }
   }
 
+  // UX: tabIndex is important to make the dialog focusable, allow keyboard navigation, and disallow tab focus on other elements
+
   return (
     <Backdrop
       className="confirmation-dialog"

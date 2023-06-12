@@ -35,26 +35,26 @@ export interface AppProps {
 const App = observer(() => {
   useTimer(1000 / 30);
 
-  const { app, confirmation, help, preferences } = useAppStores();
+  const { app, confirmation, help, appPreferences } = useAppStores();
 
   React.useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
     app.paths.map(path => path.calculatePoints(app.gc));
   }), undefined);
 
-  const optionsToEnableHotkeys = { enabled: confirmation.isOpen === false && help.isOpen === false };
+  const optionsToEnableHotkeys = { enabled: !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen };
 
   // UX: Enable custom hotkeys on input fields (e.g. Ctrl+S) to prevent accidentally triggering the browser default
   // hotkeys when focusing them (e.g. Save page). However, we do not apply it to all hotkeys, because we want to keep
   // some browser default hotkeys on input fields (e.g. Ctrl+Z to undo user input) instead of triggering custom hotkeys
   // (e.g. Ctrl+Z to undo field change)
   const optionsToEnableHotkeysOnInputFields = { enableOnContentEditable: true, enableOnFormTags: true, ...optionsToEnableHotkeys };
-
+  
   useCustomHotkeys("Ctrl+P", onNew.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+O", onOpen.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+S", onSave.bind(null, app), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+Shift+S", onSaveAs.bind(null, app), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+D", onDownload.bind(null, app), optionsToEnableHotkeysOnInputFields);
-  useCustomHotkeys("Ctrl+,", () => console.log("Preferences"), optionsToEnableHotkeys);
+  useCustomHotkeys("Ctrl+Comma", () => appPreferences.open(), optionsToEnableHotkeys);
 
   useCustomHotkeys("Ctrl+Z", () => app.history.undo(), optionsToEnableHotkeys);
   useCustomHotkeys("Ctrl+Y,Ctrl+Shift+Z", () => app.history.redo(), optionsToEnableHotkeys);
@@ -81,8 +81,8 @@ const App = observer(() => {
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
-    <div tabIndex={-1} className={["App", preferences.theme.className].join(" ")} key={app.format.uid + "-" + app.gc.uol}>
-      <ThemeProvider theme={preferences.theme.theme}>
+    <div tabIndex={-1} className={["App", appPreferences.theme.className].join(" ")} key={app.format.uid + "-" + app.gc.uol}>
+      <ThemeProvider theme={appPreferences.theme.theme}>
         <NoticeProvider />
         <Box id='left-editor-panel'>
           <MenuAccordion />

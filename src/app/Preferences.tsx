@@ -1,15 +1,20 @@
-import { Backdrop, Card, Theme, Typography } from "@mui/material";
+import { Backdrop, Card, Checkbox, Divider, FormControl, FormControlLabel, FormControlProps, InputLabel, MenuItem, Select, SelectChangeEvent, Theme, Typography } from "@mui/material";
 import { makeAutoObservable, action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { useAppStores } from "./MainApp";
 import { lightTheme, darkTheme, AppTheme, AppThemeInfo } from "./Theme";
+import { makeId, useBackdropDialog, useCustomHotkeys } from "./Util";
+import React from "react";
+import { ObserverEnumSelect } from "./ObserverEnumSelect";
 
 
 export class Preferences {
-  isDialogOpen: boolean = false;
-  //
-  isGoogleAnalyticsEnabledState: boolean = false;
-  themeTypeState: AppTheme = AppTheme.Dark;
+  // private isDialogOpen: boolean = false;
+  private isDialogOpen: boolean = true; // XXX: Debug
+
+  // Local storage
+  private isGoogleAnalyticsEnabledState: boolean = false;
+  private themeTypeState: AppTheme = AppTheme.Dark;
 
   constructor() {
     makeAutoObservable(this);
@@ -58,22 +63,32 @@ export class Preferences {
     if (this.themeTypeState === AppTheme.Light) return lightTheme;
     else return darkTheme;
   }
-
 }
 
 const PreferencesDialog = observer((props: {}) => {
-  const { preferences } = useAppStores();
+  const { appPreferences } = useAppStores();
 
-  if (!preferences.isOpen) return null;
+  useBackdropDialog(appPreferences.isOpen, () => appPreferences.close());
+
+  if (!appPreferences.isOpen) return null;
 
   return (
     <Backdrop
       className="preferences-dialog"
       sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       open={true}
-      onClick={action(() => preferences.close())} >
+      onClick={action(() => appPreferences.close())}
+      tabIndex={-1}>
       <Card className="preferences-card" onClick={(e) => e.stopPropagation()}>
-        <Typography variant="h6" gutterBottom>Preferences</Typography>
+        <Typography className="title">User Interface</Typography>
+        <ObserverEnumSelect sx={{ width: "8rem" }} label="App Theme" enumValue={appPreferences.themeType} onEnumChange={(v) => appPreferences.themeType = v} enumType={AppTheme} />
+
+        <Divider />
+        <Typography className="title">Other</Typography>
+
+        <FormControlLabel control={
+          <Checkbox checked={appPreferences.isGoogleAnalyticsEnabled} onChange={(e, c) => appPreferences.isGoogleAnalyticsEnabled = c} />
+        } label="Enable Google Analytics" sx={{ whiteSpace: "nowrap" }} />
       </Card>
     </Backdrop>
   )
