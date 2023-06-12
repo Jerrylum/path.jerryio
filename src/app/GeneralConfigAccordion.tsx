@@ -8,6 +8,7 @@ import { NumberInUnit, UnitOfLength } from '../types/Unit';
 import { UpdateProperties } from '../types/Command';
 import { useAppStores } from './MainApp';
 import { ObserverEnumSelect } from './ObserverEnumSelect';
+import { ObserverCheckbox } from './ObserverCheckbox';
 
 const GeneralConfigAccordion = observer((props: {}) => {
   const { app, confirmation } = useAppStores();
@@ -91,9 +92,7 @@ const GeneralConfigAccordion = observer((props: {}) => {
             isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
             numeric
           />
-          <FormControlLabel control={
-            <Checkbox checked={gc.showRobot} onChange={action((e, c) => gc.showRobot = c)} />
-          } label="Show Robot" sx={{ whiteSpace: "nowrap" }} />
+          <ObserverCheckbox label="Show Robot" checked={gc.showRobot} onCheckedChange={(c) => gc.showRobot = c} />
         </Box>
         {gc.getConfigPanel(app)}
       </AccordionDetails>

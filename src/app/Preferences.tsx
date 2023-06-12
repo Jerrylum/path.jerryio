@@ -6,6 +6,7 @@ import { lightTheme, darkTheme, AppTheme, AppThemeInfo } from "./Theme";
 import { makeId, useBackdropDialog, useCustomHotkeys } from "./Util";
 import React from "react";
 import { ObserverEnumSelect } from "./ObserverEnumSelect";
+import { ObserverCheckbox } from "./ObserverCheckbox";
 
 
 export class Preferences {
@@ -84,11 +85,9 @@ const PreferencesDialog = observer((props: {}) => {
         <ObserverEnumSelect sx={{ width: "8rem" }} label="App Theme" enumValue={appPreferences.themeType} onEnumChange={(v) => appPreferences.themeType = v} enumType={AppTheme} />
 
         <Divider />
-        <Typography className="title">Other</Typography>
 
-        <FormControlLabel control={
-          <Checkbox checked={appPreferences.isGoogleAnalyticsEnabled} onChange={(e, c) => appPreferences.isGoogleAnalyticsEnabled = c} />
-        } label="Enable Google Analytics" sx={{ whiteSpace: "nowrap" }} />
+        <Typography className="title">Other</Typography>
+        <ObserverCheckbox label="Enable Google Analytics" checked={appPreferences.isGoogleAnalyticsEnabled} onCheckedChange={(v) => appPreferences.isGoogleAnalyticsEnabled = v} />
       </Card>
     </Backdrop>
   )
