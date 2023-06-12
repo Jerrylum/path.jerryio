@@ -101,6 +101,31 @@ export function useUnsavedChangesPrompt() {
   }, []);
 }
 
+export function useBackdropDialog(enable: boolean, onClose: () => void) {
+  // This is used in HelpDialog and Preferences
+
+  // UX: The combination "useEffect + onKeyDown + tabIndex(-1) in Card + ref" works as an alternative
+  // UX: The combination "useCustomHotkeys + autoFocus in Backdrop + tabIndex(-1) in Card" doesn't work, user can still tab out of the dialog
+
+  React.useEffect(() => {
+    if (!enable) return;
+
+    const onKeydown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      } else if (e.key === "Tab") {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener("keydown", onKeydown); // ALGO: Do not use window.addEventListener, it will not work
+
+    return () => {
+      document.removeEventListener("keydown", onKeydown);
+    }
+  }, [enable]);
+}
+
 export function makeId(length: number) {
   let result = '';
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

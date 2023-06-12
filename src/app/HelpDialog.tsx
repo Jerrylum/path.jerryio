@@ -1,7 +1,8 @@
 import { Backdrop, Card, Typography } from "@mui/material";
-import { makeAutoObservable, action } from "mobx"
+import { makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
 import { useAppStores } from "./MainApp";
+import { useBackdropDialog } from "./Util";
 
 export enum HelpPage {
   None,
@@ -37,6 +38,8 @@ export class Help {
 const HelpDialog = observer((props: {}) => {
   const { app, help } = useAppStores();
 
+  useBackdropDialog(help.isOpen, () => help.close());
+
   if (!help.isOpen) return null;
 
   return (
@@ -44,7 +47,8 @@ const HelpDialog = observer((props: {}) => {
       className="help-dialog"
       sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       open={true}
-      onClick={action(() => help.close())} >
+      onClick={() => help.close()}
+      tabIndex={-1}>
       {
         help.currentPage === HelpPage.Welcome &&
         <Card className="help-welcome-page" onClick={(e) => e.stopPropagation()}>
