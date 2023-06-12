@@ -103,8 +103,8 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
     const isCurve = props.spline.controls.length === 4;
     const isFirstCp = props.spline.first === props.cp;
 
-    let followers: Control[] = [];
-    let others: Control[] = [];
+    const followers: Control[] = [];
+    const others: Control[] = [];
     for (let path of app.paths) {
       for (let control of path.controls) {
         if (control === props.cp) continue;
@@ -123,16 +123,20 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
 
     if (isMainControl && shouldControlFollow) {
       if (isCurve) {
-        let control = isFirstCp ? props.spline.controls[1] : props.spline.controls[2];
-        app.select(control);
-        if (!followers.includes(control)) followers.push(control);
+        const control = isFirstCp ? props.spline.controls[1] : props.spline.controls[2];
+        if (control.visible && !control.lock) {
+          app.select(control);
+          if (!followers.includes(control)) followers.push(control);
+        }
       }
 
       const nextSpline = props.path.splines[index + 1];
       if (!isLastOne && !isFirstCp && nextSpline !== undefined && nextSpline.controls.length === 4) {
-        let control = nextSpline.controls[1];
-        app.select(control);
-        if (!followers.includes(control)) followers.push(control);
+        const control = nextSpline.controls[1];
+        if (control.visible && !control.lock) {
+          app.select(control);
+          if (!followers.includes(control)) followers.push(control);
+        }
       }
     }
 
@@ -158,7 +162,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
         }
       }
 
-      let magnetGuide = new Vector(Infinity, Infinity);
+      const magnetGuide = new Vector(Infinity, Infinity);
       if (cpInUOL.x !== magnetX) magnetGuide.x = magnetX;
       if (cpInUOL.y !== magnetY) magnetGuide.y = magnetY;
       app.magnet = magnetGuide;
