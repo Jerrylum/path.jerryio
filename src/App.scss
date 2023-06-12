@@ -1,13 +1,13 @@
 .light-theme {
-  background-color: #ffffff;
-  /* variable */
   --main-bg-color: #ffffff;
+  --link-color: rgba(0, 0, 0, 0.87);
+  background-color: var(--main-bg-color);
 }
 
 .dark-theme {
-  background-color: #292929;
-  /* variable */
   --main-bg-color: #292929;
+  --link-color: rgba(255, 255, 255, 0.87);
+  background-color: var(--main-bg-color);
 }
 
 *::-webkit-scrollbar {
@@ -288,10 +288,24 @@
     }
 
     a {
-      color: white !important;
+      color: var(--link-color) !important;
       text-decoration: underline !important;
       display: inline-block;
       margin: 0 0.5rem;
     }
   }
 }
+
+.preferences-dialog.MuiBackdrop-root {
+  margin: 0;
+  background-color: transparent !important;
+  backdrop-filter: blur(12px);
+
+  .preferences-card {
+    padding: 1rem;
+    width: 32rem;
+    max-width: calc(90vw - 4rem);
+    min-height: 6rem;
+  }
+}
+

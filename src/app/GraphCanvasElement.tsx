@@ -148,7 +148,7 @@ const KeyframeElement = observer((props: { ikf: KeyframeIndexing, gcc: GraphCanv
     if (evt.button === 0) { // left click
       const setTo = !ikf.keyframe.followCurve;
       app.history.execute(`Update keyframe ${ikf.keyframe.uid} followCurve to ${setTo}`,
-        new UpdateInstancesProperties([ikf.keyframe], {'followCurve': setTo}), 0);
+        new UpdateInstancesProperties([ikf.keyframe], { 'followCurve': setTo }), 0);
     } else if (evt.button === 2) { // right click
       app.history.execute(`Remove keyframe ${ikf.keyframe.uid} from path ${gcc.path.uid}`,
         new RemoveKeyframe(gcc.path, ikf.keyframe));
@@ -164,7 +164,7 @@ const KeyframeElement = observer((props: { ikf: KeyframeIndexing, gcc: GraphCanv
 });
 
 const GraphCanvasElement = observer((props: {}) => {
-  const { app } = useAppStores();
+  const { app, preferences } = useAppStores();
 
   const [xOffset, setXOffset] = React.useState(0);
 
@@ -181,8 +181,8 @@ const GraphCanvasElement = observer((props: {}) => {
   const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, xOffset, path);
 
   const fontSize = canvasHeight / 8;
-  const fgColor = app.isLightTheme ? "grey" : "#a4a4a4";
-  const bgColor = app.isLightTheme ? "#ffffff" : "#353535";
+  const fgColor = preferences.theme.foregroundColor;
+  const bgColor = preferences.theme.backgroundColor;
 
   const speedFrom = path.pc.speedLimit.from;
   const speedTo = path.pc.speedLimit.to;

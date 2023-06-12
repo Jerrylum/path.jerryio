@@ -3,13 +3,13 @@ import DoneIcon from '@mui/icons-material/Done';
 import { Button, Card, Divider, ListItemText, Menu, MenuItem, MenuItemTypeMap, Typography } from '@mui/material';
 import { observer } from "mobx-react-lite";
 
-import { lightTheme, darkTheme } from "./Theme";
 import React from "react";
 import { DefaultComponentProps } from "@mui/material/OverridableComponent";
 import { useKeyName } from "./Util";
 import { onDownload, onNew, onOpen, onSave, onSaveAs } from "../format/Output";
 import { MainApp, useAppStores } from "./MainApp";
 import { HelpPage } from "./HelpDialog";
+import { AppTheme } from "./Theme";
 
 const CustomMenuItem = observer((props: DefaultComponentProps<MenuItemTypeMap> & {
   done: boolean,
@@ -26,7 +26,7 @@ const CustomMenuItem = observer((props: DefaultComponentProps<MenuItemTypeMap> &
 });
 
 const MenuAccordion = observer((props: {}) => {
-  const { app, confirmation, help } = useAppStores();
+  const { app, confirmation, help, preferences } = useAppStores();
 
   const [isOpenFileMenu, setIsOpenFileMenu] = React.useState(false);
   const [isOpenEditMenu, setIsOpenEditMenu] = React.useState(false);
@@ -92,10 +92,10 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem done={false} text="Zoom Out" hotkey="Ctrl+Minus" onClick={onMenuClick(() => app.fieldScale -= 0.5)} />
         <CustomMenuItem done={false} text="Zoom to Fit" hotkey="Ctrl+0" onClick={onMenuClick(() => app.resetFieldDisplay())} />
         <Divider />
-        <CustomMenuItem done={app.theme.palette.mode === darkTheme.palette.mode} text="Dark Theme (Default)"
-          onClick={onMenuClick(() => app.theme = darkTheme)} />
-        <CustomMenuItem done={app.theme.palette.mode === lightTheme.palette.mode} text="Light Theme"
-          onClick={onMenuClick(() => app.theme = lightTheme)} />
+        <CustomMenuItem done={preferences.themeType === AppTheme.Dark} text="Dark Theme (Default)"
+          onClick={onMenuClick(() => preferences.themeType = AppTheme.Dark)} />
+        <CustomMenuItem done={preferences.themeType === AppTheme.Light} text="Light Theme"
+          onClick={onMenuClick(() => preferences.themeType = AppTheme.Light)} />
       </Menu>
 
       <Menu anchorEl={document.getElementById('menu-help-btn')} MenuListProps={{ dense: true }}

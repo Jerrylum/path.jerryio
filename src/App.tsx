@@ -23,6 +23,7 @@ import { onDownload, onNew, onOpen, onSave, onSaveAs } from './format/Output';
 import { NoticeProvider } from './app/Notice';
 import { ConfirmationDialog } from './app/Confirmation';
 import { HelpDialog } from './app/HelpDialog';
+import { PreferencesDialog } from './app/Preferences';
 
 
 export interface AppProps {
@@ -34,13 +35,11 @@ export interface AppProps {
 const App = observer(() => {
   useTimer(1000 / 30);
 
-  const { app, confirmation, help } = useAppStores();
+  const { app, confirmation, help, preferences } = useAppStores();
 
   React.useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
     app.paths.map(path => path.calculatePoints(app.gc));
   }), undefined);
-
-  const themeClass = app.isLightTheme ? "light-theme" : "dark-theme";
 
   const optionsToEnableHotkeys = { enabled: confirmation.isOpen === false && help.isOpen === false };
 
@@ -82,8 +81,8 @@ const App = observer(() => {
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
-    <div tabIndex={-1} className={["App", themeClass].join(" ")} key={app.format.uid + "-" + app.gc.uol}>
-      <ThemeProvider theme={app.theme}>
+    <div tabIndex={-1} className={["App", preferences.theme.className].join(" ")} key={app.format.uid + "-" + app.gc.uol}>
+      <ThemeProvider theme={preferences.theme.theme}>
         <NoticeProvider />
         <Box id='left-editor-panel'>
           <MenuAccordion />
@@ -113,6 +112,7 @@ const App = observer(() => {
         }
         <ConfirmationDialog />
         <HelpDialog />
+        <PreferencesDialog />
       </ThemeProvider>
     </div>
   );

@@ -8,13 +8,12 @@ import { PathFileData, Format, getAllFormats } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-transformer';
 import { UnitConverter, UnitOfLength } from "../types/Unit";
-import { Theme } from "@mui/material";
-import { darkTheme } from "./Theme";
 import { CommandHistory } from "../types/Command";
 import { SemVer } from "semver";
 import { Confirmation } from "./Confirmation";
 import React from "react";
 import { Help } from "./HelpDialog";
+import { Preferences } from "./Preferences";
 
 // observable class
 export class MainApp {
@@ -42,8 +41,6 @@ export class MainApp {
     offset: new Vector(0, 0), // Clamp user input only
     scale: 1, // 1 = 100%, [1..3]
   }
-
-  public theme: Theme = darkTheme;
 
   constructor() {
     makeAutoObservable(this);
@@ -107,10 +104,6 @@ export class MainApp {
 
   @computed get history(): CommandHistory {
     return this._history;
-  }
-
-  @computed get isLightTheme(): boolean {
-    return this.theme.palette.mode === "light";
   }
 
   isSelected(x: InteractiveEntity | string): boolean {
@@ -368,7 +361,7 @@ export class MainApp {
 }
 
 const appStoresContext = React.createContext({
-  app: new MainApp(), confirmation: new Confirmation(), help: new Help()
+  app: new MainApp(), confirmation: new Confirmation(), help: new Help(), preferences: new Preferences()
 });
 
 const useAppStores = () => React.useContext(appStoresContext);
