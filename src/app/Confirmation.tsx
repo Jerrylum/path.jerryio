@@ -1,9 +1,8 @@
 import { Backdrop, Box, Button, Card, Typography } from "@mui/material";
-import React, { FocusEventHandler } from "react";
-import { MainApp } from "./MainApp";
+import React from "react";
+import { useAppStores } from "./MainApp";
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { useCustomHotkeys } from "./Util";
 
 export interface ConfirmationButton {
   label: string;
@@ -18,9 +17,11 @@ export interface Confirmation {
   buttons: ConfirmationButton[];
 }
 
-const ConfirmationBackdrop = observer((props: { app: MainApp }) => {
+const ConfirmationBackdrop = observer((props: { }) => {
+  const { app } = useAppStores();
+
   const buttons = React.useRef<HTMLButtonElement[]>([]);
-  const cfm = props.app.confirmation;
+  const cfm = app.confirmation;
 
   if (buttons.current.length !== cfm?.buttons.length) {
     buttons.current = [];
@@ -37,7 +38,7 @@ const ConfirmationBackdrop = observer((props: { app: MainApp }) => {
   if (cfm === undefined) return (<></>);
 
   function onClick(idx: number) {
-    props.app.confirmation = undefined;
+    app.confirmation = undefined;
 
     if (idx < 0 || idx >= cfm!.buttons.length) idx = cfm!.buttons.length - 1;
 

@@ -5,11 +5,12 @@ import { observer } from "mobx-react-lite";
 import { getAllFormats } from '../format/Format';
 import { ObserverInput, parseNumberInString } from './ObserverInput';
 import { NumberInUnit, UnitOfLength } from '../types/Unit';
-import { AppProps } from '../App';
 import { UpdateProperties } from '../types/Command';
+import { useAppStores } from './MainApp';
 
-const GeneralConfigAccordion = observer((props: AppProps) => {
-  const app = props.app;
+const GeneralConfigAccordion = observer((props: {}) => {
+  const { app } = useAppStores();
+  
   const gc = app.gc;
 
   const formats = getAllFormats();
@@ -23,13 +24,13 @@ const GeneralConfigAccordion = observer((props: AppProps) => {
         <Typography gutterBottom>Format</Typography>
         <Box className="panel-box">
           <Select size="small" sx={{ maxWidth: "100%" }}
-            value={formats.findIndex((x) => x.getName() === props.app.format.getName())}
+            value={formats.findIndex((x) => x.getName() === app.format.getName())}
             onChange={action((e: SelectChangeEvent<number>) => {
               app.confirmation = {
                 title: "Change Format",
                 description: "Some incompatible path configurations will be discarded. Edit history will be reset. Are you sure?",
                 buttons: [
-                  { label: "Confirm", onClick: () => props.app.format = formats[parseInt(e.target.value + "")] },
+                  { label: "Confirm", onClick: () => app.format = formats[parseInt(e.target.value + "")] },
                   { label: "Cancel" },
                 ]
               }

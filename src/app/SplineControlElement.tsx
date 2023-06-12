@@ -6,6 +6,7 @@ import { Circle, Line } from 'react-konva';
 import { useState } from "react";
 import { SplineElementProps } from "./SplineElement";
 import { DragControls, RemoveSpline } from "../types/Command";
+import { useAppStores } from "./MainApp";
 
 export interface SplineControlElementProps extends SplineElementProps {
   cp: EndPointControl | Control;
@@ -13,6 +14,8 @@ export interface SplineControlElementProps extends SplineElementProps {
 }
 
 const SplineControlElement = observer((props: SplineControlElementProps) => {
+  const { app } = useAppStores();
+
   const [justSelected, setJustSelected] = useState(false);
   const [posBeforeDrag, setPosBeforeDrag] = useState(new Vector(0, 0));
 
@@ -41,12 +44,12 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
       if (evt.shiftKey) {
         // UX: Add selected control point if: left click + shift
         // UX: Prevent the control point from being removed when the mouse is released at the same round it is added
-        setJustSelected(props.app.select(props.cp));
+        setJustSelected(app.select(props.cp));
         // UX: Expand the path as the same time to show the control points
-        props.app.addExpanded(props.path);
+        app.addExpanded(props.path);
       } else {
         // UX: Select one control point if: left click + not pressing shift
-        props.app.setSelected([props.cp]);
+        app.setSelected([props.cp]);
         setJustSelected(false);
       }
     } else if (evt.button === 1) { // middle click
@@ -62,7 +65,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
 
     // UX: Remove selected entity if: release left click + shift + not being added recently
     if (evt.button === 0 && evt.shiftKey && !justSelected) {
-      if (!justSelected) props.app.unselect(props.cp); // TODO code review
+      if (!justSelected) app.unselect(props.cp); // TODO code review
     }
   }
 
@@ -102,13 +105,13 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
 
     let followers: Control[] = [];
     let others: Control[] = [];
-    for (let path of props.paths) {
+    for (let path of app.paths) {
       for (let control of path.controls) {
         if (control === props.cp) continue;
         if (control.visible === false || path.visible === false) continue;
         if (
           (!(control instanceof EndPointControl) && !shouldControlFollow) ||
-          (!props.app.isSelected(control)) ||
+          (!app.isSelected(control)) ||
           (control.lock || path.lock)
         ) {
           others.push(control);
@@ -121,14 +124,14 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
     if (isMainControl && shouldControlFollow) {
       if (isCurve) {
         let control = isFirstCp ? props.spline.controls[1] : props.spline.controls[2];
-        props.app.select(control);
+        app.select(control);
         if (!followers.includes(control)) followers.push(control);
       }
 
       const nextSpline = props.path.splines[index + 1];
       if (!isLastOne && !isFirstCp && nextSpline !== undefined && nextSpline.controls.length === 4) {
         let control = nextSpline.controls[1];
-        props.app.select(control);
+        app.select(control);
         if (!followers.includes(control)) followers.push(control);
       }
     }
@@ -145,11 +148,11 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
 
       for (let cp of others) {
         let distance = cp.distance(cpInUOL);
-        if (Math.abs(cp.x - cpInUOL.x) < props.app.gc.controlMagnetDistance && distance < magnetXDistance) {
+        if (Math.abs(cp.x - cpInUOL.x) < app.gc.controlMagnetDistance && distance < magnetXDistance) {
           magnetX = cp.x;
           magnetXDistance = distance;
         }
-        if (Math.abs(cp.y - cpInUOL.y) < props.app.gc.controlMagnetDistance && distance < magnetYDistance) {
+        if (Math.abs(cp.y - cpInUOL.y) < app.gc.controlMagnetDistance && distance < magnetYDistance) {
           magnetY = cp.y;
           magnetYDistance = distance;
         }
@@ -158,15 +161,15 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
       let magnetGuide = new Vector(Infinity, Infinity);
       if (cpInUOL.x !== magnetX) magnetGuide.x = magnetX;
       if (cpInUOL.y !== magnetY) magnetGuide.y = magnetY;
-      props.app.magnet = magnetGuide;
+      app.magnet = magnetGuide;
 
       cpInUOL.x = magnetX;
       cpInUOL.y = magnetY;
     } else {
-      props.app.magnet = new Vector(Infinity, Infinity);
+      app.magnet = new Vector(Infinity, Infinity);
     }
 
-    props.app.history.execute(`Move control ${props.cp.uid} with ${followers.length} followers`,
+    app.history.execute(`Move control ${props.cp.uid} with ${followers.length} followers`,
       new DragControls(props.cp, oldCpInUOL, cpInUOL, followers), 5000);
 
     cpInPx = props.cc.toPx(cpInUOL);
@@ -177,7 +180,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
   function onMouseUpControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     if (!shouldInteract(event)) return;
 
-    props.app.magnet = new Vector(Infinity, Infinity);
+    app.magnet = new Vector(Infinity, Infinity);
   }
 
   function onWheel(event: Konva.KonvaEventObject<WheelEvent>) {
@@ -195,7 +198,7 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
   const lineWidth = props.cc.pixelWidth / 600;
   const cpRadius = props.cc.pixelWidth / 40;
   const cpInPx = props.cc.toPx(props.cp);
-  const fillColor = props.app.isSelected(props.cp) ? "#5C469Cdf" : "#5C469C6f";
+  const fillColor = app.isSelected(props.cp) ? "#5C469Cdf" : "#5C469C6f";
   const isMainControl = props.cp instanceof EndPointControl;
 
   function onClickFirstOrLastControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -208,10 +211,10 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
     // UX: Remove end point from the path, selected and expanded list if: right click
     if (evt.button === 2) {
       const command = new RemoveSpline(props.path, props.cp as EndPointControl);
-      props.app.history.execute(`Remove spline with control ${props.cp.uid} in path ${props.path.uid}`, command);
+      app.history.execute(`Remove spline with control ${props.cp.uid} in path ${props.path.uid}`, command);
       for (const control of command.removedEntities) {
-        props.app.unselect(control);
-        props.app.removeExpanded(control);
+        app.unselect(control);
+        app.removeExpanded(control);
       }
     }
   }

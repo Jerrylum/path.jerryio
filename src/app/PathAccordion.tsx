@@ -1,18 +1,19 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import { PathConfig } from '../format/Config';
-import { MainApp } from './MainApp';
+import { useAppStores } from './MainApp';
 
-const PathConfigAccordion = observer((props: { pc: PathConfig | undefined, app: MainApp }) => {
-  const pc = props.pc;
+const PathConfigAccordion = observer((props: {}) => {
+  const { app } = useAppStores();
+
+  const pc = app.selectedPath?.pc;
   return (
     <Accordion defaultExpanded>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography>Path</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        {pc?.getConfigPanel(props.app)}
+        {pc?.getConfigPanel(app)}
       </AccordionDetails>
     </Accordion>
   )

@@ -5,8 +5,11 @@ import { Line } from 'react-konva';
 import { EndPointControl, SplineVariant } from '../types/Path';
 import { SplineElementProps } from "./SplineElement";
 import { ConvertSpline, SplitSpline } from "../types/Command";
+import { useAppStores } from "./MainApp";
 
 const SplinePointsHitBoxElement = observer((props: SplineElementProps) => {
+  const { app } = useAppStores();
+
   function onLineClick(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
@@ -22,15 +25,15 @@ const SplinePointsHitBoxElement = observer((props: SplineElementProps) => {
 
     if (evt.button === 2) { // right click
       // UX: Split spline if: right click
-      props.app.history.execute(`Split spline ${props.spline.uid} with control ${cpInUOL.uid}`,
+      app.history.execute(`Split spline ${props.spline.uid} with control ${cpInUOL.uid}`,
         new SplitSpline(props.path, props.spline, cpInUOL));
     } else if (evt.button === 0) {
       // UX: Convert spline if: left click
       if (props.spline.controls.length === 2)
-        props.app.history.execute(`Convert spline ${props.spline.uid} to curve`,
+        app.history.execute(`Convert spline ${props.spline.uid} to curve`,
           new ConvertSpline(props.path, props.spline, SplineVariant.CURVE));
       else
-        props.app.history.execute(`Convert spline ${props.spline.uid} to line`,
+        app.history.execute(`Convert spline ${props.spline.uid} to line`,
           new ConvertSpline(props.path, props.spline, SplineVariant.LINEAR));
     }
   }

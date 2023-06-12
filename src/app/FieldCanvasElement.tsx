@@ -4,7 +4,6 @@ import { EndPointControl, Path, Spline, SplineVariant, Vector } from '../types/P
 import Konva from 'konva';
 import { Circle, Image, Layer, Line, Stage } from 'react-konva';
 import { SplineElement } from "./SplineElement";
-import { AppProps } from "../App";
 import React from "react";
 import useImage from "use-image";
 
@@ -15,15 +14,18 @@ import { UnitConverter, UnitOfLength } from "../types/Unit";
 import { CanvasConverter } from "../types/Canvas";
 import { clamp } from "./Util";
 import { AddPath, AddSpline } from "../types/Command";
+import { useAppStores } from "./MainApp";
 
-const FieldCanvasElement = observer((props: AppProps) => {
+const FieldCanvasElement = observer((props: {}) => {
   // useTimer(1000 / 30);
 
-  const uc = new UnitConverter(UnitOfLength.Foot, props.app.gc.uol);
-  const canvasSizeInPx = window.innerHeight * (props.app.view.showSpeedCanvas ? 0.78 : 0.94);
+  const { app } = useAppStores();
+
+  const uc = new UnitConverter(UnitOfLength.Foot, app.gc.uol);
+  const canvasSizeInPx = window.innerHeight * (app.view.showSpeedCanvas ? 0.78 : 0.94);
   const canvasSizeInUOL = uc.fromAtoB(12);
 
-  const paths = props.paths;
+  const paths = app.paths;
 
   const [fieldImage] = useImage(fieldImageUrl);
 
@@ -31,8 +33,8 @@ const FieldCanvasElement = observer((props: AppProps) => {
   const [areaSelectionEnd, setAreaSelectionEnd] = React.useState<Vector | undefined>(undefined);
   const [isAddingControl, setIsAddingControl] = React.useState(false);
   const [offsetStart, setOffsetStart] = React.useState<Vector | undefined>(undefined); // ALGO: For "Grab & Move"
-  const offset = props.app.fieldOffset;
-  const scale = props.app.fieldScale;
+  const offset = app.fieldOffset;
+  const scale = app.fieldScale;
 
   const cc = new CanvasConverter(canvasSizeInPx, canvasSizeInPx, canvasSizeInUOL, canvasSizeInUOL, offset, scale);
 
@@ -69,8 +71,8 @@ const FieldCanvasElement = observer((props: AppProps) => {
     const newOffsetInCC = pos.subtract(newPos).add(offsetInCC);
     const newOffsetInKC = newOffsetInCC.multiply(negative1).divide(newScaleVector);
 
-    props.app.fieldScale = newScale;
-    props.app.fieldOffset = newOffsetInKC;
+    app.fieldScale = newScale;
+    app.fieldOffset = newOffsetInKC;
   }
 
   function onMouseDownStage(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -89,11 +91,11 @@ const FieldCanvasElement = observer((props: AppProps) => {
 
       if (evt.shiftKey === false) {
         // UX: Clear selection if: left click without shift
-        props.app.clearSelected();
+        app.clearSelected();
       }
 
       // UX: selectedBefore is empty if: left click without shift
-      props.app.startAreaSelection();
+      app.startAreaSelection();
 
       const posInPx = cc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
@@ -133,7 +135,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
       if (posInPx === undefined) return;
 
       setAreaSelectionEnd(posInPx);
-      props.app.updateAreaSelection(cc.toUOL(areaSelectionStart), cc.toUOL(posInPx));
+      app.updateAreaSelection(cc.toUOL(areaSelectionStart), cc.toUOL(posInPx));
     } else if (offsetStart !== undefined) { // UX: Move field if: middle click
       const posInPx = cc.getUnboundedPxFromEvent(event, false);
       if (posInPx === undefined) return;
@@ -141,7 +143,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
       const newOffset = offsetStart.subtract(posInPx);
       newOffset.x = clamp(newOffset.x, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
       newOffset.y = clamp(newOffset.y, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
-      props.app.fieldOffset = newOffset;
+      app.fieldOffset = newOffset;
     }
   }
 
@@ -195,33 +197,33 @@ const FieldCanvasElement = observer((props: AppProps) => {
 
 
     // UX: Set target path to "interested path"
-    let targetPath: Path | undefined = props.app.interestedPath();
+    let targetPath: Path | undefined = app.interestedPath();
     if (targetPath === undefined) {
       // UX: Create new path if: no path exists
       // UX: Use user mouse position as the last control point
-      targetPath = new Path(props.app.format.buildPathConfig(), new Spline(new EndPointControl(0, 0, 0), [], cpInUOL));
-      props.app.history.execute(`Add path ${targetPath.uid}`, new AddPath(props.paths, targetPath));
+      targetPath = new Path(app.format.buildPathConfig(), new Spline(new EndPointControl(0, 0, 0), [], cpInUOL));
+      app.history.execute(`Add path ${targetPath.uid}`, new AddPath(app.paths, targetPath));
     } else if (targetPath.visible && !targetPath.lock) {
       // UX: Add control point if: path is selected and visible and not locked
       if (evt.button === 0) {
         // UX: Add 4-controls curve if: left click
-        props.app.history.execute(`Add curve spline with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
+        app.history.execute(`Add curve spline with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
           new AddSpline(targetPath, cpInUOL, SplineVariant.CURVE));
       } else if (evt.button === 2) {
         // UX: Add straight line if: right click
-        props.app.history.execute(`Add linear spline with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
+        app.history.execute(`Add linear spline with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
           new AddSpline(targetPath, cpInUOL, SplineVariant.LINEAR));
       }
     }
 
     // UX: Select the new control point
-    props.app.setSelected([cpInUOL]);
+    app.setSelected([cpInUOL]);
     // UX: Expand the path to show the new control point
-    props.app.addExpanded(targetPath);
+    app.addExpanded(targetPath);
   }
 
   const lineWidth = 1;
-  const magnetInPx = cc.toPx(props.app.magnet);
+  const magnetInPx = cc.toPx(app.magnet);
   const visiblePaths = paths.filter((path) => path.visible);
 
   const pointRadius = cc.pixelWidth / 320;
@@ -241,12 +243,12 @@ const FieldCanvasElement = observer((props: AppProps) => {
         <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight}
           onClick={action(onClickFieldImage)} />
         {
-          props.app.magnet.x !== Infinity ? (
+          app.magnet.x !== Infinity ? (
             <Line points={[magnetInPx.x, 0, magnetInPx.x, cc.pixelHeight]} stroke="red" strokeWidth={lineWidth} />
           ) : null
         }
         {
-          props.app.magnet.y !== Infinity ? (
+          app.magnet.y !== Infinity ? (
             <Line points={[0, magnetInPx.y, cc.pixelHeight, magnetInPx.y]} stroke="red" strokeWidth={lineWidth} />
           ) : null
         }
@@ -277,7 +279,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
             <React.Fragment key={index}>
               {
                 path.splines.map((spline) => {
-                  if (spline.isVisible()) return <SplineElement key={spline.uid} {...{ spline, path, cc, ...props }} />
+                  if (spline.isVisible()) return <SplineElement key={spline.uid} {...{ spline, path, cc }} />
                   else return null;
                 })
               }
@@ -292,7 +294,7 @@ const FieldCanvasElement = observer((props: AppProps) => {
                   spline.controls.map((cp, cpIdx) => {
                     const isFirstSpline = path.splines[0] === spline;
                     if (!isFirstSpline && cpIdx === 0) return null;
-                    if (cp.visible) return <SplineControlElement key={cpIdx} isGrabAndMove={offsetStart !== undefined} {...{ spline, path, cc, cp, ...props }} />;
+                    if (cp.visible) return <SplineControlElement key={cpIdx} isGrabAndMove={offsetStart !== undefined} {...{ spline, path, cc, cp }} />;
                     else return null;
                   })
                 )

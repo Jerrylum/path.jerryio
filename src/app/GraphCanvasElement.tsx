@@ -3,11 +3,11 @@ import { observer } from "mobx-react-lite";
 import { KeyframeIndexing, KeyframePos, Point, Path, Vector } from '../types/Path';
 import Konva from 'konva';
 import { Circle, Layer, Line, Rect, Stage, Text } from 'react-konva';
-import { AppProps } from "../App";
 import React from "react";
 import { PathConfig } from "../format/Config";
 import { clamp } from "./Util";
 import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateInstancesProperties } from "../types/Command";
+import { useAppStores } from "./MainApp";
 
 
 export class GraphCanvasConverter {
@@ -111,8 +111,9 @@ const PointElement = observer((props: { point: Point, index: number, pc: PathCon
   </>
 });
 
-const KeyframeElement = observer((props: AppProps & { ikf: KeyframeIndexing, gcc: GraphCanvasConverter }) => {
-  const { app, ikf, gcc } = props;
+const KeyframeElement = observer((props: { ikf: KeyframeIndexing, gcc: GraphCanvasConverter }) => {
+  const { app } = useAppStores();
+  const { ikf, gcc } = props;
 
   const onDragKeyframe = (event: Konva.KonvaEventObject<DragEvent>) => {
     const evt = event.evt;
@@ -133,7 +134,7 @@ const KeyframeElement = observer((props: AppProps & { ikf: KeyframeIndexing, gcc
       return;
     }
 
-    props.app.history.execute(`Move keyframe ${ikf.keyframe.uid}`,
+    app.history.execute(`Move keyframe ${ikf.keyframe.uid}`,
       new MoveKeyframe(gcc.path, kfPos, ikf.keyframe));
 
     const posInPx = gcc.toPx(kfPos);
@@ -146,10 +147,10 @@ const KeyframeElement = observer((props: AppProps & { ikf: KeyframeIndexing, gcc
 
     if (evt.button === 0) { // left click
       const setTo = !ikf.keyframe.followCurve;
-      props.app.history.execute(`Update keyframe ${ikf.keyframe.uid} followCurve to ${setTo}`,
+      app.history.execute(`Update keyframe ${ikf.keyframe.uid} followCurve to ${setTo}`,
         new UpdateInstancesProperties([ikf.keyframe], {'followCurve': setTo}), 0);
     } else if (evt.button === 2) { // right click
-      props.app.history.execute(`Remove keyframe ${ikf.keyframe.uid} from path ${gcc.path.uid}`,
+      app.history.execute(`Remove keyframe ${ikf.keyframe.uid} from path ${gcc.path.uid}`,
         new RemoveKeyframe(gcc.path, ikf.keyframe));
     }
   };
@@ -162,10 +163,12 @@ const KeyframeElement = observer((props: AppProps & { ikf: KeyframeIndexing, gcc
   );
 });
 
-const GraphCanvasElement = observer((props: AppProps) => {
+const GraphCanvasElement = observer((props: {}) => {
+  const { app } = useAppStores();
+
   const [xOffset, setXOffset] = React.useState(0);
 
-  const path = props.app.interestedPath();
+  const path = app.interestedPath();
 
   React.useEffect(() => {
     setXOffset(0);
@@ -178,8 +181,8 @@ const GraphCanvasElement = observer((props: AppProps) => {
   const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, xOffset, path);
 
   const fontSize = canvasHeight / 8;
-  const fgColor = props.app.isLightTheme ? "grey" : "#a4a4a4";
-  const bgColor = props.app.isLightTheme ? "#ffffff" : "#353535";
+  const fgColor = app.isLightTheme ? "grey" : "#a4a4a4";
+  const bgColor = app.isLightTheme ? "#ffffff" : "#353535";
 
   const speedFrom = path.pc.speedLimit.from;
   const speedTo = path.pc.speedLimit.to;
@@ -196,7 +199,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
     const kfPos = gcc.toPos(new Vector(e.evt.offsetX, e.evt.offsetY));
     if (kfPos === undefined) return;
 
-    props.app.history.execute(`Add speed keyframe to path ${path.uid}`,
+    app.history.execute(`Add speed keyframe to path ${path.uid}`,
       new AddKeyframe(path, kfPos));
   }
 
@@ -226,7 +229,7 @@ const GraphCanvasElement = observer((props: AppProps) => {
 
         <Rect x={gcc.twoSidePaddingWidth} y={0} width={gcc.pixelWidth - gcc.twoSidePaddingWidth * 2} height={gcc.pixelHeight} onClick={action(onGraphClick)} />
         {
-          path?.cachedResult.keyframeIndexes.map((ikf) => <KeyframeElement key={ikf.keyframe.uid} {...{...props, ikf, gcc }} />)
+          path?.cachedResult.keyframeIndexes.map((ikf) => <KeyframeElement key={ikf.keyframe.uid} {...{ ikf, gcc }} />)
         }
 
         <Rect x={0} y={0} width={gcc.axisTitleWidth} height={gcc.pixelHeight} fill={bgColor} />

@@ -16,15 +16,13 @@ import { PathConfigAccordion } from './app/PathAccordion';
 import { ControlAccordion } from './app/ControlAccordion';
 import { GraphCanvasElement } from './app/GraphCanvasElement';
 import { FieldCanvasElement } from './app/FieldCanvasElement';
-import { MainApp } from './app/MainApp';
+import { MainApp, useAppStores } from './app/MainApp';
 
 import React from 'react';
 import { onDownload, onNew, onOpen, onSave, onSaveAs } from './format/Output';
 import { NoticeProvider } from './app/Notice';
 import { ConfirmationBackdrop } from './app/Confirmation';
-import { HotkeysEvent } from 'react-hotkeys-hook/dist/types';
 
-let app = new MainApp();
 
 export interface AppProps {
   paths: Path[];
@@ -35,11 +33,11 @@ export interface AppProps {
 const App = observer(() => {
   useTimer(1000 / 30);
 
+  const { app } = useAppStores();
+
   React.useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
     app.paths.map(path => path.calculatePoints(app.gc));
   }), undefined);
-
-  const appProps: AppProps = { paths: app.paths, app };
 
   const themeClass = app.isLightTheme ? "light-theme" : "dark-theme";
 
@@ -102,18 +100,18 @@ const App = observer(() => {
       <ThemeProvider theme={app.theme}>
         <NoticeProvider />
         <Box id='left-editor-panel'>
-          <MenuAccordion {...appProps} />
-          <PathTreeAccordion {...appProps} />
+          <MenuAccordion />
+          <PathTreeAccordion />
         </Box>
 
         <Box id='middle-panel' className={app.view.showSpeedCanvas ? "" : "fullscreen"}>
           <Card id='field-panel'>
-            <FieldCanvasElement {...appProps} />
+            <FieldCanvasElement />
           </Card>
           {
             app.view.showSpeedCanvas && (
               <Card id='graph-panel'>
-                <GraphCanvasElement {...appProps} />
+                <GraphCanvasElement />
               </Card>
             )
           }
@@ -121,13 +119,13 @@ const App = observer(() => {
         {
           app.view.showRightPanel && (
             <Box id='right-editor-panel'>
-              <GeneralConfigAccordion {...appProps} />
-              <ControlAccordion {...appProps} />
-              <PathConfigAccordion pc={app.selectedPath?.pc} app={app} />
+              <GeneralConfigAccordion />
+              <ControlAccordion />
+              <PathConfigAccordion />
             </Box>
           )
         }
-        <ConfirmationBackdrop app={app} />
+        <ConfirmationBackdrop />
       </ThemeProvider>
     </div>
   );

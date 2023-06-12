@@ -2,14 +2,13 @@ import { action } from "mobx"
 import DoneIcon from '@mui/icons-material/Done';
 import { Button, Card, Divider, ListItemText, Menu, MenuItem, MenuItemTypeMap, Typography } from '@mui/material';
 import { observer } from "mobx-react-lite";
-import { AppProps } from "../App";
 
 import { lightTheme, darkTheme } from "./Theme";
 import React from "react";
 import { DefaultComponentProps } from "@mui/material/OverridableComponent";
 import { useKeyName } from "./Util";
 import { onDownload, onNew, onOpen, onSave, onSaveAs } from "../format/Output";
-import { MainApp } from "./MainApp";
+import { MainApp, useAppStores } from "./MainApp";
 
 const CustomMenuItem = observer((props: DefaultComponentProps<MenuItemTypeMap> & {
   done: boolean,
@@ -25,7 +24,8 @@ const CustomMenuItem = observer((props: DefaultComponentProps<MenuItemTypeMap> &
   </MenuItem>);
 });
 
-const MenuAccordion = observer((props: AppProps) => {
+const MenuAccordion = observer((props: {}) => {
+  const { app } = useAppStores();
 
   const [isOpenFileMenu, setIsOpenFileMenu] = React.useState(false);
   const [isOpenEditMenu, setIsOpenEditMenu] = React.useState(false);
@@ -34,7 +34,7 @@ const MenuAccordion = observer((props: AppProps) => {
 
   function onMenuClick(func: (app: MainApp) => void) {
     return action(() => {
-      func(props.app);
+      func(app);
       setIsOpenFileMenu(false);
       setIsOpenEditMenu(false);
       setIsOpenViewMenu(false);
@@ -64,37 +64,37 @@ const MenuAccordion = observer((props: AppProps) => {
 
       <Menu anchorEl={document.getElementById('menu-edit-btn')} MenuListProps={{ dense: true }}
         open={isOpenEditMenu} onClose={() => setIsOpenEditMenu(false)}>
-        <CustomMenuItem done={false} text="Undo" hotkey={useKeyName("Ctrl+Z")} onClick={onMenuClick(() => props.app.history.undo())} />
-        <CustomMenuItem done={false} text="Redo" hotkey={useKeyName("Ctrl+Y")} onClick={onMenuClick(() => props.app.history.redo())}/>
+        <CustomMenuItem done={false} text="Undo" hotkey={useKeyName("Ctrl+Z")} onClick={onMenuClick(() => app.history.undo())} />
+        <CustomMenuItem done={false} text="Redo" hotkey={useKeyName("Ctrl+Y")} onClick={onMenuClick(() => app.history.redo())}/>
         <Divider />
         <CustomMenuItem done={false} text="Select All" hotkey={useKeyName("Ctrl+A")} onClick={onMenuClick(() => {
-          const path = props.app.selectedPath;
-          const all = path !== undefined ? [path, ...path.controls] : props.app.allEntities;
-          props.app.setSelected(all);
+          const path = app.selectedPath;
+          const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
+          app.setSelected(all);
         })} />
-        <CustomMenuItem done={false} text="Select None" hotkey="Esc" onClick={onMenuClick(() => props.app.clearSelected())} />
+        <CustomMenuItem done={false} text="Select None" hotkey="Esc" onClick={onMenuClick(() => app.clearSelected())} />
         <CustomMenuItem done={false} text="Select Inverse" hotkey={useKeyName("Ctrl+Shift+A")} onClick={onMenuClick(() => {
-          const path = props.app.selectedPath;
-          const all = path !== undefined ? [path, ...path.controls] : props.app.allEntities;
-          props.app.setSelected(all.filter(e => !props.app.selectedEntities.includes(e)));
+          const path = app.selectedPath;
+          const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
+          app.setSelected(all.filter(e => !app.selectedEntities.includes(e)));
         })} />
       </Menu>
 
       <Menu anchorEl={document.getElementById('menu-view-btn')} MenuListProps={{ dense: true }}
         open={isOpenViewMenu} onClose={() => setIsOpenViewMenu(false)}>
-        <CustomMenuItem done={props.app.view.showSpeedCanvas} text="Speed Canvas" hotkey={useKeyName("Ctrl+B")}
-          onClick={onMenuClick(() => props.app.view.showSpeedCanvas = !props.app.view.showSpeedCanvas)} />
-        <CustomMenuItem done={props.app.view.showRightPanel} text="Right Panel" hotkey={useKeyName("Ctrl+J")}
-          onClick={onMenuClick(() => props.app.view.showRightPanel = !props.app.view.showRightPanel)} />
+        <CustomMenuItem done={app.view.showSpeedCanvas} text="Speed Canvas" hotkey={useKeyName("Ctrl+B")}
+          onClick={onMenuClick(() => app.view.showSpeedCanvas = !app.view.showSpeedCanvas)} />
+        <CustomMenuItem done={app.view.showRightPanel} text="Right Panel" hotkey={useKeyName("Ctrl+J")}
+          onClick={onMenuClick(() => app.view.showRightPanel = !app.view.showRightPanel)} />
         <Divider />
-        <CustomMenuItem done={false} text="Zoom In" hotkey="Ctrl+Add" onClick={onMenuClick(() => props.app.fieldScale += 0.5)} />
-        <CustomMenuItem done={false} text="Zoom Out" hotkey="Ctrl+Minus" onClick={onMenuClick(() => props.app.fieldScale -= 0.5)} />
-        <CustomMenuItem done={false} text="Zoom to Fit" hotkey="Ctrl+0" onClick={onMenuClick(() => props.app.resetFieldDisplay())} />
+        <CustomMenuItem done={false} text="Zoom In" hotkey="Ctrl+Add" onClick={onMenuClick(() => app.fieldScale += 0.5)} />
+        <CustomMenuItem done={false} text="Zoom Out" hotkey="Ctrl+Minus" onClick={onMenuClick(() => app.fieldScale -= 0.5)} />
+        <CustomMenuItem done={false} text="Zoom to Fit" hotkey="Ctrl+0" onClick={onMenuClick(() => app.resetFieldDisplay())} />
         <Divider />
-        <CustomMenuItem done={props.app.theme.palette.mode === darkTheme.palette.mode} text="Dark Theme (Default)"
-          onClick={onMenuClick(() => props.app.theme = darkTheme)} />
-        <CustomMenuItem done={props.app.theme.palette.mode === lightTheme.palette.mode} text="Light Theme"
-          onClick={onMenuClick(() => props.app.theme = lightTheme)} />
+        <CustomMenuItem done={app.theme.palette.mode === darkTheme.palette.mode} text="Dark Theme (Default)"
+          onClick={onMenuClick(() => app.theme = darkTheme)} />
+        <CustomMenuItem done={app.theme.palette.mode === lightTheme.palette.mode} text="Light Theme"
+          onClick={onMenuClick(() => app.theme = lightTheme)} />
       </Menu>
 
       <Menu anchorEl={document.getElementById('menu-help-btn')} MenuListProps={{ dense: true }}

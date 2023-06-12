@@ -13,6 +13,7 @@ import { darkTheme } from "./Theme";
 import { CommandHistory } from "../types/Command";
 import { SemVer } from "semver";
 import { Confirmation } from "./Confirmation";
+import React from "react";
 
 // observable class
 export class MainApp {
@@ -366,3 +367,13 @@ export class MainApp {
     return this.format.exportPathFile(this);
   }
 }
+
+const app = new MainApp();
+
+const appStoresContext = React.createContext({
+  app
+});
+
+const useAppStores = () => React.useContext(appStoresContext);
+
+export { useAppStores };

@@ -8,13 +8,13 @@ import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { TreeItem } from '@mui/lab';
-import { AppProps } from '../App';
 import { EndPointControl, Path } from '../types/Path';
 import { useRef } from 'react';
 import { InteractiveEntity } from '../types/Canvas';
 import { RemovePath, RemoveSpline, UpdateInteractiveEntities } from '../types/Command';
+import { useAppStores } from './MainApp';
 
-export interface PathTreeProps extends AppProps {
+export interface PathTreeProps {
   path: Path;
 }
 
@@ -30,22 +30,24 @@ export function getPathNameRegex() {
 }
 
 const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
+  const { app } = useAppStores();
+
   const entity = props.entity;
   const parent = props.parent;
 
   function onVisibleClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
     const setTo = !entity.visible;
-    const affected = props.app.isSelected(entity) ? props.app.selectedEntities : [entity];
+    const affected = app.isSelected(entity) ? app.selectedEntities : [entity];
 
-    props.app.history.execute(`Update entities visibility to ${setTo}`,
+    app.history.execute(`Update entities visibility to ${setTo}`,
       new UpdateInteractiveEntities(affected, { visible: setTo }), 0); // Disable merge
   }
 
   function onLockClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
     const setTo = !entity.lock;
-    const affected = props.app.isSelected(entity) ? props.app.selectedEntities : [entity];
+    const affected = app.isSelected(entity) ? app.selectedEntities : [entity];
 
-    props.app.history.execute(`Update entities lock to ${setTo}`,
+    app.history.execute(`Update entities lock to ${setTo}`,
       new UpdateInteractiveEntities(affected, { lock: setTo }), 0); // Disable merge
   }
 
@@ -79,6 +81,8 @@ const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
 });
 
 const PathTreeItem = observer((props: PathTreeProps) => {
+  const { app } = useAppStores();
+
   const path = props.path;
 
   const initialValue = useRef(path.name);
@@ -110,9 +114,9 @@ const PathTreeItem = observer((props: PathTreeProps) => {
   }
 
   function onPathDeleteClick() {
-    props.app.history.execute(`Remove path ${path.uid}`, new RemovePath(props.paths, path));
-    props.app.unselect(path);
-    props.app.removeExpanded(path);
+    app.history.execute(`Remove path ${path.uid}`, new RemovePath(app.paths, path));
+    app.unselect(path);
+    app.removeExpanded(path);
   }
 
   return (
@@ -133,10 +137,10 @@ const PathTreeItem = observer((props: PathTreeProps) => {
         path.controls.map((control) => {
           function onControlDeleteClick() {
             const command = new RemoveSpline(props.path, control as EndPointControl);
-            props.app.history.execute(`Remove spline with control ${control.uid} in path ${props.path.uid}`, command);
+            app.history.execute(`Remove spline with control ${control.uid} in path ${props.path.uid}`, command);
             for (const control of command.removedEntities) {
-              props.app.unselect(control);
-              props.app.removeExpanded(control);
+              app.unselect(control);
+              app.removeExpanded(control);
             }
           }
 
