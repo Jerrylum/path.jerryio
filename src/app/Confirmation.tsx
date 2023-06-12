@@ -66,7 +66,7 @@ const ConfirmationDialog = observer((props: {}) => {
     }
   }, [cfm.isOpen]);
 
-  if (cfm.isOpen === false) return (<></>);
+  if (cfm.isOpen === false) return null;
 
   function onClick(idx: number) {
     if (idx < 0 || idx >= cfm.buttons.length) idx = cfm.buttons.length - 1;

@@ -236,7 +236,7 @@
   .confirmation-card {
     padding: 1rem;
     min-width: 20rem;
-    max-width: 90vw;
+    max-width: calc(90vw - 4rem);
     min-height: 6rem;
 
     .description-box {
@@ -269,15 +269,15 @@
 
   .help-welcome-page {
     padding: 1rem;
-    width: 24rem;
-    max-width: 90vw;
+    width: 48rem;
+    max-width: calc(90vw - 4rem);
     min-height: 6rem;
   }
 
   .help-about-page {
     padding: 2rem;
     width: 32rem;
-    max-width: 90vw;
+    max-width: calc(90vw - 4rem);
     min-height: 6rem;
 
     > img {

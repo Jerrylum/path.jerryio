@@ -100,9 +100,9 @@ const MenuAccordion = observer((props: {}) => {
 
       <Menu anchorEl={document.getElementById('menu-help-btn')} MenuListProps={{ dense: true }}
         open={isOpenHelpMenu} onClose={() => setIsOpenHelpMenu(false)}>
-        <CustomMenuItem done={false} text="Welcome" onClick={onMenuClick(() => help.open(HelpPage.WELCOME))} />
+        <CustomMenuItem done={false} text="Welcome" onClick={onMenuClick(() => help.open(HelpPage.Welcome))} />
         <CustomMenuItem done={false} text="Wiki Page" onClick={onMenuClick(() => window.open('https://github.com/Jerrylum/path.jerryio/wiki', '_blank'))} />
-        <CustomMenuItem done={false} text="About" onClick={onMenuClick(() => help.open(HelpPage.ABOUT))}/>
+        <CustomMenuItem done={false} text="About" onClick={onMenuClick(() => help.open(HelpPage.About))}/>
       </Menu>
     </Card>
   );

@@ -5,13 +5,13 @@ import { useAppStores } from "./MainApp";
 
 export enum HelpPage {
   None,
-  WELCOME,
-  ABOUT,
+  Welcome,
+  About,
 }
 
 export class Help {
   // private page: HelpPage = HelpPage.None;
-  private page: HelpPage = HelpPage.ABOUT; // XXX: Debug
+  private page: HelpPage = HelpPage.About; // XXX: Debug
 
   constructor() {
     makeAutoObservable(this);
@@ -46,13 +46,13 @@ const HelpDialog = observer((props: {}) => {
       open={true}
       onClick={action(() => help.close())} >
       {
-        help.currentPage === HelpPage.WELCOME &&
+        help.currentPage === HelpPage.Welcome &&
         <Card className="help-welcome-page" onClick={(e) => e.stopPropagation()}>
           <Typography variant="h6" gutterBottom>Welcome</Typography>
         </Card>
       }
       {
-        help.currentPage === HelpPage.ABOUT &&
+        help.currentPage === HelpPage.About &&
         <Card className="help-about-page" onClick={(e) => e.stopPropagation()}>
           <img src="logo512.png" />
           <Typography variant="h6" gutterBottom align="center">PATH.JERRYIO Version {app.appVersion.version}</Typography>
@@ -61,7 +61,7 @@ const HelpDialog = observer((props: {}) => {
           <Typography variant="body1" align="center">
             <a target="_blank" href="https://github.com/Jerrylum/path.jerryio">Source Code</a>
             <a target="_blank" href="https://www.tldrlegal.com/license/gnu-general-public-license-v3-gpl-3">License</a>
-            <a target="_blank" href="./">Privacy Terms</a>
+            <a target="_blank" href="https://github.com/Jerrylum/path.jerryio/PRIVACY.md">Privacy Terms</a>
             <a target="_blank" href="https://www.gnu.org/philosophy/free-sw.html">About Free Software</a>
             <a target="_blank" href="./">Join Our Discord Server</a>
           </Typography>
