@@ -231,7 +231,7 @@
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
 }
 
-.confirmation-backdrop.MuiBackdrop-root {
+.confirmation-dialog.MuiBackdrop-root {
   margin: 0;
   background-color: transparent !important;
   backdrop-filter: blur(12px);
@@ -265,7 +265,7 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.help-backdrop.MuiBackdrop-root {
+.help-dialog.MuiBackdrop-root {
   margin: 0;
   background-color: transparent !important;
   backdrop-filter: blur(12px);

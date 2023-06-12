@@ -49,7 +49,7 @@ export class Confirmation {
   }
 }
 
-const ConfirmationBackdrop = observer((props: {}) => {
+const ConfirmationDialog = observer((props: {}) => {
   const { confirmation: cfm } = useAppStores();
 
   const buttons = React.useRef<HTMLButtonElement[]>([]);
@@ -104,7 +104,7 @@ const ConfirmationBackdrop = observer((props: {}) => {
 
   return (
     <Backdrop
-      className="confirmation-backdrop"
+      className="confirmation-dialog"
       sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       open={true}
       onClick={action(onClick.bind(null, -1))}
@@ -138,4 +138,4 @@ const ConfirmationBackdrop = observer((props: {}) => {
   );
 });
 
-export { ConfirmationBackdrop };
+export { ConfirmationDialog };

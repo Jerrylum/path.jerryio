@@ -14,7 +14,7 @@ import { CommandHistory } from "../types/Command";
 import { SemVer } from "semver";
 import { Confirmation } from "./Confirmation";
 import React from "react";
-import { Help } from "./HelpBackdrop";
+import { Help } from "./HelpDialog";
 
 // observable class
 export class MainApp {

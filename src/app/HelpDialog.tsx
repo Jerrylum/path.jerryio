@@ -33,14 +33,14 @@ export class Help {
   }
 }
 
-const HelpBackdrop = observer((props: {}) => {
+const HelpDialog = observer((props: {}) => {
   const { help } = useAppStores();
 
   if (!help.isOpen) return null;
 
   return (
     <Backdrop
-      className="help-backdrop"
+      className="help-dialog"
       sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       open={true}
       onClick={action(() => help.close())} >
@@ -60,4 +60,4 @@ const HelpBackdrop = observer((props: {}) => {
   )
 });
 
-export { HelpBackdrop };
+export { HelpDialog };

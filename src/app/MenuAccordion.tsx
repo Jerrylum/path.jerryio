@@ -9,7 +9,7 @@ import { DefaultComponentProps } from "@mui/material/OverridableComponent";
 import { useKeyName } from "./Util";
 import { onDownload, onNew, onOpen, onSave, onSaveAs } from "../format/Output";
 import { MainApp, useAppStores } from "./MainApp";
-import { HelpPage } from "./HelpBackdrop";
+import { HelpPage } from "./HelpDialog";
 
 const CustomMenuItem = observer((props: DefaultComponentProps<MenuItemTypeMap> & {
   done: boolean,

@@ -21,8 +21,8 @@ import { MainApp, useAppStores } from './app/MainApp';
 import React from 'react';
 import { onDownload, onNew, onOpen, onSave, onSaveAs } from './format/Output';
 import { NoticeProvider } from './app/Notice';
-import { ConfirmationBackdrop } from './app/Confirmation';
-import { HelpBackdrop } from './app/HelpBackdrop';
+import { ConfirmationDialog } from './app/Confirmation';
+import { HelpDialog } from './app/HelpDialog';
 
 
 export interface AppProps {
@@ -111,8 +111,8 @@ const App = observer(() => {
             </Box>
           )
         }
-        <ConfirmationBackdrop />
-        <HelpBackdrop />
+        <ConfirmationDialog />
+        <HelpDialog />
       </ThemeProvider>
     </div>
   );
