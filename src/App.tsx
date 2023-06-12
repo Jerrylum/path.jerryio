@@ -1,4 +1,4 @@
-import './App.css';
+import './App.scss';
 
 import { Path } from './types/Path';
 
@@ -90,7 +90,7 @@ const App = observer(() => {
           <PathTreeAccordion />
         </Box>
 
-        <Box id='middle-panel' className={app.view.showSpeedCanvas ? "" : "fullscreen"}>
+        <Box id='middle-panel' className={app.view.showSpeedCanvas ? "" : "full-height"}>
           <Card id='field-panel'>
             <FieldCanvasElement />
           </Card>
