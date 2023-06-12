@@ -34,7 +34,7 @@ export interface AppProps {
 const App = observer(() => {
   useTimer(1000 / 30);
 
-  const { app, confirmation } = useAppStores();
+  const { app, confirmation, help } = useAppStores();
 
   React.useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
     app.paths.map(path => path.calculatePoints(app.gc));
@@ -42,7 +42,7 @@ const App = observer(() => {
 
   const themeClass = app.isLightTheme ? "light-theme" : "dark-theme";
 
-  const optionsToEnableHotkeys = { enabled: confirmation.isOpen === false };
+  const optionsToEnableHotkeys = { enabled: confirmation.isOpen === false && help.isOpen === false };
 
   // UX: Enable custom hotkeys on input fields (e.g. Ctrl+S) to prevent accidentally triggering the browser default
   // hotkeys when focusing them (e.g. Save page). However, we do not apply it to all hotkeys, because we want to keep

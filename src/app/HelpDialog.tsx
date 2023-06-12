@@ -10,7 +10,8 @@ export enum HelpPage {
 }
 
 export class Help {
-  private page: HelpPage = HelpPage.None;
+  // private page: HelpPage = HelpPage.None;
+  private page: HelpPage = HelpPage.ABOUT; // XXX: Debug
 
   constructor() {
     makeAutoObservable(this);
@@ -34,7 +35,7 @@ export class Help {
 }
 
 const HelpDialog = observer((props: {}) => {
-  const { help } = useAppStores();
+  const { app, help } = useAppStores();
 
   if (!help.isOpen) return null;
 
@@ -46,15 +47,25 @@ const HelpDialog = observer((props: {}) => {
       onClick={action(() => help.close())} >
       {
         help.currentPage === HelpPage.WELCOME &&
-          <Card className="help-welcome-page" onClick={(e) => e.stopPropagation()}>
-            <Typography variant="h6" gutterBottom>Welcome</Typography>
-          </Card>
+        <Card className="help-welcome-page" onClick={(e) => e.stopPropagation()}>
+          <Typography variant="h6" gutterBottom>Welcome</Typography>
+        </Card>
       }
       {
         help.currentPage === HelpPage.ABOUT &&
-          <Card className="help-about-page" onClick={(e) => e.stopPropagation()}>
-            <Typography variant="h6" gutterBottom>About</Typography>
-          </Card>
+        <Card className="help-about-page" onClick={(e) => e.stopPropagation()}>
+          <img src="logo512.png" />
+          <Typography variant="h6" gutterBottom align="center">PATH.JERRYIO Version {app.appVersion.version}</Typography>
+          <Typography variant="body1" align="center" sx={{ marginBottom: "2rem" }}>Made by Jerry Lum</Typography>
+          <Typography variant="body1" align="center">This is a free software licensing under GPL-3.0</Typography>
+          <Typography variant="body1" align="center">
+            <a target="_blank" href="https://github.com/Jerrylum/path.jerryio">Source Code</a>
+            <a target="_blank" href="https://www.tldrlegal.com/license/gnu-general-public-license-v3-gpl-3">License</a>
+            <a target="_blank" href="./">Privacy Terms</a>
+            <a target="_blank" href="https://www.gnu.org/philosophy/free-sw.html">About Free Software</a>
+            <a target="_blank" href="./">Join Our Discord Server</a>
+          </Typography>
+        </Card>
       }
     </Backdrop>
   )

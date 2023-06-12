@@ -275,9 +275,23 @@
   }
 
   .help-about-page {
-    padding: 1rem;
-    width: 24rem;
+    padding: 2rem;
+    width: 32rem;
     max-width: 90vw;
     min-height: 6rem;
+
+    > img {
+      margin: auto;
+      // margin-top: 1rem;
+      width: 8rem;
+      display: block;
+    }
+
+    a {
+      color: white !important;
+      text-decoration: underline !important;
+      display: inline-block;
+      margin: 0 0.5rem;
+    }
   }
 }
