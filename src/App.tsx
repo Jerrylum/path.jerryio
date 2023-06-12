@@ -8,7 +8,7 @@ import { observer } from "mobx-react-lite"
 import { ThemeProvider } from '@mui/material/styles';
 
 import { Box, Card } from '@mui/material';
-import { useCustomHotkeys, useTimer } from './app/Util';
+import { useCustomHotkeys, useTimer, useUnsavedChangesPrompt } from './app/Util';
 import { MenuAccordion } from './app/MenuAccordion';
 import { PathTreeAccordion } from './app/PathTreeAccordion';
 import { GeneralConfigAccordion } from './app/GeneralConfigAccordion';
@@ -77,22 +77,7 @@ const App = observer(() => {
   useCustomHotkeys("Ctrl+Subtract,Ctrl+Minus", () => app.fieldScale -= 0.5, optionsToEnableHotkeys);
   useCustomHotkeys("Ctrl+0", () => app.resetFieldDisplay(), optionsToEnableHotkeys);
 
-  React.useEffect(() => {
-    const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (app.history.isModified()) {
-        // Cancel the event and show alert that
-        // the unsaved changes would be lost
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-
-    window.addEventListener('beforeunload', onBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', onBeforeUnload);
-    };
-  }, []);
+  useUnsavedChangesPrompt();
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (

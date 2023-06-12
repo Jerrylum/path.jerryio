@@ -366,11 +366,8 @@ export class MainApp {
   }
 }
 
-const app = new MainApp();
-const confirmation = new Confirmation();
-
 const appStoresContext = React.createContext({
-  app, confirmation
+  app: new MainApp(), confirmation: new Confirmation()
 });
 
 const useAppStores = () => React.useContext(appStoresContext);

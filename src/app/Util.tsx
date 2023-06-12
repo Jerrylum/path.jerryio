@@ -2,6 +2,7 @@ import React, { DependencyList } from "react";
 import { runInAction } from "mobx"
 import { useHotkeys } from 'react-hotkeys-hook'
 import { HotkeysEvent, HotkeyCallback, Options, RefType, Trigger } from 'react-hotkeys-hook/dist/types';
+import { useAppStores } from "./MainApp";
 
 export function useTimer(ms: number) {
   const [time, setTime] = React.useState(Date.now());
@@ -54,15 +55,15 @@ export function useCustomHotkeys<T extends HTMLElement>(
   }
 
   return useHotkeys(useKeyName(keys), onKeydown(callback), {
-    ...options, 
-    keydown: true, 
-    keyup: true, 
-    preventDefault: true ,
+    ...options,
+    keydown: true,
+    keyup: true,
+    preventDefault: true,
     enabled: (kvEvt: KeyboardEvent, hkEvt: HotkeysEvent): boolean => {
       // This is needed as preventDefault in the option list below does not work with disabled hotkeys
       kvEvt.preventDefault();
       kvEvt.stopPropagation();
-      
+
       const enabledOptions: Trigger | undefined = options?.enabled;
       if (enabledOptions === undefined) {
         return true;
@@ -77,6 +78,27 @@ export function useCustomHotkeys<T extends HTMLElement>(
 
 export function useKeyName(key: string) {
   return useIsMacOS() ? key.replaceAll("Ctrl", "Ctrl") : key;
+}
+
+export function useUnsavedChangesPrompt() {
+  const { app } = useAppStores();
+
+  React.useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (app.history.isModified()) {
+        // Cancel the event and show alert that
+        // the unsaved changes would be lost
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', onBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload);
+    };
+  }, []);
 }
 
 export function makeId(length: number) {
