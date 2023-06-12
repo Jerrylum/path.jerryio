@@ -33,7 +33,7 @@ export interface AppProps {
 const App = observer(() => {
   useTimer(1000 / 30);
 
-  const { app } = useAppStores();
+  const { app, confirmation } = useAppStores();
 
   React.useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
     app.paths.map(path => path.calculatePoints(app.gc));
@@ -41,7 +41,7 @@ const App = observer(() => {
 
   const themeClass = app.isLightTheme ? "light-theme" : "dark-theme";
 
-  const optionsToEnableHotkeys = { enabled: app.confirmation === undefined };
+  const optionsToEnableHotkeys = { enabled: confirmation.isOpen === false };
 
   // UX: Enable custom hotkeys on input fields (e.g. Ctrl+S) to prevent accidentally triggering the browser default
   // hotkeys when focusing them (e.g. Save page). However, we do not apply it to all hotkeys, because we want to keep
@@ -49,8 +49,8 @@ const App = observer(() => {
   // (e.g. Ctrl+Z to undo field change)
   const optionsToEnableHotkeysOnInputFields = { enableOnContentEditable: true, enableOnFormTags: true, ...optionsToEnableHotkeys };
 
-  useCustomHotkeys("Ctrl+P", onNew.bind(null, app), optionsToEnableHotkeysOnInputFields);
-  useCustomHotkeys("Ctrl+O", onOpen.bind(null, app), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Ctrl+P", onNew.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Ctrl+O", onOpen.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+S", onSave.bind(null, app), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+Shift+S", onSaveAs.bind(null, app), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+D", onDownload.bind(null, app), optionsToEnableHotkeysOnInputFields);

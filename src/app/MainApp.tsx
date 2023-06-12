@@ -44,8 +44,6 @@ export class MainApp {
 
   public theme: Theme = darkTheme;
 
-  public confirmation?: Confirmation = undefined;
-
   constructor() {
     makeAutoObservable(this);
 
@@ -369,9 +367,10 @@ export class MainApp {
 }
 
 const app = new MainApp();
+const confirmation = new Confirmation();
 
 const appStoresContext = React.createContext({
-  app
+  app, confirmation
 });
 
 const useAppStores = () => React.useContext(appStoresContext);

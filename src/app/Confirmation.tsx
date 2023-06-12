@@ -1,7 +1,7 @@
 import { Backdrop, Box, Button, Card, Typography } from "@mui/material";
 import React from "react";
 import { useAppStores } from "./MainApp";
-import { action } from "mobx"
+import { makeAutoObservable, action } from "mobx"
 import { observer } from "mobx-react-lite";
 
 export interface ConfirmationButton {
@@ -11,38 +11,68 @@ export interface ConfirmationButton {
   color?: "inherit" | "primary" | "secondary" | "success" | "error" | "info" | "warning";
 }
 
-export interface Confirmation {
+export interface ConfirmationData {
   title: string;
   description: string;
   buttons: ConfirmationButton[];
 }
 
-const ConfirmationBackdrop = observer((props: { }) => {
-  const { app } = useAppStores();
+export class Confirmation {
+  private data?: ConfirmationData;
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  close() {
+    this.data = undefined;
+  }
+
+  prompt(data: ConfirmationData) {
+    this.data = data;
+  }
+
+  get isOpen() {
+    return this.data !== undefined;
+  }
+
+  get title() {
+    return this.data?.title ?? "";
+  }
+
+  get description() {
+    return this.data?.description ?? "";
+  }
+
+  get buttons() {
+    return this.data?.buttons ?? [];
+  }
+}
+
+const ConfirmationBackdrop = observer((props: {}) => {
+  const { confirmation: cfm } = useAppStores();
 
   const buttons = React.useRef<HTMLButtonElement[]>([]);
-  const cfm = app.confirmation;
 
-  if (buttons.current.length !== cfm?.buttons.length) {
+  if (buttons.current.length !== cfm.buttons.length) {
     buttons.current = [];
   }
 
   React.useEffect(() => {
-    if (cfm === undefined) return;  
+    if (cfm.isOpen === false) return;
 
     if (buttons.current.length > 0) {
       buttons.current[0].focus();
     }
-  }, [cfm]);
+  }, [cfm.isOpen]);
 
-  if (cfm === undefined) return (<></>);
+  if (cfm.isOpen === false) return (<></>);
 
   function onClick(idx: number) {
-    app.confirmation = undefined;
+    if (idx < 0 || idx >= cfm.buttons.length) idx = cfm.buttons.length - 1;
 
-    if (idx < 0 || idx >= cfm!.buttons.length) idx = cfm!.buttons.length - 1;
-
-    cfm!.buttons[idx].onClick?.();
+    cfm.buttons[idx]?.onClick?.();
+    cfm.close();
   }
 
   function onKeydown(e: React.KeyboardEvent<HTMLDivElement>) {
@@ -63,8 +93,8 @@ const ConfirmationBackdrop = observer((props: { }) => {
         }
       }
     } else {
-      for (let i = 0; i < cfm!.buttons.length; i++) {
-        if (e.key === cfm!.buttons[i].hotkey) {
+      for (let i = 0; i < cfm.buttons.length; i++) {
+        if (e.key === cfm.buttons[i].hotkey) {
           onClick(i);
           break;
         }

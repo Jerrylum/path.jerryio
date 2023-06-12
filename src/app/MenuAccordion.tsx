@@ -25,7 +25,7 @@ const CustomMenuItem = observer((props: DefaultComponentProps<MenuItemTypeMap> &
 });
 
 const MenuAccordion = observer((props: {}) => {
-  const { app } = useAppStores();
+  const { app, confirmation } = useAppStores();
 
   const [isOpenFileMenu, setIsOpenFileMenu] = React.useState(false);
   const [isOpenEditMenu, setIsOpenEditMenu] = React.useState(false);
@@ -51,9 +51,9 @@ const MenuAccordion = observer((props: {}) => {
 
       <Menu anchorEl={document.getElementById('menu-file-btn')} MenuListProps={{ dense: true }}
         open={isOpenFileMenu} onClose={() => setIsOpenFileMenu(false)}>
-        <CustomMenuItem done={false} text="New File" hotkey={useKeyName("Ctrl+P")} onClick={onMenuClick(onNew)} />
+        <CustomMenuItem done={false} text="New File" hotkey={useKeyName("Ctrl+P")} onClick={onMenuClick(() => onNew(app, confirmation))} />
         <Divider />
-        <CustomMenuItem done={false} text="Open File" hotkey={useKeyName("Ctrl+O")} onClick={onMenuClick(onOpen)} />
+        <CustomMenuItem done={false} text="Open File" hotkey={useKeyName("Ctrl+O")} onClick={onMenuClick(() => onOpen(app, confirmation))} />
         <Divider />
         <CustomMenuItem done={false} text="Save" hotkey={useKeyName("Ctrl+S")} onClick={onMenuClick(onSave)} />
         <CustomMenuItem done={false} text="Save As" hotkey={useKeyName("Ctrl+Shift+S")} onClick={onMenuClick(onSaveAs)} />
@@ -65,7 +65,7 @@ const MenuAccordion = observer((props: {}) => {
       <Menu anchorEl={document.getElementById('menu-edit-btn')} MenuListProps={{ dense: true }}
         open={isOpenEditMenu} onClose={() => setIsOpenEditMenu(false)}>
         <CustomMenuItem done={false} text="Undo" hotkey={useKeyName("Ctrl+Z")} onClick={onMenuClick(() => app.history.undo())} />
-        <CustomMenuItem done={false} text="Redo" hotkey={useKeyName("Ctrl+Y")} onClick={onMenuClick(() => app.history.redo())}/>
+        <CustomMenuItem done={false} text="Redo" hotkey={useKeyName("Ctrl+Y")} onClick={onMenuClick(() => app.history.redo())} />
         <Divider />
         <CustomMenuItem done={false} text="Select All" hotkey={useKeyName("Ctrl+A")} onClick={onMenuClick(() => {
           const path = app.selectedPath;

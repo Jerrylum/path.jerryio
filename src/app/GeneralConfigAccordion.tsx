@@ -9,8 +9,8 @@ import { UpdateProperties } from '../types/Command';
 import { useAppStores } from './MainApp';
 
 const GeneralConfigAccordion = observer((props: {}) => {
-  const { app } = useAppStores();
-  
+  const { app, confirmation } = useAppStores();
+
   const gc = app.gc;
 
   const formats = getAllFormats();
@@ -26,15 +26,14 @@ const GeneralConfigAccordion = observer((props: {}) => {
           <Select size="small" sx={{ maxWidth: "100%" }}
             value={formats.findIndex((x) => x.getName() === app.format.getName())}
             onChange={action((e: SelectChangeEvent<number>) => {
-              app.confirmation = {
+              confirmation.prompt({
                 title: "Change Format",
                 description: "Some incompatible path configurations will be discarded. Edit history will be reset. Are you sure?",
                 buttons: [
                   { label: "Confirm", onClick: () => app.format = formats[parseInt(e.target.value + "")] },
                   { label: "Cancel" },
                 ]
-              }
-              
+              });
             })}>
             {
               formats.map((x, i) => {

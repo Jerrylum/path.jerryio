@@ -1,9 +1,10 @@
+import { Confirmation } from "../app/Confirmation";
 import { MainApp } from "../app/MainApp";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from '../app/Notice';
 
-async function saveConfirm(app: MainApp, callback: () => void) {
+async function saveConfirm(app: MainApp, confirmation: Confirmation, callback: () => void) {
   return new Promise<boolean>((resolve, reject) => {
-    app.confirmation = {
+    confirmation.prompt({
       title: "Unsaved Changes",
       description: "Do you want to save the changes made to " + (app.mountingFile?.name ?? "path.jerryio.txt") + "?",
       buttons: [
@@ -25,7 +26,7 @@ async function saveConfirm(app: MainApp, callback: () => void) {
         },
         { label: "Cancel", onClick: () => resolve(false) },
       ]
-    };
+    });
   });
 }
 
@@ -94,8 +95,8 @@ async function choiceSave(app: MainApp): Promise<boolean> {
   }
 }
 
-export async function onNew(app: MainApp, saveCheck: boolean = true): Promise<boolean> {
-  if (saveCheck && app.history.isModified()) return saveConfirm(app, onNew.bind(null, app, false));
+export async function onNew(app: MainApp, confirmation: Confirmation, saveCheck: boolean = true): Promise<boolean> {
+  if (saveCheck && app.history.isModified()) return saveConfirm(app, confirmation, onNew.bind(null, app, confirmation, false));
 
   app.newPathFile();
   app.mountingFile = null;
@@ -130,8 +131,8 @@ export async function onSaveAs(app: MainApp): Promise<boolean> {
   }
 }
 
-export async function onOpen(app: MainApp, saveCheck: boolean = true): Promise<boolean> {
-  if (saveCheck && app.history.isModified()) return saveConfirm(app, onOpen.bind(null, app, false));
+export async function onOpen(app: MainApp, confirmation: Confirmation, saveCheck: boolean = true): Promise<boolean> {
+  if (saveCheck && app.history.isModified()) return saveConfirm(app, confirmation, onOpen.bind(null, app, confirmation, false));
 
   let contents = await readFile(app);
   if (contents === undefined) return false;

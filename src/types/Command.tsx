@@ -32,6 +32,8 @@ export class CommandHistory {
     } else {
       this.commit();
       this.lastExecution = exe;
+
+      console.log("EXECUTE", exe.title);
     }
 
     this.redoHistory = [];
@@ -53,7 +55,7 @@ export class CommandHistory {
 
       if (isInteractiveEntitiesCommand(command)) this.app.setSelected(command.entities);
     }
-    console.log("undo", this.history.length, this.redoHistory.length);
+    console.log("UNDO", this.history.length, "->", this.redoHistory.length);
   }
 
   redo(): void {
@@ -64,7 +66,7 @@ export class CommandHistory {
 
       if (isInteractiveEntitiesCommand(command)) this.app.setSelected(command.entities);
     }
-    console.log("redo", this.history.length, this.redoHistory.length);
+    console.log("REDO", this.history.length, "<-", this.redoHistory.length);
   }
 
   clearHistory(): void {
