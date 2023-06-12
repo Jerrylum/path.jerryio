@@ -2,9 +2,9 @@ import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import Konva from 'konva';
 import { Line } from 'react-konva';
-import { EndPointControl, SplineVariant } from '../math/Path';
+import { EndPointControl, SplineVariant } from '../types/Path';
 import { SplineElementProps } from "./SplineElement";
-import { ConvertSpline, SplitSpline } from "../math/Command";
+import { ConvertSpline, SplitSpline } from "../types/Command";
 
 const SplinePointsHitBoxElement = observer((props: SplineElementProps) => {
   function onLineClick(event: Konva.KonvaEventObject<MouseEvent>) {

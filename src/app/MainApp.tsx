@@ -1,16 +1,16 @@
 import { makeAutoObservable, computed, runInAction, reaction, action } from "mobx"
 import DOMPurify from 'dompurify';
 import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "../format/Config";
-import { InteractiveEntity } from "../math/Canvas";
-import { Control, EndPointControl, Path, Vector } from "../math/Path";
+import { InteractiveEntity } from "../types/Canvas";
+import { Control, EndPointControl, Path, Vector } from "../types/Path";
 import { addToArray, clamp, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-transformer';
-import { UnitConverter, UnitOfLength } from "../math/Unit";
+import { UnitConverter, UnitOfLength } from "../types/Unit";
 import { Theme } from "@mui/material";
 import { darkTheme } from "./Theme";
-import { CommandHistory } from "../math/Command";
+import { CommandHistory } from "../types/Command";
 import { SemVer } from "semver";
 import { Confirmation } from "./Confirmation";
 

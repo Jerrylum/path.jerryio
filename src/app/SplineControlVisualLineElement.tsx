@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
-import { Vector } from '../math/Path';
-import { CanvasConverter } from '../math/Canvas';
+import { Vector } from '../types/Path';
+import { CanvasConverter } from '../types/Canvas';
 import { Line } from 'react-konva';
 
 const SplineControlVisualLineElement = observer((props: { start: Vector, end: Vector, cc: CanvasConverter }) => {

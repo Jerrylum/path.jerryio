@@ -1,12 +1,12 @@
 import { makeAutoObservable, reaction, action } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { makeId } from "../app/Util";
-import { UnitConverter, UnitOfLength } from "../math/Unit";
+import { UnitConverter, UnitOfLength } from "../types/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
 import { Box, Typography } from "@mui/material";
-import { UpdateProperties } from "../math/Command";
+import { UpdateProperties } from "../types/Command";
 import { Exclude } from "class-transformer";
 
 // observable class

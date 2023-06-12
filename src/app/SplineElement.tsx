@@ -1,9 +1,9 @@
 import { observer } from "mobx-react-lite";
-import { Path, Spline } from '../math/Path';
+import { Path, Spline } from '../types/Path';
 import { AppProps } from "../App";
 import { SplineControlVisualLineElement } from "./SplineControlVisualLineElement";
 import { SplinePointsHitBoxElement } from "./SplinePointsHitBoxElement";
-import { CanvasConverter } from "../math/Canvas";
+import { CanvasConverter } from "../types/Canvas";
 
 
 export interface SplineElementProps extends AppProps {

@@ -1,11 +1,11 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { Control, EndPointControl, Vector } from '../math/Path';
+import { Control, EndPointControl, Vector } from '../types/Path';
 import Konva from 'konva';
 import { Circle, Line } from 'react-konva';
 import { useState } from "react";
 import { SplineElementProps } from "./SplineElement";
-import { DragControls, RemoveSpline } from "../math/Command";
+import { DragControls, RemoveSpline } from "../types/Command";
 
 export interface SplineControlElementProps extends SplineElementProps {
   cp: EndPointControl | Control;

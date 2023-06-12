@@ -4,9 +4,9 @@ import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { getAllFormats } from '../format/Format';
 import { ObserverInput, parseNumberInString } from './ObserverInput';
-import { NumberInUnit, UnitOfLength } from '../math/Unit';
+import { NumberInUnit, UnitOfLength } from '../types/Unit';
 import { AppProps } from '../App';
-import { UpdateProperties } from '../math/Command';
+import { UpdateProperties } from '../types/Command';
 
 const GeneralConfigAccordion = observer((props: AppProps) => {
   const app = props.app;

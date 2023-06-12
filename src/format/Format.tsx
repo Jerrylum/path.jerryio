@@ -1,5 +1,5 @@
 import { MainApp } from '../app/MainApp';
-import { Path } from "../math/Path";
+import { Path } from "../types/Path";
 import { LemLibFormatV0_4 } from './LemLibFormatV0_4';
 import { PathDotJerryioFormatV0_1 } from './PathDotJerryioFormatV0_1';
 import { GeneralConfig, PathConfig } from "./Config";

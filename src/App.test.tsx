@@ -3,13 +3,13 @@ import { makeAutoObservable } from "mobx"
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MainApp } from './app/MainApp';
-import { Control, EndPointControl, Path, Spline, Vector } from './math/Path';
+import { Control, EndPointControl, Path, Spline, Vector } from './types/Path';
 
 import { plainToClassFromExist, plainToInstance } from 'class-transformer';
 import { instanceToPlain } from 'class-transformer';
 import { GeneralConfig, PathConfig } from './format/Config';
 import { Format, PathFileData } from './format/Format';
-import { UnitOfLength } from "./math/Unit";
+import { UnitOfLength } from "./types/Unit";
 import DOMPurify from "dompurify";
 import { NumberRange } from "./app/RangeSlider";
 

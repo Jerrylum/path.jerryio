@@ -2,7 +2,7 @@ import { TextField, TextFieldProps } from "@mui/material";
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useRef } from "react";
-import { NumberInUnit, UnitConverter, UnitOfLength } from "../math/Unit";
+import { NumberInUnit, UnitConverter, UnitOfLength } from "../types/Unit";
 import { clamp } from "./Util";
 
 export function parseNumberInString(value: string, uol: UnitOfLength,

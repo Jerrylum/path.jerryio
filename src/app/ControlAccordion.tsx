@@ -2,10 +2,10 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import { AppProps } from '../App';
-import { EndPointControl } from '../math/Path';
+import { EndPointControl } from '../types/Path';
 import { ObserverInput, parseNumberInString } from './ObserverInput';
-import { NumberInUnit, UnitOfLength } from '../math/Unit';
-import { UpdateInteractiveEntities } from '../math/Command';
+import { NumberInUnit, UnitOfLength } from '../types/Unit';
+import { UpdateInteractiveEntities } from '../types/Command';
 
 const ControlAccordion = observer((props: AppProps) => {
   return (

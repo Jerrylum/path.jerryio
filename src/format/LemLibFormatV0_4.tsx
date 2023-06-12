@@ -1,13 +1,13 @@
 import { makeAutoObservable, reaction, action } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { clamp, makeId } from "../app/Util";
-import { Control, EndPointControl, Path, Spline, Vector } from "../math/Path";
-import { UnitOfLength, UnitConverter } from "../math/Unit";
+import { Control, EndPointControl, Path, Spline, Vector } from "../types/Path";
+import { UnitOfLength, UnitConverter } from "../types/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { Box, Typography } from "@mui/material";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
-import { UpdateProperties } from "../math/Command";
+import { UpdateProperties } from "../types/Command";
 import { Exclude } from "class-transformer";
 
 // observable class

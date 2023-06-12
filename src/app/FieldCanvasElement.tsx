@@ -1,6 +1,6 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { EndPointControl, Path, Spline, SplineVariant, Vector } from '../math/Path';
+import { EndPointControl, Path, Spline, SplineVariant, Vector } from '../types/Path';
 import Konva from 'konva';
 import { Circle, Image, Layer, Line, Stage } from 'react-konva';
 import { SplineElement } from "./SplineElement";
@@ -11,10 +11,10 @@ import useImage from "use-image";
 import fieldImageUrl from '../static/field2023.png'
 import { SplineControlElement } from "./SplineControlElement";
 import { AreaElement } from "./AreaElement";
-import { UnitConverter, UnitOfLength } from "../math/Unit";
-import { CanvasConverter } from "../math/Canvas";
+import { UnitConverter, UnitOfLength } from "../types/Unit";
+import { CanvasConverter } from "../types/Canvas";
 import { clamp } from "./Util";
-import { AddPath, AddSpline } from "../math/Command";
+import { AddPath, AddSpline } from "../types/Command";
 
 const FieldCanvasElement = observer((props: AppProps) => {
   // useTimer(1000 / 30);

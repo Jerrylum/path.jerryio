@@ -9,8 +9,8 @@ import { observer } from "mobx-react-lite";
 import { TreeView } from '@mui/lab';
 import { AppProps } from '../App';
 import { PathTreeItem } from './PathTreeItem';
-import { Spline, EndPointControl, Path } from '../math/Path';
-import { AddPath } from '../math/Command';
+import { Spline, EndPointControl, Path } from '../types/Path';
+import { AddPath } from '../types/Command';
 
 const PathTreeAccordion = observer((props: AppProps) => {
   function onAddPathClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
