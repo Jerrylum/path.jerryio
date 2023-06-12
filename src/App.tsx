@@ -22,6 +22,7 @@ import React from 'react';
 import { onDownload, onNew, onOpen, onSave, onSaveAs } from './format/Output';
 import { NoticeProvider } from './app/Notice';
 import { ConfirmationBackdrop } from './app/Confirmation';
+import { HelpBackdrop } from './app/HelpBackdrop';
 
 
 export interface AppProps {
@@ -111,6 +112,7 @@ const App = observer(() => {
           )
         }
         <ConfirmationBackdrop />
+        <HelpBackdrop />
       </ThemeProvider>
     </div>
   );

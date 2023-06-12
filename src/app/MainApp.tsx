@@ -14,6 +14,7 @@ import { CommandHistory } from "../types/Command";
 import { SemVer } from "semver";
 import { Confirmation } from "./Confirmation";
 import React from "react";
+import { Help } from "./HelpBackdrop";
 
 // observable class
 export class MainApp {
@@ -367,7 +368,7 @@ export class MainApp {
 }
 
 const appStoresContext = React.createContext({
-  app: new MainApp(), confirmation: new Confirmation()
+  app: new MainApp(), confirmation: new Confirmation(), help: new Help()
 });
 
 const useAppStores = () => React.useContext(appStoresContext);

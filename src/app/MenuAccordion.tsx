@@ -9,6 +9,7 @@ import { DefaultComponentProps } from "@mui/material/OverridableComponent";
 import { useKeyName } from "./Util";
 import { onDownload, onNew, onOpen, onSave, onSaveAs } from "../format/Output";
 import { MainApp, useAppStores } from "./MainApp";
+import { HelpPage } from "./HelpBackdrop";
 
 const CustomMenuItem = observer((props: DefaultComponentProps<MenuItemTypeMap> & {
   done: boolean,
@@ -25,7 +26,7 @@ const CustomMenuItem = observer((props: DefaultComponentProps<MenuItemTypeMap> &
 });
 
 const MenuAccordion = observer((props: {}) => {
-  const { app, confirmation } = useAppStores();
+  const { app, confirmation, help } = useAppStores();
 
   const [isOpenFileMenu, setIsOpenFileMenu] = React.useState(false);
   const [isOpenEditMenu, setIsOpenEditMenu] = React.useState(false);
@@ -99,9 +100,9 @@ const MenuAccordion = observer((props: {}) => {
 
       <Menu anchorEl={document.getElementById('menu-help-btn')} MenuListProps={{ dense: true }}
         open={isOpenHelpMenu} onClose={() => setIsOpenHelpMenu(false)}>
-        <CustomMenuItem done={false} text="Help Page" />
-        <CustomMenuItem done={false} text="View License" />
-        <CustomMenuItem done={false} text="About" />
+        <CustomMenuItem done={false} text="Welcome" onClick={onMenuClick(() => help.open(HelpPage.WELCOME))} />
+        <CustomMenuItem done={false} text="Wiki Page" onClick={onMenuClick(() => window.open('https://github.com/Jerrylum/path.jerryio/wiki', '_blank'))} />
+        <CustomMenuItem done={false} text="About" onClick={onMenuClick(() => help.open(HelpPage.ABOUT))}/>
       </Menu>
     </Card>
   );
