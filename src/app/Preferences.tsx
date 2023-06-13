@@ -1,17 +1,15 @@
-import { Backdrop, Card, Checkbox, Divider, FormControl, FormControlLabel, FormControlProps, InputLabel, MenuItem, Select, SelectChangeEvent, Theme, Typography } from "@mui/material";
+import { Backdrop, Card, Divider, Typography } from "@mui/material";
 import { makeAutoObservable, action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { useAppStores } from "./MainApp";
 import { lightTheme, darkTheme, AppTheme, AppThemeInfo } from "./Theme";
-import { makeId, useBackdropDialog, useCustomHotkeys } from "./Util";
-import React from "react";
+import { useBackdropDialog } from "./Util";
 import { ObserverEnumSelect } from "./ObserverEnumSelect";
 import { ObserverCheckbox } from "./ObserverCheckbox";
 
 
 export class Preferences {
-  // private isDialogOpen: boolean = false;
-  private isDialogOpen: boolean = true; // XXX: Debug
+  private isDialogOpen: boolean = false;
 
   // Local storage
   private isGoogleAnalyticsEnabledState: boolean = false;
@@ -81,8 +79,8 @@ const PreferencesDialog = observer((props: {}) => {
       onClick={action(() => appPreferences.close())}
       tabIndex={-1}>
       <Card className="preferences-card" onClick={(e) => e.stopPropagation()}>
-        <Typography className="title">User Interface</Typography>
-        <ObserverEnumSelect sx={{ width: "8rem" }} label="App Theme" enumValue={appPreferences.themeType} onEnumChange={(v) => appPreferences.themeType = v} enumType={AppTheme} />
+        <Typography className="title">Appearance</Typography>
+        <ObserverEnumSelect sx={{ width: "8rem" }} label="Theme" enumValue={appPreferences.themeType} onEnumChange={(v) => appPreferences.themeType = v} enumType={AppTheme} />
 
         <Divider />
 
