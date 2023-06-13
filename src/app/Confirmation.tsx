@@ -3,6 +3,7 @@ import React from "react";
 import { useAppStores } from "./MainApp";
 import { makeAutoObservable, action } from "mobx"
 import { observer } from "mobx-react-lite";
+import { useBackdropDialog } from "./Util";
 
 export interface ConfirmationButton {
   label: string;
@@ -65,6 +66,9 @@ const ConfirmationDialog = observer((props: {}) => {
       buttons.current[0].focus();
     }
   }, [cfm.isOpen]);
+
+  // UX: Disable tab globally when there is only one button
+  useBackdropDialog(cfm.isOpen && cfm.buttons.length === 1);
 
   if (cfm.isOpen === false) return null;
 
@@ -129,8 +133,9 @@ const ConfirmationDialog = observer((props: {}) => {
                 ref={(element) => buttons.current[i] = element!}
                 onClick={action(onClick.bind(null, i))}
                 {...(i + 1 === cfm.buttons.length ? {
-                  onFocus: () => { buttons.current[i].tabIndex = 1000 },
-                  onBlur: () => { buttons.current[i].tabIndex = i + 1001 },
+                  // ALGO: buttons.current[i] check is needed with only one button
+                  onFocus: () => { buttons.current[i] && (buttons.current[i].tabIndex = 1000) },
+                  onBlur: () => { buttons.current[i] && (buttons.current[i].tabIndex = i + 1001) }
                 } : {})}>{btn.label}{btn.hotkey ? `(${btn.hotkey.toUpperCase()})` : ""}</Button>
             })
           }

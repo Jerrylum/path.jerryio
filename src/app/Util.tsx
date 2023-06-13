@@ -98,10 +98,11 @@ export function useUnsavedChangesPrompt() {
     return () => {
       window.removeEventListener('beforeunload', onBeforeUnload);
     };
-  }, []);
+  }, [app.history]);
 }
 
-export function useBackdropDialog(enable: boolean, onClose: () => void) {
+export function useBackdropDialog(enable: boolean, onClose?: () => void) {
+  // Disable tabbing out of the dialog
   // This is used in HelpDialog and Preferences
 
   // UX: The combination "useEffect + onKeyDown + tabIndex(-1) in Card + ref" works as an alternative
@@ -112,7 +113,7 @@ export function useBackdropDialog(enable: boolean, onClose: () => void) {
 
     const onKeydown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        onClose?.();
       } else if (e.key === "Tab") {
         e.preventDefault();
       }
@@ -123,7 +124,7 @@ export function useBackdropDialog(enable: boolean, onClose: () => void) {
     return () => {
       document.removeEventListener("keydown", onKeydown);
     }
-  }, [enable]);
+  }, [enable, onClose]);
 }
 
 export function makeId(length: number) {
