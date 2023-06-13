@@ -45,7 +45,7 @@ const HelpDialog = observer((props: {}) => {
   React.useEffect(() => {
     setIsGAEnabled(rawGAEnabled !== "false");
     if (rawGAEnabled === null) help.open(HelpPage.Welcome); // UX: Show welcome page if user is new
-  }, [rawGAEnabled]);
+  }, [help, rawGAEnabled]);
 
   function onClose() {
     help.close();
@@ -74,16 +74,16 @@ const HelpDialog = observer((props: {}) => {
       {
         help.currentPage === HelpPage.About &&
         <Card className="help-about-page" onClick={(e) => e.stopPropagation()}>
-          <img src="logo512.png" />
+          <img src="logo512.png" alt="app logo" />
           <Typography variant="h6" gutterBottom align="center">PATH.JERRYIO Version {app.appVersion.version}</Typography>
           <Typography variant="body1" align="center" sx={{ marginBottom: "2rem" }}>Made by Jerry Lum</Typography>
           <Typography variant="body1" align="center">This is a free software licensing under GPL-3.0</Typography>
           <Typography variant="body1" align="center">
-            <a target="_blank" href="https://github.com/Jerrylum/path.jerryio">Source Code</a>
-            <a target="_blank" href="https://www.tldrlegal.com/license/gnu-general-public-license-v3-gpl-3">License</a>
-            <a target="_blank" href="https://github.com/Jerrylum/path.jerryio/blob/main/PRIVACY.md">Privacy Terms</a>
-            <a target="_blank" href="https://www.gnu.org/philosophy/free-sw.html">About Free Software</a>
-            <a target="_blank" href="./">Join Our Discord Server</a>
+            <a target="_blank" rel="noreferrer" href="https://github.com/Jerrylum/path.jerryio">Source Code</a>
+            <a target="_blank" rel="noreferrer" href="https://www.tldrlegal.com/license/gnu-general-public-license-v3-gpl-3">License</a>
+            <a target="_blank" rel="noreferrer" href="https://github.com/Jerrylum/path.jerryio/blob/main/PRIVACY.md">Privacy Terms</a>
+            <a target="_blank" rel="noreferrer" href="https://www.gnu.org/philosophy/free-sw.html">About Free Software</a>
+            <a target="_blank" rel="noreferrer" href="./">Join Our Discord Server</a>
           </Typography>
         </Card>
       }
