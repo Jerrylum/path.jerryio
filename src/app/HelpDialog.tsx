@@ -3,6 +3,8 @@ import { makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
 import { useAppStores } from "./MainApp";
 import { useBackdropDialog } from "./Util";
+import { ObserverCheckbox } from "./ObserverCheckbox";
+import React from "react";
 
 export enum HelpPage {
   None,
@@ -12,7 +14,6 @@ export enum HelpPage {
 
 export class Help {
   private page: HelpPage = HelpPage.None;
-  // private page: HelpPage = HelpPage.About; // XXX: Debug
 
   constructor() {
     makeAutoObservable(this);
@@ -36,9 +37,22 @@ export class Help {
 }
 
 const HelpDialog = observer((props: {}) => {
-  const { app, help } = useAppStores();
+  const { app, help, appPreferences } = useAppStores();
 
-  useBackdropDialog(help.isOpen, () => help.close());
+  const rawGAEnabled = localStorage.getItem("googleAnalyticsEnabled");
+  const [isGAEnabled, setIsGAEnabled] = React.useState(rawGAEnabled !== "false"); // UX: Default to true
+
+  React.useEffect(() => {
+    setIsGAEnabled(rawGAEnabled !== "false");
+    if (rawGAEnabled === null) help.open(HelpPage.Welcome); // UX: Show welcome page if user is new
+  }, [rawGAEnabled]);
+
+  function onClose() {
+    help.close();
+    appPreferences.isGoogleAnalyticsEnabled = isGAEnabled;
+  }
+
+  useBackdropDialog(help.isOpen, onClose);
 
   if (!help.isOpen) return null;
 
@@ -47,12 +61,14 @@ const HelpDialog = observer((props: {}) => {
       className="help-dialog"
       sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       open={true}
-      onClick={() => help.close()}
+      onClick={onClose}
       tabIndex={-1}>
       {
         help.currentPage === HelpPage.Welcome &&
         <Card className="help-welcome-page" onClick={(e) => e.stopPropagation()}>
           <Typography variant="h6" gutterBottom>Welcome</Typography>
+
+          <ObserverCheckbox label="Enable Google Analytics" checked={isGAEnabled} onCheckedChange={setIsGAEnabled} />
         </Card>
       }
       {
