@@ -11,8 +11,8 @@ export enum HelpPage {
 }
 
 export class Help {
-  // private page: HelpPage = HelpPage.None;
-  private page: HelpPage = HelpPage.About; // XXX: Debug
+  private page: HelpPage = HelpPage.None;
+  // private page: HelpPage = HelpPage.About; // XXX: Debug
 
   constructor() {
     makeAutoObservable(this);
@@ -65,7 +65,7 @@ const HelpDialog = observer((props: {}) => {
           <Typography variant="body1" align="center">
             <a target="_blank" href="https://github.com/Jerrylum/path.jerryio">Source Code</a>
             <a target="_blank" href="https://www.tldrlegal.com/license/gnu-general-public-license-v3-gpl-3">License</a>
-            <a target="_blank" href="https://github.com/Jerrylum/path.jerryio/PRIVACY.md">Privacy Terms</a>
+            <a target="_blank" href="https://github.com/Jerrylum/path.jerryio/blob/main/PRIVACY.md">Privacy Terms</a>
             <a target="_blank" href="https://www.gnu.org/philosophy/free-sw.html">About Free Software</a>
             <a target="_blank" href="./">Join Our Discord Server</a>
           </Typography>
