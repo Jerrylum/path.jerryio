@@ -1,5 +1,5 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { getAllFormats } from '../format/Format';
