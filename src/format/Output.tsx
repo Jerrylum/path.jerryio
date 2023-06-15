@@ -1,5 +1,5 @@
 import { Confirmation } from "../app/Confirmation";
-import { MainApp } from "../app/MainApp";
+import { MainApp, getAppStores } from "../app/MainApp";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from '../app/Notice';
 
 async function saveConfirm(app: MainApp, confirmation: Confirmation, callback: () => void) {
@@ -48,6 +48,8 @@ async function writeFile(app: MainApp, contents: string): Promise<boolean> {
     const writable = await fileHandle.createWritable();
     await writable.write(contents);
     await writable.close();
+
+    getAppStores().ga.gtag('event', 'write_file_format', { format: app.format.getName() });
 
     enqueueSuccessSnackbar("Saved");
     return true;
@@ -155,5 +157,8 @@ export function onDownload(app: MainApp) {
   a.href = URL.createObjectURL(file);
   a.download = "path.jerryio.txt"; // TODO better file name
   a.click();
+
+  getAppStores().ga.gtag('event', 'download_file_format', { format: app.format.getName() });
+
   return true;
 }

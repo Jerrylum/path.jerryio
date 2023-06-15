@@ -14,6 +14,7 @@ import { Confirmation } from "./Confirmation";
 import React from "react";
 import { Help } from "./HelpDialog";
 import { Preferences } from "./Preferences";
+import { GoogleAnalytics } from "../types/GoogleAnalytics";
 
 // observable class
 export class MainApp {
@@ -311,6 +312,8 @@ export class MainApp {
       path.pc = plainToClassFromExist(format.buildPathConfig(), path.pc);
     }
 
+    getAppStores().ga.gtag('event', 'import_file_format', { format: format.getName() });
+
     this.setPathFileData(format, { gc: gc, paths: paths });
   }
 
@@ -360,10 +363,28 @@ export class MainApp {
   }
 }
 
-const appStoresContext = React.createContext({
-  app: new MainApp(), confirmation: new Confirmation(), help: new Help(), appPreferences: new Preferences()
-});
+export interface AppStores {
+  app: MainApp;
+  confirmation: Confirmation;
+  help: Help;
+  appPreferences: Preferences;
+  ga: GoogleAnalytics;
+}
 
-const useAppStores = () => React.useContext(appStoresContext);
+const appStores: AppStores = {
+  app: new MainApp(),
+  confirmation: new Confirmation(),
+  help: new Help(),
+  appPreferences: new Preferences(),
+  ga: new GoogleAnalytics()
+};
+
+export function getAppStores(): AppStores {
+  return appStores;
+}
+
+const AppStoresContext = React.createContext(appStores);
+
+const useAppStores = () => React.useContext(AppStoresContext);
 
 export { useAppStores };
