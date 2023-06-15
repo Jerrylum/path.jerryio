@@ -51,7 +51,7 @@ const GeneralConfigAccordion = observer((props: {}) => {
           <ObserverInput
             sx={{ width: "7rem" }}
             label="Point Density"
-            getValue={() => gc.pointDensity + ""}
+            getValue={() => gc.pointDensity.toUser() + ""}
             setValue={
               (value: string) => app.history.execute(
                 `Change point density`,
@@ -74,7 +74,7 @@ const GeneralConfigAccordion = observer((props: {}) => {
         <Box className='flex-editor-panel'>
           <ObserverInput
             label="Width"
-            getValue={() => gc.robotWidth + ""}
+            getValue={() => gc.robotWidth.toUser() + ""}
             setValue={(value: string) => gc.robotWidth = parseNumberInString(value, gc.uol,
               new NumberInUnit(0.1, UnitOfLength.Centimeter), new NumberInUnit(100, UnitOfLength.Centimeter))
             }
@@ -84,7 +84,7 @@ const GeneralConfigAccordion = observer((props: {}) => {
           />
           <ObserverInput
             label="Height"
-            getValue={() => gc.robotHeight + ""}
+            getValue={() => gc.robotHeight.toUser() + ""}
             setValue={(value: string) => gc.robotHeight = parseNumberInString(value, gc.uol,
               new NumberInUnit(0.1, UnitOfLength.Centimeter), new NumberInUnit(100, UnitOfLength.Centimeter))
             }

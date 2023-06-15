@@ -143,12 +143,12 @@ export class PathDotJerryioFormatV0_1 implements Format {
 
       const points = path.calculatePoints(app.gc).points;
       for (const point of points) {
-        const x = uc.fromAtoB(point.x);
-        const y = uc.fromAtoB(point.y);
+        const x = uc.fromAtoB(point.x).toUser();
+        const y = uc.fromAtoB(point.y).toUser();
         if (point.heading !== undefined)
-          rtn += `${x},${y},${point.speed.toFixed(3)},${point.heading}\n`;
+          rtn += `${x},${y},${point.speed.toUser()},${point.heading}\n`;
         else
-          rtn += `${x},${y},${point.speed.toFixed(3)}\n`;
+          rtn += `${x},${y},${point.speed.toUser()}\n`;
       }
     }
 

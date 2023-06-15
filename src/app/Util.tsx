@@ -161,3 +161,17 @@ export function removeFromArray<T>(array: T[], item: T): boolean {
     return false;
   }
 }
+
+declare global {
+  interface Number {
+    toUser(digits?: number): number;
+  }
+}
+
+Number.prototype.toUser = function (digits: number = 3) {
+  return parseFloat(this.toFixed(digits));
+}
+
+export function parseUser(value: string, digits: number = 3): number {
+  return parseFloat(value).toUser(digits);
+}

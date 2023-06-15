@@ -21,7 +21,7 @@ export class UnitConverter {
   private aRatio: number;
   private bRatio: number;
 
-  constructor(private alphaUOL: UnitOfLength, private betaUOL: UnitOfLength, private precision: number = 3) {
+  constructor(private alphaUOL: UnitOfLength, private betaUOL: UnitOfLength, private precision: number = 6) {
     this.aRatio = UnitConverter.getRatio(alphaUOL);
     this.bRatio = UnitConverter.getRatio(betaUOL);
   }
@@ -52,15 +52,15 @@ export class UnitConverter {
   }
 
   fromAtoB(a: number): number {
-    return this.fixPrecision(a * this.aRatio / this.bRatio);
+    return a * this.aRatio / this.bRatio;
   }
 
   fromBtoA(b: number): number {
-    return this.fixPrecision(b * this.bRatio / this.aRatio);
+    return b * this.bRatio / this.aRatio;
   }
 
   fixPrecision(some: number): number {
-    return parseFloat(some.toFixed(this.precision));
+    return some.toUser(this.precision);
   }
 
 }

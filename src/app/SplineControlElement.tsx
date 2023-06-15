@@ -91,7 +91,6 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
     let cpInPx = props.cc.getUnboundedPxFromEvent(event);
     if (cpInPx === undefined) return;
     let cpInUOL = props.cc.toUOL(cpInPx);
-    cpInUOL.fixPrecision();
     // first set the position of the control point so we can calculate the position of the follower control points
     props.cp.setXY(cpInUOL);
 

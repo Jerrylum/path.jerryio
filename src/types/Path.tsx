@@ -1,4 +1,4 @@
-import { Exclude, Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import { observable, makeAutoObservable, makeObservable, computed } from "mobx"
 import { makeId } from "../app/Util";
 import { GeneralConfig, PathConfig } from "../format/Config";
@@ -15,28 +15,28 @@ export class Vector {
     let rtn = vector.clone() as T;
     rtn.x += this.x;
     rtn.y += this.y;
-    return rtn.fixPrecision() as T;
+    return rtn;
   }
 
   subtract<T extends Vector>(vector: T): T {
     let rtn = vector.clone() as T;
     rtn.x = this.x - rtn.x;
     rtn.y = this.y - rtn.y;
-    return rtn.fixPrecision() as T;
+    return rtn;
   }
 
   multiply<T extends Vector>(vector: T): T {
     let rtn = vector.clone() as T;
     rtn.x *= this.x;
     rtn.y *= this.y;
-    return rtn.fixPrecision() as T;
+    return rtn;
   }
 
   divide<T extends Vector>(vector: T): T {
     let rtn = vector.clone() as T;
     rtn.x = this.x / rtn.x;
     rtn.y = this.y / rtn.y;
-    return rtn.fixPrecision() as T;
+    return rtn;
   }
 
   dot(vector: Vector): number {
@@ -55,7 +55,7 @@ export class Vector {
     // use the angle to find the x and y components of the vector
     rtn.x = this.x + distance * Math.cos(angle);
     rtn.y = this.y + distance * Math.sin(angle);
-    return rtn.fixPrecision() as T;
+    return rtn;
   }
 
   mirror<T extends Vector>(other: T): T {
@@ -63,18 +63,17 @@ export class Vector {
     let rtn = other.clone() as T;
     rtn.x = 2 * this.x - other.x;
     rtn.y = 2 * this.y - other.y;
-    return rtn.fixPrecision() as T;
+    return rtn;
   }
 
   setXY(other: Vector): void {
     this.x = other.x;
     this.y = other.y;
-    this.fixPrecision();
   }
 
   fixPrecision(p = 3): Vector {
-    this.x = parseFloat(this.x.toFixed(p));
-    this.y = parseFloat(this.y.toFixed(p));
+    this.x = this.x.toUser(p);
+    this.y = this.y.toUser(p);
     return this;
   }
 
@@ -100,7 +99,7 @@ export class Point extends Vector {
 }
 
 export interface Position extends Vector {
-  heading: number;
+  heading: number; // [0, 360)
 
   headingInRadian(): number;
 
@@ -138,12 +137,25 @@ export class Control extends Vector implements InteractiveEntity {
 
 // observable class
 export class EndPointControl extends Control implements Position {
+  @Expose({ name: 'heading' })
+  public heading_: number = 0;
 
-  constructor(x: number, y: number, public heading: number) {
+  constructor(x: number, y: number, heading: number) {
     super(x, y);
+    this.heading = heading;
     makeObservable(this, {
-      heading: observable
+      heading_: observable
     });
+  }
+
+  get heading(): number {
+    return this.heading_;
+  }
+
+  set heading(heading: number) {
+    heading %= 360;
+    if (heading < 0) heading += 360;
+    this.heading_ = heading;
   }
 
   headingInRadian(): number {
@@ -152,9 +164,7 @@ export class EndPointControl extends Control implements Position {
 
   fixPrecision(p = 2): EndPointControl {
     super.fixPrecision(p);
-    this.heading %= 360;
-    if (this.heading < 0) this.heading += 360;
-    this.heading = parseFloat(this.heading.toFixed(p));
+    this.heading = this.heading.toUser(p);
     return this;
   }
 
@@ -270,7 +280,7 @@ export class Spline implements CanvasEntity {
 
     // The density of points is NOT uniform along the curve
     let points: Point[] = this.calculateBezierCurvePoints(targetInterval, integral);
-    
+
     points[0].heading = this.first.heading;
 
     const lastPoint = points[points.length - 1];

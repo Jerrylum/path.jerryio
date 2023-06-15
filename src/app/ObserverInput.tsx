@@ -13,7 +13,7 @@ export function parseNumberInString(value: string, uol: UnitOfLength,
 
   const valueInUOL = parseFloat(value);
 
-  return parseFloat(clamp(valueInUOL, minInUOL, maxInUOL).toFixed(3));
+  return clamp(valueInUOL, minInUOL, maxInUOL).toUser();
 }
 
 const ObserverInput = observer((props: TextFieldProps & {

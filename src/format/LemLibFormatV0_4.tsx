@@ -157,14 +157,14 @@ export class LemLibFormatV0_4 implements Format {
     const num = (str: string): number => {
       const num = Number(str);
       if (isNaN(num)) error();
-      return parseFloat(num.toFixed(3));
+      return num; // ALGO: removed fix precision
     }
 
     const push = (spline: Spline) => {
       // check if there is a path
       if (paths.length === 0) {
         const path = new Path(this.buildPathConfig(), spline);
-        path.pc.speedLimit.to = clamp(Number(maxSpeed.toFixed(3)), path.pc.speedLimit.minLimit.value, path.pc.speedLimit.maxLimit.value);
+        path.pc.speedLimit.to = clamp(maxSpeed.toUser(), path.pc.speedLimit.minLimit.value, path.pc.speedLimit.maxLimit.value);
         paths.push(path);
       } else {
         const path = paths[paths.length - 1];
@@ -210,7 +210,7 @@ export class LemLibFormatV0_4 implements Format {
     const points = path.calculatePoints(this.gc).points;
     for (const point of points) {
       // ALGO: heading is not supported in LemLib V0.4 format.
-      rtn += `${uc.fromAtoB(point.x)}, ${uc.fromAtoB(point.y)}, ${uc.fixPrecision(point.speed)}\n`;
+      rtn += `${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${point.speed.toUser()}\n`;
     }
 
     if (points.length > 1) {
@@ -231,7 +231,7 @@ export class LemLibFormatV0_4 implements Format {
       const last1 = points[points.length - 1]; // last point, also the last control point
       // ALGO: The 20 inches constant is a constant value in the original LemLib-Path-Gen implementation.
       const ghostPoint = last2.interpolate(last1, last2.distance(last1) + uc.fromBtoA(20));
-      rtn += `${uc.fromAtoB(ghostPoint.x)}, ${uc.fromAtoB(ghostPoint.y)}, 0\n`;
+      rtn += `${uc.fromAtoB(ghostPoint.x).toUser()}, ${uc.fromAtoB(ghostPoint.y).toUser()}, 0\n`;
     }
 
     rtn += `endData\n`;
@@ -240,7 +240,7 @@ export class LemLibFormatV0_4 implements Format {
     rtn += `200\n`; // Not supported
 
     function output(control: Vector, postfix: string = ", ") {
-      rtn += `${uc.fromAtoB(control.x)}, ${uc.fromAtoB(control.y)}${postfix}`;
+      rtn += `${uc.fromAtoB(control.x).toUser()}, ${uc.fromAtoB(control.y).toUser()}${postfix}`;
     }
 
     for (const spline of path.splines) {

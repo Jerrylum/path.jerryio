@@ -38,7 +38,7 @@ export class CanvasConverter {
         let rtn = inPx.clone() as T;
         rtn.x = (inPx.x - this.pixelWidthHalf) * this.pixel2uol;
         rtn.y = -(inPx.y - this.pixelHeightHalf) * this.pixel2uol;
-        return rtn.fixPrecision() as T;
+        return rtn;
     }
 
     getUnboundedPxFromNativeEvent(event: DragEvent | MouseEvent, element: HTMLElement | null, useOffset = true, useScale = true): Vector | undefined {
