@@ -1,5 +1,5 @@
 import { makeAutoObservable, computed, runInAction, reaction, action } from "mobx"
-import DOMPurify from 'dompurify';
+import DOMPurify from 'dompurify'; // cspell:disable-line
 import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "../format/Config";
 import { InteractiveEntity } from "../types/Canvas";
 import { Control, EndPointControl, Path, Vector } from "../types/Path";
