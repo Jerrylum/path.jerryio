@@ -22,17 +22,17 @@ We aim to provide the best environment for path editing and planning within PATH
 ### Smooth and User-Friendly
 The dragging, panning, and area selection interaction continue even though the cursor is outside the canvas. This is a great example of how much effort went into user experience with great attention to detail.
 
-https://github.com/Jerrylum/path.jerryio/assets/12783829/3df58e91-2363-4585-abcb-956c335aa5e5
+![Example of dragging, panning, and area selection](./public/editor-demo1.gif)
 
 ### Intuitive and Straightforward
 It is designed to have a similar editing experience to other graphic design software. For example, press shift key to drag multiple controls, hold shift key to enable magnet snapping. The hotkeys, shortcuts and mouse gestures are similar and easy to catch up.
 
-https://github.com/Jerrylum/path.jerryio/assets/12783829/65ee8ac2-f546-47f1-9da7-4f9a6d715b1b
+![Example of zooming, panning, magnet, and selection](./public/editor-demo2.gif)
 
 ### Professional and Powerful
 You'll be amazed at what you can do with PATH.JERRYIO: hide or lock entities, undo/redo any changes you make, manipulate speed for every waypoint. It is the most powerful path editor in VRC.
 
-https://github.com/Jerrylum/path.jerryio/assets/12783829/e193143b-60f2-4987-a5b6-835f9c8408d9
+![Example of undo/redo and lock entities](./public/editor-demo3.gif)
 
 
 ## It Is for Everyone
