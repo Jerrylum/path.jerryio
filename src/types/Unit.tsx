@@ -58,9 +58,4 @@ export class UnitConverter {
   fromBtoA(b: number): number {
     return b * this.bRatio / this.aRatio;
   }
-
-  fixPrecision(some: number): number {
-    return some.toUser(this.precision);
-  }
-
 }

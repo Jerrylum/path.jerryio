@@ -71,12 +71,6 @@ export class Vector {
     this.y = other.y;
   }
 
-  fixPrecision(p = 3): Vector {
-    this.x = this.x.toUser(p);
-    this.y = this.y.toUser(p);
-    return this;
-  }
-
   clone(): Vector {
     return new Vector(this.x, this.y);
   }
@@ -102,8 +96,6 @@ export interface Position extends Vector {
   heading: number; // [0, 360)
 
   headingInRadian(): number;
-
-  fixPrecision(p: number): Position;
 
   clone(): Position;
 }
@@ -160,12 +152,6 @@ export class EndPointControl extends Control implements Position {
 
   headingInRadian(): number {
     return this.heading * Math.PI / 180;
-  }
-
-  fixPrecision(p = 2): EndPointControl {
-    super.fixPrecision(p);
-    this.heading = this.heading.toUser(p);
-    return this;
   }
 
   clone(): EndPointControl {
