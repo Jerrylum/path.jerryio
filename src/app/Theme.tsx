@@ -31,7 +31,7 @@ const darkTheme: AppThemeInfo = {
       },
       background: {
         default: '#1E1E1E',
-        paper: '#2A2A2A'
+        paper: '#353535'
       },
     },
     components: componentsStyleOverrides

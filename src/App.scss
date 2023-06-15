@@ -224,6 +224,11 @@
   transition: none !important;
 }
 
+// For accordion
+.MuiPaper-root {
+  background-image: none !important; // remove tiny dot pattern in accordion
+}
+
 .notistack-SnackbarContainer {
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
 }
