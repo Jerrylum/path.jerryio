@@ -11,16 +11,33 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "logo512-safe.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ],
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#5C469C",
-  "background_color": "#FFFFFF"
+  "background_color": "#FFFFFF",
+  "display_override": [
+    "standalone",
+    "browser",
+    "minimal-ui",
+    "window-controls-overlay"
+  ],
+  "orientation": "landscape",
+  "dir": "ltr",
+  "lang": "en"
 }

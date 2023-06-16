@@ -1,5 +1,5 @@
 <p align="center">
-	<a href="https://path.jerryio.com/"><img src="./public/logo512.png" alt="IntroIcon" width="100"></a>
+	<a href="https://path.jerryio.com/"><img src="./public/logo464.svg" alt="IntroIcon" width="100"></a>
 </p>
 <h3 align="center">PATH.JERRYIO</h3>
 <p align="center">The best path editor in VRC for designing skills routes and generating path files.</p>

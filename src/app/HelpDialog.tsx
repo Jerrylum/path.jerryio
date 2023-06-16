@@ -74,7 +74,7 @@ const HelpDialog = observer((props: {}) => {
       {
         help.currentPage === HelpPage.About &&
         <Card className="help-about-page" onClick={(e) => e.stopPropagation()}>
-          <img src="logo512.png" alt="app logo" />
+          <img src="logo464.svg" alt="app logo" />
           <Typography variant="h6" gutterBottom align="center">PATH.JERRYIO Version {app.appVersion.version}</Typography>
           <Typography variant="body1" align="center" sx={{ marginBottom: "2rem" }}>Made by Jerry Lum</Typography>
           <Typography variant="body1" align="center">This is a free software licensing under GPL-3.0</Typography>
