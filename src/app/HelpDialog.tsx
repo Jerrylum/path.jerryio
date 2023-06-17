@@ -5,8 +5,7 @@ import { useAppStores } from "./MainApp";
 import { useBackdropDialog } from "./Util";
 import { ObserverCheckbox } from "./ObserverCheckbox";
 import React from "react";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import TestMarkdown from "./TestMarkdown.mdx";
+import Welcome from "./Welcome.mdx";
 import { MarkdownOverwrittenComponents } from "./MarkdownSupport";
 
 export enum HelpPage {
@@ -16,7 +15,8 @@ export enum HelpPage {
 }
 
 export class Help {
-  private page: HelpPage = HelpPage.None;
+  // private page: HelpPage = HelpPage.None;
+  private page: HelpPage = HelpPage.Welcome;
 
   constructor() {
     makeAutoObservable(this);
@@ -69,17 +69,14 @@ const HelpDialog = observer((props: {}) => {
       {
         help.currentPage === HelpPage.Welcome &&
         <Card className="help-welcome-page" onClick={(e) => e.stopPropagation()}>
-          <Typography variant="h2" gutterBottom>Welcome</Typography>
-
-          <ObserverCheckbox label="Enable Google Analytics" checked={isGAEnabled} onCheckedChange={setIsGAEnabled} />
-          {/* <TestMarkdown components={MarkdownOverwrittenComponents} /> */}
+          <Welcome {...{ isGAEnabled, setIsGAEnabled }} components={MarkdownOverwrittenComponents} />
         </Card>
       }
       {
         help.currentPage === HelpPage.About &&
         <Card className="help-about-page" onClick={(e) => e.stopPropagation()}>
           <img src="logo464.svg" alt="app logo" />
-          <Typography variant="h6" gutterBottom align="center">PATH.JERRYIO Version {app.appVersion.version}</Typography>
+          <Typography variant="h3" gutterBottom align="center">PATH.JERRYIO Version {app.appVersion.version}</Typography>
           <Typography variant="body1" align="center" sx={{ marginBottom: "2rem" }}>Made by Jerry Lum</Typography>
           <Typography variant="body1" align="center">This is a free software licensing under GPL-3.0</Typography>
           <Typography variant="body1" align="center">

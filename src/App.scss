@@ -382,6 +382,13 @@ th {
     outline: none !important;
     height: 80vh;
     overflow-y: auto;
+
+    > img {
+      margin: auto;
+      // margin-top: 1rem;
+      width: 8rem;
+      display: block;
+    }
   }
 
   .help-about-page {
