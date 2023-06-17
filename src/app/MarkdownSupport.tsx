@@ -9,7 +9,7 @@ const MarkdownOverwrittenComponents: MDXComponents = {
     you can also use: del, input, section, sup, table, tbody, td, th, thead, and tr.
     */
 
-    // keep a
+    a: (props) => <a {...props} target="_blank" rel="noreferrer" />,
     // keep blockquote, but modify it in CSS
     // keep br
     code: (props) => <Typography component="code" variant="body1">{props.children}</Typography>,
