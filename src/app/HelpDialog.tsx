@@ -5,6 +5,9 @@ import { useAppStores } from "./MainApp";
 import { useBackdropDialog } from "./Util";
 import { ObserverCheckbox } from "./ObserverCheckbox";
 import React from "react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import TestMarkdown from "./TestMarkdown.mdx";
+import { MarkdownOverwrittenComponents } from "./MarkdownSupport";
 
 export enum HelpPage {
   None,
@@ -69,6 +72,7 @@ const HelpDialog = observer((props: {}) => {
           <Typography variant="h2" gutterBottom>Welcome</Typography>
 
           <ObserverCheckbox label="Enable Google Analytics" checked={isGAEnabled} onCheckedChange={setIsGAEnabled} />
+          {/* <TestMarkdown components={MarkdownOverwrittenComponents} /> */}
         </Card>
       }
       {

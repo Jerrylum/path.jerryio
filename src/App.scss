@@ -1,13 +1,43 @@
 .light-theme {
-  --main-bg-color: #ffffff;
+  --bg-body-color: #ffffff;
+  --bg-default-color: #ffffff;
+  --bg-paper-color: #ffffff;
   --link-color: rgba(0, 0, 0, 0.87);
-  background-color: var(--main-bg-color);
+  background-color: var(--bg-body-color);
+
+  code {
+    background-color: #e3e3e3;
+  }
+
+  td,
+  th {
+    border: 1px solid #e3e3e3;
+  }
+
+  th {
+    background-color: #f6f6f6;
+  }
 }
 
 .dark-theme {
-  --main-bg-color: #292929;
+  --bg-body-color: #292929;
+  --bg-default-color: #1e1e1e;
+  --bg-paper-color: #353535;
   --link-color: rgba(255, 255, 255, 0.87);
-  background-color: var(--main-bg-color);
+  background-color: var(--bg-body-color);
+
+  code {
+    background-color: var(--bg-default-color);
+  }
+
+  td,
+  th {
+    border: 1px solid #444444;
+  }
+
+  th {
+    background-color: #3c3c3c;
+  }
 }
 
 *::-webkit-scrollbar {
@@ -21,6 +51,69 @@
 *:hover::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 0.2rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 1em !important;
+}
+
+a {
+  color: var(--link-color) !important;
+  text-decoration: underline !important;
+}
+
+code {
+  display: inline-block;
+  padding: 0rem 0.4rem;
+  border-radius: 0.2rem;
+  font-family: "Roboto Mono", monospace !important;
+  font-size: 0.9rem !important;
+}
+
+blockquote {
+  background-color: var(--bg-paper-color);
+  border-left: 0.2rem solid var(--bg-default-color);
+  padding: 0.2rem 0.4rem;
+  margin: 0.2rem 0;
+  font-style: italic;
+}
+
+img.markdown-style {
+  max-width: 100%;
+}
+
+ol.markdown-style,
+ul.markdown-style {
+  -webkit-padding-start: calc(1em + 1ex);
+  padding-inline-start: calc(1em + 1ex);
+
+  li {
+    word-wrap: break-all;
+    margin-block: calc(0.25em + 0.25ex);
+  }
+
+  li:has(> input:first-child) {
+    // Hide dot in checkbox
+    list-style-type: none;
+    position: relative;
+
+    input {
+      position: absolute;
+      left: -1.75em;
+      top: 0.25em;
+    }
+  }
+}
+
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+td,
+th {
+  padding-block: 0.6ex;
+  padding-inline: 1ex;
 }
 
 .App {
@@ -80,8 +173,8 @@
   max-width: 22rem;
   margin: calc(1vh - 4px);
   margin-bottom: 0;
-  border-top: 4px solid var(--main-bg-color);
-  border-bottom: 4px solid var(--main-bg-color);
+  border-top: 4px solid var(--bg-body-color);
+  border-bottom: 4px solid var(--bg-body-color);
   font-size: 1.5vh;
   overflow-x: hidden;
   overflow-y: scroll;
@@ -229,7 +322,8 @@
   background-image: none !important; // remove tiny dot pattern in accordion
 }
 
-.notistack-SnackbarContainer { // cspell:disable-line
+.notistack-SnackbarContainer {
+  // cspell:disable-line
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
 }
 
@@ -281,6 +375,8 @@
     max-width: calc(90vw - 4rem);
     min-height: 6rem;
     outline: none !important;
+    height: 80vh;
+    overflow-y: auto;
   }
 
   .help-about-page {
@@ -298,8 +394,6 @@
     }
 
     a {
-      color: var(--link-color) !important;
-      text-decoration: underline !important;
       display: inline-block;
       margin: 0 0.5rem;
     }
