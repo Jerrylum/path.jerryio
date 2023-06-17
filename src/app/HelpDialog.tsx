@@ -66,7 +66,7 @@ const HelpDialog = observer((props: {}) => {
       {
         help.currentPage === HelpPage.Welcome &&
         <Card className="help-welcome-page" onClick={(e) => e.stopPropagation()}>
-          <Typography variant="h6" gutterBottom>Welcome</Typography>
+          <Typography variant="h2" gutterBottom>Welcome</Typography>
 
           <ObserverCheckbox label="Enable Google Analytics" checked={isGAEnabled} onCheckedChange={setIsGAEnabled} />
         </Card>

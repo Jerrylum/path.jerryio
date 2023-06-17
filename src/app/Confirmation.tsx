@@ -116,7 +116,7 @@ const ConfirmationDialog = observer((props: {}) => {
       onClick={action(onClick.bind(null, -1))}
       onKeyDown={action(onKeydown)} >
       <Card className="confirmation-card" onClick={(e) => e.stopPropagation()} tabIndex={-1}>
-        <Typography variant="h6" gutterBottom>{cfm.title}</Typography>
+        <Typography variant="h2" gutterBottom>{cfm.title}</Typography>
         {/* https://stackoverflow.com/questions/9769587/set-div-to-have-its-siblings-width */}
         <Box className="description-box">
           <Typography variant="body1" gutterBottom>{cfm.description}</Typography>
