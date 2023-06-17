@@ -53,8 +53,13 @@
   border-radius: 0.2rem;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  margin-top: 1em !important;
+h1:first-child,
+h2:first-child,
+h3:first-child,
+h4:first-child,
+h5:first-child,
+h6:first-child {
+  margin-top: 0 !important;
 }
 
 a {
