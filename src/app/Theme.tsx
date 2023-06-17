@@ -66,6 +66,14 @@ function createMuiTheme(options?: ThemeOptions | undefined, ...args: object[]): 
   t.h5.fontSize = "1rem";
   t.h6.fontSize = "1rem";
 
+  // Also read: https://www.joshwcomeau.com/css/rules-of-margin-collapse/
+  t.h1.marginTop = "1em";
+  t.h2.marginTop = "1em";
+  t.h3.marginTop = "1em";
+  t.h4.marginTop = "1em";
+  t.h5.marginTop = "1em";
+  t.h6.marginTop = "1em";
+
   return theme;
 }
 
