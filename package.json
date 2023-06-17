@@ -49,12 +49,13 @@
     "workbox-streams": "^6.5.4"
   },
   "devDependencies": {
+    "@craco/craco": "^7.1.0",
     "react-scripts": "5.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
