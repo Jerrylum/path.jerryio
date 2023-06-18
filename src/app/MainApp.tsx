@@ -295,7 +295,9 @@ export class MainApp {
 
     const appVersion = new SemVer(data.appVersion) // ALGO: Throw error if the app version is not a valid semver
     const compareResult = appVersion.compare(this.appVersion);
-    if (compareResult > 0) {
+    if (appVersion.major !== this.appVersion.major) {
+      throw new Error("The path file was created with a different major version of the editor. Import failed.");
+    } if (compareResult > 0) {
       throw new Error("The path file was created with a newer version of the editor. Please update the editor.");
     } else if (compareResult < 0) {
       // TODO: Resolve backward compatibility
