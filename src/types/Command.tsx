@@ -222,7 +222,7 @@ export class AddSegment implements CancellableCommand, InteractiveEntitiesComman
   execute(): void {
     if (this.variant === SegmentVariant.LINEAR) {
       this.addLine();
-    } else if (this.variant === SegmentVariant.CURVE) {
+    } else if (this.variant === SegmentVariant.CUBIC) {
       this.addCurve();
     }
     this.forward = true;
@@ -297,7 +297,7 @@ export class ConvertSegment implements CancellableCommand, InteractiveEntitiesCo
     this.previousControls = this.segment.controls.slice();
     if (this.variant === SegmentVariant.LINEAR) {
       this.convertToLine();
-    } else if (this.variant === SegmentVariant.CURVE) {
+    } else if (this.variant === SegmentVariant.CUBIC) {
       this.convertToCurve();
     }
     this.newControls = this.segment.controls.slice();

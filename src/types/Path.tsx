@@ -208,7 +208,7 @@ export class Keyframe {
 
 export enum SegmentVariant {
   LINEAR = 'linear',
-  CURVE = 'curve',
+  CUBIC = 'cubic',
 }
 
 // observable class

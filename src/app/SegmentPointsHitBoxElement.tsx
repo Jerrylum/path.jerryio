@@ -31,7 +31,7 @@ const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
       // UX: Convert segment if: left click
       if (props.segment.controls.length === 2)
         app.history.execute(`Convert segment ${props.segment.uid} to curve`,
-          new ConvertSegment(props.path, props.segment, SegmentVariant.CURVE));
+          new ConvertSegment(props.path, props.segment, SegmentVariant.CUBIC));
       else
         app.history.execute(`Convert segment ${props.segment.uid} to line`,
           new ConvertSegment(props.path, props.segment, SegmentVariant.LINEAR));
