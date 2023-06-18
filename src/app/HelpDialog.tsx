@@ -14,8 +14,7 @@ export enum HelpPage {
 }
 
 export class Help {
-  // private page: HelpPage = HelpPage.None;
-  private page: HelpPage = HelpPage.Welcome;
+  private page: HelpPage = HelpPage.None;
 
   constructor() {
     makeAutoObservable(this);

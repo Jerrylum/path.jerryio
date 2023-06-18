@@ -25,26 +25,27 @@ More information about the editor can be found on the [GitHub Page](https://gith
 
 ## Getting Started
 
-Before you start, please make sure you understand the following terms:
+Before you start, please make sure you understand the following terms. The diagram below illustrates the definition of all the terms used in this editor.
 
 <div style={{ position: "relative" }}>
 <img src={TermsAndConceptBackground} alt="" width="100%" />
 <TermsAndConceptOverlay style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }} />
 </div>
 
-PATH.JERRYIO is using 
+PATH.JERRYIO is using bézier spline to form a path. It consists of multiple segments, which are multiple bézier curves connected together, sharing endpoints.
 
-by multiple bézier curves
+Each bézier curve is either a cubic bézier curve or a simple bézier curve. A bézier curve is defined by its control points.
+A cubic bézier curve has 4 control points, which makes it a "curve".
+A simple bézier curve has only 2 control points, which makes it a "straight line".
 
-a concept called "Path" to represent a route. A path is a sequence of lines and curves. Each line and curve is called a "Path Segment". A path segment is defined by two points. The first point is the end point of the previous path segment. The second point is the start point of the next path segment. A path segment can be a line or a curve. A line is defined by two points. A curve is defined by four points. The first and last points are the start and end points of the curve. The second and third points are the control points that define the shape of the curve. Only end points have heading attributes.
+All the control points(purple circle) can be called "Control",
+but the shared endpoints(big purple circle) of the segments are called "End Control" in order to distinguish them.
+Only end control points have heading attributes to indicate the target heading of the robot when the robot is at that point.
 
-Bazier Curve: A curve that is defined by four points. The first and last points are the start and end points of the curve. The second and third points are the control points that define the shape of the curve.
+If you want to know more about bézier curve and spline, please check out these videos by Freya Holmér:
+[The Beauty of Bézier Curves](https://youtu.be/aVwxzDHniEw) and [The Continuity of Splines](https://youtu.be/jvPPXbo87ds)
 
-Only end points have heading attributes. Modify ...
-
-PATH.JERRYIO can be installed and use in offline mode 📡. 
-
-Here is a tutor
+Here are some basic operations you can do with the editor:
 
 ### Create
 
