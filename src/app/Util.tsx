@@ -168,7 +168,7 @@ declare global {
   }
 }
 
-Number.prototype.toUser = function (digits: number = 3) { // @eslint-disable-line no-extend-native
+Number.prototype.toUser = function (digits: number = 3) { // eslint-disable-line no-extend-native
   return parseFloat(this.toFixed(digits));
 }
 

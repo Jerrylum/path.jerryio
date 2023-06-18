@@ -1,5 +1,5 @@
 import { makeAutoObservable, reaction } from "mobx"
-import { AppStores, getAppStores } from "../app/MainApp";
+import { getAppStores } from "../app/MainApp";
 
 // observable class
 export class GoogleAnalytics {

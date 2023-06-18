@@ -3,7 +3,6 @@ import { makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite";
 import { useAppStores } from "./MainApp";
 import { useBackdropDialog } from "./Util";
-import { ObserverCheckbox } from "./ObserverCheckbox";
 import React from "react";
 import Welcome from "./Welcome.mdx";
 import { MarkdownOverwrittenComponents } from "./MarkdownSupport";
