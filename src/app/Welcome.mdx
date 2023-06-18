@@ -1,6 +1,8 @@
 import { ObserverCheckbox } from "./ObserverCheckbox";
+import { ReactComponent as TermsAndConceptOverlay } from "../static/terms-and-concept.svg";
+import TermsAndConceptBackground from "../static/terms-and-concept.png";
 
-<img src="logo464.svg" alt="app logo" />
+<img src="logo464.svg" alt="app logo" className="logo" />
 
 <p align='center'>
 # Welcome to PATH.JERRYIO
@@ -10,7 +12,7 @@ Please take a few minutes (I promise 🙏) to read this document before you star
 ## We Respect Your Privacy
 
 This app uses Google Analytics to collect anonymous usage data after leaving this page.
-You can disable it now or at any time on the Preference page.
+You can disable it now or at any time on the Preference Page.
 Please read our [Privacy Policy](https://github.com/Jerrylum/path.jerryio/blob/main/PRIVACY.md) for more information.
 
 <ObserverCheckbox label="Enable Google Analytics" checked={props.isGAEnabled} onCheckedChange={props.setIsGAEnabled} />
@@ -23,37 +25,65 @@ More information about the editor can be found on the [GitHub Page](https://gith
 
 ## Getting Started
 
-Start using the editor by left clicking on the field to create a new path with two end points.
+TODO
 
-<br/><br/><br/>
-
-Add a curve or a linear spline simply by left clicking or right clicking on the field.
-
-Undo/redo any modification with Ctrl+Z/Ctrl+Y or select Undo/Redo in the menu
-
-Add more end points and drag them to shape the path.
-
-Delete a control by right clicking.
-
-To move multiple controls at the same time, hold shift and left click the controls or select the area of the field with/without holding shift key.
-
-Press shift to start dragging multiple controls, shift key can be released once it is start dragging.
-
-While you are dragging control(s), press shift to start
+<div style={{ position: "relative" }}>
+<img src={TermsAndConceptBackground} alt="" width="100%" />
+<TermsAndConceptOverlay style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }} />
+</div>
 
 Only end points have heading attributes. Modify ...
 
-Edit the exact coordinate and/or heading in the input fields.
-
-Change the default unit of length in the configuration panel.
-
-Convert spline(part of the path) into line or spline by left click the path.
-
-Add a control in the middle of the path by right click the path.
-
-Save the path file with Ctrl+S or select "Save" in the menu
-
-
-
-
 PATH.JERRYIO can be installed and use in offline mode 📡. 
+
+
+### Create
+
+- Left click on the field to create curve at the end of the path
+- Right click on the field to create line at the end of the path
+- Right click on the path to insert a control point in the middle of it
+
+### Modify
+
+- Left click on a control point to select it
+- Left click on a path segments(spline) to convert it into line or curve
+- Drag a control point to shape the path
+- To select multiple controls:<br/>
+  - Hold shift and left click the controls; or
+  - Drag a rectangle with/without holding shift key; or
+  - Select controls in the Path Panel on the left
+- To drag multiple controls simultaneously:<br/>
+&nbsp;1. Select the controls<br/>
+&nbsp;2. Press shift and start dragging one of the selected controls<br/>
+&nbsp;3. Shift key can be released once it is start dragging
+- While dragging control(s), press shift to start magnetic mode
+- Scroll middle wheel on an end point to change the heading
+- Edit the exact coordinate and/or heading in the input fields.
+
+### Delete
+
+- Right click on a control point to delete it
+- Click delete button in the Path Panel to delete controls or paths
+
+### View
+
+- Hold ctrl + scrolling to zoom in/out
+- Hold middle wheel button and drag to pan
+
+### Configuration
+
+- Change the default unit of length in the Configuration Panel.
+
+### Save and Load Path Files
+
+- Use Ctrl+S or select "Save" in the menu to save the path file
+- Use Ctrl+O or select "Open" in the menu to load the file again
+
+### Undo/Redo
+
+Undo/Redo any modification with Ctrl+Z/Ctrl+Y or select Undo/Redo in the edit menu.
+
+## Support
+
+If you have any questions or suggestions, please join our [Discord Server](https://discord.gg/YY43P53QRa).
+You can also report bugs or request features on the [GitHub Page](https://github.com/Jerrylum/path.jerryio) too.

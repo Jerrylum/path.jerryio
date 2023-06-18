@@ -2,6 +2,7 @@
   --bg-body-color: #ffffff;
   --bg-default-color: #ffffff;
   --bg-paper-color: #ffffff;
+  --text-primary-color: rgba(0, 0, 0, 0.87);
   --link-color: rgba(0, 0, 0, 0.87);
   background-color: var(--bg-body-color);
 
@@ -23,6 +24,7 @@
   --bg-body-color: #292929;
   --bg-default-color: #1e1e1e;
   --bg-paper-color: #353535;
+  --text-primary-color: #FFF;
   --link-color: rgba(255, 255, 255, 0.87);
   background-color: var(--bg-body-color);
 
@@ -383,9 +385,8 @@ th {
     height: 80vh;
     overflow-y: auto;
 
-    > img {
+    .logo {
       margin: auto;
-      // margin-top: 1rem;
       width: 8rem;
       display: block;
     }
@@ -400,7 +401,6 @@ th {
 
     > img {
       margin: auto;
-      // margin-top: 1rem;
       width: 8rem;
       display: block;
     }
