@@ -165,6 +165,7 @@ export interface KeyframePos {
   yPos: number // [0...1]
 }
 
+// observable class
 export class Keyframe {
   public uid: string;
 
@@ -173,6 +174,7 @@ export class Keyframe {
     public yPos: number, // [0...1]
     public followCurve: boolean = false) {
     this.uid = makeId(10);
+    makeAutoObservable(this);
   }
 
   process(pc: PathConfig, responsible: Point[], nextFrame?: Keyframe): void {
