@@ -55,11 +55,11 @@ export class GraphCanvasConverter {
       index = 0;
     }
 
-    const splineIndex = this.path.cachedResult.splineIndexes.findIndex((range) => range.from <= index && range.to > index);
-    if (splineIndex === -1) return;
+    const segmentIndex = this.path.cachedResult.segmentIndexes.findIndex((range) => range.from <= index && range.to > index);
+    if (segmentIndex === -1) return;
 
-    const range = this.path.cachedResult.splineIndexes[splineIndex];
-    const spline = this.path.splines[splineIndex];
+    const range = this.path.cachedResult.segmentIndexes[segmentIndex];
+    const segment = this.path.segments[segmentIndex];
 
     let xPos = (index - range.from) / (range.to - range.from);
     if (xPos === Infinity || xPos === -Infinity || isNaN(xPos)) return;
@@ -69,13 +69,13 @@ export class GraphCanvasConverter {
     if (yPos < 0) yPos = 0;
     if (yPos > 1) yPos = 1;
 
-    return { spline, xPos, yPos };
+    return { segment, xPos, yPos };
   }
 
   toPx(pos: KeyframePos): Vector {
-    const spline = pos.spline;
-    const splineIndex = this.path.splines.findIndex((s) => s === spline);
-    const range = this.path.cachedResult.splineIndexes[splineIndex];
+    const segment = pos.segment;
+    const segmentIndex = this.path.segments.findIndex((s) => s === segment);
+    const range = this.path.cachedResult.segmentIndexes[segmentIndex];
 
     const x = range.from + pos.xPos * (range.to - range.from);
     const y = this.axisLineTopX + (1 - pos.yPos) * (this.axisLineBottomX - this.axisLineTopX);
@@ -104,7 +104,7 @@ const PointElement = observer((props: { point: Point, index: number, pc: PathCon
     <Circle x={x} y={y1} radius={gcc.pointRadius} fill={"grey"} />
     <Circle x={x} y={y2} radius={gcc.pointRadius} fill={color} />
     {
-      point.isLastPointOfSplines
+      point.isLastPointOfSegments
         ? <Line points={[x, 0, x, gcc.pixelHeight]} stroke="grey" strokeWidth={gcc.lineWidth} />
         : null
     }
@@ -127,8 +127,8 @@ const KeyframeElement = observer((props: { ikf: KeyframeIndexing, gcc: GraphCanv
     if (kfPos === undefined) {
       evt.preventDefault();
 
-      if (ikf.spline === undefined) return;
-      const posInPx = gcc.toPx({ spline: ikf.spline, xPos: ikf.keyframe.xPos, yPos: ikf.keyframe.yPos });
+      if (ikf.segment === undefined) return;
+      const posInPx = gcc.toPx({ segment: ikf.segment, xPos: ikf.keyframe.xPos, yPos: ikf.keyframe.yPos });
       event.target.x(posInPx.x);
       event.target.y(posInPx.y);
       return;

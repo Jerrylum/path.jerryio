@@ -1,6 +1,6 @@
 import { MainApp } from "../app/MainApp";
 import { InteractiveEntity } from "./Canvas";
-import { Control, EndPointControl, Keyframe, KeyframePos, Path, Spline, SplineVariant, Vector } from "./Path";
+import { Control, EndPointControl, Keyframe, KeyframePos, Path, Segment, SegmentVariant, Vector } from "./Path";
 
 export interface Execution {
   title: string;
@@ -177,67 +177,67 @@ export class UpdateInteractiveEntities<TTarget extends InteractiveEntity> extend
   }
 }
 
-export class AddSpline implements CancellableCommand, InteractiveEntitiesCommand {
+export class AddSegment implements CancellableCommand, InteractiveEntitiesCommand {
   protected _entities: InteractiveEntity[] = [];
 
   protected forward: boolean = true;
-  protected spline?: Spline;
+  protected segment?: Segment;
 
-  constructor(protected path: Path, protected end: EndPointControl, protected variant: SplineVariant) { }
+  constructor(protected path: Path, protected end: EndPointControl, protected variant: SegmentVariant) { }
 
   protected addLine(): void {
-    if (this.path.splines.length === 0) {
-      this.spline = new Spline(new EndPointControl(0, 0, 0), [], this.end);
+    if (this.path.segments.length === 0) {
+      this.segment = new Segment(new EndPointControl(0, 0, 0), [], this.end);
       this._entities.push(this.end);
     } else {
-      const last = this.path.splines[this.path.splines.length - 1];
-      this.spline = new Spline(last.last, [], this.end);
+      const last = this.path.segments[this.path.segments.length - 1];
+      this.segment = new Segment(last.last, [], this.end);
       this._entities.push(this.end);
     }
-    this.path.splines.push(this.spline);
+    this.path.segments.push(this.segment);
   }
 
   protected addCurve(): void {
     const p3 = this.end;
 
-    if (this.path.splines.length === 0) {
+    if (this.path.segments.length === 0) {
       const p0 = new EndPointControl(0, 0, 0);
       const p1 = new Control(p0.x, p0.y + 24);
       const p2 = new Control(p3.x, p3.y - 24);
-      this.spline = new Spline(p0, [p1, p2], p3);
+      this.segment = new Segment(p0, [p1, p2], p3);
       this._entities.push(p0, p1, p2, p3);
     } else {
-      const last = this.path.splines[this.path.splines.length - 1];
+      const last = this.path.segments[this.path.segments.length - 1];
       const p0 = last.last;
       const c = last.controls.length < 4 ? last.controls[0] : last.controls[2];
       const p1 = p0.mirror(new Control(c.x, c.y));
       const p2 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
 
-      this.spline = new Spline(p0, [p1, p2], p3);
+      this.segment = new Segment(p0, [p1, p2], p3);
       this._entities.push(p1, p2, p3);
     }
-    this.path.splines.push(this.spline);
+    this.path.segments.push(this.segment);
   }
 
   execute(): void {
-    if (this.variant === SplineVariant.LINEAR) {
+    if (this.variant === SegmentVariant.LINEAR) {
       this.addLine();
-    } else if (this.variant === SplineVariant.CURVE) {
+    } else if (this.variant === SegmentVariant.CURVE) {
       this.addCurve();
     }
     this.forward = true;
   }
 
   undo(): void {
-    this.path.splines.pop();
+    this.path.segments.pop();
     this.forward = false;
   }
 
   redo(): void {
     // this.execute();
-    // ALGO: Instead of executing, we just add the spline back
+    // ALGO: Instead of executing, we just add the segment back
     // ALGO: Assume that the command is executed
-    this.path.splines.push(this.spline!);
+    this.path.segments.push(this.segment!);
     this.forward = true;
   }
 
@@ -246,33 +246,33 @@ export class AddSpline implements CancellableCommand, InteractiveEntitiesCommand
   }
 }
 
-export class ConvertSpline implements CancellableCommand, InteractiveEntitiesCommand {
+export class ConvertSegment implements CancellableCommand, InteractiveEntitiesCommand {
   protected previousControls: Control[] = [];
   protected newControls: Control[] = [];
 
-  constructor(protected path: Path, protected spline: Spline, protected variant: SplineVariant) { }
+  constructor(protected path: Path, protected segment: Segment, protected variant: SegmentVariant) { }
 
   protected convertToLine(): void {
-    this.spline.controls.splice(1, this.spline.controls.length - 2);
+    this.segment.controls.splice(1, this.segment.controls.length - 2);
   }
 
   protected convertToCurve(): void {
-    let index = this.path.splines.indexOf(this.spline);
+    let index = this.path.segments.indexOf(this.segment);
     let found = index !== -1;
     if (!found) return;
 
-    let prev: Spline | null = null;
+    let prev: Segment | null = null;
     if (index > 0) {
-      prev = this.path.splines[index - 1];
+      prev = this.path.segments[index - 1];
     }
 
-    let next: Spline | null = null;
-    if (index + 1 < this.path.splines.length) {
-      next = this.path.splines[index + 1];
+    let next: Segment | null = null;
+    if (index + 1 < this.path.segments.length) {
+      next = this.path.segments[index + 1];
     }
 
-    let p0 = this.spline.first;
-    let p3 = this.spline.last;
+    let p0 = this.segment.first;
+    let p3 = this.segment.last;
 
     let p1: Control;
     if (prev !== null) {
@@ -290,93 +290,93 @@ export class ConvertSpline implements CancellableCommand, InteractiveEntitiesCom
       p2 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
     }
 
-    this.spline.controls = [p0, p1, p2, p3];
+    this.segment.controls = [p0, p1, p2, p3];
   }
 
   execute(): void {
-    this.previousControls = this.spline.controls.slice();
-    if (this.variant === SplineVariant.LINEAR) {
+    this.previousControls = this.segment.controls.slice();
+    if (this.variant === SegmentVariant.LINEAR) {
       this.convertToLine();
-    } else if (this.variant === SplineVariant.CURVE) {
+    } else if (this.variant === SegmentVariant.CURVE) {
       this.convertToCurve();
     }
-    this.newControls = this.spline.controls.slice();
+    this.newControls = this.segment.controls.slice();
   }
 
   undo(): void {
-    this.spline.controls = this.previousControls.slice();
+    this.segment.controls = this.previousControls.slice();
   }
 
   redo(): void {
-    this.spline.controls = this.newControls.slice();
+    this.segment.controls = this.newControls.slice();
   }
 
   get entities(): InteractiveEntity[] {
-    return this.spline.controls.slice(1, -1); // exclude first and last
+    return this.segment.controls.slice(1, -1); // exclude first and last
   }
 }
 
-export class SplitSpline implements CancellableCommand, InteractiveEntitiesCommand {
+export class SplitSegment implements CancellableCommand, InteractiveEntitiesCommand {
   protected _entities: InteractiveEntity[] = [];
 
   protected forward: boolean = true;
 
-  protected previousOriginalSplineControls: Control[] = [];
-  protected newOriginalSplineControls: Control[] = [];
-  protected newSpline?: Spline;
+  protected previousOriginalSegmentControls: Control[] = [];
+  protected newOriginalSegmentControls: Control[] = [];
+  protected newSegment?: Segment;
 
-  constructor(protected path: Path, protected originalSpline: Spline, protected point: EndPointControl) { }
+  constructor(protected path: Path, protected originalSegment: Segment, protected point: EndPointControl) { }
 
   execute(): void {
-    this.previousOriginalSplineControls = this.originalSpline.controls.slice();
+    this.previousOriginalSegmentControls = this.originalSegment.controls.slice();
 
-    const index = this.path.splines.indexOf(this.originalSpline);
+    const index = this.path.segments.indexOf(this.originalSegment);
     const found = index !== -1;
     if (!found) return;
 
-    const cp_count = this.originalSpline.controls.length;
+    const cp_count = this.originalSegment.controls.length;
     if (cp_count === 2) {
-      const last = this.originalSpline.last;
-      this.originalSpline.last = this.point;
-      this.newSpline = new Spline(this.point, [], last);
-      this.path.splines.splice(index + 1, 0, this.newSpline);
+      const last = this.originalSegment.last;
+      this.originalSegment.last = this.point;
+      this.newSegment = new Segment(this.point, [], last);
+      this.path.segments.splice(index + 1, 0, this.newSegment);
 
       this._entities = [this.point];
     } else if (cp_count === 4) {
-      const p0 = this.originalSpline.controls[0] as EndPointControl;
-      const p1 = this.originalSpline.controls[1];
-      const p2 = this.originalSpline.controls[2];
-      const p3 = this.originalSpline.controls[3] as EndPointControl;
+      const p0 = this.originalSegment.controls[0] as EndPointControl;
+      const p1 = this.originalSegment.controls[1];
+      const p2 = this.originalSegment.controls[2];
+      const p3 = this.originalSegment.controls[3] as EndPointControl;
 
       const a = p1.divide(new Control(2, 2)).add(this.point.divide(new Control(2, 2)));
       const b = this.point;
       const c = p2.divide(new Control(2, 2)).add(this.point.divide(new Control(2, 2)));
-      this.originalSpline.controls = [p0, p1, a, b];
-      this.newSpline = new Spline(b, [c, p2], p3);
-      this.path.splines.splice(index + 1, 0, this.newSpline);
+      this.originalSegment.controls = [p0, p1, a, b];
+      this.newSegment = new Segment(b, [c, p2], p3);
+      this.path.segments.splice(index + 1, 0, this.newSegment);
 
       this._entities = [a, this.point, c];
     }
 
-    this.newOriginalSplineControls = this.originalSpline.controls.slice();
+    this.newOriginalSegmentControls = this.originalSegment.controls.slice();
     this.forward = true;
   }
 
   undo(): void {
-    this.originalSpline.controls = this.previousOriginalSplineControls;
-    const index = this.path.splines.indexOf(this.newSpline!);
-    this.path.splines.splice(index, 1);
+    this.originalSegment.controls = this.previousOriginalSegmentControls;
+    const index = this.path.segments.indexOf(this.newSegment!);
+    this.path.segments.splice(index, 1);
 
     this.forward = false;
   }
 
   redo(): void {
     // this.execute();
-    // ALGO: Instead of executing, we just add the spline back
+    // ALGO: Instead of executing, we just add the segment back
     // ALGO: Assume that the command is executed
-    const index = this.path.splines.indexOf(this.originalSpline);
-    this.originalSpline.controls = this.newOriginalSplineControls.slice();
-    this.path.splines.splice(index + 1, 0, this.newSpline!);
+    const index = this.path.segments.indexOf(this.originalSegment);
+    this.originalSegment.controls = this.newOriginalSegmentControls.slice();
+    this.path.segments.splice(index + 1, 0, this.newSegment!);
 
     this.forward = true;
   }
@@ -386,44 +386,44 @@ export class SplitSpline implements CancellableCommand, InteractiveEntitiesComma
   }
 }
 
-export class RemoveSpline implements CancellableCommand, InteractiveEntitiesCommand {
+export class RemoveSegment implements CancellableCommand, InteractiveEntitiesCommand {
   protected _entities: InteractiveEntity[] = [];
 
   protected forward: boolean = true;
   protected index: number = -1;
-  protected spline?: Spline;
+  protected segment?: Segment;
 
   constructor(protected path: Path, protected point: EndPointControl) { }
 
   execute(): void {
-    for (let i = 0; i < this.path.splines.length; i++) {
-      const spline = this.path.splines[i];
-      if (spline.first === this.point) { // pointer comparison
-        // ALGO: This is the first control of the spline
+    for (let i = 0; i < this.path.segments.length; i++) {
+      const segment = this.path.segments[i];
+      if (segment.first === this.point) { // pointer comparison
+        // ALGO: This is the first control of the segment
         if (i !== 0) {
-          const prev = this.path.splines[i - 1];
-          prev.last = spline.last; // pointer assignment
+          const prev = this.path.segments[i - 1];
+          prev.last = segment.last; // pointer assignment
 
-          this._entities = spline.controls.slice(0, -1); // keep the last control
+          this._entities = segment.controls.slice(0, -1); // keep the last control
         } else {
-          this._entities = spline.controls.slice();
+          this._entities = segment.controls.slice();
         }
-        this.path.splines.splice(i, 1);
-      } else if (i + 1 === this.path.splines.length && spline.last === this.point) { // pointer comparison
-        // ALGO: This is the last control of the last spline
-        if (i !== 0) { // if this spline is not the first spline
-          this._entities = spline.controls.slice(1); // keep the first control
+        this.path.segments.splice(i, 1);
+      } else if (i + 1 === this.path.segments.length && segment.last === this.point) { // pointer comparison
+        // ALGO: This is the last control of the last segment
+        if (i !== 0) { // if this segment is not the first segment
+          this._entities = segment.controls.slice(1); // keep the first control
         } else {
-          this._entities = spline.controls.slice();
+          this._entities = segment.controls.slice();
         }
 
-        this.path.splines.splice(i, 1);
+        this.path.segments.splice(i, 1);
       } else {
         continue;
       }
 
       this.index = i;
-      this.spline = spline;
+      this.segment = segment;
       break;
     }
 
@@ -433,10 +433,10 @@ export class RemoveSpline implements CancellableCommand, InteractiveEntitiesComm
   undo(): void {
     if (this.index === -1) return;
 
-    this.path.splines.splice(this.index, 0, this.spline!);
-    if (this.spline?.first === this.point && this.index > 0) {
-      const prev = this.path.splines[this.index - 1];
-      prev.last = this.spline.first; // pointer assignment
+    this.path.segments.splice(this.index, 0, this.segment!);
+    if (this.segment?.first === this.point && this.index > 0) {
+      const prev = this.path.segments[this.index - 1];
+      prev.last = this.segment.first; // pointer assignment
     }
 
     this.forward = false;
@@ -444,14 +444,14 @@ export class RemoveSpline implements CancellableCommand, InteractiveEntitiesComm
 
   redo(): void {
     // this.execute();
-    // ALGO: Instead of executing, we just add the spline back
+    // ALGO: Instead of executing, we just add the segment back
     // ALGO: Assume that the command is executed
     if (this.index === -1) return;
 
-    this.path.splines.splice(this.index, 1);
-    if (this.spline?.first === this.point && this.index > 0) {
-      const prev = this.path.splines[this.index - 1];
-      prev.last = this.spline.last; // pointer assignment
+    this.path.segments.splice(this.index, 1);
+    if (this.segment?.first === this.point && this.index > 0) {
+      const prev = this.path.segments[this.index - 1];
+      prev.last = this.segment.last; // pointer assignment
     }
 
     this.forward = true;
@@ -519,20 +519,20 @@ export class AddKeyframe implements CancellableCommand {
   execute(): void {
     // sort and push
     this.kf = new Keyframe(this.pos.xPos, this.pos.yPos);
-    this.pos.spline.speedProfiles.push(this.kf);
-    this.pos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
+    this.pos.segment.speedProfiles.push(this.kf);
+    this.pos.segment.speedProfiles.sort((a, b) => a.xPos - b.xPos);
   }
 
   undo(): void {
-    this.pos.spline.speedProfiles.splice(this.pos.spline.speedProfiles.indexOf(this.kf!), 1);
+    this.pos.segment.speedProfiles.splice(this.pos.segment.speedProfiles.indexOf(this.kf!), 1);
   }
 
   redo(): void {
     // this.execute();
     // ALGO: Instead of executing, we just add the keyframe back
     // ALGO: Assume that the command is executed
-    this.pos.spline.speedProfiles.push(this.kf!);
-    this.pos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
+    this.pos.segment.speedProfiles.push(this.kf!);
+    this.pos.segment.speedProfiles.sort((a, b) => a.xPos - b.xPos);
   }
 
   get keyframe(): Keyframe {
@@ -546,27 +546,27 @@ export class MoveKeyframe implements CancellableCommand, MergeableCommand {
   constructor(protected path: Path, protected newPos: KeyframePos, protected kf: Keyframe) { }
 
   removeKeyframe(pos: KeyframePos) {
-    const idx = pos.spline.speedProfiles.indexOf(this.kf);
+    const idx = pos.segment.speedProfiles.indexOf(this.kf);
     if (idx === -1) return;
 
-    pos.spline.speedProfiles.splice(idx, 1);
+    pos.segment.speedProfiles.splice(idx, 1);
   }
 
   addKeyframe(pos: KeyframePos) {
     this.kf.xPos = pos.xPos;
     this.kf.yPos = pos.yPos;
-    pos.spline.speedProfiles.push(this.kf);
-    pos.spline.speedProfiles.sort((a, b) => a.xPos - b.xPos);
+    pos.segment.speedProfiles.push(this.kf);
+    pos.segment.speedProfiles.sort((a, b) => a.xPos - b.xPos);
   }
 
   execute(): void {
-    // remove keyframe from oldSpline speed control
-    for (const spline of this.path.splines) {
-      const idx = spline.speedProfiles.indexOf(this.kf);
+    // remove keyframe from oldSegment speed control
+    for (const segment of this.path.segments) {
+      const idx = segment.speedProfiles.indexOf(this.kf);
       if (idx === -1) continue;
 
-      spline.speedProfiles.splice(idx, 1);
-      this.oldPos = { spline, xPos: this.kf.xPos, yPos: this.kf.yPos };
+      segment.speedProfiles.splice(idx, 1);
+      this.oldPos = { segment, xPos: this.kf.xPos, yPos: this.kf.yPos };
       break;
     }
     this.addKeyframe(this.newPos);
@@ -599,36 +599,36 @@ export class MoveKeyframe implements CancellableCommand, MergeableCommand {
 }
 
 export class RemoveKeyframe implements CancellableCommand {
-  protected spline?: Spline;
+  protected segment?: Segment;
   protected oldIdx = -1;
 
   constructor(protected path: Path, protected kf: Keyframe) { }
 
   execute(): void {
-    for (const spline of this.path.splines) {
-      const idx = spline.speedProfiles.indexOf(this.kf);
+    for (const segment of this.path.segments) {
+      const idx = segment.speedProfiles.indexOf(this.kf);
       if (idx === -1) continue;
 
-      spline.speedProfiles.splice(idx, 1);
-      this.spline = spline;
+      segment.speedProfiles.splice(idx, 1);
+      this.segment = segment;
       this.oldIdx = idx;
       break;
     }
   }
 
   undo(): void {
-    if (this.spline === undefined || this.oldIdx === -1) return;
+    if (this.segment === undefined || this.oldIdx === -1) return;
 
-    this.spline.speedProfiles.splice(this.oldIdx, 0, this.kf);
+    this.segment.speedProfiles.splice(this.oldIdx, 0, this.kf);
   }
 
   redo(): void {
     // this.execute();
     // ALGO: Instead of executing, we just remove the keyframe
     // ALGO: Assume that the command is executed
-    if (this.spline === undefined || this.oldIdx === -1) return;
+    if (this.segment === undefined || this.oldIdx === -1) return;
 
-    this.spline.speedProfiles.splice(this.oldIdx, 1);
+    this.segment.speedProfiles.splice(this.oldIdx, 1);
   }
 }
 

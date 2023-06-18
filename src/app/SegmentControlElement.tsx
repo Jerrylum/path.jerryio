@@ -4,16 +4,16 @@ import { Control, EndPointControl, Vector } from '../types/Path';
 import Konva from 'konva';
 import { Circle, Line } from 'react-konva';
 import { useState } from "react";
-import { SplineElementProps } from "./SplineElement";
-import { DragControls, RemoveSpline } from "../types/Command";
+import { SegmentElementProps } from "./SegmentElement";
+import { DragControls, RemoveSegment } from "../types/Command";
 import { useAppStores } from "./MainApp";
 
-export interface SplineControlElementProps extends SplineElementProps {
+export interface SegmentControlElementProps extends SegmentElementProps {
   cp: EndPointControl | Control;
   isGrabAndMove: boolean;
 }
 
-const SplineControlElement = observer((props: SplineControlElementProps) => {
+const SegmentControlElement = observer((props: SegmentControlElementProps) => {
   const { app } = useAppStores();
 
   const [justSelected, setJustSelected] = useState(false);
@@ -97,10 +97,10 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
     // UX: CP 1 should follow CP 0, CP 2 should follow CP 3
     const isMainControl = props.cp instanceof EndPointControl;
     const shouldControlFollow = !evt.ctrlKey;
-    const index = props.path.splines.indexOf(props.spline);
-    const isLastOne = index + 1 === props.path.splines.length;
-    const isCurve = props.spline.controls.length === 4;
-    const isFirstCp = props.spline.first === props.cp;
+    const index = props.path.segments.indexOf(props.segment);
+    const isLastOne = index + 1 === props.path.segments.length;
+    const isCurve = props.segment.controls.length === 4;
+    const isFirstCp = props.segment.first === props.cp;
 
     const followers: Control[] = [];
     const others: Control[] = [];
@@ -122,16 +122,16 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
 
     if (isMainControl && shouldControlFollow) {
       if (isCurve) {
-        const control = isFirstCp ? props.spline.controls[1] : props.spline.controls[2];
+        const control = isFirstCp ? props.segment.controls[1] : props.segment.controls[2];
         if (control.visible && !control.lock) {
           app.select(control);
           if (!followers.includes(control)) followers.push(control);
         }
       }
 
-      const nextSpline = props.path.splines[index + 1];
-      if (!isLastOne && !isFirstCp && nextSpline !== undefined && nextSpline.controls.length === 4) {
-        const control = nextSpline.controls[1];
+      const nextSegment = props.path.segments[index + 1];
+      if (!isLastOne && !isFirstCp && nextSegment !== undefined && nextSegment.controls.length === 4) {
+        const control = nextSegment.controls[1];
         if (control.visible && !control.lock) {
           app.select(control);
           if (!followers.includes(control)) followers.push(control);
@@ -213,8 +213,8 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
 
     // UX: Remove end point from the path, selected and expanded list if: right click
     if (evt.button === 2) {
-      const command = new RemoveSpline(props.path, props.cp as EndPointControl);
-      app.history.execute(`Remove spline with control ${props.cp.uid} in path ${props.path.uid}`, command);
+      const command = new RemoveSegment(props.path, props.cp as EndPointControl);
+      app.history.execute(`Remove segment with control ${props.cp.uid} in path ${props.path.uid}`, command);
       for (const control of command.removedEntities) {
         app.unselect(control);
         app.removeExpanded(control);
@@ -252,4 +252,4 @@ const SplineControlElement = observer((props: SplineControlElementProps) => {
   )
 });
 
-export { SplineControlElement };
+export { SegmentControlElement };

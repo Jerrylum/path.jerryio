@@ -269,9 +269,9 @@ export class MainApp {
       const temp = purify.sanitize(path.name);
       path.name = temp === "" ? "Path" : temp;
 
-      // ALGO: Link the first vector of each spline to the last vector of the previous spline
-      for (let j = 1; j < path.splines.length; j++) {
-        path.splines[j].first = path.splines[j - 1].last;
+      // ALGO: Link the first vector of each segment to the last vector of the previous segment
+      for (let j = 1; j < path.segments.length; j++) {
+        path.segments[j].first = path.segments[j - 1].last;
       }
 
       // UX: Expand all paths

@@ -58,7 +58,7 @@ PATH.JERRYIO is designed to be flexible and extensible. It supports multiple int
 ### For Library Developers
 PATH.JERRYIO can be used to generate path files for any library as opposed to just one specific library. It is not just a path file generator for a specific library. Library developers can create a new format, and submit a pull request to add it to the editor.
 
-Depending on the path-following algorithm, what is included in the path file, can be different. For example, a library using pure pursuit may need the coordinate, heading and speed of the path waypoints, while a library using motion profiling may only need the coordinate of the spline control points.
+Depending on the path-following algorithm, what is included in the path file, can be different. For example, a library using pure pursuit may need the coordinate, heading and speed of the path waypoints, while a library using motion profiling may only need the coordinate of the segment control points.
 
 By using PATH.JERRYIO, you only need to implement the path file parser and generator with an easy-to-use API. You can focus on the path file format, path-following algorithm, and the code used in the robot, without spending time on the editor and user interface. 
 
@@ -66,9 +66,9 @@ By using PATH.JERRYIO, you only need to implement the path file parser and gener
 ## Main Features
 
 ### Functionality
-- Real Bézier curves with full control over the shape of each spline
+- Use Bézier curves with full control over the shape of each segment
 - Add/Delete control points with mouse click
-- Split spline or change spline type with mouse click
+- Split segment or change segment type with mouse click
 - Split path into multiple paths (Coming soon)
 - Edit the exact coordinate of each control point and end point
 - Edit the heading of each end point, support Holonomic drive and Differential drive (See data structure section for more detail)

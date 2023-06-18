@@ -11,7 +11,7 @@ import { TreeItem } from '@mui/lab';
 import { EndPointControl, Path } from '../types/Path';
 import { useRef } from 'react';
 import { InteractiveEntity } from '../types/Canvas';
-import { RemovePath, RemoveSpline, UpdateInteractiveEntities } from '../types/Command';
+import { RemovePath, RemoveSegment, UpdateInteractiveEntities } from '../types/Command';
 import { useAppStores } from './MainApp';
 
 export interface PathTreeProps {
@@ -136,8 +136,8 @@ const PathTreeItem = observer((props: PathTreeProps) => {
       {
         path.controls.map((control) => {
           function onControlDeleteClick() {
-            const command = new RemoveSpline(props.path, control as EndPointControl);
-            app.history.execute(`Remove spline with control ${control.uid} in path ${props.path.uid}`, command);
+            const command = new RemoveSegment(props.path, control as EndPointControl);
+            app.history.execute(`Remove segment with control ${control.uid} in path ${props.path.uid}`, command);
             for (const control of command.removedEntities) {
               app.unselect(control);
               app.removeExpanded(control);

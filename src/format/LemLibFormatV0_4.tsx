@@ -1,7 +1,7 @@
 import { makeAutoObservable, reaction, action } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { clamp, makeId } from "../app/Util";
-import { Control, EndPointControl, Path, Spline, Vector } from "../types/Path";
+import { Control, EndPointControl, Path, Segment, Vector } from "../types/Path";
 import { UnitOfLength, UnitConverter } from "../types/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
@@ -151,7 +151,7 @@ export class LemLibFormatV0_4 implements Format {
     i += 4;
 
     const error = () => {
-      throw new Error("Invalid file format, unable to parse spline at line " + (i + 1));
+      throw new Error("Invalid file format, unable to parse segment at line " + (i + 1));
     }
 
     const num = (str: string): number => {
@@ -160,21 +160,21 @@ export class LemLibFormatV0_4 implements Format {
       return num; // ALGO: removed fix precision
     }
 
-    const push = (spline: Spline) => {
+    const push = (segment: Segment) => {
       // check if there is a path
       if (paths.length === 0) {
-        const path = new Path(this.buildPathConfig(), spline);
+        const path = new Path(this.buildPathConfig(), segment);
         path.pc.speedLimit.to = clamp(maxSpeed.toUser(), path.pc.speedLimit.minLimit.value, path.pc.speedLimit.maxLimit.value);
         paths.push(path);
       } else {
         const path = paths[paths.length - 1];
-        const lastSpline = path.splines[path.splines.length - 1];
-        const a = lastSpline.last;
-        const b = spline.first;
+        const lastSegment = path.segments[path.segments.length - 1];
+        const a = lastSegment.last;
+        const b = segment.first;
 
         if (a.x !== b.x || a.y !== b.y) error();
 
-        path.splines.push(spline);
+        path.segments.push(segment);
       }
     }
 
@@ -187,8 +187,8 @@ export class LemLibFormatV0_4 implements Format {
       const p2 = new Control(num(tokens[2]), num(tokens[3]));
       const p3 = new Control(num(tokens[4]), num(tokens[5]));
       const p4 = new EndPointControl(num(tokens[6]), num(tokens[7]), 0);
-      const spline = new Spline(p1, [p2, p3], p4);
-      push(spline);
+      const segment = new Segment(p1, [p2, p3], p4);
+      push(segment);
 
       i++;
     }
@@ -203,7 +203,7 @@ export class LemLibFormatV0_4 implements Format {
 
     const path = app.interestedPath();
     if (path === undefined) throw new Error("No path to export");
-    if (path.splines.length === 0) throw new Error("No spline to export");
+    if (path.segments.length === 0) throw new Error("No segment to export");
 
     const uc = new UnitConverter(this.gc.uol, UnitOfLength.Inch);
 
@@ -220,7 +220,7 @@ export class LemLibFormatV0_4 implements Format {
       ```cpp
       // create a "ghost point" at the end of the path to make stopping nicer
       const lastPoint = path.points[path.points.length-1];
-      const lastControl = path.splines[path.splines.length-1].p2;
+      const lastControl = path.segments[path.segments.length-1].p2;
       const ghostPoint = Vector.interpolate(Vector.distance(lastControl, lastPoint) + 20, lastControl, lastPoint);
       ```
 
@@ -243,18 +243,18 @@ export class LemLibFormatV0_4 implements Format {
       rtn += `${uc.fromAtoB(control.x).toUser()}, ${uc.fromAtoB(control.y).toUser()}${postfix}`;
     }
 
-    for (const spline of path.splines) {
-      if (spline.controls.length === 4) {
-        output(spline.controls[0]);
-        output(spline.controls[1]);
-        output(spline.controls[2]);
-        output(spline.controls[3], "\n");
-      } else if (spline.controls.length === 2) {
-        const center = spline.controls[0].add(spline.controls[1]).divide(new Vector(2, 2));
-        output(spline.controls[0]);
+    for (const segment of path.segments) {
+      if (segment.controls.length === 4) {
+        output(segment.controls[0]);
+        output(segment.controls[1]);
+        output(segment.controls[2]);
+        output(segment.controls[3], "\n");
+      } else if (segment.controls.length === 2) {
+        const center = segment.controls[0].add(segment.controls[1]).divide(new Vector(2, 2));
+        output(segment.controls[0]);
         output(center);
         output(center);
-        output(spline.controls[1], "\n");
+        output(segment.controls[1], "\n");
       }
     }
 

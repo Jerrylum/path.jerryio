@@ -3,7 +3,7 @@ import { Vector } from '../types/Path';
 import { CanvasConverter } from '../types/Canvas';
 import { Line } from 'react-konva';
 
-const SplineControlVisualLineElement = observer((props: { start: Vector, end: Vector, cc: CanvasConverter }) => {
+const SegmentControlVisualLineElement = observer((props: { start: Vector, end: Vector, cc: CanvasConverter }) => {
   const startInPx = props.cc.toPx(props.start);
   const endInPx = props.cc.toPx(props.end);
 
@@ -14,4 +14,4 @@ const SplineControlVisualLineElement = observer((props: { start: Vector, end: Ve
   )
 });
 
-export { SplineControlVisualLineElement };
+export { SegmentControlVisualLineElement };

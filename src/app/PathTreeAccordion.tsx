@@ -8,7 +8,7 @@ import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { TreeView } from '@mui/lab';
 import { PathTreeItem } from './PathTreeItem';
-import { Spline, EndPointControl, Path } from '../types/Path';
+import { Segment, EndPointControl, Path } from '../types/Path';
 import { AddPath } from '../types/Command';
 import { useAppStores } from './MainApp';
 
@@ -16,7 +16,7 @@ const PathTreeAccordion = observer((props: {}) => {
   const { app } = useAppStores();
 
   function onAddPathClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    const newPath = new Path(app.format.buildPathConfig(), new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)));
+    const newPath = new Path(app.format.buildPathConfig(), new Segment(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)));
     app.history.execute(`Add path ${newPath.uid}`, new AddPath(app.paths, newPath));
     app.addExpanded(newPath);
   }

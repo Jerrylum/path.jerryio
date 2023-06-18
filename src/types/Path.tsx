@@ -77,7 +77,7 @@ export class Vector {
 }
 
 export class Point extends Vector {
-  public isLastPointOfSplines: boolean = false;
+  public isLastPointOfSegments: boolean = false;
 
   constructor(x: number, y: number,
     public delta: number, // distance to the previous point
@@ -160,7 +160,7 @@ export class EndPointControl extends Control implements Position {
 }
 
 export interface KeyframePos {
-  spline: Spline,
+  segment: Segment,
   xPos: number, // [0...1)
   yPos: number // [0...1]
 }
@@ -206,13 +206,13 @@ export class Keyframe {
   }
 }
 
-export enum SplineVariant {
+export enum SegmentVariant {
   LINEAR = 'linear',
   CURVE = 'curve',
 }
 
 // observable class
-export class Spline implements CanvasEntity {
+export class Segment implements CanvasEntity {
   @Type(() => Control, {
     discriminator: {
       property: '__type',
@@ -274,13 +274,13 @@ export class Spline implements CanvasEntity {
     const distance = lastPoint.distance(lastControl);
     const integralDistance = lastPoint.integral + distance;
     const finalPoint = new Point(lastControl.x, lastControl.y, distance, integralDistance, 0, this.last.heading);
-    finalPoint.isLastPointOfSplines = true;
+    finalPoint.isLastPointOfSegments = true;
     points.push(finalPoint);
 
-    const splineDeltaRatio = (1 / targetInterval) / ((integralDistance - integral) / gc.pointDensity);
-    if (splineDeltaRatio !== Infinity) {
+    const segmentDeltaRatio = (1 / targetInterval) / ((integralDistance - integral) / gc.pointDensity);
+    if (segmentDeltaRatio !== Infinity) {
       for (const point of points) {
-        point.delta *= splineDeltaRatio;
+        point.delta *= segmentDeltaRatio;
       }
     }
 
@@ -358,7 +358,7 @@ class IndexRange {
 }
 
 export class KeyframeIndexing {
-  constructor(public index: number, public spline: Spline | undefined, public keyframe: Keyframe) { }
+  constructor(public index: number, public segment: Segment | undefined, public keyframe: Keyframe) { }
 }
 
 export interface PointCalculationResult {
@@ -366,15 +366,15 @@ export interface PointCalculationResult {
 
   points: Point[]; // gen2
   // ALGO: An array of index ranges, the absolute range position in the gen2 points array
-  splineIndexes: IndexRange[];
+  segmentIndexes: IndexRange[];
   // ALGO: An array of keyframe indexes, the absolute position in the gen2 points array
   keyframeIndexes: KeyframeIndexing[];
 }
 
 // observable class
 export class Path implements InteractiveEntity {
-  @Type(() => Spline)
-  public splines: Spline[];
+  @Type(() => Segment)
+  public segments: Segment[];
   public pc: PathConfig;
   public name: string = "Path";
   public uid: string;
@@ -385,12 +385,12 @@ export class Path implements InteractiveEntity {
   public cachedResult: PointCalculationResult = {
     ttd: 0,
     points: [],
-    splineIndexes: [],
+    segmentIndexes: [],
     keyframeIndexes: []
   };
 
-  constructor(pc: PathConfig, firstSpline: Spline) {
-    this.splines = [firstSpline];
+  constructor(pc: PathConfig, firstSegment: Segment) {
+    this.segments = [firstSegment];
     this.pc = pc;
     this.uid = makeId(10);
     makeAutoObservable(this);
@@ -398,24 +398,24 @@ export class Path implements InteractiveEntity {
 
   @computed get controls(): (EndPointControl | Control)[] {
     let rtn: (EndPointControl | Control)[] = [];
-    for (let i = 0; i < this.splines.length; i++) {
-      let spline = this.splines[i];
-      if (i === 0) rtn.push(spline.first);
-      for (let j = 1; j < spline.controls.length; j++) {
-        rtn.push(spline.controls[j]);
+    for (let i = 0; i < this.segments.length; i++) {
+      let segment = this.segments[i];
+      if (i === 0) rtn.push(segment.first);
+      for (let j = 1; j < segment.controls.length; j++) {
+        rtn.push(segment.controls[j]);
       }
     }
     return rtn;
   }
 
-  private getAllSplinePoints(gc: GeneralConfig, result: PointCalculationResult): Point[] {
+  private getAllSegmentPoints(gc: GeneralConfig, result: PointCalculationResult): Point[] {
     // ALGO: The density of points is NOT uniform along the curve, and we are using this to decelerate the robot
     const gen1: Point[] = [];
     let pathTTD = 0; // total travel distance
-    for (let spline of this.splines) {
-      const [firstPoint, ...points] = spline.calculatePoints(gc, this.pc, pathTTD);
-      // ALGO: Ignore the first point, it is (too close) the last point of the previous spline
-      if (pathTTD === 0) gen1.push(firstPoint); // Except for the first spline
+    for (let segment of this.segments) {
+      const [firstPoint, ...points] = segment.calculatePoints(gc, this.pc, pathTTD);
+      // ALGO: Ignore the first point, it is (too close) the last point of the previous segment
+      if (pathTTD === 0) gen1.push(firstPoint); // Except for the first segment
       gen1.push(...points);
       pathTTD = gen1[gen1.length - 1].integral;
     }
@@ -429,18 +429,18 @@ export class Path implements InteractiveEntity {
     const targetInterval = 1 / (result.ttd / gc.pointDensity);
 
     let closestIdx = 1;
-    let splineFirstPointIdx = 0;
+    let segmentFirstPointIdx = 0;
 
     for (let t = 0; t < 1; t += targetInterval) {
       const integral = t * result.ttd;
 
       let heading: number | undefined;
-      let isLastPointOfSplines = false; // flag
+      let isLastPointOfSegments = false; // flag
       while (gen1[closestIdx].integral < integral) { // ALGO: ClosestIdx never exceeds the array length
         // ALGO: Obtain the heading value if it is available
-        // ALGO: the last point with heading and isLastPointOfSplines flag is not looped
+        // ALGO: the last point with heading and isLastPointOfSegments flag is not looped
         if (gen1[closestIdx].heading !== undefined) heading = gen1[closestIdx].heading;
-        isLastPointOfSplines = isLastPointOfSplines || gen1[closestIdx].isLastPointOfSplines;
+        isLastPointOfSegments = isLastPointOfSegments || gen1[closestIdx].isLastPointOfSegments;
         closestIdx++;
       }
 
@@ -452,30 +452,30 @@ export class Path implements InteractiveEntity {
       const p3Delta = p1.delta + (p2.delta - p1.delta) * pRatio;
       const p3 = isNaN(pRatio) ? new Point(p1.x, p1.y, p1.delta, integral, 0, heading) : new Point(p3X, p3Y, p3Delta, integral, 0, heading);
 
-      // ALGO: Create a new spline range if the point is the last point of splines
-      if ((p3.isLastPointOfSplines = isLastPointOfSplines) === true) {
-        result.splineIndexes.push(new IndexRange(splineFirstPointIdx, result.points.length));
-        splineFirstPointIdx = result.points.length;
+      // ALGO: Create a new segment range if the point is the last point of segments
+      if ((p3.isLastPointOfSegments = isLastPointOfSegments) === true) {
+        result.segmentIndexes.push(new IndexRange(segmentFirstPointIdx, result.points.length));
+        segmentFirstPointIdx = result.points.length;
       }
 
       result.points.push(p3);
     }
-    // ALGO: The last spline is not looped
-    result.splineIndexes.push(new IndexRange(splineFirstPointIdx, result.points.length));
+    // ALGO: The last segment is not looped
+    result.segmentIndexes.push(new IndexRange(segmentFirstPointIdx, result.points.length));
   }
 
   private processKeyframes(gc: GeneralConfig, result: PointCalculationResult) {
-    // ALGO: result.splineRanges must have at least x ranges (x = number of splines)
+    // ALGO: result.segmentRanges must have at least x ranges (x = number of segments)
     // ALGO: Create a default keyframe at the beginning of the path with speed = 100%
     const ikf: KeyframeIndexing[] = [new KeyframeIndexing(0, undefined, new Keyframe(0, 1))];
 
-    for (let splineIdx = 0; splineIdx < this.splines.length; splineIdx++) {
-      const spline = this.splines[splineIdx];
-      const pointIdxRange = result.splineIndexes[splineIdx];
+    for (let segmentIdx = 0; segmentIdx < this.segments.length; segmentIdx++) {
+      const segment = this.segments[segmentIdx];
+      const pointIdxRange = result.segmentIndexes[segmentIdx];
       // ALGO: Assume the keyframes are sorted
-      spline.speedProfiles.forEach((kf) => {
+      segment.speedProfiles.forEach((kf) => {
         const pointIdx = pointIdxRange.from + Math.floor((pointIdxRange.to - pointIdxRange.from) * kf.xPos);
-        ikf.push(new KeyframeIndexing(pointIdx, spline, kf));
+        ikf.push(new KeyframeIndexing(pointIdx, segment, kf));
       });
     }
 
@@ -492,11 +492,11 @@ export class Path implements InteractiveEntity {
   }
 
   calculatePoints(gc: GeneralConfig): PointCalculationResult {
-    const result: PointCalculationResult = { ttd: 20, points: [], splineIndexes: [], keyframeIndexes: [] };
+    const result: PointCalculationResult = { ttd: 20, points: [], segmentIndexes: [], keyframeIndexes: [] };
 
-    if (this.splines.length === 0) return this.cachedResult = result;
+    if (this.segments.length === 0) return this.cachedResult = result;
 
-    const gen1 = this.getAllSplinePoints(gc, result);
+    const gen1 = this.getAllSegmentPoints(gc, result);
 
     this.spacePointsEvenly(gc, result, gen1);
 
@@ -507,8 +507,8 @@ export class Path implements InteractiveEntity {
     result.points[0].heading = gen1[0].heading;
 
     // ALGO: The final point should be the last end control point in the path
-    // ALGO: At this point, we know splines has at least 1 spline
-    const lastControl = this.splines[this.splines.length - 1].last;
+    // ALGO: At this point, we know segments has at least 1 segment
+    const lastControl = this.segments[this.segments.length - 1].last;
     // ALGO: No need to calculate delta and integral for the final point, it is always 0
     const finalPoint = new Point(lastControl.x, lastControl.y, 0, 0, 0, lastControl.heading);
     // ALGO: No need to calculate speed for the final point, it is always 0

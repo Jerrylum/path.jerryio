@@ -19,7 +19,7 @@ height="560px" viewBox="-0.5 -0.5 1000 560">
 <text x="250" y="262" fill="var(--text-primary-color)" font-family="Roboto" font-size="12px" text-anchor="middle">Path</text>
 </g>
 <g transform="translate(-0.5 -0.5)scale(2)">
-<text x="209" y="99" fill="var(--text-primary-color)" font-family="Roboto" font-size="12px" text-anchor="middle">Spline</text>
+<text x="209" y="99" fill="var(--text-primary-color)" font-family="Roboto" font-size="12px" text-anchor="middle">Segment</text>
 </g>
 <g transform="translate(-0.5 -0.5)scale(2)">
 <text x="153" y="33" fill="var(--text-primary-color)" font-family="Roboto" font-size="12px" text-anchor="middle">Heading Indicator</text>

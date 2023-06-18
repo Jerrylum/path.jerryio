@@ -3,7 +3,7 @@ import { makeAutoObservable } from "mobx"
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MainApp } from './app/MainApp';
-import { Control, EndPointControl, Path, Spline, Vector } from './types/Path';
+import { Control, EndPointControl, Path, Segment, Vector } from './types/Path';
 
 import { plainToClassFromExist, plainToInstance } from 'class-transformer';
 import { instanceToPlain } from 'class-transformer';
@@ -129,10 +129,10 @@ test('Format serialize', () => {
   expect(app.gc === gc2).toBeFalsy();
 });
 
-test('Spline serialize', () => {
-  let s = new Spline(new EndPointControl(-12, -34, 9), [], new EndPointControl(-56, 78, 0));
+test('Segment serialize', () => {
+  let s = new Segment(new EndPointControl(-12, -34, 9), [], new EndPointControl(-56, 78, 0));
   let p = instanceToPlain(s);
-  let s2 = plainToInstance(Spline, p);
+  let s2 = plainToInstance(Segment, p);
   let p2 = instanceToPlain(s2);
 
   expect(p).toEqual(p2);
@@ -140,7 +140,7 @@ test('Spline serialize', () => {
 
 test('Path serialize', () => {
   let format = new CustomFormat();
-  let r = new Path(format.buildPathConfig(), new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)));
+  let r = new Path(format.buildPathConfig(), new Segment(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)));
   let p = instanceToPlain(r);
   let r2 = plainToInstance(Path, p);
   let p2 = instanceToPlain(r2);
@@ -150,7 +150,7 @@ test('Path serialize', () => {
 
 test('Path[] serialize', () => {
   let format = new CustomFormat();
-  let r = [new Path(format.buildPathConfig(), new Spline(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)))];
+  let r = [new Path(format.buildPathConfig(), new Segment(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)))];
   let p = instanceToPlain(r);
   let r2 = plainToInstance(Path, p);
   let p2 = instanceToPlain(r2);

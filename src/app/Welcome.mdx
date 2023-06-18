@@ -25,17 +25,26 @@ More information about the editor can be found on the [GitHub Page](https://gith
 
 ## Getting Started
 
-TODO
+Before you start, please make sure you understand the following terms:
 
 <div style={{ position: "relative" }}>
 <img src={TermsAndConceptBackground} alt="" width="100%" />
 <TermsAndConceptOverlay style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }} />
 </div>
 
+PATH.JERRYIO is using 
+
+by multiple bézier curves
+
+a concept called "Path" to represent a route. A path is a sequence of lines and curves. Each line and curve is called a "Path Segment". A path segment is defined by two points. The first point is the end point of the previous path segment. The second point is the start point of the next path segment. A path segment can be a line or a curve. A line is defined by two points. A curve is defined by four points. The first and last points are the start and end points of the curve. The second and third points are the control points that define the shape of the curve. Only end points have heading attributes.
+
+Bazier Curve: A curve that is defined by four points. The first and last points are the start and end points of the curve. The second and third points are the control points that define the shape of the curve.
+
 Only end points have heading attributes. Modify ...
 
 PATH.JERRYIO can be installed and use in offline mode 📡. 
 
+Here is a tutor
 
 ### Create
 
@@ -46,7 +55,7 @@ PATH.JERRYIO can be installed and use in offline mode 📡.
 ### Modify
 
 - Left click on a control point to select it
-- Left click on a path segments(spline) to convert it into line or curve
+- Left click on a path segments(segment) to convert it into line or curve
 - Drag a control point to shape the path
 - To select multiple controls:<br/>
   - Hold shift and left click the controls; or
@@ -58,7 +67,6 @@ PATH.JERRYIO can be installed and use in offline mode 📡.
 &nbsp;3. Shift key can be released once it is start dragging
 - While dragging control(s), press shift to start magnetic mode
 - Scroll middle wheel on an end point to change the heading
-- Edit the exact coordinate and/or heading in the input fields.
 
 ### Delete
 
@@ -69,10 +77,6 @@ PATH.JERRYIO can be installed and use in offline mode 📡.
 
 - Hold ctrl + scrolling to zoom in/out
 - Hold middle wheel button and drag to pan
-
-### Configuration
-
-- Change the default unit of length in the Configuration Panel.
 
 ### Save and Load Path Files
 

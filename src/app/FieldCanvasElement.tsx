@@ -1,19 +1,19 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { EndPointControl, Path, Spline, SplineVariant, Vector } from '../types/Path';
+import { EndPointControl, Path, Segment, SegmentVariant, Vector } from '../types/Path';
 import Konva from 'konva';
 import { Circle, Image, Layer, Line, Stage } from 'react-konva';
-import { SplineElement } from "./SplineElement";
+import { SegmentElement } from "./SegmentElement";
 import React from "react";
 import useImage from "use-image";
 
 import fieldImageUrl from '../static/field2023.png'
-import { SplineControlElement } from "./SplineControlElement";
+import { SegmentControlElement } from "./SegmentControlElement";
 import { AreaElement } from "./AreaElement";
 import { UnitConverter, UnitOfLength } from "../types/Unit";
 import { CanvasConverter } from "../types/Canvas";
 import { clamp } from "./Util";
-import { AddPath, AddSpline } from "../types/Command";
+import { AddPath, AddSegment } from "../types/Command";
 import { useAppStores } from "./MainApp";
 
 const FieldCanvasElement = observer((props: {}) => {
@@ -170,7 +170,7 @@ const FieldCanvasElement = observer((props: {}) => {
     const rect = event.target.getStage()?.container().getBoundingClientRect();
     if (rect === undefined) return;
 
-    if (event.evt === undefined) return; // XXX: Drag end event from spline control
+    if (event.evt === undefined) return; // XXX: Drag end event from segment control
 
     const clientX = event.evt.clientX;
     const clientY = event.evt.clientY;
@@ -201,18 +201,18 @@ const FieldCanvasElement = observer((props: {}) => {
     if (targetPath === undefined) {
       // UX: Create new path if: no path exists
       // UX: Use user mouse position as the last control point
-      targetPath = new Path(app.format.buildPathConfig(), new Spline(new EndPointControl(0, 0, 0), [], cpInUOL));
+      targetPath = new Path(app.format.buildPathConfig(), new Segment(new EndPointControl(0, 0, 0), [], cpInUOL));
       app.history.execute(`Add path ${targetPath.uid}`, new AddPath(app.paths, targetPath));
     } else if (targetPath.visible && !targetPath.lock) {
       // UX: Add control point if: path is selected and visible and not locked
       if (evt.button === 0) {
         // UX: Add 4-controls curve if: left click
-        app.history.execute(`Add curve spline with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-          new AddSpline(targetPath, cpInUOL, SplineVariant.CURVE));
+        app.history.execute(`Add curve segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
+          new AddSegment(targetPath, cpInUOL, SegmentVariant.CURVE));
       } else if (evt.button === 2) {
         // UX: Add straight line if: right click
-        app.history.execute(`Add linear spline with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-          new AddSpline(targetPath, cpInUOL, SplineVariant.LINEAR));
+        app.history.execute(`Add linear segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
+          new AddSegment(targetPath, cpInUOL, SegmentVariant.LINEAR));
       }
     }
 
@@ -278,8 +278,8 @@ const FieldCanvasElement = observer((props: {}) => {
           visiblePaths.map((path, index) => (
             <React.Fragment key={index}>
               {
-                path.splines.map((spline) => {
-                  if (spline.isVisible()) return <SplineElement key={spline.uid} {...{ spline, path, cc }} />
+                path.segments.map((segment) => {
+                  if (segment.isVisible()) return <SegmentElement key={segment.uid} {...{ segment, path, cc }} />
                   else return null;
                 })
               }
@@ -290,11 +290,11 @@ const FieldCanvasElement = observer((props: {}) => {
           visiblePaths.map((path, index) => (
             <React.Fragment key={index}>
               {
-                path.splines.map((spline) =>
-                  spline.controls.map((cp, cpIdx) => {
-                    const isFirstSpline = path.splines[0] === spline;
-                    if (!isFirstSpline && cpIdx === 0) return null;
-                    if (cp.visible) return <SplineControlElement key={cpIdx} isGrabAndMove={offsetStart !== undefined} {...{ spline, path, cc, cp }} />;
+                path.segments.map((segment) =>
+                  segment.controls.map((cp, cpIdx) => {
+                    const isFirstSegment = path.segments[0] === segment;
+                    if (!isFirstSegment && cpIdx === 0) return null;
+                    if (cp.visible) return <SegmentControlElement key={cpIdx} isGrabAndMove={offsetStart !== undefined} {...{ segment, path, cc, cp }} />;
                     else return null;
                   })
                 )
