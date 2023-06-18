@@ -44,7 +44,7 @@ This editor can be used to design routes for one-minute driver skill, allowing y
 
 It is easy to get familiar with PATH.JERRYIO. It shares the same editing experience with other graphic design software, like Adobe XD, Sketch, Figma, etc. The hotkeys and mouse gestures are similar and easy to catch up.
 
-All the entities are listed in the path tree panel on the left. You can temporarily hide or lock them from being accidentally moved or adjusted. Since speed control, format settings, and the file format don’t really matter for you, you can hide the Speed Graph Panel and the Configuration Panel to get a cleaner user interface to focus on what you are working on.
+All the entities are listed in the Path Panel on the left. You can temporarily hide or lock them from being accidentally moved or adjusted. Since speed control, format settings, and the file format don’t really matter for you, you can hide the Speed Graph Panel and the Configuration Panel to get a cleaner user interface to focus on what you are working on.
 
 ### For Programmers Using Vendor Library
 If you are using a library with path-following algorithms, and you need a path editor to design the path and generate path files, this is the one you are looking for.
@@ -108,7 +108,7 @@ By using PATH.JERRYIO, you only need to implement the path file parser and gener
 - Lock/Unlock path and control points, to prevent accidental modification
 - Hide/Show paths and control points, to allow better view of other paths
 - Visualize speed with color
-- Customizable editor panel
+- Customizable editor panels
 - Hotkey support
 - Drag & Drop to open path file (Coming soon)
 - Exclusive editing mode (Coming soon)
