@@ -257,18 +257,18 @@ export function getSegmentSamplePoints(segment: Segment, density: NumberInUnit, 
 
   /*
   ALGO:
-  Each spline in the path has a different length, It is called non-uniform spline.
+  Each segment in the path has a different length, It is called non-uniform spline.
 
   The target interval is 1 divided by the number of points.
   We calculate the target interval based on the density of points to generate points more than enough.
   For example the target interval with point density set to 1 centimeter is 0.005, which means 200 points are generated.
 
   However, we still have to remember the path is a non-uniform spline.
-  A shorter spline with a smaller arc length and a longer spline with a larger arc length have the same number of samples points.
-  The delta value of the points of the longer spline should be larger than the delta value of the points of the shorter spline.
-  The scale of the delta value is different for each spline.
+  A shorter segment with a smaller arc length and a longer segment with a larger arc length have the same number of samples points.
+  The delta value of the points of the longer segment should be larger than the delta value of the points of the shorter segment.
+  The scale of the delta value is different for each segment.
 
-  Therefore, we have to adjust the delta value of the points of every spline to have the same scale.  
+  Therefore, we have to adjust the delta value of the points of every segment to have the same scale.  
   */
 
   const segmentDeltaRatio = (1 / targetInterval) / ((integralDistance - prevIntegral) / density.value);
