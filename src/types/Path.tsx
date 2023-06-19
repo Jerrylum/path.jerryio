@@ -1,12 +1,11 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 import { observable, makeAutoObservable, makeObservable, computed } from "mobx"
 import { makeId } from "../app/Util";
-import { GeneralConfig, PathConfig } from "../format/Config";
+import { PathConfig } from "../format/Config";
 import { InteractiveEntity, CanvasEntity } from "./Canvas";
-import { NumberInUnit } from './Unit';
 
 import 'reflect-metadata';
-import {  KeyframeIndexing, PointCalculationResult, getPathKeyframeIndexes, getPathSamplePoints, getUniformPointsFromSamples, processKeyframes } from './Calculation';
+import {  PointCalculationResult } from './Calculation';
 
 // Not observable
 export class Vector {
@@ -304,26 +303,5 @@ export class Path implements InteractiveEntity {
       }
     }
     return rtn;
-  }
-
-  calculatePoints(gc: GeneralConfig): PointCalculationResult {
-    if (this.segments.length === 0) return this.cachedResult = { points: [], segmentIndexes: [], keyframeIndexes: [] };
-
-    const density = new NumberInUnit(gc.pointDensity, gc.uol);
-
-    const sampleResult = getPathSamplePoints(this, density);
-    const uniformResult = getUniformPointsFromSamples(sampleResult, density);
-    const keyframeIndexes = getPathKeyframeIndexes(this, uniformResult.segmentIndexes);
-    processKeyframes(this, uniformResult.points, keyframeIndexes);
-
-    // ALGO: The final point should be the last end control point in the path
-    // ALGO: At this point, we know segments has at least 1 segment
-    const lastControl = this.segments[this.segments.length - 1].last;
-    // ALGO: No need to calculate delta and integral for the final point, it is always 0
-    const finalPoint = new Point(lastControl.x, lastControl.y, 0, 0, 0, lastControl.heading);
-    // ALGO: No need to calculate speed for the final point, it is always 0
-    uniformResult.points.push(finalPoint);
-
-    return this.cachedResult = { points: uniformResult.points, segmentIndexes: uniformResult.segmentIndexes, keyframeIndexes };
   }
 }

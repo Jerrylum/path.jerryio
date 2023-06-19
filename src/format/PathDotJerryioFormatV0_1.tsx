@@ -1,13 +1,14 @@
 import { makeAutoObservable, reaction, action } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { makeId } from "../app/Util";
-import { UnitConverter, UnitOfLength } from "../types/Unit";
+import { NumberInUnit, UnitConverter, UnitOfLength } from "../types/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
 import { Box, Typography } from "@mui/material";
 import { UpdateProperties } from "../types/Command";
 import { Exclude } from "class-transformer";
+import { getPathPoint } from "../types/Calculation";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -137,11 +138,12 @@ export class PathDotJerryioFormatV0_1 implements Format {
     let rtn = "";
 
     const uc = new UnitConverter(app.gc.uol, UnitOfLength.Centimeter);
+    const density = new NumberInUnit(app.gc.pointDensity, app.gc.uol);
 
     for (const path of app.paths) {
       rtn += `#PATH-POINTS-START ${path.name}\n`;
 
-      const points = path.calculatePoints(app.gc).points;
+      const points = getPathPoint(path, density).points;
       for (const point of points) {
         const x = uc.fromAtoB(point.x).toUser();
         const y = uc.fromAtoB(point.y).toUser();

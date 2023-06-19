@@ -24,6 +24,8 @@ import { NoticeProvider } from './app/Notice';
 import { ConfirmationDialog } from './app/Confirmation';
 import { HelpDialog } from './app/HelpDialog';
 import { PreferencesDialog } from './app/Preferences';
+import { NumberInUnit } from './types/Unit';
+import { getPathPoint } from './types/Calculation';
 
 
 export interface AppProps {
@@ -38,7 +40,10 @@ const App = observer(() => {
   const { app, confirmation, help, appPreferences } = useAppStores();
 
   React.useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
-    app.paths.map(path => path.calculatePoints(app.gc));
+    const density = new NumberInUnit(app.gc.pointDensity, app.gc.uol);
+    const interested = app.interestedPath();
+    
+    app.paths.filter(path => path.visible || path === interested).forEach(path => path.cachedResult = getPathPoint(path, density));
   }), undefined);
 
   const optionsToEnableHotkeys = { enabled: !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen };

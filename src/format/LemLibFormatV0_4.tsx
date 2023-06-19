@@ -2,13 +2,14 @@ import { makeAutoObservable, reaction, action } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { clamp, makeId } from "../app/Util";
 import { Control, EndPointControl, Path, Segment, Vector } from "../types/Path";
-import { UnitOfLength, UnitConverter } from "../types/Unit";
+import { UnitOfLength, UnitConverter, NumberInUnit } from "../types/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { Box, Typography } from "@mui/material";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
 import { UpdateProperties } from "../types/Command";
 import { Exclude } from "class-transformer";
+import { getPathPoint } from "../types/Calculation";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -206,8 +207,9 @@ export class LemLibFormatV0_4 implements Format {
     if (path.segments.length === 0) throw new Error("No segment to export");
 
     const uc = new UnitConverter(this.gc.uol, UnitOfLength.Inch);
+    const density = new NumberInUnit(app.gc.pointDensity, app.gc.uol);
 
-    const points = path.calculatePoints(this.gc).points;
+    const points = getPathPoint(path, density).points;
     for (const point of points) {
       // ALGO: heading is not supported in LemLib V0.4 format.
       rtn += `${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${point.speed.toUser()}\n`;
