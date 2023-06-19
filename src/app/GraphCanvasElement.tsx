@@ -91,8 +91,8 @@ const PointElement = observer((props: { point: Point, index: number, pc: PathCon
   const speedFrom = pc.speedLimit.from;
   const speedTo = pc.speedLimit.to;
 
-  const densityHigh = pc.applicationRange.to;
-  const densityLow = pc.applicationRange.from;
+  const densityHigh = pc.bentRateApplicableRange.to;
+  const densityLow = pc.bentRateApplicableRange.from;
 
   let p1 = (point.delta - densityLow) / (densityHigh - densityLow);
   let p2 = (point.speed - speedFrom) / (speedTo - speedFrom);
@@ -188,8 +188,8 @@ const GraphCanvasElement = observer((props: {}) => {
   const speedFrom = path.pc.speedLimit.from;
   const speedTo = path.pc.speedLimit.to;
 
-  const densityHigh = path.pc.applicationRange.to;
-  const densityLow = path.pc.applicationRange.from;
+  const densityHigh = path.pc.bentRateApplicableRange.to;
+  const densityLow = path.pc.bentRateApplicableRange.from;
 
   const onGraphClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
     // UX: Allow to add keyframes only with left mouse button

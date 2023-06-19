@@ -185,7 +185,7 @@ export class Keyframe {
     const limitTo = pc.speedLimit.to;
     const limitDiff = limitTo - limitFrom;
 
-    const applicationDiff = pc.applicationRange.to - pc.applicationRange.from;
+    const applicationDiff = pc.bentRateApplicableRange.to - pc.bentRateApplicableRange.from;
     const useRatio = limitDiff !== 0 && applicationDiff !== 0;
     const applicationRatio = limitDiff / applicationDiff;
 
@@ -201,9 +201,9 @@ export class Keyframe {
 
       if (this.followBentRate) {
         const bentRate = point.bentRate;
-        if (bentRate < pc.applicationRange.from && bentRate !== 0) speed = Math.min(speed, limitFrom);
-        else if (bentRate > pc.applicationRange.to) speed = Math.min(speed, limitTo);
-        else if (useRatio && bentRate !== 0) speed = Math.min(speed, limitFrom + (bentRate - pc.applicationRange.from) * applicationRatio);
+        if (bentRate < pc.bentRateApplicableRange.from && bentRate !== 0) speed = Math.min(speed, limitFrom);
+        else if (bentRate > pc.bentRateApplicableRange.to) speed = Math.min(speed, limitTo);
+        else if (useRatio && bentRate !== 0) speed = Math.min(speed, limitFrom + (bentRate - pc.bentRateApplicableRange.from) * applicationRatio);
       }
 
       point.speed = speed;

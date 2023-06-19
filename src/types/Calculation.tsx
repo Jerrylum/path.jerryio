@@ -210,7 +210,7 @@ export function getUniformPointsFromSamples(sampleResult: SampleCalculationResul
  * @returns The sample result of the path
  */
 export function getPathSamplePoints(path: Path, density: NumberInUnit): SampleCalculationResult {
-  // ALGO: The density of points is NOT uniform along the curve, and we are using this to decelerate the robot
+  // ALGO: The density of points is NOT uniform along the curve, and we are using this to as the bent rate to control the speed by default
   const rtn: Point[] = [];
   let arcLength = 0; // total travel distance
   for (let segment of path.segments) {

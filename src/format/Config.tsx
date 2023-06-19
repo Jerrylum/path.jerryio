@@ -15,13 +15,13 @@ export function convertGeneralConfigUOL(gc: GeneralConfig, fromUOL: UnitOfLength
 export function convertPathConfigPointDensity(pc: PathConfig, fromDensity: number, toDensity: number) {
   const applyMaxLimit = Number(toDensity * 2).toUser();
 
-  pc.applicationRange.maxLimit.label = applyMaxLimit + "";
-  pc.applicationRange.maxLimit.value = applyMaxLimit;
+  pc.bentRateApplicableRange.maxLimit.label = applyMaxLimit + "";
+  pc.bentRateApplicableRange.maxLimit.value = applyMaxLimit;
 
   const ratio = toDensity / fromDensity;
 
-  pc.applicationRange.from = Number(pc.applicationRange.from * ratio).toUser();
-  pc.applicationRange.to = Number(pc.applicationRange.to * ratio).toUser();
+  pc.bentRateApplicableRange.from = Number(pc.bentRateApplicableRange.from * ratio).toUser();
+  pc.bentRateApplicableRange.to = Number(pc.bentRateApplicableRange.to * ratio).toUser();
 }
 
 export interface ConfigSection {
@@ -39,5 +39,5 @@ export interface GeneralConfig extends ConfigSection {
 
 export interface PathConfig extends ConfigSection {
   speedLimit: NumberRange;
-  applicationRange: NumberRange;
+  bentRateApplicableRange: NumberRange;
 }

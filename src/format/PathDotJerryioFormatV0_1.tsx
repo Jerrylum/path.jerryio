@@ -45,7 +45,7 @@ class PathConfigImpl implements PathConfig {
     from: 40,
     to: 120,
   };
-  applicationRange: NumberRange = {
+  bentRateApplicableRange: NumberRange = {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 4, label: "4" },
     step: 0.01,
@@ -84,11 +84,11 @@ class PathConfigImpl implements PathConfig {
           } />
         </Box>
         <Box className="panel-box">
-          <Typography>Curve Deceleration Range</Typography>
-          <RangeSlider range={this.applicationRange} onChange={
+          <Typography>Bent Rate Applicable Range</Typography>
+          <RangeSlider range={this.bentRateApplicableRange} onChange={
             (from, to) => app.history.execute(
-              `Change path ${pathUid} curve deceleration range`,
-              new UpdateProperties(this.applicationRange, { from, to })
+              `Change path ${pathUid} bent rate applicable range`,
+              new UpdateProperties(this.bentRateApplicableRange, { from, to })
             )
           } />
         </Box>

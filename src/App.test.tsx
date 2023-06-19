@@ -75,7 +75,7 @@ class CustomPathConfig implements PathConfig {
     from: 20,
     to: 100,
   };
-  applicationRange: NumberRange = {
+  bentRateApplicableRange: NumberRange = {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 4, label: "4" },
     step: 0.01,

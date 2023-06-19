@@ -71,7 +71,7 @@ export class MainApp {
         if (newPC.speedLimit.minLimit === path.pc.speedLimit.minLimit && newPC.speedLimit.maxLimit === path.pc.speedLimit.maxLimit) {
           newPC.speedLimit = path.pc.speedLimit; // UX: Keep speed limit if the new format has the same speed limit range as the old one
         }
-        newPC.applicationRange = path.pc.applicationRange; // UX: Keep application range
+        newPC.bentRateApplicableRange = path.pc.bentRateApplicableRange; // UX: Keep application range
         path.pc = newPC;
         convertPathConfigPointDensity(newPC, oldGC.pointDensity, this.gc.pointDensity);
       }
