@@ -3,11 +3,12 @@ import { observable, makeAutoObservable, makeObservable, computed } from "mobx"
 import { makeId } from "../app/Util";
 import { GeneralConfig, PathConfig } from "../format/Config";
 import { InteractiveEntity, CanvasEntity } from "./Canvas";
-import { NumberInUnit, UnitConverter, UnitOfLength } from './Unit';
+import { NumberInUnit } from './Unit';
 
 import 'reflect-metadata';
-import { getBezierCurvePoints, getPathSamplePoints, getSegmentSamplePoints } from './Calculation';
+import {  KeyframeIndexing, PointCalculationResult, getPathKeyframeIndexes, getPathSamplePoints, getUniformPointsFromSamples, processKeyframes } from './Calculation';
 
+// Not observable
 export class Vector {
 
   constructor(public x: number, public y: number) { }
@@ -77,8 +78,10 @@ export class Vector {
   }
 }
 
+// Not observable
 export class Point extends Vector {
   public isLastPointOfSegments: boolean = false;
+  public bentRate: number = 0;
 
   constructor(x: number, y: number,
     public delta: number, // distance to the previous point after ratio is applied
@@ -173,7 +176,7 @@ export class Keyframe {
   constructor(
     public xPos: number, // [0...1)
     public yPos: number, // [0...1]
-    public followCurve: boolean = false) {
+    public followBentRate: boolean = false) {
     this.uid = makeId(10);
     makeAutoObservable(this);
   }
@@ -197,11 +200,11 @@ export class Keyframe {
       const y = yFrom + yDiff * i / length; // length - 1 + 1
       let speed = limitFrom + limitDiff * y;
 
-      if (this.followCurve) {
-        const delta = point.delta;
-        if (delta < pc.applicationRange.from && delta !== 0) speed = Math.min(speed, limitFrom);
-        else if (delta > pc.applicationRange.to) speed = Math.min(speed, limitTo);
-        else if (useRatio && delta !== 0) speed = Math.min(speed, limitFrom + (delta - pc.applicationRange.from) * applicationRatio);
+      if (this.followBentRate) {
+        const bentRate = point.bentRate;
+        if (bentRate < pc.applicationRange.from && bentRate !== 0) speed = Math.min(speed, limitFrom);
+        else if (bentRate > pc.applicationRange.to) speed = Math.min(speed, limitTo);
+        else if (useRatio && bentRate !== 0) speed = Math.min(speed, limitFrom + (bentRate - pc.applicationRange.from) * applicationRatio);
       }
 
       point.speed = speed;
@@ -267,24 +270,6 @@ export class Segment implements CanvasEntity {
   }
 }
 
-class IndexRange {
-  constructor(public from: number, public to: number) { } // to is exclusive
-}
-
-export class KeyframeIndexing {
-  constructor(public index: number, public segment: Segment | undefined, public keyframe: Keyframe) { }
-}
-
-export interface PointCalculationResult {
-  ttd: number; // total travel distance
-
-  points: Point[]; // gen2
-  // ALGO: An array of index ranges, the absolute range position in the gen2 points array
-  segmentIndexes: IndexRange[];
-  // ALGO: An array of keyframe indexes, the absolute position in the gen2 points array
-  keyframeIndexes: KeyframeIndexing[];
-}
-
 // observable class
 export class Path implements InteractiveEntity {
   @Type(() => Segment)
@@ -297,7 +282,6 @@ export class Path implements InteractiveEntity {
 
   @Exclude()
   public cachedResult: PointCalculationResult = {
-    ttd: 0,
     points: [],
     segmentIndexes: [],
     keyframeIndexes: []
@@ -322,89 +306,15 @@ export class Path implements InteractiveEntity {
     return rtn;
   }
 
-  private spacePointsEvenly(gc: GeneralConfig, result: PointCalculationResult, gen1: Point[]) {
-    // ALGO: gen1 must have at least 2 points, ttd must be greater than 0
-    const targetInterval = 1 / (result.ttd / gc.pointDensity);
-
-    let closestIdx = 1;
-    let segmentFirstPointIdx = 0;
-
-    for (let t = 0; t < 1; t += targetInterval) {
-      const integral = t * result.ttd;
-
-      let heading: number | undefined;
-      let isLastPointOfSegments = false; // flag
-      while (gen1[closestIdx].integral < integral) { // ALGO: ClosestIdx never exceeds the array length
-        // ALGO: Obtain the heading value if it is available
-        // ALGO: the last point with heading and isLastPointOfSegments flag is not looped
-        if (gen1[closestIdx].heading !== undefined) heading = gen1[closestIdx].heading;
-        isLastPointOfSegments = isLastPointOfSegments || gen1[closestIdx].isLastPointOfSegments;
-        closestIdx++;
-      }
-
-      const p1 = gen1[closestIdx - 1];
-      const p2 = gen1[closestIdx];
-      const pRatio = (integral - p1.integral) / (p2.integral - p1.integral);
-      const p3X = p1.x + (p2.x - p1.x) * pRatio;
-      const p3Y = p1.y + (p2.y - p1.y) * pRatio;
-      const p3Delta = p1.delta + (p2.delta - p1.delta) * pRatio;
-      const p3 = isNaN(pRatio) ? new Point(p1.x, p1.y, p1.delta, integral, 0, heading) : new Point(p3X, p3Y, p3Delta, integral, 0, heading);
-
-      // ALGO: Create a new segment range if the point is the last point of segments
-      if ((p3.isLastPointOfSegments = isLastPointOfSegments) === true) {
-        result.segmentIndexes.push(new IndexRange(segmentFirstPointIdx, result.points.length));
-        segmentFirstPointIdx = result.points.length;
-      }
-
-      result.points.push(p3);
-    }
-    // ALGO: The last segment is not looped
-    result.segmentIndexes.push(new IndexRange(segmentFirstPointIdx, result.points.length));
-  }
-
-  private processKeyframes(gc: GeneralConfig, result: PointCalculationResult) {
-    // ALGO: result.segmentRanges must have at least x ranges (x = number of segments)
-    // ALGO: Create a default keyframe at the beginning of the path with speed = 100%
-    const ikf: KeyframeIndexing[] = [new KeyframeIndexing(0, undefined, new Keyframe(0, 1))];
-
-    for (let segmentIdx = 0; segmentIdx < this.segments.length; segmentIdx++) {
-      const segment = this.segments[segmentIdx];
-      const pointIdxRange = result.segmentIndexes[segmentIdx];
-      // ALGO: Assume the keyframes are sorted
-      segment.speedProfiles.forEach((kf) => {
-        const pointIdx = pointIdxRange.from + Math.floor((pointIdxRange.to - pointIdxRange.from) * kf.xPos);
-        ikf.push(new KeyframeIndexing(pointIdx, segment, kf));
-      });
-    }
-
-    for (let i = 0; i < ikf.length; i++) {
-      const current = ikf[i];
-      const next = ikf[i + 1];
-      const from = current.index;
-      const to = next === undefined ? result.points.length : next.index;
-      const responsiblePoints = result.points.slice(from, to);
-
-      current.keyframe.process(this.pc, responsiblePoints, next?.keyframe);
-    }
-    result.keyframeIndexes = ikf.slice(1);
-  }
-
   calculatePoints(gc: GeneralConfig): PointCalculationResult {
-    const result: PointCalculationResult = { ttd: 20, points: [], segmentIndexes: [], keyframeIndexes: [] };
+    if (this.segments.length === 0) return this.cachedResult = { points: [], segmentIndexes: [], keyframeIndexes: [] };
 
-    if (this.segments.length === 0) return this.cachedResult = result;
-
-    // const samples = this.getAllSegmentPoints(gc, result);
     const density = new NumberInUnit(gc.pointDensity, gc.uol);
-    const samples = getPathSamplePoints(this, density, result);
 
-    this.spacePointsEvenly(gc, result, samples);
-
-    this.processKeyframes(gc, result);
-
-    // ALGO: gen2 must have at least 1 points
-    // ALGO: The first should have heading information
-    result.points[0].heading = samples[0].heading;
+    const sampleResult = getPathSamplePoints(this, density);
+    const uniformResult = getUniformPointsFromSamples(sampleResult, density);
+    const keyframeIndexes = getPathKeyframeIndexes(this, uniformResult.segmentIndexes);
+    processKeyframes(this, uniformResult.points, keyframeIndexes);
 
     // ALGO: The final point should be the last end control point in the path
     // ALGO: At this point, we know segments has at least 1 segment
@@ -412,8 +322,8 @@ export class Path implements InteractiveEntity {
     // ALGO: No need to calculate delta and integral for the final point, it is always 0
     const finalPoint = new Point(lastControl.x, lastControl.y, 0, 0, 0, lastControl.heading);
     // ALGO: No need to calculate speed for the final point, it is always 0
-    result.points.push(finalPoint);
+    uniformResult.points.push(finalPoint);
 
-    return this.cachedResult = result;
+    return this.cachedResult = { points: uniformResult.points, segmentIndexes: uniformResult.segmentIndexes, keyframeIndexes };
   }
 }

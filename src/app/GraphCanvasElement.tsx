@@ -1,6 +1,6 @@
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
-import { KeyframeIndexing, KeyframePos, Point, Path, Vector } from '../types/Path';
+import { KeyframePos, Point, Path, Vector } from '../types/Path';
 import Konva from 'konva';
 import { Circle, Layer, Line, Rect, Stage, Text } from 'react-konva';
 import React from "react";
@@ -8,6 +8,7 @@ import { PathConfig } from "../format/Config";
 import { clamp } from "./Util";
 import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateInstancesProperties } from "../types/Command";
 import { useAppStores } from "./MainApp";
+import { KeyframeIndexing } from "../types/Calculation";
 
 
 export class GraphCanvasConverter {
@@ -146,9 +147,9 @@ const KeyframeElement = observer((props: { ikf: KeyframeIndexing, gcc: GraphCanv
     const evt = event.evt;
 
     if (evt.button === 0) { // left click
-      const setTo = !ikf.keyframe.followCurve;
+      const setTo = !ikf.keyframe.followBentRate;
       app.history.execute(`Update keyframe ${ikf.keyframe.uid} followCurve to ${setTo}`,
-        new UpdateInstancesProperties([ikf.keyframe], { 'followCurve': setTo }), 0);
+        new UpdateInstancesProperties([ikf.keyframe], { 'followBentRate': setTo }), 0);
     } else if (evt.button === 2) { // right click
       app.history.execute(`Remove keyframe ${ikf.keyframe.uid} from path ${gcc.path.uid}`,
         new RemoveKeyframe(gcc.path, ikf.keyframe));
