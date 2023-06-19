@@ -283,9 +283,11 @@ export class ConvertSegment implements CancellableCommand, InteractiveEntitiesCo
       p1 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
     }
 
-    let p2;
+    let p2: Control;
     if (next !== null) {
       p2 = p3.mirror(next.controls[1]);
+      // ensure is a control point (not an end point)
+      p2 = new Control(p2.x, p2.y);
     } else {
       p2 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
     }
