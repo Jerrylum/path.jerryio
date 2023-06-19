@@ -15,6 +15,10 @@ const ratioFoot = 12 * ratioInch;
 
 export class NumberInUnit {
   constructor(public value: number, public unit: UnitOfLength) { }
+
+  to(unit: UnitOfLength): number {
+    return new UnitConverter(this.unit, unit).fromAtoB(this.value);
+  }
 }
 
 export class UnitConverter {

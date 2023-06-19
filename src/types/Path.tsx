@@ -3,9 +3,10 @@ import { observable, makeAutoObservable, makeObservable, computed } from "mobx"
 import { makeId } from "../app/Util";
 import { GeneralConfig, PathConfig } from "../format/Config";
 import { InteractiveEntity, CanvasEntity } from "./Canvas";
-import { UnitConverter, UnitOfLength } from './Unit';
+import { NumberInUnit, UnitConverter, UnitOfLength } from './Unit';
 
 import 'reflect-metadata';
+import { getBezierCurvePoints, getPathSamplePoints, getSegmentSamplePoints } from './Calculation';
 
 export class Vector {
 
@@ -80,7 +81,7 @@ export class Point extends Vector {
   public isLastPointOfSegments: boolean = false;
 
   constructor(x: number, y: number,
-    public delta: number, // distance to the previous point
+    public delta: number, // distance to the previous point after ratio is applied
     public integral: number, // integral distance from the first point
     public speed: number = 0,
     public heading?: number) {
@@ -241,55 +242,6 @@ export class Segment implements CanvasEntity {
     makeAutoObservable(this);
   }
 
-  distance(): number {
-    let rtn = 0;
-
-    const n = this.controls.length - 1;
-    let prev: Vector = this.controls[0];
-    for (let t = 0; t <= 1; t += 0.05) {
-      let point = new Vector(0, 0);
-      for (let i = 0; i <= n; i++) {
-        const bernstein = this.bernstein(n, i, t);
-        const controlPoint = this.controls[i];
-        // PERFORMANCE: Do not use add() here
-        point.x += controlPoint.x * bernstein;
-        point.y += controlPoint.y * bernstein;
-      }
-      rtn += point.distance(prev);
-      prev = point;
-    }
-
-    return rtn;
-  }
-
-  calculatePoints(gc: GeneralConfig, pc: PathConfig, integral = 0): Point[] {
-    // ALGO: Calculate the target interval based on the density of points to generate points more than enough
-    const targetInterval = new UnitConverter(gc.uol, UnitOfLength.Centimeter).fromAtoB(gc.pointDensity) / 200;
-
-    // The density of points is NOT uniform along the curve
-    let points: Point[] = this.calculateBezierCurvePoints(targetInterval, integral);
-
-    points[0].heading = this.first.heading;
-
-    const lastPoint = points[points.length - 1];
-    const lastControl = this.last;
-    const distance = lastPoint.distance(lastControl);
-    const integralDistance = lastPoint.integral + distance;
-    const finalPoint = new Point(lastControl.x, lastControl.y, distance, integralDistance, 0, this.last.heading);
-    finalPoint.isLastPointOfSegments = true;
-    points.push(finalPoint);
-
-    const segmentDeltaRatio = (1 / targetInterval) / ((integralDistance - integral) / gc.pointDensity);
-    if (segmentDeltaRatio !== Infinity) {
-      for (const point of points) {
-        point.delta *= segmentDeltaRatio;
-      }
-    }
-
-    // At least 2 points are returned
-    return points;
-  }
-
   get first(): EndPointControl {
     return this.controls[0] as EndPointControl;
   }
@@ -312,46 +264,6 @@ export class Segment implements CanvasEntity {
 
   isVisible(): boolean {
     return this.controls.some((cp) => cp.visible);
-  }
-
-  private calculateBezierCurvePoints(interval: number, integral = 0): Point[] {
-    let points: Point[] = [];
-
-    // Bezier curve implementation
-    let totalDistance = integral;
-    let lastPoint: Vector = this.controls[0];
-
-    const n = this.controls.length - 1;
-    for (let t = 0; t <= 1; t += interval) {
-      let point = new Vector(0, 0);
-      for (let i = 0; i <= n; i++) {
-        const bernstein = this.bernstein(n, i, t);
-        const controlPoint = this.controls[i];
-        // PERFORMANCE: Do not use add() here
-        point.x += controlPoint.x * bernstein;
-        point.y += controlPoint.y * bernstein;
-      }
-      let delta = point.distance(lastPoint);
-      points.push(new Point(point.x, point.y, delta, totalDistance += delta));
-      lastPoint = point;
-    }
-
-    return points;
-  }
-
-  private bernstein(n: number, i: number, t: number): number {
-    return this.binomial(n, i) * Math.pow(t, i) * Math.pow(1 - t, n - i);
-  }
-
-  private binomial(n: number, k: number): number {
-    let coeff = 1;
-    for (let i = n - k + 1; i <= n; i++) {
-      coeff *= i;
-    }
-    for (let i = 1; i <= k; i++) {
-      coeff /= i;
-    }
-    return coeff;
   }
 }
 
@@ -408,22 +320,6 @@ export class Path implements InteractiveEntity {
       }
     }
     return rtn;
-  }
-
-  private getAllSegmentPoints(gc: GeneralConfig, result: PointCalculationResult): Point[] {
-    // ALGO: The density of points is NOT uniform along the curve, and we are using this to decelerate the robot
-    const gen1: Point[] = [];
-    let pathTTD = 0; // total travel distance
-    for (let segment of this.segments) {
-      const [firstPoint, ...points] = segment.calculatePoints(gc, this.pc, pathTTD);
-      // ALGO: Ignore the first point, it is (too close) the last point of the previous segment
-      if (pathTTD === 0) gen1.push(firstPoint); // Except for the first segment
-      gen1.push(...points);
-      pathTTD = gen1[gen1.length - 1].integral;
-    }
-    result.ttd = pathTTD;
-
-    return gen1;
   }
 
   private spacePointsEvenly(gc: GeneralConfig, result: PointCalculationResult, gen1: Point[]) {
@@ -498,15 +394,17 @@ export class Path implements InteractiveEntity {
 
     if (this.segments.length === 0) return this.cachedResult = result;
 
-    const gen1 = this.getAllSegmentPoints(gc, result);
+    // const samples = this.getAllSegmentPoints(gc, result);
+    const density = new NumberInUnit(gc.pointDensity, gc.uol);
+    const samples = getPathSamplePoints(this, density, result);
 
-    this.spacePointsEvenly(gc, result, gen1);
+    this.spacePointsEvenly(gc, result, samples);
 
     this.processKeyframes(gc, result);
 
     // ALGO: gen2 must have at least 1 points
     // ALGO: The first should have heading information
-    result.points[0].heading = gen1[0].heading;
+    result.points[0].heading = samples[0].heading;
 
     // ALGO: The final point should be the last end control point in the path
     // ALGO: At this point, we know segments has at least 1 segment
