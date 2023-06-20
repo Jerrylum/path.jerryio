@@ -78,6 +78,23 @@ export class Vector {
 }
 
 // Not observable
+export class SamplePoint extends Vector {
+  public isLastPointOfSegments: boolean = false;
+
+  constructor(x: number, y: number,
+    public delta: number, // distance to the previous point after ratio is applied
+    public integral: number, // integral distance from the first point
+    public t: number, // [0, 1] The step of the sample point
+    public heading?: number) {
+    super(x, y);
+  }
+
+  clone(): SamplePoint {
+    return new SamplePoint(this.x, this.y, this.delta, this.integral, this.t, this.heading);
+  }
+}
+
+// Not observable
 export class Point extends Vector {
   public isLastPointOfSegments: boolean = false;
   public bentRate: number = 0;

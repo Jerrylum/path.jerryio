@@ -1,4 +1,4 @@
-import { Keyframe, Path, Point, Segment, Vector } from "./Path";
+import { Keyframe, Path, Point, SamplePoint, Segment, Vector } from "./Path";
 import { NumberInUnit, UnitOfLength } from "./Unit";
 
 /**
@@ -26,7 +26,7 @@ export interface IndexBoundary {
  */
 export interface SampleCalculationResult {
   arcLength: number; // The total arc length of the path.
-  points: Point[]; // The sample points along the path.
+  points: SamplePoint[]; // The sample points along the path.
 }
 
 /**
@@ -159,18 +159,18 @@ export function getUniformPointsFromSamples(sampleResult: SampleCalculationResul
       closestIdx++;
     }
 
-    const p1 = samples[closestIdx - 1];
-    const p2 = samples[closestIdx];
+    const p1: SamplePoint = samples[closestIdx - 1];
+    const p2: SamplePoint = samples[closestIdx];
     const pRatio = (integral - p1.integral) / (p2.integral - p1.integral);
     const p3X = p1.x + (p2.x - p1.x) * pRatio;
     const p3Y = p1.y + (p2.y - p1.y) * pRatio;
     const p3Delta = p1.delta + (p2.delta - p1.delta) * pRatio;
     // ALGO: pRatio is NaN if p1 and p2 are the same point
-    const p3 = isNaN(pRatio) ? new Point(p1.x, p1.y, p1.delta, integral, 0, heading) : new Point(p3X, p3Y, p3Delta, integral, 0, heading);
+    const p3: Point = isNaN(pRatio) ? new Point(p1.x, p1.y, p1.delta, integral, 0, heading) : new Point(p3X, p3Y, p3Delta, integral, 0, heading);
 
     // ALGO: Use point delta as bent rate by default, point delta is always positive
     // ALGO: By default, the bent rate is then 
-    p3.bentRate = p3.delta;
+    p3.bentRate = p3Delta;
 
     // ALGO: Create a new segment range if the point is the last point of segments
     if ((p3.isLastPointOfSegments = isLastPointOfSegments) === true) {
@@ -211,7 +211,7 @@ export function getUniformPointsFromSamples(sampleResult: SampleCalculationResul
  */
 export function getPathSamplePoints(path: Path, density: NumberInUnit): SampleCalculationResult {
   // ALGO: The density of points is NOT uniform along the curve, and we are using this to as the bent rate to control the speed by default
-  const rtn: Point[] = [];
+  const rtn: SamplePoint[] = [];
   let arcLength = 0; // total travel distance
   for (let segment of path.segments) {
     // ALGO: at least 2 points are returned
@@ -238,12 +238,12 @@ export function getPathSamplePoints(path: Path, density: NumberInUnit): SampleCa
  * @param prevIntegral The previous integral added to the total distance
  * @returns The sample points of the segment, at least 2 points are returned
  */
-export function getSegmentSamplePoints(segment: Segment, density: NumberInUnit, prevIntegral = 0): Point[] {
+export function getSegmentSamplePoints(segment: Segment, density: NumberInUnit, prevIntegral = 0): SamplePoint[] {
   // ALGO: Calculate the target interval based on the density of points to generate points more than enough
   const targetInterval = density.to(UnitOfLength.Centimeter) / 200;
 
   // The density of points is NOT uniform along the curve
-  const points: Point[] = getBezierCurvePoints(segment, targetInterval, prevIntegral);
+  const points: SamplePoint[] = getBezierCurvePoints(segment, targetInterval, prevIntegral);
 
   points[0].heading = segment.first.heading;
 
@@ -251,7 +251,7 @@ export function getSegmentSamplePoints(segment: Segment, density: NumberInUnit, 
   const lastControl = segment.last;
   const distance = lastPoint.distance(lastControl);
   const integralDistance = lastPoint.integral + distance;
-  const finalPoint = new Point(lastControl.x, lastControl.y, distance, integralDistance, 0, segment.last.heading);
+  const finalPoint = new SamplePoint(lastControl.x, lastControl.y, distance, integralDistance, 1, segment.last.heading);
   finalPoint.isLastPointOfSegments = true;
   points.push(finalPoint);
 
@@ -317,8 +317,8 @@ export function getBezierCurveArcLength(segment: Segment, interval: number = 0.0
  * @param prevIntegral The previous integral added to the total distance
  * @returns The points of the segment
  */
-export function getBezierCurvePoints(segment: Segment, interval: number, prevIntegral = 0): Point[] {
-  let points: Point[] = [];
+export function getBezierCurvePoints(segment: Segment, interval: number, prevIntegral = 0): SamplePoint[] {
+  let points: SamplePoint[] = [];
 
   // Bezier curve implementation
   let totalDistance = prevIntegral;
@@ -335,7 +335,7 @@ export function getBezierCurvePoints(segment: Segment, interval: number, prevInt
       point.y += controlPoint.y * ber;
     }
     let delta = point.distance(lastPoint);
-    points.push(new Point(point.x, point.y, delta, totalDistance += delta));
+    points.push(new SamplePoint(point.x, point.y, delta, totalDistance += delta, t));
     lastPoint = point;
   }
 
