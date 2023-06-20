@@ -91,10 +91,10 @@ const PointElement = observer((props: { point: Point, index: number, pc: PathCon
   const speedFrom = pc.speedLimit.from;
   const speedTo = pc.speedLimit.to;
 
-  const densityHigh = pc.bentRateApplicableRange.to;
-  const densityLow = pc.bentRateApplicableRange.from;
+  const bentRateHigh = pc.bentRateApplicableRange.to;
+  const bentRateLow = pc.bentRateApplicableRange.from;
 
-  let p1 = (point.delta - densityLow) / (densityHigh - densityLow);
+  let p1 = (point.bentRate - bentRateLow) / (bentRateHigh - bentRateLow);
   let p2 = (point.speed - speedFrom) / (speedTo - speedFrom);
   let x = gcc.toPxNumber(index);
   let y1 = (1 - p1) * (gcc.pixelHeight * 0.6) + (gcc.axisLineTopX);
@@ -188,8 +188,8 @@ const GraphCanvasElement = observer((props: {}) => {
   const speedFrom = path.pc.speedLimit.from;
   const speedTo = path.pc.speedLimit.to;
 
-  const densityHigh = path.pc.bentRateApplicableRange.to;
-  const densityLow = path.pc.bentRateApplicableRange.from;
+  const bentRateHigh = path.pc.bentRateApplicableRange.to;
+  const bentRateLow = path.pc.bentRateApplicableRange.from;
 
   const onGraphClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
     // UX: Allow to add keyframes only with left mouse button
@@ -238,11 +238,11 @@ const GraphCanvasElement = observer((props: {}) => {
         <Text text={speedFrom + ""} x={0} y={gcc.axisLineBottomX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill={fgColor} align="right" width={gcc.axisTitleWidth * 0.9} />
 
         <Rect x={gcc.rightPaddingStart} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill={bgColor} />
-        <Text text={densityHigh + ""} x={gcc.rightPaddingStart + gcc.pointWidth} y={gcc.axisLineTopX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill={fgColor} width={gcc.axisTitleWidth} />
-        <Text text={densityLow + ""} x={gcc.rightPaddingStart + gcc.pointWidth} y={gcc.axisLineBottomX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill={fgColor} width={gcc.axisTitleWidth} />
+        <Text text={bentRateHigh + ""} x={gcc.rightPaddingStart + gcc.pointWidth} y={gcc.axisLineTopX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill={fgColor} width={gcc.axisTitleWidth} />
+        <Text text={bentRateLow + ""} x={gcc.rightPaddingStart + gcc.pointWidth} y={gcc.axisLineBottomX - fontSize / 3} fontSize={fontSize} fontFamily="Roboto" fill={fgColor} width={gcc.axisTitleWidth} />
 
         <Text text={"Speed"} x={0} y={gcc.pixelHeight} fontSize={fontSize} fontFamily="Roboto" fill={fgColor} width={gcc.pixelHeight} height={fontSize} align="center" rotation={270} />
-        <Text text={"Density"} x={gcc.pixelWidth - gcc.pointWidth} y={0} fontSize={fontSize} fontFamily="Roboto" fill={fgColor} width={gcc.pixelHeight} height={fontSize} align="center" rotation={90} />
+        <Text text={"Bent Rate"} x={gcc.pixelWidth - gcc.pointWidth} y={0} fontSize={fontSize} fontFamily="Roboto" fill={fgColor} width={gcc.pixelHeight} height={fontSize} align="center" rotation={90} />
 
       </Layer>
     </Stage>
