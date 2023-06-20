@@ -33,6 +33,11 @@ export class MainApp {
 
   private _history: CommandHistory = new CommandHistory(this);
 
+  public robot = {
+    show: true,
+    position: new EndPointControl(0, 0, 0),
+  }
+
   public view = {
     showSpeedCanvas: true,
     showRightPanel: true

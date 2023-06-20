@@ -15,6 +15,7 @@ import { CanvasConverter } from "../types/Canvas";
 import { clamp } from "./Util";
 import { AddPath, AddSegment } from "../types/Command";
 import { useAppStores } from "./MainApp";
+import { RobotElement } from "./RobotElement";
 
 const FieldCanvasElement = observer((props: {}) => {
   // useTimer(1000 / 30);
@@ -125,7 +126,7 @@ const FieldCanvasElement = observer((props: {}) => {
     come to an end when any mouse button is down. When it is happened only mouse move event will be triggered.
     */
 
-    // UX: It is not actually dragged, but the event is triggered even the mouse is outside the canvas
+    // UX: It is not actually dragged "stage", reset the position to (0, 0)
     if (event.target instanceof Konva.Stage) event.target.setPosition(new Vector(0, 0));
 
     setIsAddingControl(false);
@@ -144,6 +145,33 @@ const FieldCanvasElement = observer((props: {}) => {
       newOffset.x = clamp(newOffset.x, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
       newOffset.y = clamp(newOffset.y, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
       app.fieldOffset = newOffset;
+    } else if (event.evt.altKey === true) { // UX: Show robot if: alt key is down and no other action is performed
+      const posInPx = cc.getUnboundedPxFromEvent(event);
+      if (posInPx === undefined) return;
+      const posInUOL = cc.toUOL(posInPx);
+
+      const interested = app.interestedPath();
+      if (interested === undefined) return;
+
+      const magnetDistance = app.gc.controlMagnetDistance;
+
+      const points = interested.cachedResult.points;
+
+      let closestPoint = undefined;
+      let closestDistance = Number.MAX_VALUE;
+      for (let i = 0; i < points.length; i++) {
+        const point = points[i];
+        const distance = point.distance(posInUOL);
+        if (distance < closestDistance) {
+          closestPoint = point;
+          closestDistance = distance;
+        }
+      }
+
+      if (closestPoint !== undefined && closestDistance < magnetDistance * 2) {
+        app.robot.position.setXY(closestPoint);
+        // console.log(closestPoint);
+      }
     }
   }
 
@@ -302,6 +330,7 @@ const FieldCanvasElement = observer((props: {}) => {
             </React.Fragment>
           ))
         }
+        {app.robot.show && <RobotElement cc={cc} pos={app.robot.position} width={app.gc.robotWidth} height={app.gc.robotHeight} />}
         <AreaElement from={areaSelectionStart} to={areaSelectionEnd} />
       </Layer>
     </Stage>
