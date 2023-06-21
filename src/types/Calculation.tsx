@@ -427,3 +427,46 @@ export function binomial(n: number, k: number): number {
   }
   return coeff;
 }
+
+export function firstDerivative(segment: Segment, t: number): Vector {
+  if (segment.controls.length === 2) {
+    const vec = segment.controls[1].subtract(segment.controls[0]);
+    return new Vector(vec.x, vec.y);
+  } else if (segment.controls.length === 4) {
+    const x =
+      3 * (segment.controls[1].x - segment.controls[0].x) * (1 - t) * (1 - t) +
+      6 * (segment.controls[2].x - segment.controls[1].x) * (1 - t) * t +
+      3 * (segment.controls[3].x - segment.controls[2].x) * t * t;
+
+    const y =
+      3 * (segment.controls[1].y - segment.controls[0].y) * (1 - t) * (1 - t) +
+      6 * (segment.controls[2].y - segment.controls[1].y) * (1 - t) * t +
+      3 * (segment.controls[3].y - segment.controls[2].y) * t * t;
+
+    return new Vector(x, y);
+  } else {
+    return new Vector(0, 1);
+  }
+}
+
+export function toHeading(vec: Vector) {
+  const canvasDegree = 90 - Math.atan2(vec.y, vec.x) * 180 / Math.PI;
+  return canvasDegree < 0 ? canvasDegree + 360 : canvasDegree;
+}
+
+/**
+ * Calculates the derivative heading needed to turn from an original heading to a target heading.
+ * The derivative heading is the shortest angle between the two headings, which can be positive or negative.
+ * @param original The original heading in degrees [0, 360)
+ * @param target The target heading in degrees [0, 360)
+ * @returns The derivative heading in degrees (-180, 180]
+ */
+export function toDerivativeHeading(original: number, target: number) {
+  const high = 360;
+  const half = high / 2;
+
+  const targetHeading = target % high;
+  const delta = (original - targetHeading + high) % high;
+
+  return delta > half ? high - delta : -delta;
+}

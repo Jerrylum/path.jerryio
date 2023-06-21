@@ -15,7 +15,8 @@ import { getPathPoints } from "../types/Calculation";
 class GeneralConfigImpl implements GeneralConfig {
   robotWidth: number = 12;
   robotHeight: number = 12;
-  showRobot: boolean = true;
+  robotIsHolonomic: boolean = false;
+  showRobot: boolean = false;
   uol: UnitOfLength = UnitOfLength.Inch;
   pointDensity: number = 2; // inches
   controlMagnetDistance: number = 5 / 2.54;

@@ -24,9 +24,40 @@ import { NoticeProvider } from './app/Notice';
 import { ConfirmationDialog } from './app/Confirmation';
 import { HelpDialog } from './app/HelpDialog';
 import { PreferencesDialog } from './app/Preferences';
-import { NumberInUnit } from './types/Unit';
-import { getPathPoint } from './types/Calculation';
+import { NumberInUnit, UnitOfLength } from './types/Unit';
+import { getPathPoints } from './types/Calculation';
 
+import { getAppStores } from './app/MainApp';
+import { getBezierCurvePoints, getSegmentSamplePoints, getPathSamplePoints, getUniformPointsFromSamples } from './types/Calculation';
+
+// @ts-ignore
+window.testFunction = action(() => {
+  console.log("hello!");
+
+  const { app } = getAppStores();
+
+  const density = new NumberInUnit(2, UnitOfLength.Centimeter);
+
+  for (const path of app.paths) {
+    console.log("path", path.uid);
+
+    // for (const segment of path.segments) {
+    //   console.log(getBezierCurvePoints(segment, 0.01, 0));
+    // }
+
+    // for (const segment of path.segments) {
+    //   console.log(getSegmentSamplePoints(segment, new NumberInUnit(2, UnitOfLength.Centimeter), 0));
+    // }
+
+    const sampleResult = getPathSamplePoints(path, density);
+    console.log(sampleResult);
+    const uniformResult = getUniformPointsFromSamples(sampleResult, density);
+    console.log(uniformResult);
+
+  }
+});
+// @ts-ignore
+window.testFunction();
 
 export interface AppProps {
   paths: Path[];
@@ -42,18 +73,18 @@ const App = observer(() => {
   React.useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
     const density = new NumberInUnit(app.gc.pointDensity, app.gc.uol);
     const interested = app.interestedPath();
-    
-    app.paths.filter(path => path.visible || path === interested).forEach(path => path.cachedResult = getPathPoint(path, density));
+
+    app.paths.filter(path => path.visible || path === interested).forEach(path => path.cachedResult = getPathPoints(path, density));
   }), undefined);
 
-  const optionsToEnableHotkeys = { enabled: !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen };
+  const optionsToEnableHotkeys = { enabled: !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen, enableOnFormTags: true };
 
   // UX: Enable custom hotkeys on input fields (e.g. Ctrl+S) to prevent accidentally triggering the browser default
   // hotkeys when focusing them (e.g. Save page). However, we do not apply it to all hotkeys, because we want to keep
   // some browser default hotkeys on input fields (e.g. Ctrl+Z to undo user input) instead of triggering custom hotkeys
   // (e.g. Ctrl+Z to undo field change)
-  const optionsToEnableHotkeysOnInputFields = { enableOnContentEditable: true, enableOnFormTags: true, ...optionsToEnableHotkeys };
-  
+  const optionsToEnableHotkeysOnInputFields = { enableOnContentEditable: true, ...optionsToEnableHotkeys };
+
   useCustomHotkeys("Ctrl+P", onNew.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+O", onOpen.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+S", onSave.bind(null, app), optionsToEnableHotkeysOnInputFields);
@@ -81,6 +112,15 @@ const App = observer(() => {
   useCustomHotkeys("Ctrl+Add,Ctrl+Equal", () => app.fieldScale += 0.5, optionsToEnableHotkeys);
   useCustomHotkeys("Ctrl+Subtract,Ctrl+Minus", () => app.fieldScale -= 0.5, optionsToEnableHotkeys);
   useCustomHotkeys("Ctrl+0", () => app.resetFieldDisplay(), optionsToEnableHotkeys);
+
+  useCustomHotkeys("r", () => app.gc.showRobot = !app.gc.showRobot, {
+    ...optionsToEnableHotkeys,
+    enableOnFormTags: ['input', "INPUT"],
+    // UX: A special case for input[type="checkbox"], it is okay to enable hotkeys on it
+    enabled: (kvEvt: KeyboardEvent) =>
+      (kvEvt.target instanceof HTMLInputElement) === false ||
+      (kvEvt.target as HTMLInputElement).type === "checkbox",
+  });
 
   useUnsavedChangesPrompt();
 

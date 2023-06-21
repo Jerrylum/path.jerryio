@@ -34,7 +34,6 @@ export class MainApp {
   private _history: CommandHistory = new CommandHistory(this);
 
   public robot = {
-    show: true,
     position: new EndPointControl(0, 0, 0),
   }
 
@@ -99,6 +98,12 @@ export class MainApp {
       }
 
       this.usingUOL = newUOL;
+    }));
+
+    reaction(() => this.gc.showRobot, action((showRobot: boolean) => {
+      if (!showRobot) {
+        this.robot.position.visible = false;
+      }
     }));
 
     this.newPathFile();
@@ -256,6 +261,7 @@ export class MainApp {
     this.expanded = [];
     this.lastInterestedPath = undefined;
     this.magnet = new Vector(Infinity, Infinity);
+    this.robot.position.visible = false;
   }
 
   resetFieldDisplay(): void {

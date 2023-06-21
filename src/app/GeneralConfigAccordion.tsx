@@ -75,8 +75,18 @@ const GeneralConfigAccordion = observer((props: {}) => {
           <ObserverInput
             label="Width"
             getValue={() => gc.robotWidth.toUser() + ""}
-            setValue={(value: string) => gc.robotWidth = parseNumberInString(value, gc.uol,
-              new NumberInUnit(0.1, UnitOfLength.Centimeter), new NumberInUnit(100, UnitOfLength.Centimeter))
+            setValue={
+              (value: string) => app.history.execute(
+                `Change robot width`,
+                new UpdateProperties(gc, {
+                  "robotWidth": parseNumberInString(
+                    value,
+                    gc.uol,
+                    new NumberInUnit(1, UnitOfLength.Centimeter),
+                    new NumberInUnit(100, UnitOfLength.Centimeter)
+                  )
+                })
+              )
             }
             isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
             isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
@@ -85,14 +95,32 @@ const GeneralConfigAccordion = observer((props: {}) => {
           <ObserverInput
             label="Height"
             getValue={() => gc.robotHeight.toUser() + ""}
-            setValue={(value: string) => gc.robotHeight = parseNumberInString(value, gc.uol,
-              new NumberInUnit(0.1, UnitOfLength.Centimeter), new NumberInUnit(100, UnitOfLength.Centimeter))
+            setValue={
+              (value: string) => app.history.execute(
+                `Change robot height`,
+                new UpdateProperties(gc, {
+                  "robotHeight": parseNumberInString(
+                    value,
+                    gc.uol,
+                    new NumberInUnit(1, UnitOfLength.Centimeter),
+                    new NumberInUnit(100, UnitOfLength.Centimeter)
+                  )
+                })
+              )
             }
             isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
             isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
             numeric
           />
-          <ObserverCheckbox label="Show Robot" checked={gc.showRobot} onCheckedChange={(c) => gc.showRobot = c} />
+          <ObserverCheckbox label="Visible" title='Toggle Robot Visibility (R)' checked={gc.showRobot} onCheckedChange={(c) => gc.showRobot = c} />
+        </Box>
+        <Box className='flex-editor-panel'>
+          <ObserverCheckbox label="Holonomic Drive" checked={gc.robotIsHolonomic} onCheckedChange={(c) => {
+            app.history.execute(
+              `Change robot is holonomic drive`,
+              new UpdateProperties(gc, { "robotIsHolonomic": c })
+            );
+          }} />
         </Box>
         {gc.getConfigPanel(app)}
       </AccordionDetails>

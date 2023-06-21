@@ -83,7 +83,7 @@ const MenuAccordion = observer((props: {}) => {
 
       <Menu anchorEl={document.getElementById('menu-view-btn')} MenuListProps={{ dense: true }}
         open={isOpenViewMenu} onClose={() => setIsOpenViewMenu(false)}>
-        <CustomMenuItem done={app.view.showSpeedCanvas} text="Speed Canvas" hotkey={useKeyName("Ctrl+B")}
+        <CustomMenuItem done={app.view.showSpeedCanvas} text="Speed Graph" hotkey={useKeyName("Ctrl+B")}
           onClick={onMenuClick(() => app.view.showSpeedCanvas = !app.view.showSpeedCanvas)} />
         <CustomMenuItem done={app.view.showRightPanel} text="Right Panel" hotkey={useKeyName("Ctrl+J")}
           onClick={onMenuClick(() => app.view.showRightPanel = !app.view.showRightPanel)} />

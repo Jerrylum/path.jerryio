@@ -12,7 +12,7 @@ import { Format, PathFileData } from './format/Format';
 import { NumberInUnit, UnitOfLength } from "./types/Unit";
 import DOMPurify from "dompurify";
 import { NumberRange } from "./app/RangeSlider";
-import { getBezierCurveArcLength, getBezierCurvePoints, getPathSamplePoints, getSegmentSamplePoints, getUniformPointsFromSamples } from "./types/Calculation";
+import { getBezierCurveArcLength, getBezierCurvePoints, getPathSamplePoints, getSegmentSamplePoints, getUniformPointsFromSamples, toDerivativeHeading } from "./types/Calculation";
 
 class CustomFormat implements Format {
   isInit: boolean;
@@ -52,6 +52,7 @@ class CustomGeneralConfig implements GeneralConfig {
 
   robotWidth: number = 12;
   robotHeight: number = 12;
+  robotIsHolonomic: boolean = false;
   showRobot: boolean = true;
   uol: UnitOfLength = UnitOfLength.Inch;
   pointDensity: number = 2; // inches
@@ -461,4 +462,13 @@ test('Calculation with three segments and 7cm position changes', () => {
     { index: 1, from: 3, to: 4 },
     { index: 2, from: 4, to: 5 }
   ]);
+});
+
+test('toDerivativeHeading', () => {
+  expect(toDerivativeHeading(0, 270)).toBe(-90);
+  expect(toDerivativeHeading(270, 0)).toBe(90);
+  expect(toDerivativeHeading(0, 90)).toBe(90);
+  expect(toDerivativeHeading(90, 0)).toBe(-90);
+  expect(toDerivativeHeading(0, 180)).toBe(-180);
+  expect(toDerivativeHeading(180, 0)).toBe(-180);
 });

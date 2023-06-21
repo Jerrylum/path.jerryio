@@ -30,9 +30,13 @@ export function useIsMacOS() {
   }, []);
 }
 
+export interface CustomHotkeysOptions extends Options {
+  enableOnCheckbox?: boolean
+}
+
 export function useCustomHotkeys<T extends HTMLElement>(
   keys: string, callback: () => void,
-  options?: Options, dependencies?: DependencyList): React.MutableRefObject<RefType<T>> {
+  options?: CustomHotkeysOptions, dependencies?: DependencyList): React.MutableRefObject<RefType<T>> {
   const timeRef = React.useRef<number | null>(null);
 
   function onKeydown(func: () => void): HotkeyCallback {

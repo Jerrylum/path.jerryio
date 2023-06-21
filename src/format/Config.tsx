@@ -31,6 +31,7 @@ export interface ConfigSection {
 export interface GeneralConfig extends ConfigSection {
   robotWidth: number;
   robotHeight: number;
+  robotIsHolonomic: boolean;
   showRobot: boolean;
   uol: UnitOfLength;
   pointDensity: number;

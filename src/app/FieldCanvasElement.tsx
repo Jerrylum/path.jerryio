@@ -16,6 +16,7 @@ import { clamp } from "./Util";
 import { AddPath, AddSegment } from "../types/Command";
 import { useAppStores } from "./MainApp";
 import { RobotElement } from "./RobotElement";
+import { firstDerivative, toDerivativeHeading, toHeading } from "../types/Calculation";
 
 const FieldCanvasElement = observer((props: {}) => {
   // useTimer(1000 / 30);
@@ -145,7 +146,7 @@ const FieldCanvasElement = observer((props: {}) => {
       newOffset.x = clamp(newOffset.x, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
       newOffset.y = clamp(newOffset.y, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
       app.fieldOffset = newOffset;
-    } else if (event.evt.altKey === true) { // UX: Show robot if: alt key is down and no other action is performed
+    } else if (app.gc.showRobot) { // UX: Show robot if: alt key is down and no other action is performed
       const posInPx = cc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
       const posInUOL = cc.toUOL(posInPx);
@@ -168,9 +169,23 @@ const FieldCanvasElement = observer((props: {}) => {
         }
       }
 
-      if (closestPoint !== undefined && closestDistance < magnetDistance * 2) {
+      if (closestPoint !== undefined && closestDistance < magnetDistance * 4) {
         app.robot.position.setXY(closestPoint);
-        // console.log(closestPoint);
+
+        const t = closestPoint.sampleT;
+        const segment = closestPoint.sampleRef;
+        const c0 = segment.first;
+        const c3 = segment.last;
+
+        if (app.gc.robotIsHolonomic) {
+          const c3Heading = toDerivativeHeading(c0.heading, c3.heading);
+          app.robot.position.heading = c0.heading + (c3Heading * t);
+        } else {
+          const heading = toHeading(firstDerivative(closestPoint.sampleRef, closestPoint.sampleT));
+          app.robot.position.heading = heading;
+        }
+
+        app.robot.position.visible = true;
       }
     }
   }
@@ -330,7 +345,7 @@ const FieldCanvasElement = observer((props: {}) => {
             </React.Fragment>
           ))
         }
-        {app.robot.show && <RobotElement cc={cc} pos={app.robot.position} width={app.gc.robotWidth} height={app.gc.robotHeight} />}
+        {app.gc.showRobot && app.robot.position.visible && <RobotElement cc={cc} pos={app.robot.position} width={app.gc.robotWidth} height={app.gc.robotHeight} />}
         <AreaElement from={areaSelectionStart} to={areaSelectionEnd} />
       </Layer>
     </Stage>
