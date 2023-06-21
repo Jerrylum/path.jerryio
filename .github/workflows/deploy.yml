@@ -16,9 +16,9 @@ jobs:
           node-version: 18
       - run: npm ci
       - run: npm test
-        env:
-          CI: true
       - run: npm run build
+        env:
+          CI: false
       - uses: actions/upload-pages-artifact@v1
         with:
           path: build
