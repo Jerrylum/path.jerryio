@@ -227,17 +227,17 @@ const SegmentControlElement = observer((props: SegmentControlElementProps) => {
       {
         isMainControl ? (
           <>
-            <Line points={[
-              cpInPx.x, cpInPx.y,
-              cpInPx.x + Math.sin(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius,
-              cpInPx.y + Math.cos(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius
-            ]} stroke="ffffff" strokeWidth={lineWidth} />
             <Circle x={cpInPx.x} y={cpInPx.y} radius={cpRadius} fill={fillColor}
               draggable onDragMove={action(onDragControlPoint)}
               onMouseDown={action(onMouseDownControlPoint)}
               onMouseUp={action(onMouseUpControlPoint)}
               onWheel={action(onWheel)}
               onClick={action(onClickFirstOrLastControlPoint)} />
+            <Line points={[
+              cpInPx.x, cpInPx.y,
+              cpInPx.x + Math.sin(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius,
+              cpInPx.y + Math.cos(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius
+            ]} stroke="ffffff" strokeWidth={lineWidth} />
           </>
         ) : (
           <Circle x={cpInPx.x} y={cpInPx.y} radius={cpRadius / 2} fill={fillColor}
