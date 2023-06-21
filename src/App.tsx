@@ -24,40 +24,8 @@ import { NoticeProvider } from './app/Notice';
 import { ConfirmationDialog } from './app/Confirmation';
 import { HelpDialog } from './app/HelpDialog';
 import { PreferencesDialog } from './app/Preferences';
-import { NumberInUnit, UnitOfLength } from './types/Unit';
+import { NumberInUnit } from './types/Unit';
 import { getPathPoints } from './types/Calculation';
-
-import { getAppStores } from './app/MainApp';
-import { getBezierCurvePoints, getSegmentSamplePoints, getPathSamplePoints, getUniformPointsFromSamples } from './types/Calculation';
-
-// @ts-ignore
-window.testFunction = action(() => {
-  console.log("hello!");
-
-  const { app } = getAppStores();
-
-  const density = new NumberInUnit(2, UnitOfLength.Centimeter);
-
-  for (const path of app.paths) {
-    console.log("path", path.uid);
-
-    // for (const segment of path.segments) {
-    //   console.log(getBezierCurvePoints(segment, 0.01, 0));
-    // }
-
-    // for (const segment of path.segments) {
-    //   console.log(getSegmentSamplePoints(segment, new NumberInUnit(2, UnitOfLength.Centimeter), 0));
-    // }
-
-    const sampleResult = getPathSamplePoints(path, density);
-    console.log(sampleResult);
-    const uniformResult = getUniformPointsFromSamples(sampleResult, density);
-    console.log(uniformResult);
-
-  }
-});
-// @ts-ignore
-window.testFunction();
 
 export interface AppProps {
   paths: Path[];
