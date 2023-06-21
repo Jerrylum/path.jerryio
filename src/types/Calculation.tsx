@@ -17,6 +17,7 @@ export class KeyframeIndexing {
  * Represents the start and end indexes of a segment in a set of points.
  */
 export interface IndexBoundary {
+  index: number; // The index of the segment in the path.
   from: number; // The index of the first point in the segment.
   to: number; // The index of the first point after the segment, exclusive
 }
@@ -105,6 +106,7 @@ export function getPathKeyframeIndexes(path: Path, segmentIndexes: IndexBoundary
   for (let segmentIdx = 0; segmentIdx < path.segments.length; segmentIdx++) {
     const segment = path.segments[segmentIdx];
     const pointIdxRange = segmentIndexes[segmentIdx];
+    if (pointIdxRange.from === pointIdxRange.to) continue; // ALGO: Skip empty segments
     // ALGO: Assume the keyframes are sorted
     segment.speedProfiles.forEach((kf) => {
       const pointIdx = pointIdxRange.from + Math.floor((pointIdxRange.to - pointIdxRange.from) * kf.xPos);
@@ -118,45 +120,103 @@ export function getPathKeyframeIndexes(path: Path, segmentIndexes: IndexBoundary
 /**
  * Calculates the uniformly spaced points of a path from a set of sample points.
  * 
+ * At least one point and one segment index boundary are returned. The number of segment indexes is NOT 
+ * equal to the number of segments in the path.
+ * 
+ * Note that if more than one headings from the samples are present between two uniform points, some of 
+ * the headings will be lost.
+ * 
  * The joined result is illustrated as below:
  * 
  * A B B B ... B B B C B B B ... B B B C B B B ... B B B D
  * 
  * A: The first point with heading
- * B: A points of the segment
+ * B: A point of the segment
  * C: A point with heading and isLastPointOfSegments flag
  * D: The last point with heading and isLastPointOfSegments flag
  * 
- * At least one point is returned.
- * At least one segment index is returned.
+ * Point A and D must be the same as the first and last points of the samples.
  * 
  * @param sampleResult - The result of sampling the path.
  * @param density - The density of points to generate.
  * @returns The uniformly spaced points along the path and the start and end indexes of each segment.
  */
 export function getUniformPointsFromSamples(sampleResult: SampleCalculationResult, density: NumberInUnit): UniformCalculationResult {
-  // ALGO: Assume samples must have at least 2 points and arcLength must be greater than 0
+  /*
+  ALGO: Assume:
+  Samples must have at least 2 points
+  Arc length must be the same as the last sample point integral, it can be 0
+  */
   const samples = sampleResult.points;
 
-  const targetInterval = 1 / (sampleResult.arcLength / density.value);
+  let numOfSteps = sampleResult.arcLength / density.value;
+  /*
+  ALGO:
+  This step is important to limit the number of steps to no less than 1
+   */
+  if (isNaN(numOfSteps) || numOfSteps < 1) numOfSteps = 1;
+  const targetInterval = 1 / numOfSteps;
 
   const points: Point[] = [];
   const segmentIndexes: IndexBoundary[] = [];
 
   let closestIdx = 1;
-  let segmentFirstPointIdx = 0;
+  let segmentFromIdx = 0;
+  let segmentIndex = 0;
 
-  for (let t = 0; t < 1; t += targetInterval) {
+  function addSegment(idx: number) {
+    segmentIndexes.push({ index: segmentIndex, from: segmentFromIdx, to: idx + 1 });
+    segmentFromIdx = idx + 1;
+    points[idx].isLastPointOfSegments = true;
+    segmentIndex++;
+  }
+
+  function addEmptySegment() {
+    segmentIndexes.push({ index: segmentIndex, from: segmentFromIdx, to: segmentFromIdx });
+    segmentIndex++;
+  }
+
+  function insertHeadings(headings: number[]) {
+    const prevIdx = points.length - 2;
+    const currIdx = points.length - 1;
+    if (headings.length === 1 && currIdx >= 0) {
+      points[currIdx].heading = headings[0];
+    } else if (headings.length > 1 && currIdx >= 1) {
+      // ALGO: Do not overwrite the heading attribute if it is already set, skip it and information loss
+      if (points[prevIdx].heading === undefined) points[prevIdx].heading = headings[0];
+      // ALGO: If multiple headings are given, the last one is used, the rest are ignored, information loss
+      points[currIdx].heading = headings[headings.length - 1];
+    }
+  }
+
+  function insertSplitFlag(splits: boolean[]) {
+    const prevIdx = points.length - 2;
+    const currIdx = points.length - 1;
+    if (splits.length === 1 && currIdx >= 0) {
+      addSegment(currIdx);
+    } else if (splits.length > 1 && currIdx >= 1) {
+      // ALGO: Do not overwrite the isLastPointOfSegments attribute if it is already set, skip it and information loss
+      if (points[prevIdx].isLastPointOfSegments === false) addSegment(prevIdx);
+      else addEmptySegment();
+      // ALGO: If multiple isLastPointOfSegments are given, the last one is used, the rest are ignored, information loss
+      // segmentIndex += splits.length - 2;
+      for (let i = 1; i < splits.length - 1; i++) addEmptySegment();
+      addSegment(currIdx);
+    }
+  }
+
+  function loop(t: number) {
     const integral = t * sampleResult.arcLength;
 
+    const sampleHeadings: number[] = [];
+    const sampleSplits: boolean[] = [];
+
     let heading: number | undefined;
-    let isLastPointOfSegments = false; // flag
-    while (samples[closestIdx].integral < integral) { // ALGO: ClosestIdx never exceeds the array length
-      // ALGO: Obtain the heading value if it is available
-      // ALGO: the last point with heading and isLastPointOfSegments flag is not looped
-      if (samples[closestIdx].heading !== undefined) heading = samples[closestIdx].heading;
-      isLastPointOfSegments = isLastPointOfSegments || samples[closestIdx].isLastPointOfSegments;
+    while (closestIdx + 1 < samples.length && samples[closestIdx + 1].integral <= integral) {
       closestIdx++;
+      const sample = samples[closestIdx];
+      if (sample.heading !== undefined) sampleHeadings.push(sample.heading);
+      if (sample.isLastPointOfSegments) sampleSplits.push(true);
     }
 
     const p1: SamplePoint = samples[closestIdx - 1];
@@ -165,27 +225,28 @@ export function getUniformPointsFromSamples(sampleResult: SampleCalculationResul
     const p3X = p1.x + (p2.x - p1.x) * pRatio;
     const p3Y = p1.y + (p2.y - p1.y) * pRatio;
     const p3Delta = p1.delta + (p2.delta - p1.delta) * pRatio;
-    // ALGO: pRatio is NaN if p1 and p2 are the same point
-    const p3: Point = isNaN(pRatio) ? new Point(p1.x, p1.y, p1.delta, integral, 0, heading) : new Point(p3X, p3Y, p3Delta, integral, 0, heading);
+    // ALGO: pRatio is NaN/Infinity if p1 and p2 are the same point or too close
+    const useRatio = !isNaN(pRatio) && pRatio !== Infinity;
+    const p3: Point = useRatio ? new Point(p3X, p3Y, p3Delta, integral, 0, heading) : new Point(p1.x, p1.y, p1.delta, integral, 0, heading);
 
-    // ALGO: Use point delta as bent rate by default, point delta is always positive
-    // ALGO: By default, the bent rate is then 
-    p3.bentRate = p3Delta;
-
-    // ALGO: Create a new segment range if the point is the last point of segments
-    if ((p3.isLastPointOfSegments = isLastPointOfSegments) === true) {
-      segmentIndexes.push({ from: segmentFirstPointIdx, to: points.length });
-      segmentFirstPointIdx = points.length;
-    }
+    // ALGO: Use point delta as bent rate by default,
+    // point delta is NaN if the first point is the same as the second point, otherwise it is always positive
+    p3.bentRate = useRatio ? p3Delta : 0;
 
     points.push(p3);
+
+    insertHeadings(sampleHeadings);
+    insertSplitFlag(sampleSplits);
   }
 
-  // ALGO: The first should have heading information, but closestIdx is set to 1 at the beginning so it is not included
-  points[0].heading = samples[0].heading;
+  for (let t = 0; t < 1; t += targetInterval) {
+    loop(t);
+  }
+  loop(1);
 
-  // ALGO: The last segment is not looped
-  segmentIndexes.push({ from: segmentFirstPointIdx, to: points.length });
+  // ALGO: The first point should have heading information, but closestIdx is set to 1 at the beginning so it is not included
+  // ALGO: This also overwrites the heading of the first point if it is already set
+  points[0].heading = samples[0].heading;
 
   return { points: points, segmentIndexes: segmentIndexes };
 }
@@ -204,6 +265,8 @@ export function getUniformPointsFromSamples(sampleResult: SampleCalculationResul
  * D: The last point of the last segment with heading and isLastPointOfSegments flag
  * 
  * At least two points are returned.
+ * 
+ * The path arc length must be the same as the last point integral.
  * 
  * @param path The path to calculate
  * @param density The density of points to generate
@@ -232,6 +295,9 @@ export function getPathSamplePoints(path: Path, density: NumberInUnit): SampleCa
  * The first and the last point of the result are the end control points of the bezier curve.
  * That said, they included the heading information.
  * And the last point is marked as the last point of the segment with flag isLastPointOfSegments = true.
+ * 
+ * Note that the last sample is manually added to the result.
+ * This is because the last sample from getBezierCurvePoints() is not exactly the same as the last control point with t value 1.
  * 
  * @param segment The segment to calculate
  * @param density The density of points to generate
@@ -311,11 +377,15 @@ export function getBezierCurveArcLength(segment: Segment, interval: number = 0.0
 }
 
 /**
- * Calculates the points of a bezier curve segment
+ * Calculates the sample points of a bezier curve segment
+ * 
+ * The x and y value of the first sample is exactly the same as the first control point.
+ * But the x and y value of the last sample is not exactly the same as the last control point.
+ * 
  * @param segment The segment to calculate
  * @param interval 1 divided by the number of points to calculate
  * @param prevIntegral The previous integral added to the total distance
- * @returns The points of the segment
+ * @returns The sample points of the segment
  */
 export function getBezierCurvePoints(segment: Segment, interval: number, prevIntegral = 0): SamplePoint[] {
   let points: SamplePoint[] = [];
