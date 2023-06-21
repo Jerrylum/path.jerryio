@@ -87,11 +87,11 @@ By using PATH.JERRYIO, you only need to implement the path file parser and gener
 - Support exporting path files with different coordinate systems, unit of length, and more
 - Autosave (Coming soon)
 - Unsaved change warning
-- Robot simulation with customizable robot size (Coming soon)
+- Robot simulation with customizable robot size
 - Robot pure pursuit simulation (Coming soon)
 - Progressive Web Apps use without installation
 - Auto update
-- Offline support
+- Offline support (Coming soon)
 
 ### Editing Experience
 - Hidden shortcut keys and details which can greatly improve your work efficiency
