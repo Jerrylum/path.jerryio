@@ -113,7 +113,7 @@ const App = observer(() => {
   useCustomHotkeys("Ctrl+Subtract,Ctrl+Minus", () => app.fieldScale -= 0.5, optionsToEnableHotkeys);
   useCustomHotkeys("Ctrl+0", () => app.resetFieldDisplay(), optionsToEnableHotkeys);
 
-  useCustomHotkeys("r", () => app.gc.showRobot = !app.gc.showRobot, {
+  useCustomHotkeys("R", () => app.gc.showRobot = !app.gc.showRobot, {
     ...optionsToEnableHotkeys,
     enableOnFormTags: ['input', "INPUT"],
     // UX: A special case for input[type="checkbox"], it is okay to enable hotkeys on it
