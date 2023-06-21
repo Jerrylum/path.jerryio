@@ -9,7 +9,7 @@ import { Box, Typography } from "@mui/material";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
 import { UpdateProperties } from "../types/Command";
 import { Exclude } from "class-transformer";
-import { getPathPoint } from "../types/Calculation";
+import { getPathPoints } from "../types/Calculation";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -209,7 +209,7 @@ export class LemLibFormatV0_4 implements Format {
     const uc = new UnitConverter(this.gc.uol, UnitOfLength.Inch);
     const density = new NumberInUnit(app.gc.pointDensity, app.gc.uol);
 
-    const points = getPathPoint(path, density).points;
+    const points = getPathPoints(path, density).points;
     for (const point of points) {
       // ALGO: heading is not supported in LemLib V0.4 format.
       rtn += `${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${point.speed.toUser()}\n`;

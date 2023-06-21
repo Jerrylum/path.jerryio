@@ -105,9 +105,7 @@ const PointElement = observer((props: { point: Point, index: number, pc: PathCon
     <Circle x={x} y={y1} radius={gcc.pointRadius} fill={"grey"} />
     <Circle x={x} y={y2} radius={gcc.pointRadius} fill={color} />
     {
-      point.isLastPointOfSegments
-        ? <Line points={[x, 0, x, gcc.pixelHeight]} stroke="grey" strokeWidth={gcc.lineWidth} />
-        : null
+      point.isLast && <Line points={[x, 0, x, gcc.pixelHeight]} stroke="grey" strokeWidth={gcc.lineWidth} />
     }
   </>
 });

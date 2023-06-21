@@ -212,8 +212,8 @@ test('Calculation with one segment and no position changes', () => {
 
   const uniformResult = getUniformPointsFromSamples(pathSamples, density);
   toMatchObjectArray(uniformResult.points, [
-    { x: 60, y: 60, heading: 0, isLastPointOfSegments: false },
-    { x: 60, y: 60, heading: 90, isLastPointOfSegments: true }
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 60, y: 60, heading: 90, isLast: true }
   ]);
   toMatchObjectArray(uniformResult.segmentIndexes, [
     { index: 0, from: 0, to: 2 }
@@ -232,8 +232,8 @@ test('Calculation with one segment and 1cm position changes', () => {
 
   const uniformResult = getUniformPointsFromSamples(pathSamples, density);
   toMatchObjectArray(uniformResult.points, [
-    { x: 60, y: 60, heading: 0, isLastPointOfSegments: false },
-    { x: 61, y: 60, heading: 90, isLastPointOfSegments: true }
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 61, y: 60, heading: 90, isLast: true }
   ]);
   toMatchObjectArray(uniformResult.segmentIndexes, [
     { index: 0, from: 0, to: 2 }
@@ -252,8 +252,8 @@ test('Calculation with one segment and 2cm position changes', () => {
 
   const uniformResult = getUniformPointsFromSamples(pathSamples, density);
   toMatchObjectArray(uniformResult.points, [
-    { x: 60, y: 60, heading: 0, isLastPointOfSegments: false },
-    { x: 62, y: 60, heading: 90, isLastPointOfSegments: true }
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 62, y: 60, heading: 90, isLast: true }
   ]);
   toMatchObjectArray(uniformResult.segmentIndexes, [
     { index: 0, from: 0, to: 2 }
@@ -272,9 +272,9 @@ test('Calculation with one segment and 3cm position changes', () => {
 
   const uniformResult = getUniformPointsFromSamples(pathSamples, density);
   toMatchObjectArray(uniformResult.points, [
-    { x: 60, y: 60, heading: 0, isLastPointOfSegments: false },
-    { x: 62, y: 60, heading: undefined, isLastPointOfSegments: false },
-    { x: 63, y: 60, heading: 90, isLastPointOfSegments: true }
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 62, y: 60, heading: undefined, isLast: false },
+    { x: 63, y: 60, heading: 90, isLast: true }
   ]);
   toMatchObjectArray(uniformResult.segmentIndexes, [
     { index: 0, from: 0, to: 3 }
@@ -298,8 +298,8 @@ test('Calculation with two segments and no position changes', () => {
 
   const uniformResult = getUniformPointsFromSamples(pathSamples, density);
   toMatchObjectArray(uniformResult.points, [
-    { x: 60, y: 60, heading: 0, isLastPointOfSegments: true },
-    { x: 60, y: 60, heading: 180, isLastPointOfSegments: true }
+    { x: 60, y: 60, heading: 0, isLast: true },
+    { x: 60, y: 60, heading: 180, isLast: true }
   ]);
   toMatchObjectArray(uniformResult.segmentIndexes, [
     { index: 0, from: 0, to: 1 },
@@ -324,9 +324,9 @@ test('Calculation with two segments and 2cm position changes', () => {
 
   const uniformResult = getUniformPointsFromSamples(pathSamples, density);
   toMatchObjectArray(uniformResult.points, [
-    { x: 60, y: 60, heading: 0, isLastPointOfSegments: false },
-    { x: 62, y: 60, heading: 90, isLastPointOfSegments: true },
-    { x: 62, y: 60, heading: 180, isLastPointOfSegments: true }
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 62, y: 60, heading: 90, isLast: true },
+    { x: 62, y: 60, heading: 180, isLast: true }
   ]);
   toMatchObjectArray(uniformResult.segmentIndexes, [
     { index: 0, from: 0, to: 2 },
@@ -351,9 +351,9 @@ test('Calculation with two segments and 3cm position changes', () => {
 
   const uniformResult = getUniformPointsFromSamples(pathSamples, density);
   toMatchObjectArray(uniformResult.points, [
-    { x: 60, y: 60, heading: 0, isLastPointOfSegments: false },
-    { x: 62, y: 60, heading: 90, isLastPointOfSegments: true },
-    { x: 63, y: 60, heading: 180, isLastPointOfSegments: true }
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 62, y: 60, heading: 90, isLast: true },
+    { x: 63, y: 60, heading: 180, isLast: true }
   ]);
   toMatchObjectArray(uniformResult.segmentIndexes, [
     { index: 0, from: 0, to: 2 },
@@ -383,9 +383,9 @@ test('Calculation with three segments and 4cm position changes', () => {
 
   const uniformResult = getUniformPointsFromSamples(pathSamples, density);
   toMatchObjectArray(uniformResult.points, [
-    { x: 60, y: 60, heading: 0, isLastPointOfSegments: false },
-    { x: 62, y: 60, heading: 90, isLastPointOfSegments: true },
-    { x: 64, y: 60, heading: 270, isLastPointOfSegments: true }
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 62, y: 60, heading: 90, isLast: true },
+    { x: 64, y: 60, heading: 270, isLast: true }
   ]);
   toMatchObjectArray(uniformResult.segmentIndexes, [
     { index: 0, from: 0, to: 2 },
@@ -416,10 +416,10 @@ test('Calculation with three segments and 5cm position changes', () => {
 
   const uniformResult = getUniformPointsFromSamples(pathSamples, density);
   toMatchObjectArray(uniformResult.points, [
-    { x: 60, y: 60, heading: 0, isLastPointOfSegments: false },
-    { x: 62, y: 60, heading: 90, isLastPointOfSegments: true },
-    { x: 64, y: 60, heading: 180, isLastPointOfSegments: true },
-    { x: 65, y: 60, heading: 270, isLastPointOfSegments: true }
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 62, y: 60, heading: 90, isLast: true },
+    { x: 64, y: 60, heading: 180, isLast: true },
+    { x: 65, y: 60, heading: 270, isLast: true }
   ]);
   toMatchObjectArray(uniformResult.segmentIndexes, [
     { index: 0, from: 0, to: 2 },
@@ -450,11 +450,11 @@ test('Calculation with three segments and 7cm position changes', () => {
 
   const uniformResult = getUniformPointsFromSamples(pathSamples, density);
   toMatchObjectArray(uniformResult.points, [
-    { x: 60, y: 60, heading: 0, isLastPointOfSegments: false },
-    { x: 62, y: 60, heading: undefined, isLastPointOfSegments: false },
-    { x: 64, y: 60, heading: 90, isLastPointOfSegments: true }, // should be true
-    { x: 66, y: 60, heading: 180, isLastPointOfSegments: true },
-    { x: 67, y: 60, heading: 270, isLastPointOfSegments: true }
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 62, y: 60, heading: undefined, isLast: false },
+    { x: 64, y: 60, heading: 90, isLast: true }, // should be true
+    { x: 66, y: 60, heading: 180, isLast: true },
+    { x: 67, y: 60, heading: 270, isLast: true }
   ]);
   toMatchObjectArray(uniformResult.segmentIndexes, [
     { index: 0, from: 0, to: 3 },

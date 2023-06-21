@@ -79,36 +79,39 @@ export class Vector {
 
 // Not observable
 export class SamplePoint extends Vector {
-  public isLastPointOfSegments: boolean = false;
+  public isLast: boolean = false;
 
   constructor(x: number, y: number,
     public delta: number, // distance to the previous point after ratio is applied
     public integral: number, // integral distance from the first point
+    public ref: Segment, // The referenced segment
     public t: number, // [0, 1] The step of the sample point
     public heading?: number) {
     super(x, y);
   }
 
   clone(): SamplePoint {
-    return new SamplePoint(this.x, this.y, this.delta, this.integral, this.t, this.heading);
+    return new SamplePoint(this.x, this.y, this.delta, this.integral, this.ref, this.t, this.heading);
   }
 }
 
 // Not observable
 export class Point extends Vector {
-  public isLastPointOfSegments: boolean = false;
+  public isLast: boolean = false;
   public bentRate: number = 0;
 
+  // ALGO: It is possible that the heading is defined and isLast is true but sampleT is not 1.
+
   constructor(x: number, y: number,
-    public delta: number, // distance to the previous point after ratio is applied
-    public integral: number, // integral distance from the first point
+    public sampleRef: Segment, // The referenced sample segment
+    public sampleT: number,
     public speed: number = 0,
-    public heading?: number) {
+    public heading: number | undefined) {
     super(x, y);
   }
 
   clone(): Point {
-    return new Point(this.x, this.y, this.delta, this.integral, this.speed, this.heading);
+    return new Point(this.x, this.y, this.sampleRef, this.sampleT, this.speed, this.heading);
   }
 }
 
