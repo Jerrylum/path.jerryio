@@ -82,7 +82,7 @@ const HelpDialog = observer((props: {}) => {
             <a target="_blank" rel="noreferrer" href="https://www.tldrlegal.com/license/gnu-general-public-license-v3-gpl-3">License</a>
             <a target="_blank" rel="noreferrer" href="https://github.com/Jerrylum/path.jerryio/blob/main/PRIVACY.md">Privacy Terms</a>
             <a target="_blank" rel="noreferrer" href="https://www.gnu.org/philosophy/free-sw.html">About Free Software</a>
-            <a target="_blank" rel="noreferrer" href="https://discord.gg/YY43P53QRa">Join Our Discord Server</a>
+            <a target="_blank" rel="noreferrer" href="https://discord.gg/4uVSVXXBBa">Join Our Discord Server</a>
           </Typography>
         </Card>
       }
