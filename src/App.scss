@@ -319,6 +319,21 @@ th {
   }
 }
 
+.menu-item.MuiMenuItem-root.Mui-disabled {
+  pointer-events: auto !important;
+}
+
+.menu-item.MuiMenuItem-root.Mui-disabled:hover {
+  // UX: don't change background color on hover
+  background-color: transparent !important;
+}
+
+.menu-item.MuiMenuItem-root.Mui-disabled:active {
+  // https://moshfeu.github.io/show-tooltip-on-pointer-events-none-element/
+
+  pointer-events: none !important;
+}
+
 // For menu list
 .MuiPaper-root {
   transition: none !important;
