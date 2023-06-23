@@ -184,6 +184,7 @@ const ConfirmationDialog = observer((props: {}) => {
           cfm.input &&
           <Box className="input-box">
             <ObserverInput
+              label={cfm.inputLabel}
               getValue={() => cfm.input ?? ""}
               setValue={(value) => cfm.input = value}
               isValidIntermediate={() => true}
