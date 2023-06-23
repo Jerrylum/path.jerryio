@@ -83,9 +83,11 @@ const App = observer(() => {
 
   useCustomHotkeys("R", () => app.gc.showRobot = !app.gc.showRobot, {
     ...optionsToEnableHotkeys,
+    preventDefaultOnlyIfEnabled: true,
     enableOnFormTags: ['input', "INPUT"],
     // UX: A special case for input[type="checkbox"], it is okay to enable hotkeys on it
     enabled: (kvEvt: KeyboardEvent) =>
+      optionsToEnableHotkeys.enabled &&
       (kvEvt.target instanceof HTMLInputElement) === false ||
       (kvEvt.target as HTMLInputElement).type === "checkbox",
   });
