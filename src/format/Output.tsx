@@ -1,17 +1,17 @@
 import { Confirmation } from "../app/Confirmation";
 import { MainApp, getAppStores } from "../app/MainApp";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from '../app/Notice';
-import { showOpenFilePicker, showSaveFilePicker } from 'native-file-system-adapter'
+import { showOpenFilePicker, showSaveFilePicker, FileSystemFileHandle } from 'native-file-system-adapter'
 
-async function saveConfirm(app: MainApp, confirmation: Confirmation, callback: () => void) {
+async function saveConfirm(app: MainApp, conf: Confirmation, callback: () => void) {
   return new Promise<boolean>((resolve, reject) => {
-    confirmation.prompt({
+    conf.prompt({
       title: "Unsaved Changes",
-      description: "Do you want to save the changes made to " + (app.mountingFile?.name ?? "path.jerryio.txt") + "?",
+      description: "Do you want to save the changes made to " + app.mountingFile.name + "?",
       buttons: [
         {
           label: "Save", color: "success", hotkey: "s", onClick: async () => {
-            if (await onSave(app)) {
+            if (await onSave(app, conf)) {
               callback();
               resolve(true);
             } else {
@@ -31,6 +31,25 @@ async function saveConfirm(app: MainApp, confirmation: Confirmation, callback: (
   });
 }
 
+async function fileNameConfirm(app: MainApp, conf: Confirmation, description: string, callback: () => void) {
+  return new Promise<void>((resolve, reject) => {
+    conf.prompt({
+      title: "Download",
+      description,
+      buttons: [{
+        label: "Confirm", color: "success", onClick: async () => {
+          app.mountingFile.name = conf.input ?? app.mountingFile.name;
+          app.mountingFile.isNameSet = true;
+          callback();
+          resolve();
+        }
+      }, { label: "Cancel", onClick: () => resolve() }],
+      inputLabel: "File Name",
+      inputDefaultValue: app.mountingFile.name,
+    });
+  });
+}
+
 function exportPathFile(app: MainApp): string | undefined {
   try {
     return app.format.exportPathFile(app);
@@ -43,12 +62,13 @@ function exportPathFile(app: MainApp): string | undefined {
 
 async function writeFile(app: MainApp, contents: string): Promise<boolean> {
   try {
-    const fileHandle = app.mountingFile;
-    if (fileHandle === null) throw new Error("fileHandle is undefined");
+    const file = app.mountingFile;
+    if (file.handle === null) throw new Error("fileHandle is undefined");
 
-    await fileHandle.requestPermission({ mode: "readwrite" });
+    // XXX
+    await file.handle.requestPermission({ mode: "readwrite" });
 
-    const writable = await fileHandle.createWritable();
+    const writable = await file.handle.createWritable();
     await writable.write(contents);
     await writable.close();
 
@@ -73,7 +93,9 @@ async function readFile(app: MainApp): Promise<string | undefined> {
 
   try {
     const [fileHandle] = await showOpenFilePicker(options);
-    app.mountingFile = fileHandle as unknown as FileSystemFileHandle;
+    app.mountingFile.handle = fileHandle;
+    app.mountingFile.name = fileHandle.name;
+    app.mountingFile.isNameSet = true;
 
     const file = await fileHandle.getFile();
     const contents = await file.text();
@@ -87,19 +109,20 @@ async function readFile(app: MainApp): Promise<string | undefined> {
   }
 }
 
-/*
-Notice message for user
+function downloadFile(app: MainApp, contents: string) {
+  const a = document.createElement("a");
+  const file = new Blob([contents], { type: "text/plain" });
+  a.href = URL.createObjectURL(file);
+  a.download = app.mountingFile.name;
+  a.click();
 
-Writing file to the disk is not supported in this browser. Falling back to download. 
-
-
-
-*/
+  getAppStores().ga.gtag('event', 'download_file_format', { format: app.format.getName() });
+}
 
 async function choiceSave(app: MainApp): Promise<boolean> {
   const options = {
     types: [{ description: 'Path File', accept: { 'text/plain': [] } }], // For native
-    suggestedName: "path.jerryio", // For native & polyfill
+    suggestedName: app.mountingFile.name, // For native & polyfill
     excludeAcceptAllOption: false, // For native & polyfill
     multiple: false, // For native & polyfill
     accepts: ["text/plain"] // For polyfill, might not used
@@ -107,7 +130,9 @@ async function choiceSave(app: MainApp): Promise<boolean> {
 
   try {
     const fileHandle = await showSaveFilePicker(options);
-    app.mountingFile = fileHandle as unknown as FileSystemFileHandle;
+    app.mountingFile.handle = fileHandle;
+    app.mountingFile.name = fileHandle.name;
+    app.mountingFile.isNameSet = true;
 
     return true;
   } catch (err) {
@@ -116,20 +141,27 @@ async function choiceSave(app: MainApp): Promise<boolean> {
   }
 }
 
-export function isFileSystemSupported() {
-  return window.showOpenFilePicker === undefined && window.showSaveFilePicker === undefined;
+export class OutputFileHandle {
+  public isNameSet: boolean = false;
+  constructor(public handle: FileSystemFileHandle | null = null, public name: string = "path.jerryio.txt") { }
 }
 
-export async function onNew(app: MainApp, confirmation: Confirmation, saveCheck: boolean = true): Promise<boolean> {
-  if (saveCheck && app.history.isModified()) return saveConfirm(app, confirmation, onNew.bind(null, app, confirmation, false));
+export function isFileSystemSupported() {
+  return window.showOpenFilePicker !== undefined && window.showSaveFilePicker !== undefined;
+}
+
+export async function onNew(app: MainApp, conf: Confirmation, saveCheck: boolean = true): Promise<boolean> {
+  if (saveCheck && app.history.isModified()) return saveConfirm(app, conf, onNew.bind(null, app, conf, false));
 
   app.newPathFile();
-  app.mountingFile = null;
+  app.mountingFile = new OutputFileHandle();
   return true;
 }
 
-export async function onSave(app: MainApp): Promise<boolean> {
-  if (app.mountingFile === null) return onSaveAs(app);
+export async function onSave(app: MainApp, conf: Confirmation): Promise<boolean> {
+  if (isFileSystemSupported() === false) return onDownload(app, conf, true);
+
+  if (app.mountingFile.handle === null) return onSaveAs(app, conf);
 
   const output = exportPathFile(app);
   if (output === undefined) return false;
@@ -142,7 +174,9 @@ export async function onSave(app: MainApp): Promise<boolean> {
   }
 }
 
-export async function onSaveAs(app: MainApp): Promise<boolean> {
+export async function onSaveAs(app: MainApp, conf: Confirmation): Promise<boolean> {
+  if (isFileSystemSupported() === false) return onDownloadAs(app, conf, true);
+
   const output = exportPathFile(app);
   if (output === undefined) return false;
 
@@ -156,8 +190,8 @@ export async function onSaveAs(app: MainApp): Promise<boolean> {
   }
 }
 
-export async function onOpen(app: MainApp, confirmation: Confirmation, saveCheck: boolean = true): Promise<boolean> {
-  if (saveCheck && app.history.isModified()) return saveConfirm(app, confirmation, onOpen.bind(null, app, confirmation, false));
+export async function onOpen(app: MainApp, conf: Confirmation, saveCheck: boolean = true): Promise<boolean> {
+  if (saveCheck && app.history.isModified()) return saveConfirm(app, conf, onOpen.bind(null, app, conf, false));
 
   let contents = await readFile(app);
   if (contents === undefined) return false;
@@ -171,17 +205,22 @@ export async function onOpen(app: MainApp, confirmation: Confirmation, saveCheck
   }
 }
 
-export function onDownload(app: MainApp) {
+export async function onDownload(app: MainApp, conf: Confirmation, fallback: boolean = false): Promise<boolean> {
+  if (app.mountingFile.isNameSet === false) return onDownloadAs(app, conf, fallback);
+
   const output = exportPathFile(app);
   if (output === undefined) return false;
 
-  const a = document.createElement("a");
-  const file = new Blob([output], { type: "text/plain" });
-  a.href = URL.createObjectURL(file);
-  a.download = "path.jerryio.txt"; // TODO better file name
-  a.click();
+  downloadFile(app, output);
 
-  getAppStores().ga.gtag('event', 'download_file_format', { format: app.format.getName() });
+  return true;
+}
+
+export async function onDownloadAs(app: MainApp, conf: Confirmation, fallback: boolean = false): Promise<boolean> {
+  const output = exportPathFile(app);
+  if (output === undefined) return false;
+
+  fileNameConfirm(app, conf, fallback ? "Writing file to the disk is not supported in this browser. Falling back to download." : "", downloadFile.bind(null, app, output));
 
   return true;
 }

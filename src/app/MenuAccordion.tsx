@@ -6,7 +6,7 @@ import { observer } from "mobx-react-lite";
 import React from "react";
 import { DefaultComponentProps } from "@mui/material/OverridableComponent";
 import { useKeyName } from "./Util";
-import { onDownload, onNew, onOpen, onSave, onSaveAs } from "../format/Output";
+import { onDownload, onDownloadAs, onNew, onOpen, onSave, onSaveAs } from "../format/Output";
 import { MainApp, useAppStores } from "./MainApp";
 import { HelpPage } from "./HelpDialog";
 import { AppTheme } from "./Theme";
@@ -56,11 +56,13 @@ const MenuAccordion = observer((props: {}) => {
         <Divider />
         <CustomMenuItem done={false} text="Open File" hotkey={useKeyName("Ctrl+O")} onClick={onMenuClick(() => onOpen(app, confirmation))} />
         <Divider />
-        <CustomMenuItem done={false} text="Save" hotkey={useKeyName("Ctrl+S")} onClick={onMenuClick(onSave)} />
-        <CustomMenuItem done={false} text="Save As" hotkey={useKeyName("Ctrl+Shift+S")} onClick={onMenuClick(onSaveAs)} />
-        <CustomMenuItem done={false} text="Download" hotkey={useKeyName("Ctrl+D")} onClick={onMenuClick(onDownload)} />
+        <CustomMenuItem done={false} text="Save" hotkey={useKeyName("Ctrl+S")} onClick={onMenuClick(() => onSave(app, confirmation))} />
+        <CustomMenuItem done={false} text="Save As" hotkey={useKeyName("Ctrl+Shift+S")} onClick={onMenuClick(() => onSaveAs(app, confirmation))} />
         <Divider />
-        <CustomMenuItem done={false} text="Preferences" hotkey={useKeyName("Ctrl+,")} onClick={onMenuClick(() => appPreferences.open())}/>
+        <CustomMenuItem done={false} text="Download" hotkey={useKeyName("Ctrl+D")} onClick={onMenuClick(() => onDownload(app, confirmation))} />
+        <CustomMenuItem done={false} text="Download As" hotkey={useKeyName("Ctrl+Shift+D")} onClick={onMenuClick(() => onDownloadAs(app, confirmation))} />
+        <Divider />
+        <CustomMenuItem done={false} text="Preferences" hotkey={useKeyName("Ctrl+,")} onClick={onMenuClick(() => appPreferences.open())} />
       </Menu>
 
       <Menu anchorEl={document.getElementById('menu-edit-btn')} MenuListProps={{ dense: true }}
@@ -102,7 +104,7 @@ const MenuAccordion = observer((props: {}) => {
         open={isOpenHelpMenu} onClose={() => setIsOpenHelpMenu(false)}>
         <CustomMenuItem done={false} text="Welcome" onClick={onMenuClick(() => help.open(HelpPage.Welcome))} />
         <CustomMenuItem done={false} text="Wiki Page" onClick={onMenuClick(() => window.open('https://github.com/Jerrylum/path.jerryio/wiki', '_blank'))} />
-        <CustomMenuItem done={false} text="About" onClick={onMenuClick(() => help.open(HelpPage.About))}/>
+        <CustomMenuItem done={false} text="About" onClick={onMenuClick(() => help.open(HelpPage.About))} />
       </Menu>
     </Card>
   );

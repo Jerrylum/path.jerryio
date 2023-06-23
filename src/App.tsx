@@ -19,7 +19,7 @@ import { FieldCanvasElement } from './app/FieldCanvasElement';
 import { MainApp, useAppStores } from './app/MainApp';
 
 import React from 'react';
-import { onDownload, onNew, onOpen, onSave, onSaveAs } from './format/Output';
+import { onDownload, onDownloadAs, onNew, onOpen, onSave, onSaveAs } from './format/Output';
 import { NoticeProvider } from './app/Notice';
 import { ConfirmationDialog } from './app/Confirmation';
 import { HelpDialog } from './app/HelpDialog';
@@ -55,9 +55,10 @@ const App = observer(() => {
 
   useCustomHotkeys("Ctrl+P", onNew.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+O", onOpen.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
-  useCustomHotkeys("Ctrl+S", onSave.bind(null, app), optionsToEnableHotkeysOnInputFields);
-  useCustomHotkeys("Ctrl+Shift+S", onSaveAs.bind(null, app), optionsToEnableHotkeysOnInputFields);
-  useCustomHotkeys("Ctrl+D", onDownload.bind(null, app), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Ctrl+S", onSave.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Ctrl+Shift+S", onSaveAs.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Ctrl+D", onDownload.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Ctrl+Shift+D", onDownloadAs.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+Comma", () => appPreferences.open(), optionsToEnableHotkeys);
 
   useCustomHotkeys("Ctrl+Z", () => app.history.undo(), optionsToEnableHotkeys);
@@ -88,8 +89,10 @@ const App = observer(() => {
     // UX: A special case for input[type="checkbox"], it is okay to enable hotkeys on it
     enabled: (kvEvt: KeyboardEvent) =>
       optionsToEnableHotkeys.enabled &&
-      (kvEvt.target instanceof HTMLInputElement) === false ||
-      (kvEvt.target as HTMLInputElement).type === "checkbox",
+      (
+        (kvEvt.target instanceof HTMLInputElement) === false ||
+        (kvEvt.target as HTMLInputElement).type === "checkbox"
+      )
   });
 
   useUnsavedChangesPrompt();
