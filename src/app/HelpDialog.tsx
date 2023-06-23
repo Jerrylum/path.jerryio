@@ -66,13 +66,13 @@ const HelpDialog = observer((props: {}) => {
       tabIndex={-1}>
       {
         help.currentPage === HelpPage.Welcome &&
-        <Card className="help-welcome-page" onClick={(e) => e.stopPropagation()}>
+        <Card className="help-welcome-page" onClick={(e) => e.stopPropagation()} tabIndex={1000}>
           <Welcome {...{ isGAEnabled, setIsGAEnabled }} components={MarkdownOverwrittenComponents} />
         </Card>
       }
       {
         help.currentPage === HelpPage.About &&
-        <Card className="help-about-page" onClick={(e) => e.stopPropagation()}>
+        <Card className="help-about-page" onClick={(e) => e.stopPropagation()} tabIndex={1000}>
           <img src="logo464.svg" alt="app logo" />
           <Typography variant="h3" gutterBottom align="center">PATH.JERRYIO Version {app.appVersion.version}</Typography>
           <Typography variant="body1" align="center" sx={{ marginBottom: "2rem" }}>Made by Jerry Lum</Typography>
