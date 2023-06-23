@@ -1,6 +1,7 @@
 import { Confirmation } from "../app/Confirmation";
 import { MainApp, getAppStores } from "../app/MainApp";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from '../app/Notice';
+import { showOpenFilePicker, showSaveFilePicker } from 'native-file-system-adapter'
 
 async function saveConfirm(app: MainApp, confirmation: Confirmation, callback: () => void) {
   return new Promise<boolean>((resolve, reject) => {
@@ -45,6 +46,8 @@ async function writeFile(app: MainApp, contents: string): Promise<boolean> {
     const fileHandle = app.mountingFile;
     if (fileHandle === null) throw new Error("fileHandle is undefined");
 
+    await fileHandle.requestPermission({ mode: "readwrite" });
+
     const writable = await fileHandle.createWritable();
     await writable.write(contents);
     await writable.close();
@@ -62,12 +65,15 @@ async function writeFile(app: MainApp, contents: string): Promise<boolean> {
 
 async function readFile(app: MainApp): Promise<string | undefined> {
   const options = {
-    types: [{ description: 'Path File', accept: { 'text/plain': [] } },],
+    types: [{ description: 'Path File', accept: { 'text/plain': [] } }], // For native
+    excludeAcceptAllOption: false, // For native & polyfill
+    multiple: false, // For native & polyfill
+    accepts: ["text/plain"] // For polyfill
   };
 
   try {
-    const [fileHandle] = await window.showOpenFilePicker(options);
-    app.mountingFile = fileHandle;
+    const [fileHandle] = await showOpenFilePicker(options);
+    app.mountingFile = fileHandle as unknown as FileSystemFileHandle;
 
     const file = await fileHandle.getFile();
     const contents = await file.text();
@@ -81,20 +87,37 @@ async function readFile(app: MainApp): Promise<string | undefined> {
   }
 }
 
+/*
+Notice message for user
+
+Writing file to the disk is not supported in this browser. Falling back to download. 
+
+
+
+*/
+
 async function choiceSave(app: MainApp): Promise<boolean> {
   const options = {
-    types: [{ description: 'Path File', accept: { 'text/plain': [] } },],
-    suggestedName: "path.jerryio"
+    types: [{ description: 'Path File', accept: { 'text/plain': [] } }], // For native
+    suggestedName: "path.jerryio", // For native & polyfill
+    excludeAcceptAllOption: false, // For native & polyfill
+    multiple: false, // For native & polyfill
+    accepts: ["text/plain"] // For polyfill, might not used
   };
 
   try {
-    const fileHandle = await window.showSaveFilePicker(options);
-    app.mountingFile = fileHandle;
+    const fileHandle = await showSaveFilePicker(options);
+    app.mountingFile = fileHandle as unknown as FileSystemFileHandle;
+
     return true;
   } catch (err) {
     console.log(err); // ignore error
     return false;
   }
+}
+
+export function isFileSystemSupported() {
+  return window.showOpenFilePicker === undefined && window.showSaveFilePicker === undefined;
 }
 
 export async function onNew(app: MainApp, confirmation: Confirmation, saveCheck: boolean = true): Promise<boolean> {

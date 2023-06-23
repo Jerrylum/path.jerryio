@@ -203,7 +203,7 @@ export class MainApp {
   @computed get selectedPath(): Path | undefined {
     if (this.selected.length === 0) return undefined;
 
-    // ALGO: Return the first selected path if: some path is selected
+    // ALGO: Return the first selected path if: some paths are selected
     let rtn = this.paths.find((path) => this.isSelected(path));
     // ALGO: Return the first selected control point's path if: some control point is selected, the path visible and not locked
     if (rtn === undefined) rtn = this.paths.find((path) => path.controls.some((control) => this.isSelected(control)));
