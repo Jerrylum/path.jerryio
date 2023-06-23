@@ -1,7 +1,7 @@
 import { Backdrop, Box, Button, Card, Typography } from "@mui/material";
 import React from "react";
 import { useAppStores } from "./MainApp";
-import { makeAutoObservable, action } from "mobx"
+import { makeAutoObservable, action, when } from "mobx"
 import { observer } from "mobx-react-lite";
 import { useBackdropDialog } from "./Util";
 import { ObserverInput } from "./ObserverInput";
@@ -36,17 +36,22 @@ export class Confirmation {
     this.data = undefined;
   }
 
-  prompt(data: ConfirmationPromptData | ConfirmationInputPromptData) {
+  async prompt(data: ConfirmationPromptData | ConfirmationInputPromptData) {
     if (data.buttons.length === 0) {
       data.buttons.push({ label: "OK" });
     }
 
+    this.close();
     this.data = data;
     if ("inputLabel" in data && "inputDefaultValue" in data) {
       this.input = data.inputDefaultValue;
     } else {
       this.input = undefined;
     }
+
+    await when(() => this.data === undefined);
+
+    return this.input;
   }
 
   get isOpen() {
@@ -79,7 +84,7 @@ const ConfirmationDialog = observer((props: {}) => {
     if (cfm.isOpen === false) return;
 
     getElements()[0]?.focus();
-  }, [cfm.isOpen]);
+  }, [cfm.isOpen, getElements]);
 
   // UX: Disable tab globally when there is only one button
   useBackdropDialog(cfm.isOpen && cfm.buttons.length === 1);
