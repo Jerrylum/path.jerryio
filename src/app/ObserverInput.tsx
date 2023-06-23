@@ -72,7 +72,7 @@ const ObserverInput = observer((props: TextFieldProps & {
     rest.onBlur?.(event);
   }
 
-  function  onConfirm(event: React.SyntheticEvent<HTMLInputElement | HTMLTextAreaElement, Event>) {
+  function onConfirm(event: React.SyntheticEvent<HTMLInputElement | HTMLTextAreaElement, Event>) {
     const element = (event.nativeEvent.target as HTMLInputElement);
     const candidate = element.value;
     let rtn: string;
