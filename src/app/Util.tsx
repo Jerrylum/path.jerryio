@@ -31,16 +31,19 @@ export function useIsMacOS() {
 }
 
 export interface CustomHotkeysOptions extends Options {
-  enableOnCheckbox?: boolean
+  preventDefaultOnlyIfEnabled?: boolean
 }
 
 export function useCustomHotkeys<T extends HTMLElement>(
   keys: string, callback: () => void,
   options?: CustomHotkeysOptions, dependencies?: DependencyList): React.MutableRefObject<RefType<T>> {
   const timeRef = React.useRef<number | null>(null);
+  const enabledRef = React.useRef<boolean>(false);
 
   function onKeydown(func: () => void): HotkeyCallback {
     return function (kvEvt: KeyboardEvent, hkEvt: HotkeysEvent) {
+      if (enabledRef.current === false) return;
+
       /*
       UX: Debounce the keydown event to prevent the callback from being called multiple times.
       If the user holds down the key, the callback will only be called once until the key is released.
@@ -62,20 +65,36 @@ export function useCustomHotkeys<T extends HTMLElement>(
     ...options,
     keydown: true,
     keyup: true,
-    preventDefault: true,
+    preventDefault: false,
     enabled: (kvEvt: KeyboardEvent, hkEvt: HotkeysEvent): boolean => {
-      // This is needed as preventDefault in the option list below does not work with disabled hotkeys
-      kvEvt.preventDefault();
-      kvEvt.stopPropagation();
+      let rtn: boolean;
 
       const enabledOptions: Trigger | undefined = options?.enabled;
       if (enabledOptions === undefined) {
-        return true;
+        rtn = true;
       } else if (typeof enabledOptions === "function") {
-        return enabledOptions(kvEvt, hkEvt);
+        rtn = enabledOptions(kvEvt, hkEvt);
       } else {
-        return enabledOptions;
+        rtn = enabledOptions;
       }
+
+      enabledRef.current = rtn;
+
+      /*
+      ALGO:
+      If the hotkey is enabled: preventDefault
+      If the hotkey is not enabled, it is allowed to preventDefault: preventDefault
+      Else: do not preventDefault, but return true to prevent useHotkeys from calling preventDefault
+      */
+      if (rtn === true || options?.preventDefaultOnlyIfEnabled !== true) {
+        kvEvt.preventDefault();
+        kvEvt.stopPropagation();
+      } else {
+        rtn = true;
+      }
+      console.log(rtn, options?.preventDefaultOnlyIfEnabled, kvEvt.defaultPrevented);
+
+      return rtn;
     }
   }, dependencies);
 }
