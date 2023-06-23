@@ -77,7 +77,7 @@ const ObserverInput = observer((props: TextFieldProps & {
     const candidate = element.value;
     let rtn: string;
 
-    if (isValidValue(candidate) === false || (allowEmpty !== false && candidate === "")) {
+    if (isValidValue(candidate) === false || (allowEmpty !== true && candidate === "")) {
       element.value = rtn = initialValue.current;
     } else {
       rtn = candidate;
