@@ -92,6 +92,9 @@ async function readFile(app: MainApp): Promise<string | undefined> {
   };
 
   try {
+    // Remove polyfill input[type=file] elements
+    document.querySelectorAll("body > input[type=file]").forEach((input) => input.remove());
+
     const [fileHandle] = await showOpenFilePicker(options);
     app.mountingFile.handle = fileHandle;
     app.mountingFile.name = fileHandle.name;
@@ -139,6 +142,10 @@ async function choiceSave(app: MainApp): Promise<boolean> {
     console.log(err); // ignore error
     return false;
   }
+}
+
+function isFirefox() {
+  return navigator.userAgent.indexOf("Firefox") !== -1;
 }
 
 export class OutputFileHandle {
@@ -190,10 +197,20 @@ export async function onSaveAs(app: MainApp, conf: Confirmation): Promise<boolea
   }
 }
 
-export async function onOpen(app: MainApp, conf: Confirmation, saveCheck: boolean = true): Promise<boolean> {
-  if (saveCheck && app.history.isModified()) return saveConfirm(app, conf, onOpen.bind(null, app, conf, false));
+export async function onOpen(app: MainApp, conf: Confirmation, saveCheck: boolean = true, interactive: boolean = true): Promise<boolean> {
+  if (saveCheck && app.history.isModified()) return saveConfirm(app, conf, onOpen.bind(null, app, conf, false, false));
 
-  let contents = await readFile(app);
+  if (interactive && isFirefox()) {
+    // Resolve: <input> picker was blocked due to lack of user activation.
+    await conf.prompt({
+      title: "Open File",
+      description: "Press any key to continue.",
+      buttons: [{ label: "Open", color: "success" }],
+      onKeyDown: (e, onClick) => onClick(0)
+    });
+  }
+
+  const contents = await readFile(app);
   if (contents === undefined) return false;
 
   try {

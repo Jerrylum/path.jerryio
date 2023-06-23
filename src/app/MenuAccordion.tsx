@@ -54,7 +54,7 @@ const MenuAccordion = observer((props: {}) => {
         open={isOpenFileMenu} onClose={() => setIsOpenFileMenu(false)}>
         <CustomMenuItem done={false} text="New File" hotkey={useKeyName("Ctrl+P")} onClick={onMenuClick(() => onNew(app, confirmation))} />
         <Divider />
-        <CustomMenuItem done={false} text="Open File" hotkey={useKeyName("Ctrl+O")} onClick={onMenuClick(() => onOpen(app, confirmation))} />
+        <CustomMenuItem done={false} text="Open File" hotkey={useKeyName("Ctrl+O")} onClick={onMenuClick(() => onOpen(app, confirmation, false, false))} />
         <Divider />
         <CustomMenuItem done={false} text="Save" hotkey={useKeyName("Ctrl+S")} onClick={onMenuClick(() => onSave(app, confirmation))} />
         <CustomMenuItem done={false} text="Save As" hotkey={useKeyName("Ctrl+Shift+S")} onClick={onMenuClick(() => onSaveAs(app, confirmation))} />
