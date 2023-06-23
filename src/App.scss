@@ -371,6 +371,14 @@ th {
       }
     }
 
+    .input-box {
+      width: 100%;
+
+      > * {
+        width: 100%;
+      }
+    }
+
     .button-box {
       display: flex;
       margin-top: 1rem;

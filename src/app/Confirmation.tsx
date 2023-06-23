@@ -4,6 +4,7 @@ import { useAppStores } from "./MainApp";
 import { makeAutoObservable, action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { useBackdropDialog } from "./Util";
+import { ObserverInput } from "./ObserverInput";
 
 export interface ConfirmationButton {
   label: string;
@@ -12,14 +13,20 @@ export interface ConfirmationButton {
   color?: "inherit" | "primary" | "secondary" | "success" | "error" | "info" | "warning";
 }
 
-export interface ConfirmationData {
+export interface ConfirmationPromptData {
   title: string;
   description: string;
   buttons: ConfirmationButton[];
 }
 
+export interface ConfirmationInputPromptData extends ConfirmationPromptData {
+  inputLabel: string;
+  inputDefaultValue: string;
+}
+
 export class Confirmation {
-  private data?: ConfirmationData;
+  private data?: ConfirmationPromptData | ConfirmationInputPromptData;
+  public input?: string;
 
   constructor() {
     makeAutoObservable(this);
@@ -29,8 +36,17 @@ export class Confirmation {
     this.data = undefined;
   }
 
-  prompt(data: ConfirmationData) {
+  prompt(data: ConfirmationPromptData | ConfirmationInputPromptData) {
+    if (data.buttons.length === 0) {
+      data.buttons.push({ label: "OK" });
+    }
+
     this.data = data;
+    if ("inputLabel" in data && "inputDefaultValue" in data) {
+      this.input = data.inputDefaultValue;
+    } else {
+      this.input = undefined;
+    }
   }
 
   get isOpen() {
@@ -62,9 +78,7 @@ const ConfirmationDialog = observer((props: {}) => {
   React.useEffect(() => {
     if (cfm.isOpen === false) return;
 
-    if (buttons.current.length > 0) {
-      buttons.current[0].focus();
-    }
+    getElements()[0]?.focus();
   }, [cfm.isOpen]);
 
   // UX: Disable tab globally when there is only one button
@@ -96,6 +110,22 @@ const ConfirmationDialog = observer((props: {}) => {
           break;
         }
       }
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const elms = getElements();
+      const index = elms.findIndex(elm => elm === document.activeElement);
+      let next;
+      if (index === -1) {
+        next = e.shiftKey ? elms.length - 1 : 0;
+      } else {
+        next = e.shiftKey ? index - 1 : index + 1;
+        if (next < 0) next = elms.length - 1;
+        if (next >= elms.length) next = 0;
+      }
+
+      elms[next]?.focus();
     } else {
       for (let i = 0; i < cfm.buttons.length; i++) {
         if (e.key === cfm.buttons[i].hotkey) {
@@ -104,6 +134,19 @@ const ConfirmationDialog = observer((props: {}) => {
         }
       }
     }
+  }
+
+  function onInputKeydown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.code === "Enter" || e.code === "NumpadEnter") {
+      onClick(0);
+    }
+  }
+
+  function getElements(): (HTMLInputElement | HTMLButtonElement | null)[] {
+    const rtn: (HTMLInputElement | HTMLButtonElement | null)[] = [];
+    if (cfm.input !== undefined) rtn.push(document.querySelector(".confirmation-card .input-box input"));
+    rtn.push(...buttons.current);
+    return rtn;
   }
 
   // UX: tabIndex is important to make the dialog focusable, allow keyboard navigation, and disallow tab focus on other elements
@@ -121,22 +164,31 @@ const ConfirmationDialog = observer((props: {}) => {
         <Box className="description-box">
           <Typography variant="body1" gutterBottom>{cfm.description}</Typography>
         </Box>
+        {
+          cfm.input &&
+          <Box className="input-box">
+            <ObserverInput
+              getValue={() => cfm.input ?? ""}
+              setValue={(value) => cfm.input = value}
+              isValidIntermediate={() => true}
+              isValidValue={() => true}
+              tabIndex={1000}
+              autoFocus
+              onKeyDown={onInputKeydown} />
+          </Box>
+        }
         <Box className="button-box">
           {
             cfm.buttons.map((btn, i) => {
               return <Button key={i}
                 disableRipple
-                tabIndex={i + 1001}
                 variant="text"
                 color={btn.color ?? "inherit"}
-                autoFocus={i === 0}
+                tabIndex={1000}
+                autoFocus={i === 0 && cfm.input === undefined}
                 ref={(element) => buttons.current[i] = element!}
-                onClick={action(onClick.bind(null, i))}
-                {...(i + 1 === cfm.buttons.length ? {
-                  // ALGO: buttons.current[i] check is needed with only one button
-                  onFocus: () => { buttons.current[i] && (buttons.current[i].tabIndex = 1000) },
-                  onBlur: () => { buttons.current[i] && (buttons.current[i].tabIndex = i + 1001) }
-                } : {})}>{btn.label}{btn.hotkey ? `(${btn.hotkey.toUpperCase()})` : ""}</Button>
+                onClick={action(onClick.bind(null, i))}>
+                {btn.label}{btn.hotkey ? `(${btn.hotkey.toUpperCase()})` : ""}</Button>
             })
           }
         </Box>
