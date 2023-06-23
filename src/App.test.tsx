@@ -464,6 +464,34 @@ test('Calculation with three segments and 7cm position changes', () => {
   ]);
 });
 
+test('Calculation with two segments edge case 1', () => {
+  // it finishes all samples before t=1
+
+  const path = new Path(new CustomPathConfig(), new Segment(
+    new EndPointControl(0, 0, 0), [],
+    new EndPointControl(10, 0, 0)));
+
+  path.segments.push(new Segment(
+    path.segments[path.segments.length - 1].last,
+    [
+      new Control(10, 103.71910889077459),
+      new Control(0, 80),
+    ],
+    new EndPointControl(40, 60, 0)
+  ));
+
+  const density = new NumberInUnit(2, UnitOfLength.Centimeter);
+  const pathSamples = getPathSamplePoints(path, density);
+  const uniformResult = getUniformPointsFromSamples(pathSamples, density);
+  expect(uniformResult.points.length).toEqual(62);
+  expect(uniformResult.points[0]).toMatchObject({ x: 0, y: 0, heading: 0, isLast: false });
+  expect(uniformResult.points[61]).toMatchObject({ x: 40, y: 60, heading: 0, isLast: true });
+  toMatchObjectArray(uniformResult.segmentIndexes, [
+    { index: 0, from: 0, to: 6 },
+    { index: 1, from: 6, to: 62 },
+  ]);
+});
+
 test('toDerivativeHeading', () => {
   expect(toDerivativeHeading(0, 270)).toBe(-90);
   expect(toDerivativeHeading(270, 0)).toBe(90);

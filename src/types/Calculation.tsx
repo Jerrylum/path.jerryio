@@ -161,7 +161,7 @@ export function getUniformPointsFromSamples(sampleResult: SampleCalculationResul
   const points: Point[] = [];
   const segmentIndexes: IndexBoundary[] = [];
 
-  let closestIdx = 1;
+  let closestIdx = 1; // ALGO: should only be modified by the loop function
   let segmentFromIdx = 0;
   let segmentIdx = 0;
 
@@ -243,11 +243,14 @@ export function getUniformPointsFromSamples(sampleResult: SampleCalculationResul
   for (let t = 0; t < 1; t += targetInterval) {
     loop(t);
   }
-  loop(1);
+  if (closestIdx + 1 !== samples.length) loop(1);
 
   // ALGO: The first point should have heading information, but closestIdx is set to 1 at the beginning so it is not included
   // ALGO: This also overwrites the heading of the first point if it is already set
   points[0].heading = samples[0].heading;
+  // ALGO: The last point should have isLast flag, and has the exact same position as the last sample point
+  // ALGO: Usually the xy is close enough, we manually set it to the same value
+  points[points.length - 1].setXY(samples[samples.length - 1]);
 
   return { points: points, segmentIndexes: segmentIndexes };
 }
