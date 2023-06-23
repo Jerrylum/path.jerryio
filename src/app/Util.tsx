@@ -92,7 +92,6 @@ export function useCustomHotkeys<T extends HTMLElement>(
       } else {
         rtn = true;
       }
-      console.log(rtn, options?.preventDefaultOnlyIfEnabled, kvEvt.defaultPrevented);
 
       return rtn;
     }
