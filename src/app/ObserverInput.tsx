@@ -46,7 +46,7 @@ const ObserverInput = observer((props: TextFieldProps & {
     }
   }
 
-  function onInputConfirm(event: React.KeyboardEvent<HTMLInputElement>) {
+  function onKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     const element = (event.nativeEvent.target as HTMLInputElement);
 
     if (event.code === "Enter" || event.code === "NumpadEnter") {
@@ -62,9 +62,17 @@ const ObserverInput = observer((props: TextFieldProps & {
       element.value = (parseFloat(getValue()) + 1) + "";
       onConfirm(event);
     }
+
+    rest.onKeyDown?.(event);
   }
 
-  function onConfirm(event: React.SyntheticEvent<HTMLInputElement | HTMLTextAreaElement, Event>) {
+  function onBlur(event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    onConfirm(event);
+
+    rest.onBlur?.(event);
+  }
+
+  function  onConfirm(event: React.SyntheticEvent<HTMLInputElement | HTMLTextAreaElement, Event>) {
     const element = (event.nativeEvent.target as HTMLInputElement);
     const candidate = element.value;
     let rtn: string;
@@ -98,9 +106,9 @@ const ObserverInput = observer((props: TextFieldProps & {
       size="small"
       defaultValue={memoInitialValue}
       onChange={onChange}
-      onKeyDown={action(onInputConfirm)}
-      onBlur={action(onConfirm)}
       {...rest}
+      onKeyDown={action(onKeyDown)}
+      onBlur={action(onBlur)}
     />
   );
 });
