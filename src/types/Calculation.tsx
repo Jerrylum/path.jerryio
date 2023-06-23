@@ -213,7 +213,9 @@ export function getUniformPointsFromSamples(sampleResult: SampleCalculationResul
     const sampleSplits: boolean[] = [];
 
     let heading: number | undefined;
-    while (closestIdx + 1 < samples.length && samples[closestIdx + 1].integral <= integral) {
+    // ALGO: If the current sample integral is less than or equal to integral, and the next sample is available
+    // then move to the next sample
+    while (samples[closestIdx].integral <= integral && closestIdx + 1 < samples.length) {
       closestIdx++;
       const sample = samples[closestIdx];
       if (sample.heading !== undefined) sampleHeadings.push(sample.heading);
