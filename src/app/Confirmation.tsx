@@ -17,6 +17,7 @@ export interface ConfirmationPromptData {
   title: string;
   description: string;
   buttons: ConfirmationButton[];
+  onKeyDown?(e: React.KeyboardEvent<HTMLDivElement>, onClick: (index: number) => void): void;
 }
 
 export interface ConfirmationInputPromptData extends ConfirmationPromptData {
@@ -69,6 +70,14 @@ export class Confirmation {
   get buttons() {
     return this.data?.buttons ?? [];
   }
+
+  get onKeyDown() {
+    return this.data?.onKeyDown;
+  }
+
+  get inputLabel() {
+    return (this.data as ConfirmationInputPromptData)?.inputLabel ?? "";
+  }
 }
 
 const ConfirmationDialog = observer((props: {}) => {
@@ -98,7 +107,7 @@ const ConfirmationDialog = observer((props: {}) => {
     cfm.close();
   }
 
-  function onKeydown(e: React.KeyboardEvent<HTMLDivElement>) {
+  function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     if (e.key === "Escape") {
       onClick(-1); // UX: Escape key always triggers the last button
     } else if (e.key === "ArrowLeft") {
@@ -139,9 +148,11 @@ const ConfirmationDialog = observer((props: {}) => {
         }
       }
     }
+
+    cfm.onKeyDown?.(e, onClick);
   }
 
-  function onInputKeydown(e: React.KeyboardEvent<HTMLInputElement>) {
+  function onInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.code === "Enter" || e.code === "NumpadEnter") {
       onClick(0);
     }
@@ -162,7 +173,7 @@ const ConfirmationDialog = observer((props: {}) => {
       sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
       open={true}
       onClick={action(onClick.bind(null, -1))}
-      onKeyDown={action(onKeydown)} >
+      onKeyDown={action(onKeyDown)} >
       <Card className="confirmation-card" onClick={(e) => e.stopPropagation()} tabIndex={-1}>
         <Typography variant="h2" gutterBottom>{cfm.title}</Typography>
         {/* https://stackoverflow.com/questions/9769587/set-div-to-have-its-siblings-width */}
@@ -179,7 +190,7 @@ const ConfirmationDialog = observer((props: {}) => {
               isValidValue={() => true}
               tabIndex={1000}
               autoFocus
-              onKeyDown={onInputKeydown} />
+              onKeyDown={onInputKeyDown} />
           </Box>
         }
         <Box className="button-box">
