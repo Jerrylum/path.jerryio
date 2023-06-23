@@ -84,7 +84,7 @@ const ObserverInput = observer((props: TextFieldProps & {
     }
 
     setValue(rtn);
-    inputRef.current!.value = initialValue.current = lastValidIntermediate.current = getValue();
+    inputRef.current && (inputRef.current.value = initialValue.current = lastValidIntermediate.current = getValue());
   }
 
   const value = getValue();
