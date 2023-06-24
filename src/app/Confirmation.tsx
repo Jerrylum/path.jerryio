@@ -85,6 +85,13 @@ const ConfirmationDialog = observer((props: {}) => {
 
   const buttons = React.useRef<HTMLButtonElement[]>([]);
 
+  const getElements = React.useCallback((): (HTMLInputElement | HTMLButtonElement | null)[] => {
+    const rtn: (HTMLInputElement | HTMLButtonElement | null)[] = [];
+    if (cfm.input !== undefined) rtn.push(document.querySelector(".confirmation-card .input-box input"));
+    rtn.push(...buttons.current);
+    return rtn;
+  }, [cfm.input]);
+
   if (buttons.current.length !== cfm.buttons.length) {
     buttons.current = [];
   }
@@ -156,13 +163,6 @@ const ConfirmationDialog = observer((props: {}) => {
     if (e.code === "Enter" || e.code === "NumpadEnter") {
       onClick(0);
     }
-  }
-
-  function getElements(): (HTMLInputElement | HTMLButtonElement | null)[] {
-    const rtn: (HTMLInputElement | HTMLButtonElement | null)[] = [];
-    if (cfm.input !== undefined) rtn.push(document.querySelector(".confirmation-card .input-box input"));
-    rtn.push(...buttons.current);
-    return rtn;
   }
 
   // UX: tabIndex is important to make the dialog focusable, allow keyboard navigation, and disallow tab focus on other elements
