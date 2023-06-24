@@ -8,7 +8,7 @@ import { observer } from "mobx-react-lite"
 import { ThemeProvider } from '@mui/material/styles';
 
 import { Box, Card } from '@mui/material';
-import { useCustomHotkeys, useTimer, useUnsavedChangesPrompt } from './app/Util';
+import { useCustomHotkeys, useDragDropFile, useTimer, useUnsavedChangesPrompt } from './app/Util';
 import { MenuAccordion } from './app/MenuAccordion';
 import { PathTreeAccordion } from './app/PathTreeAccordion';
 import { GeneralConfigAccordion } from './app/GeneralConfigAccordion';
@@ -19,13 +19,15 @@ import { FieldCanvasElement } from './app/FieldCanvasElement';
 import { MainApp, useAppStores } from './app/MainApp';
 
 import React from 'react';
-import { onDownload, onDownloadAs, onNew, onOpen, onSave, onSaveAs } from './format/Output';
+import classNames from 'classnames';
+import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from './format/Output';
 import { NoticeProvider } from './app/Notice';
 import { ConfirmationDialog } from './app/Confirmation';
 import { HelpDialog } from './app/HelpDialog';
 import { PreferencesDialog } from './app/Preferences';
 import { NumberInUnit } from './types/Unit';
 import { getPathPoints } from './types/Calculation';
+import { DragDropBackdrop } from './app/DragDropBackdrop';
 
 export interface AppProps {
   paths: Path[];
@@ -45,7 +47,10 @@ const App = observer(() => {
     app.paths.filter(path => path.visible || path === interested).forEach(path => path.cachedResult = getPathPoints(path, density));
   }), undefined);
 
-  const optionsToEnableHotkeys = { enabled: !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen };
+  const isUsingEditor = !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen;
+  const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(isUsingEditor, onDropFile.bind(null, app, confirmation));
+
+  const optionsToEnableHotkeys = { enabled: isUsingEditor && !isDraggingFile };
 
   // UX: Enable custom hotkeys on input fields (e.g. Ctrl+S) to prevent accidentally triggering the browser default
   // hotkeys when focusing them (e.g. Save page). However, we do not apply it to all hotkeys, because we want to keep
@@ -99,7 +104,11 @@ const App = observer(() => {
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
-    <div tabIndex={-1} className={["App", appPreferences.theme.className].join(" ")} key={app.format.uid + "-" + app.gc.uol}>
+    <Box
+      tabIndex={-1}
+      className={classNames("App", appPreferences.theme.className)}
+      {...{ onDragEnter, onDragOver, onDrop }}
+      key={app.format.uid + "-" + app.gc.uol}>
       <ThemeProvider theme={appPreferences.theme.theme}>
         <NoticeProvider />
         <Box id='left-editor-panel'>
@@ -131,8 +140,9 @@ const App = observer(() => {
         <ConfirmationDialog />
         <HelpDialog />
         <PreferencesDialog />
+        {isUsingEditor && isDraggingFile && <DragDropBackdrop {...{ onDragEnter, onDragLeave, onDragOver, onDrop }} />}
       </ThemeProvider>
-    </div>
+    </Box>
   );
 });
 

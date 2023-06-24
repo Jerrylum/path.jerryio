@@ -149,6 +149,27 @@ export function useBackdropDialog(enable: boolean, onClose?: () => void) {
   }, [enable, onClose]);
 }
 
+export function useDragDropFile(enable: boolean, onDrop: (file: File) => void) {
+  const [isDraggingFile, setIsDraggingFile] = React.useState(false);
+
+  return {
+    isDraggingFile,
+    onDragEnter: (e: React.DragEvent<HTMLDivElement>) => setIsDraggingFile(true),
+    onDragLeave: (e: React.DragEvent<HTMLDivElement>) => setIsDraggingFile(false),
+    onDragOver: (e: React.DragEvent<HTMLDivElement>) => { e.preventDefault(); e.stopPropagation(); },
+    onDrop: (e: React.DragEvent<HTMLDivElement>) => {
+      setIsDraggingFile(false);
+      e.preventDefault();
+      e.stopPropagation();
+      if (enable === false) return;
+
+      const file = e.dataTransfer.files?.[0];
+      if (file === undefined) return;
+      onDrop(file);
+    },
+  };
+}
+
 export function makeId(length: number) {
   let result = '';
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

@@ -270,3 +270,28 @@ export async function onDownloadAs(app: MainApp, conf: Confirmation, fallback: b
 
   return true;
 }
+
+export async function onDropFile(app: MainApp, conf: Confirmation, file: File, saveCheck: boolean = true): Promise<boolean> {
+  if (saveCheck && app.history.isModified()) return saveConfirm(app, conf, onDropFile.bind(null, app, conf, file, false));
+
+  app.mountingFile.handle = null;
+  app.mountingFile.name = file.name;
+  app.mountingFile.isNameSet = true;
+
+  const reader = new FileReader();
+  reader.readAsText(file);
+
+  const contents = await new Promise<string | undefined>((resolve, reject) => {
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => resolve(undefined);
+  });
+  if (contents === undefined) return false;
+
+  try {
+    app.importPathFile(contents);
+    return true;
+  } catch (err) {
+    enqueueErrorSnackbar(err);
+    return false;
+  }
+}
