@@ -5,13 +5,13 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 
-import { action } from "mobx"
+import { action, reaction } from "mobx"
 import { observer } from "mobx-react-lite";
 import { TreeItem } from '@mui/lab';
 import { EndPointControl, Path } from '../types/Path';
 import { useRef } from 'react';
 import { InteractiveEntity } from '../types/Canvas';
-import { RemovePath, RemoveSegment, UpdateInteractiveEntities } from '../types/Command';
+import { RemovePath, RemoveSegment, UpdateInteractiveEntities, UpdateProperties } from '../types/Command';
 import { useAppStores } from './MainApp';
 
 export interface PathTreeProps {
@@ -110,7 +110,10 @@ const PathTreeItem = observer((props: PathTreeProps) => {
 
   function onPathNameConfirm(event: React.SyntheticEvent<HTMLSpanElement, Event>) {
     if (event.currentTarget.innerText === "") event.currentTarget.innerText = initialValue.current;
-    path.name = initialValue.current = lastValidName.current = event.currentTarget.innerText;
+    const pathName = initialValue.current = lastValidName.current = event.currentTarget.innerText;
+
+    app.history.execute(`Update path name to ${pathName}`,
+      new UpdateProperties(path, { name: pathName }));
   }
 
   function onPathDeleteClick() {
@@ -118,6 +121,10 @@ const PathTreeItem = observer((props: PathTreeProps) => {
     app.unselect(path);
     app.removeExpanded(path);
   }
+
+  reaction(() => path.name, (name) => {
+    initialValue.current = name;
+  });
 
   return (
     <TreeItem nodeId={path.uid} label={
