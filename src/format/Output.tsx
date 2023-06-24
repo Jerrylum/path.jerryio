@@ -123,7 +123,7 @@ async function readFileFromInput(app: MainApp): Promise<string | undefined> {
     input.click();
   });
 
-  // Remove polyfill input[type=file] elements
+  // ALGO: Remove polyfill input[type=file] elements, including elements from last time
   document.querySelectorAll("body > input[type=file]").forEach((input) => input.remove());
 
   const file = input.files?.[0];

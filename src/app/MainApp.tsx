@@ -7,7 +7,7 @@ import { addToArray, clamp, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-transformer';
-import { UnitConverter, UnitOfLength } from "../types/Unit";
+import { NumberInUnit, UnitConverter, UnitOfLength } from "../types/Unit";
 import { CommandHistory } from "../types/Command";
 import { SemVer } from "semver";
 import { Confirmation } from "./Confirmation";
@@ -16,6 +16,7 @@ import { Help } from "./HelpDialog";
 import { Preferences } from "./Preferences";
 import { GoogleAnalytics } from "../types/GoogleAnalytics";
 import { OutputFileHandle } from "../format/Output";
+import { getPathSamplePoints, getUniformPointsFromSamples } from "../types/Calculation";
 
 // observable class
 export class MainApp {
@@ -402,3 +403,18 @@ const AppStoresContext = React.createContext(appStores);
 const useAppStores = () => React.useContext(AppStoresContext);
 
 export { useAppStores };
+
+// @ts-ignore
+(window.testFunction = action(() => {
+  const { app } = getAppStores();
+
+  const density = new NumberInUnit(2, UnitOfLength.Centimeter);
+
+  for (const path of app.paths) {
+    console.log("path", path.uid);
+    const sampleResult = getPathSamplePoints(path, density);
+    console.log(sampleResult);
+    const uniformResult = getUniformPointsFromSamples(sampleResult, density);
+    console.log(uniformResult);
+  }
+}))();

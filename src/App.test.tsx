@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx"
+import { makeAutoObservable, action } from "mobx"
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
@@ -118,7 +118,7 @@ test('Export test', () => {
   expect(plain).toEqual(plain2);
 });
 
-test('Format serialize', () => {
+test('Format serialize', action(() => {
   const app = new MainApp();
 
   app.format = new CustomFormat();
@@ -129,7 +129,7 @@ test('Format serialize', () => {
 
   expect(p).toEqual(p2);
   expect(app.gc === gc2).toBeFalsy();
-});
+}));
 
 test('Segment serialize', () => {
   let s = new Segment(new EndPointControl(-12, -34, 9), [], new EndPointControl(-56, 78, 0));
