@@ -1,7 +1,6 @@
 import { Confirmation } from "../app/Confirmation";
 import { MainApp, getAppStores } from "../app/MainApp";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from '../app/Notice';
-import { showOpenFilePicker, showSaveFilePicker, FileSystemFileHandle } from 'native-file-system-adapter'
 
 async function saveConfirm(app: MainApp, conf: Confirmation, callback: () => void) {
   return new Promise<boolean>((resolve, reject) => {
@@ -85,16 +84,12 @@ async function writeFile(app: MainApp, contents: string): Promise<boolean> {
 
 async function readFile(app: MainApp): Promise<string | undefined> {
   const options = {
-    types: [{ description: 'Path File', accept: { 'text/plain': [] } }], // For native
-    excludeAcceptAllOption: false, // For native & polyfill
-    multiple: false, // For native & polyfill
-    accepts: ["text/plain"] // For polyfill
+    types: [{ description: 'Path File', accept: { 'text/plain': [] } }],
+    excludeAcceptAllOption: false,
+    multiple: false
   };
 
   try {
-    // Remove polyfill input[type=file] elements
-    document.querySelectorAll("body > input[type=file]").forEach((input) => input.remove());
-
     const [fileHandle] = await showOpenFilePicker(options);
     app.mountingFile.handle = fileHandle;
     app.mountingFile.name = fileHandle.name;
@@ -112,6 +107,41 @@ async function readFile(app: MainApp): Promise<string | undefined> {
   }
 }
 
+async function readFileFromInput(app: MainApp): Promise<string | undefined> {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.multiple = false;
+  input.accept = "text/plain";
+
+  // See https://stackoverflow.com/questions/47664777/javascript-file-input-onchange-not-working-ios-safari-only
+  Object.assign(input.style, { position: 'fixed', top: '-100000px', left: '-100000px' });
+
+  document.body.appendChild(input);
+
+  await new Promise(resolve => {
+    input.addEventListener('change', resolve, { once: true });
+    input.click();
+  });
+
+  // Remove polyfill input[type=file] elements
+  document.querySelectorAll("body > input[type=file]").forEach((input) => input.remove());
+
+  const file = input.files?.[0];
+  if (file === undefined) return undefined;
+
+  app.mountingFile.handle = null;
+  app.mountingFile.name = file.name;
+  app.mountingFile.isNameSet = true;
+
+  const reader = new FileReader();
+  reader.readAsText(file);
+
+  return new Promise<string | undefined>((resolve, reject) => {
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => resolve(undefined);
+  });
+}
+
 function downloadFile(app: MainApp, contents: string) {
   const a = document.createElement("a");
   const file = new Blob([contents], { type: "text/plain" });
@@ -124,15 +154,14 @@ function downloadFile(app: MainApp, contents: string) {
 
 async function choiceSave(app: MainApp): Promise<boolean> {
   const options = {
-    types: [{ description: 'Path File', accept: { 'text/plain': [] } }], // For native
-    suggestedName: app.mountingFile.name, // For native & polyfill
-    excludeAcceptAllOption: false, // For native & polyfill
-    multiple: false, // For native & polyfill
-    accepts: ["text/plain"] // For polyfill, might not used
+    types: [{ description: 'Path File', accept: { 'text/plain': [] } }],
+    suggestedName: app.mountingFile.name,
+    excludeAcceptAllOption: false,
+    multiple: false
   };
 
   try {
-    const fileHandle = await showSaveFilePicker(options);
+    const fileHandle = await window.showSaveFilePicker(options);
     app.mountingFile.handle = fileHandle;
     app.mountingFile.name = fileHandle.name;
     app.mountingFile.isNameSet = true;
@@ -210,7 +239,7 @@ export async function onOpen(app: MainApp, conf: Confirmation, saveCheck: boolea
     });
   }
 
-  const contents = await readFile(app);
+  const contents = await (isFileSystemSupported() ? readFile(app) : readFileFromInput(app));
   if (contents === undefined) return false;
 
   try {
