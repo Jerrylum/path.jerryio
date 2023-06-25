@@ -522,6 +522,22 @@ export class Zero extends Token {
 
 // Start application logic
 
+export class OpenBracket extends Token {
+  constructor(public value: string) { super(); }
+
+  public static parse(buffer: CodePointBuffer): OpenBracket | null {
+    return doParseCodepoint(buffer, ["("], OpenBracket);
+  }
+}
+
+export class CloseBracket extends Token {
+  constructor(public value: string) { super(); }
+
+  public static parse(buffer: CodePointBuffer): CloseBracket | null {
+    return doParseCodepoint(buffer, [")"], CloseBracket);
+  }
+}
+
 export class NumberWithUnit extends Token {
   constructor(public value: string, public unit: UnitOfLength | null) { super(); }
 
@@ -566,12 +582,74 @@ export class NumberWithUnit extends Token {
         buffer.commit();
         break;
       default:
-        buffer.rollback();
+        return buffer.rollbackAndReturn(null);
     }
     return buffer.commitAndReturn(new NumberWithUnit(n.value, unit));
   }
 
-  toNumberInUnit(inherit: NumberInUnit) {
-    return new NumberInUnit(parseFloat(this.value), this.unit || inherit.unit);
+  toNumberInUnit(inherit: UnitOfLength) {
+    return new NumberInUnit(parseFloat(this.value), this.unit || inherit);
+  }
+}
+
+export class Operator extends Token {
+  constructor(public value: string) { super(); }
+
+  public static parse(buffer: CodePointBuffer): Operator | null {
+    return doParseCodepoint(buffer, ["+", "-", "*", "/"], Operator);
+  }
+}
+
+export class Expression extends Token {
+  constructor(public tokens: (OpenBracket | CloseBracket | NumberInUnit | Operator)[]) { super(); }
+
+  public static parse(buffer: CodePointBuffer): Expression | null {
+    buffer.savepoint();
+
+    buffer.readDelimiter();
+
+    let tokens: (OpenBracket | CloseBracket | NumberInUnit | Operator)[] = [];
+
+    const bracket = OpenBracket.parse(buffer);
+    if (bracket) {
+      tokens.push(bracket);
+
+      const e = Expression.parse(buffer);
+      if (!e) {
+        return buffer.rollbackAndReturn(null);
+      }
+
+      tokens.push(...e.tokens);
+
+      const closeBracket = CloseBracket.parse(buffer);
+      if (!closeBracket) {
+        return buffer.rollbackAndReturn(null);
+      }
+
+      tokens.push(closeBracket);
+    } else {
+      const n = NumberWithUnit.parse(buffer);
+      if (!n) {
+        return buffer.rollbackAndReturn(null);
+      }
+
+      tokens.push(n);
+    }
+
+    buffer.readDelimiter();
+
+    const op = Operator.parse(buffer);
+    if (op) {
+      tokens.push(op);
+
+      const e = Expression.parse(buffer);
+      if (!e) {
+        return buffer.rollbackAndReturn(null);
+      }
+
+      tokens.push(...e.tokens);
+    }
+
+    return buffer.commitAndReturn(new Expression(tokens));
   }
 }
