@@ -1,3 +1,4 @@
+// ALGO: Tokens implementation is adopted from https://github.com/Jerrylum/ProtocolDiagram under the GPLv3 license.
 
 export namespace Tokens {
 
@@ -42,6 +43,56 @@ export namespace Tokens {
       }
     }
     return buffer.rollbackAndReturn(null);
+  }
+
+  /**
+   * Parses a quoted string token from the given code point buffer.
+   * @template T - The type of the token.
+   * @param {CodePointBuffer} buffer - The code point buffer to be parsed.
+   * @param {string} quote - The quote character.
+   * @param {new (value: string, content: string) => T} tokenClass - The class of the token to be returned.
+   * @returns {T|null} - The parsed token instance or null if the buffer does not contain a valid quoted string.
+   */
+  function doParseQuoteString<T extends Token>(buffer: CodePointBuffer, quote: string, tokenClass: new (value: string, content: string) => T): T | null {
+    buffer.savepoint();
+
+    let valueSb = "";
+    let contentSb = "";
+    let escape = false;
+    let open = true;
+
+    if (buffer.next() !== quote) {
+      return buffer.rollbackAndReturn(null);
+    }
+    valueSb += quote;
+
+    while (buffer.hasNext()) {
+      const c = buffer.next();
+
+      if (escape) {
+        escape = false;
+        contentSb += c;
+        valueSb += c;
+      } else {
+        if (c === '\\') {
+          escape = true;
+          valueSb += c;
+        } else if (c === quote) {
+          open = false;
+          valueSb += c;
+          break;
+        } else {
+          valueSb += c;
+          contentSb += c;
+        }
+      }
+    }
+
+    if (open) {
+      return buffer.rollbackAndReturn(null);
+    } else {
+      return buffer.commitAndReturn(new tokenClass(valueSb, contentSb));
+    }
   }
 
   /**
@@ -187,7 +238,7 @@ export namespace Tokens {
      * @returns A string containing all characters read up to the delimiter, or an empty string if the cursor is at a delimiter.
      */
     public readChunk(): string {
-      var rtn = "";
+      let rtn = "";
       while (this.hasNext() && !isDelimiter(this.peek())) {
         rtn += this.next();
       }
@@ -199,7 +250,7 @@ export namespace Tokens {
      * @returns A string containing all characters read upto the safe delimiter, or an empty string if the cursor is at a safe delimiter.
      */
     public readSafeChunk(): string {
-      var rtn = "";
+      let rtn = "";
       while (this.hasNext() && !isSafeDelimiter(this.peek())) {
         rtn += this.next();
       }
@@ -265,7 +316,13 @@ export namespace Tokens {
     }
   }
 
-  // DoubleQuoteString
+  export class DoubleQuoteString extends Token {
+    constructor(public value: string, public content: string) { super(); }
+
+    public static parse(buffer: CodePointBuffer): DoubleQuoteString | null {
+      return doParseQuoteString(buffer, '"', DoubleQuoteString);
+    }
+  }
 
   // Contains the values of the fractal that starts with character '.' and the sequence of digit followed
   export class Frac extends Token {
@@ -278,7 +335,7 @@ export namespace Tokens {
     public static parse(buffer: CodePointBuffer): Frac | null {
       buffer.savepoint();
 
-      var rtn = "";
+      let rtn = "";
       const d = DecimalPoint.parse(buffer);
       if (!d) {
         return buffer.rollbackAndReturn(null);
@@ -335,7 +392,7 @@ export namespace Tokens {
     public static parse(buffer: CodePointBuffer): NegativeInt | null {
       buffer.savepoint();
 
-      var rtn = "";
+      let rtn = "";
       const m = Minus.parse(buffer);
       if (!m) {
         return buffer.rollbackAndReturn(null);
@@ -401,7 +458,7 @@ export namespace Tokens {
     public static parse(buffer: CodePointBuffer): PositiveInt | null {
       buffer.savepoint();
 
-      var rtn = "";
+      let rtn = "";
 
       const d1t9 = Digit1To9.parse(buffer);
       if (!d1t9) {
@@ -420,9 +477,40 @@ export namespace Tokens {
 
   // Skip SafeString
 
-  // SingleQuoteString
+  export class SingleQuoteString extends Token {
+    constructor(public value: string, public content: string) { super(); }
 
-  // StringT
+    public static parse(buffer: CodePointBuffer): SingleQuoteString | null {
+      return doParseQuoteString(buffer, "'", SingleQuoteString);
+    }
+  }
+
+  export class StringT extends Token {
+    constructor(public content: string) { super(); }
+
+    public static parse(buffer: CodePointBuffer): StringT | null {
+      const c = buffer.peek();
+
+      if (!c) {
+        return null;
+      } else if (c === '"') {
+        const d = DoubleQuoteString.parse(buffer);
+        if (!d) {
+          return null;
+        }
+        return new StringT(d.content);
+      } else if (c === "'") {
+        const s = SingleQuoteString.parse(buffer);
+        if (!s) {
+          return null;
+        }
+        return new StringT(s.content);
+      } else {
+        const content = buffer.readChunk();
+        return new StringT(content);
+      }
+    }
+  }
 
   export class Zero extends Token {
     constructor(public value: string) { super(); }
