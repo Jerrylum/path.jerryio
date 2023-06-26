@@ -1,6 +1,6 @@
 // ALGO: Tokens implementation is adopted from https://github.com/Jerrylum/ProtocolDiagram under the GPLv3 license.
 
-import { NumberInUnit, Unit, UnitOfLength } from "../types/Unit";
+import { Quantity, Unit, UnitOfLength } from "../types/Unit";
 
 /**
  * A utility function that checks whether the character is delimiter (null | ' ')
@@ -545,8 +545,8 @@ export class CloseBracket extends Token {
 export abstract class NumberWithUnit<T extends Unit> extends Token {
   constructor(public value: string, public unit: T | null) { super(); }
 
-  toNumberInUnit(inherit: T) {
-    return new NumberInUnit(parseFloat(this.value), this.unit || inherit);
+  toQuantity(inherit: T) {
+    return new Quantity(parseFloat(this.value), this.unit || inherit);
   }
 }
 
@@ -688,10 +688,10 @@ export class Computation<U extends Unit> extends Token {
   public compute(inherit: U): number {
     const left = this.left instanceof Computation
       ? this.left.compute(inherit)
-      : this.left.toNumberInUnit(inherit).to(inherit);
+      : this.left.toQuantity(inherit).to(inherit);
     const right = this.right instanceof Computation
       ? this.right.compute(inherit)
-      : this.right.toNumberInUnit(inherit).to(inherit);
+      : this.right.toQuantity(inherit).to(inherit);
 
     switch (this.operator.value) {
       case "+":

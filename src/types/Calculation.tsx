@@ -1,5 +1,5 @@
 import { Keyframe, Path, Point, SamplePoint, Segment, Vector } from "./Path";
-import { NumberInUnit, UnitOfLength } from "./Unit";
+import { Quantity, UnitOfLength } from "./Unit";
 
 /**
  * Represents an index into a set of points, with an associated segment and keyframe.
@@ -52,7 +52,7 @@ export interface PointCalculationResult extends UniformCalculationResult {
  * @param density - The density of points to generate.
  * @returns The calculated points, segment indexes, and keyframe indexes.
  */
-export function getPathPoints(path: Path, density: NumberInUnit<UnitOfLength>): PointCalculationResult {
+export function getPathPoints(path: Path, density: Quantity<UnitOfLength>): PointCalculationResult {
   if (path.segments.length === 0) return { points: [], segmentIndexes: [], keyframeIndexes: [] };
 
   const sampleResult = getPathSamplePoints(path, density);
@@ -142,7 +142,7 @@ export function getPathKeyframeIndexes(path: Path, segmentIndexes: IndexBoundary
  * @param density - The density of points to generate.
  * @returns The uniformly spaced points along the path and the start and end indexes of each segment.
  */
-export function getUniformPointsFromSamples(sampleResult: SampleCalculationResult, density: NumberInUnit<UnitOfLength>): UniformCalculationResult {
+export function getUniformPointsFromSamples(sampleResult: SampleCalculationResult, density: Quantity<UnitOfLength>): UniformCalculationResult {
   /*
   ALGO: Assume:
   Samples must have at least 2 points
@@ -278,7 +278,7 @@ export function getUniformPointsFromSamples(sampleResult: SampleCalculationResul
  * @param density The density of points to generate
  * @returns The sample result of the path
  */
-export function getPathSamplePoints(path: Path, density: NumberInUnit<UnitOfLength>): SampleCalculationResult {
+export function getPathSamplePoints(path: Path, density: Quantity<UnitOfLength>): SampleCalculationResult {
   // ALGO: The density of points is NOT uniform along the curve, and we are using this to as the bent rate to control the speed by default
   const rtn: SamplePoint[] = [];
   let arcLength = 0; // total travel distance
@@ -310,7 +310,7 @@ export function getPathSamplePoints(path: Path, density: NumberInUnit<UnitOfLeng
  * @param prevIntegral The previous integral added to the total distance
  * @returns The sample points of the segment, at least 2 points are returned
  */
-export function getSegmentSamplePoints(segment: Segment, density: NumberInUnit<UnitOfLength>, prevIntegral = 0): SamplePoint[] {
+export function getSegmentSamplePoints(segment: Segment, density: Quantity<UnitOfLength>, prevIntegral = 0): SamplePoint[] {
   // ALGO: Calculate the target interval based on the density of points to generate points more than enough
   const targetInterval = density.to(UnitOfLength.Centimeter) / 200;
 

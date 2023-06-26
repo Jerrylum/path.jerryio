@@ -3,7 +3,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from "
 import { observer } from "mobx-react-lite";
 import { EndPointControl } from '../types/Path';
 import { ObserverInput, parseNumberInString } from './ObserverInput';
-import { NumberInUnit, UnitOfLength } from '../types/Unit';
+import { Quantity, UnitOfLength } from '../types/Unit';
 import { UpdateInteractiveEntities } from '../types/Command';
 import { useAppStores } from './MainApp';
 import { parseUser } from './Util';
@@ -37,8 +37,8 @@ const ControlAccordion = observer((props: {}) => {
                 const finalVal = parseNumberInString(
                   value,
                   app.gc.uol,
-                  new NumberInUnit(-1000, UnitOfLength.Centimeter),
-                  new NumberInUnit(1000, UnitOfLength.Centimeter)
+                  new Quantity(-1000, UnitOfLength.Centimeter),
+                  new Quantity(1000, UnitOfLength.Centimeter)
                 );
 
                 app.history.execute(`Update control ${controlUid} x value`,
@@ -67,8 +67,8 @@ const ControlAccordion = observer((props: {}) => {
                 const finalVal = parseNumberInString(
                   value,
                   app.gc.uol,
-                  new NumberInUnit(-1000, UnitOfLength.Centimeter),
-                  new NumberInUnit(1000, UnitOfLength.Centimeter)
+                  new Quantity(-1000, UnitOfLength.Centimeter),
+                  new Quantity(1000, UnitOfLength.Centimeter)
                 );
 
                 app.history.execute(`Update control ${controlUid} y value`,

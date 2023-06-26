@@ -7,7 +7,7 @@ import { addToArray, clamp, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-transformer';
-import { NumberInUnit, UnitConverter, UnitOfLength } from "../types/Unit";
+import { Quantity, UnitConverter, UnitOfLength } from "../types/Unit";
 import { CommandHistory } from "../types/Command";
 import { SemVer } from "semver";
 import { Confirmation } from "./Confirmation";
@@ -408,7 +408,7 @@ export { useAppStores };
 (window.testFunction = action(() => {
   const { app } = getAppStores();
 
-  const density = new NumberInUnit(2, UnitOfLength.Centimeter);
+  const density = new Quantity(2, UnitOfLength.Centimeter);
 
   for (const path of app.paths) {
     console.log("path", path.uid);

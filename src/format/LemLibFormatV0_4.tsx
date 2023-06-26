@@ -2,7 +2,7 @@ import { makeAutoObservable, reaction, action } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { clamp, makeId } from "../app/Util";
 import { Control, EndPointControl, Path, Segment, Vector } from "../types/Path";
-import { UnitOfLength, UnitConverter, NumberInUnit } from "../types/Unit";
+import { UnitOfLength, UnitConverter, Quantity } from "../types/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { Box, Typography } from "@mui/material";
@@ -208,7 +208,7 @@ export class LemLibFormatV0_4 implements Format {
     if (path.segments.length === 0) throw new Error("No segment to export");
 
     const uc = new UnitConverter(this.gc.uol, UnitOfLength.Inch);
-    const density = new NumberInUnit(app.gc.pointDensity, app.gc.uol);
+    const density = new Quantity(app.gc.pointDensity, app.gc.uol);
 
     const points = getPathPoints(path, density).points;
     for (const point of points) {

@@ -1,7 +1,7 @@
 import { makeAutoObservable, reaction, action } from "mobx"
 import { MainApp } from '../app/MainApp';
 import { makeId } from "../app/Util";
-import { NumberInUnit, UnitConverter, UnitOfLength } from "../types/Unit";
+import { Quantity, UnitConverter, UnitOfLength } from "../types/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
@@ -139,7 +139,7 @@ export class PathDotJerryioFormatV0_1 implements Format {
     let rtn = "";
 
     const uc = new UnitConverter(app.gc.uol, UnitOfLength.Centimeter);
-    const density = new NumberInUnit(app.gc.pointDensity, app.gc.uol);
+    const density = new Quantity(app.gc.pointDensity, app.gc.uol);
 
     for (const path of app.paths) {
       rtn += `#PATH-POINTS-START ${path.name}\n`;

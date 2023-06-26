@@ -20,7 +20,7 @@ export enum UnitOfHeading {
 
 export type Unit = UnitOfLength | UnitOfHeading;
 
-export class NumberInUnit<T extends Unit> {
+export class Quantity<T extends Unit> {
   constructor(public value: number, public unit: T) { }
 
   to(unit: T): number {

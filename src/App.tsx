@@ -25,7 +25,7 @@ import { NoticeProvider } from './app/Notice';
 import { ConfirmationDialog } from './app/Confirmation';
 import { HelpDialog } from './app/HelpDialog';
 import { PreferencesDialog } from './app/Preferences';
-import { NumberInUnit } from './types/Unit';
+import { Quantity } from './types/Unit';
 import { getPathPoints } from './types/Calculation';
 import { DragDropBackdrop } from './app/DragDropBackdrop';
 
@@ -41,7 +41,7 @@ const App = observer(() => {
   const { app, confirmation, help, appPreferences } = useAppStores();
 
   React.useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
-    const density = new NumberInUnit(app.gc.pointDensity, app.gc.uol);
+    const density = new Quantity(app.gc.pointDensity, app.gc.uol);
     const interested = app.interestedPath();
 
     app.paths.filter(path => path.visible || path === interested).forEach(path => path.cachedResult = getPathPoints(path, density));

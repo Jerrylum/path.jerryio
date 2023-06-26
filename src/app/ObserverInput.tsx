@@ -2,12 +2,12 @@ import { TextField, TextFieldProps } from "@mui/material";
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useRef } from "react";
-import { NumberInUnit, UnitConverter, UnitOfLength } from "../types/Unit";
+import { Quantity, UnitConverter, UnitOfLength } from "../types/Unit";
 import { clamp } from "./Util";
 
 export function parseNumberInString(value: string, uol: UnitOfLength,
-  min = new NumberInUnit(-Infinity, UnitOfLength.Centimeter),
-  max = new NumberInUnit(-Infinity, UnitOfLength.Centimeter)): number {
+  min = new Quantity(-Infinity, UnitOfLength.Centimeter),
+  max = new Quantity(-Infinity, UnitOfLength.Centimeter)): number {
   const minInUOL = new UnitConverter(min.unit, uol).fromAtoB(min.value);
   const maxInUOL = new UnitConverter(max.unit, uol).fromAtoB(max.value);
 

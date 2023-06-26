@@ -4,7 +4,7 @@ import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { getAllFormats } from '../format/Format';
 import { ObserverInput, parseNumberInString } from './ObserverInput';
-import { NumberInUnit, UnitOfLength } from '../types/Unit';
+import { Quantity, UnitOfLength } from '../types/Unit';
 import { UpdateProperties } from '../types/Command';
 import { useAppStores } from './MainApp';
 import { ObserverEnumSelect } from './ObserverEnumSelect';
@@ -59,8 +59,8 @@ const GeneralConfigAccordion = observer((props: {}) => {
                   "pointDensity": parseNumberInString(
                     value,
                     gc.uol,
-                    new NumberInUnit(0.1, UnitOfLength.Centimeter),
-                    new NumberInUnit(100, UnitOfLength.Centimeter)
+                    new Quantity(0.1, UnitOfLength.Centimeter),
+                    new Quantity(100, UnitOfLength.Centimeter)
                   )
                 })
               )
@@ -82,8 +82,8 @@ const GeneralConfigAccordion = observer((props: {}) => {
                   "robotWidth": parseNumberInString(
                     value,
                     gc.uol,
-                    new NumberInUnit(1, UnitOfLength.Centimeter),
-                    new NumberInUnit(100, UnitOfLength.Centimeter)
+                    new Quantity(1, UnitOfLength.Centimeter),
+                    new Quantity(100, UnitOfLength.Centimeter)
                   )
                 })
               )
@@ -102,8 +102,8 @@ const GeneralConfigAccordion = observer((props: {}) => {
                   "robotHeight": parseNumberInString(
                     value,
                     gc.uol,
-                    new NumberInUnit(1, UnitOfLength.Centimeter),
-                    new NumberInUnit(100, UnitOfLength.Centimeter)
+                    new Quantity(1, UnitOfLength.Centimeter),
+                    new Quantity(100, UnitOfLength.Centimeter)
                   )
                 })
               )
