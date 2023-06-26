@@ -37,7 +37,9 @@ async function fileNameConfirm(app: MainApp, conf: Confirmation, description: st
       description,
       buttons: [{
         label: "Confirm", color: "success", onClick: async () => {
-          app.mountingFile.name = conf.input ?? app.mountingFile.name;
+          let candidate = conf.input ?? app.mountingFile.name;
+          if (candidate.indexOf(".") === -1) candidate += ".txt";
+          app.mountingFile.name = candidate;
           app.mountingFile.isNameSet = true;
           callback();
           resolve();
