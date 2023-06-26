@@ -588,6 +588,11 @@ export class NumberUOL extends NumberWithUnit<UnitOfLength> {
         unit = UnitOfLength.Foot;
         buffer.commit();
         break;
+      case "t":
+      case "tile":
+        unit = UnitOfLength.Tile;
+        buffer.commit();
+        break;
       case "":
         buffer.commit();
         break;

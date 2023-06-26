@@ -11,6 +11,7 @@ export enum UnitOfLength {
   Meter = 100 * Centimeter, // SI base unit
   Inch = 2.54 * Centimeter,
   Foot = 12 * Inch,
+  Tile = 24 * Inch,
 }
 
 export enum UnitOfAngle {
