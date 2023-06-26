@@ -1,6 +1,6 @@
 // ALGO: Tokens implementation is adopted from https://github.com/Jerrylum/ProtocolDiagram under the GPLv3 license.
 
-import { Quantity, Unit, UnitOfLength } from "../types/Unit";
+import { Quantity, Unit, UnitOfAngle, UnitOfLength } from "../types/Unit";
 
 /**
  * A utility function that checks whether the character is delimiter (null | ' ')
@@ -542,10 +542,10 @@ export class CloseBracket extends Token {
   readonly value: string = ")";
 }
 
-export abstract class NumberWithUnit<T extends Unit> extends Token {
-  constructor(public value: string, public unit: T | null) { super(); }
+export abstract class NumberWithUnit<U extends Unit> extends Token {
+  constructor(public value: string, public unit: U | null) { super(); }
 
-  toQuantity(inherit: T) {
+  toQuantity(inherit: U) {
     return new Quantity(parseFloat(this.value), this.unit || inherit);
   }
 }
@@ -595,6 +595,39 @@ export class NumberUOL extends NumberWithUnit<UnitOfLength> {
         return buffer.rollbackAndReturn(null);
     }
     return buffer.commitAndReturn(new NumberUOL(n.value, unit));
+  }
+}
+
+export class NumberUOA extends NumberWithUnit<UnitOfAngle> {
+  public static parse(buffer: CodePointBuffer): NumberUOA | null {
+    buffer.savepoint();
+
+    const n = NumberT.parse(buffer);
+    if (!n) {
+      return buffer.rollbackAndReturn(null);
+    }
+
+    buffer.readDelimiter();
+    buffer.savepoint();
+
+    const unitText = buffer.readSafeChunk();
+    let unit: UnitOfAngle | null = null;
+    switch (unitText) {
+      case "deg":
+        unit = UnitOfAngle.Degree;
+        buffer.commit();
+        break;
+      case "rad":
+        unit = UnitOfAngle.Radian;
+        buffer.commit();
+        break;
+      case "":
+        buffer.commit();
+        break;
+      default:
+        return buffer.rollbackAndReturn(null);
+    }
+    return buffer.commitAndReturn(new NumberUOA(n.value, unit));
   }
 }
 

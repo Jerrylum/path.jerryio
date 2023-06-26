@@ -13,12 +13,12 @@ export enum UnitOfLength {
   Foot = 12 * Inch,
 }
 
-export enum UnitOfHeading {
+export enum UnitOfAngle {
   Degree = 1, // default
   Radian = 180 / Math.PI,
 }
 
-export type Unit = UnitOfLength | UnitOfHeading;
+export type Unit = UnitOfLength | UnitOfAngle;
 
 export class Quantity<T extends Unit> {
   constructor(public value: number, public unit: T) { }

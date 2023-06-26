@@ -1,5 +1,5 @@
-import { Unit, UnitOfLength } from "../types/Unit";
-import { Zero, CodePointBuffer, isDelimiter, isSafeDelimiter, BooleanT, DecimalPoint, Digit1To9, Digit, DoubleQuoteString, Frac, Int, Minus, NegativeInt, NumberT, PositiveInt, SingleQuoteString, StringT, NumberUOL, Operator, CloseBracket, OpenBracket, Expression, Computation, Computable, NumberWithUnit } from "./Tokens";
+import { Unit, UnitOfAngle, UnitOfLength } from "../types/Unit";
+import { Zero, CodePointBuffer, isDelimiter, isSafeDelimiter, BooleanT, DecimalPoint, Digit1To9, Digit, DoubleQuoteString, Frac, Int, Minus, NegativeInt, NumberT, PositiveInt, SingleQuoteString, StringT, NumberUOL, Operator, CloseBracket, OpenBracket, Expression, Computation, Computable, NumberWithUnit, NumberUOA } from "./Tokens";
 
 function cpb(s: string): CodePointBuffer {
   return new CodePointBuffer(s);
@@ -322,30 +322,73 @@ test('Zero invalid case', () => {
   expect(Zero.parse(cpb(" 0"))).toBeNull();
 });
 
+function n(n: string, u: UnitOfLength | null = null) {
+  return new NumberUOL(n, u);
+}
+function nmm(n: string) {
+  return new NumberUOL(n, UnitOfLength.Millimeter);
+}
+function ndeg(n: string) {
+  return new NumberUOA(n, UnitOfAngle.Degree);
+}
+function nrad(n: string) {
+  return new NumberUOA(n, UnitOfAngle.Radian);
+}
+function o(o: string) {
+  return new Operator(o);
+}
+function c<U extends Unit>(left: Computable<U>, operator: Operator, right: Computable<U>) {
+  return new Computation(left, operator, right);
+}
+
 test('NumberWithUnit valid case', () => {
-  expect(new NumberUOL('0', null)).toStrictEqual(NumberUOL.parse(cpb("0")));
-  expect(new NumberUOL('100', null)).toStrictEqual(NumberUOL.parse(cpb("100")));
-  expect(new NumberUOL('3.14', null)).toStrictEqual(NumberUOL.parse(cpb("3.14")));
-  expect(new NumberUOL('31.4', null)).toStrictEqual(NumberUOL.parse(cpb("31.4")));
-  expect(new NumberUOL('-31.4', null)).toStrictEqual(NumberUOL.parse(cpb("-31.4")));
-  expect(new NumberUOL('0', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("0mm")));
-  expect(new NumberUOL('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123mm+")));
-  expect(new NumberUOL('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123mm(")));
-  expect(new NumberUOL('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123mm +")));
-  expect(new NumberUOL('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123 mm +")));
-  expect(new NumberUOL('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123 mm+")));
-  expect(new NumberUOL('-123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("-123mm")));
-  expect(new NumberUOL('-123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("-123 mm")));
-  expect(new NumberUOL('-123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("-123 mm ")));
-  expect(new NumberUOL('-123.45', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("-123.45  mm")));
-  expect(new NumberUOL('123.45', UnitOfLength.Centimeter)).toStrictEqual(NumberUOL.parse(cpb("123.45cm")));
-  expect(new NumberUOL('123.45', UnitOfLength.Meter)).toStrictEqual(NumberUOL.parse(cpb("123.45m")));
-  expect(new NumberUOL('123.45', UnitOfLength.Inch)).toStrictEqual(NumberUOL.parse(cpb("123.45in")));
-  expect(new NumberUOL('123.45', UnitOfLength.Inch)).toStrictEqual(NumberUOL.parse(cpb("123.45inch")));
-  expect(new NumberUOL('123.45', UnitOfLength.Foot)).toStrictEqual(NumberUOL.parse(cpb("123.45ft")));
-  expect(new NumberUOL('123.45', UnitOfLength.Foot)).toStrictEqual(NumberUOL.parse(cpb("123.45foot")));
-  expect(new NumberUOL('123.45', UnitOfLength.Foot)).toStrictEqual(NumberUOL.parse(cpb("123.45feet")));
-  expect(new NumberUOL('123.45', UnitOfLength.Foot)).toStrictEqual(NumberUOL.parse(cpb("123.45   feet")));
+  expect(n('0', null)).toStrictEqual(NumberUOL.parse(cpb("0")));
+  expect(n('100', null)).toStrictEqual(NumberUOL.parse(cpb("100")));
+  expect(n('3.14', null)).toStrictEqual(NumberUOL.parse(cpb("3.14")));
+  expect(n('31.4', null)).toStrictEqual(NumberUOL.parse(cpb("31.4")));
+  expect(n('-31.4', null)).toStrictEqual(NumberUOL.parse(cpb("-31.4")));
+  expect(n('0', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("0mm")));
+  expect(n('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123mm+")));
+  expect(n('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123mm(")));
+  expect(n('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123mm +")));
+  expect(n('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123 mm +")));
+  expect(n('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123 mm+")));
+  expect(n('-123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("-123mm")));
+  expect(n('-123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("-123 mm")));
+  expect(n('-123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("-123 mm ")));
+  expect(n('-123.45', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("-123.45  mm")));
+  expect(n('123.45', UnitOfLength.Centimeter)).toStrictEqual(NumberUOL.parse(cpb("123.45cm")));
+  expect(n('123.45', UnitOfLength.Meter)).toStrictEqual(NumberUOL.parse(cpb("123.45m")));
+  expect(n('123.45', UnitOfLength.Inch)).toStrictEqual(NumberUOL.parse(cpb("123.45in")));
+  expect(n('123.45', UnitOfLength.Inch)).toStrictEqual(NumberUOL.parse(cpb("123.45inch")));
+  expect(n('123.45', UnitOfLength.Foot)).toStrictEqual(NumberUOL.parse(cpb("123.45ft")));
+  expect(n('123.45', UnitOfLength.Foot)).toStrictEqual(NumberUOL.parse(cpb("123.45foot")));
+  expect(n('123.45', UnitOfLength.Foot)).toStrictEqual(NumberUOL.parse(cpb("123.45feet")));
+  expect(n('123.45', UnitOfLength.Foot)).toStrictEqual(NumberUOL.parse(cpb("123.45   feet")));
+});
+
+test('NumberWithUnit valid case with UOA', () => {
+  function n(n: string, u: UnitOfAngle | null = null) {
+    return new NumberUOA(n, u);
+  }
+
+  expect(n('0', null)).toStrictEqual(NumberUOA.parse(cpb("0")));
+  expect(n('100', null)).toStrictEqual(NumberUOA.parse(cpb("100")));
+  expect(n('3.14', null)).toStrictEqual(NumberUOA.parse(cpb("3.14")));
+  expect(n('31.4', null)).toStrictEqual(NumberUOA.parse(cpb("31.4")));
+  expect(n('-31.4', null)).toStrictEqual(NumberUOA.parse(cpb("-31.4")));
+  expect(n('0', UnitOfAngle.Degree)).toStrictEqual(NumberUOA.parse(cpb("0deg")));
+  expect(n('123', UnitOfAngle.Degree)).toStrictEqual(NumberUOA.parse(cpb("123deg")));
+  expect(n('123', UnitOfAngle.Degree)).toStrictEqual(NumberUOA.parse(cpb("123deg(")));
+  expect(n('123', UnitOfAngle.Degree)).toStrictEqual(NumberUOA.parse(cpb("123deg +")));
+  expect(n('123', UnitOfAngle.Degree)).toStrictEqual(NumberUOA.parse(cpb("123 deg +")));
+  expect(n('123', UnitOfAngle.Degree)).toStrictEqual(NumberUOA.parse(cpb("123 deg+")));
+  expect(n('-123', UnitOfAngle.Degree)).toStrictEqual(NumberUOA.parse(cpb("-123deg")));
+  expect(n('-123', UnitOfAngle.Degree)).toStrictEqual(NumberUOA.parse(cpb("-123 deg")));
+  expect(n('-123', UnitOfAngle.Degree)).toStrictEqual(NumberUOA.parse(cpb("-123 deg ")));
+  expect(n('-123.45', UnitOfAngle.Radian)).toStrictEqual(NumberUOA.parse(cpb("-123.45  rad")));
+  expect(n('123.45', UnitOfAngle.Radian)).toStrictEqual(NumberUOA.parse(cpb("123.45rad")));
+  expect(n('123.45', UnitOfAngle.Radian)).toStrictEqual(NumberUOA.parse(cpb("123.45rad")));
 });
 
 test('NumberWithUnit invalid case', () => {
@@ -354,6 +397,8 @@ test('NumberWithUnit invalid case', () => {
   expect(NumberUOL.parse(cpb("0 mmm"))).toBeNull();
   expect(NumberUOL.parse(cpb("0 mmm"))).toBeNull();
   expect(NumberUOL.parse(cpb("0 456"))).toBeNull();
+  expect(NumberUOA.parse(cpb("0mm"))).toBeNull();
+  expect(NumberUOL.parse(cpb("0reg"))).toBeNull();
 });
 
 test('OpenBracket valid case', () => {
@@ -392,19 +437,6 @@ test('Operator invalid case', () => {
   expect(Operator.parse(cpb("1+"))).toBeNull();
   expect(Operator.parse(cpb("("))).toBeNull();
 });
-
-function n(n: string, u: UnitOfLength | null = null) {
-  return new NumberUOL(n, u);
-}
-function nmm(n: string) {
-  return new NumberUOL(n, UnitOfLength.Millimeter);
-}
-function o(o: string) {
-  return new Operator(o);
-}
-function c<U extends Unit>(left: Computable<U>, operator: Operator, right: Computable<U>) {
-  return new Computation(left, operator, right);
-}
 
 const ob = new OpenBracket();
 const cb = new CloseBracket();
@@ -479,6 +511,18 @@ test('Expression invalid case', () => {
   expect(Expression.parseWith(cpb("123 + - 1"), NumberUOL.parse)).toBeNull();
   expect(Expression.parseWith(cpb("(123"), NumberUOL.parse)).toBeNull();
   expect(Expression.parseWith(cpb("123 456"), NumberUOL.parse)).toBeNull(); // Due to NumberWithUnit token
+});
+
+test('Expression invalid case with UOA', () => {
+  expect(Expression.parseWith(cpb(""), NumberUOA.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("123+"), NumberUOA.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("123 +"), NumberUOA.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("123 + "), NumberUOA.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("123 + -0"), NumberUOA.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("- 123"), NumberUOA.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("123 + - 1"), NumberUOA.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("(123"), NumberUOA.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("123 456"), NumberUOA.parse)).toBeNull(); // Due to NumberWithUnit token
 });
 
 test('Computation valid case', () => {
