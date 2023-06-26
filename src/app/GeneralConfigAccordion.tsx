@@ -9,6 +9,7 @@ import { UpdateProperties } from '../types/Command';
 import { useAppStores } from './MainApp';
 import { ObserverEnumSelect } from './ObserverEnumSelect';
 import { ObserverCheckbox } from './ObserverCheckbox';
+import { CodePointBuffer, Computation, NumberUOL } from '../token/Tokens';
 
 const GeneralConfigAccordion = observer((props: {}) => {
   const { app, confirmation } = useAppStores();
@@ -52,21 +53,21 @@ const GeneralConfigAccordion = observer((props: {}) => {
             sx={{ width: "7rem" }}
             label="Point Density"
             getValue={() => gc.pointDensity.toUser() + ""}
-            setValue={
-              (value: string) => app.history.execute(
-                `Change point density`,
-                new UpdateProperties(gc, {
-                  "pointDensity": parseNumberInString(
-                    value,
-                    gc.uol,
-                    new Quantity(0.1, UnitOfLength.Centimeter),
-                    new Quantity(100, UnitOfLength.Centimeter)
-                  )
-                })
-              )
-            }
-            isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
-            isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+            setValue={(value: string) => app.history.execute(
+              `Change point density`,
+              new UpdateProperties(gc, {
+                "pointDensity": parseNumberInString(
+                  Computation.parseWith(new CodePointBuffer(value), NumberUOL.parse)!.compute(app.gc.uol).toString(),
+                  gc.uol,
+                  new Quantity(0.1, UnitOfLength.Centimeter),
+                  new Quantity(100, UnitOfLength.Centimeter)
+                )
+              })
+            )}
+            isValidIntermediate={() => true}
+            isValidValue={(candidate: string) => {
+              return Computation.parseWith(new CodePointBuffer(candidate), NumberUOL.parse) !== null;
+            }}
             numeric
           />
         </Box>
@@ -75,41 +76,41 @@ const GeneralConfigAccordion = observer((props: {}) => {
           <ObserverInput
             label="Width"
             getValue={() => gc.robotWidth.toUser() + ""}
-            setValue={
-              (value: string) => app.history.execute(
-                `Change robot width`,
-                new UpdateProperties(gc, {
-                  "robotWidth": parseNumberInString(
-                    value,
-                    gc.uol,
-                    new Quantity(1, UnitOfLength.Centimeter),
-                    new Quantity(100, UnitOfLength.Centimeter)
-                  )
-                })
-              )
-            }
-            isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
-            isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+            setValue={(value: string) => app.history.execute(
+              `Change robot width`,
+              new UpdateProperties(gc, {
+                "robotWidth": parseNumberInString(
+                  Computation.parseWith(new CodePointBuffer(value), NumberUOL.parse)!.compute(app.gc.uol).toString(),
+                  gc.uol,
+                  new Quantity(1, UnitOfLength.Centimeter),
+                  new Quantity(100, UnitOfLength.Centimeter)
+                )
+              })
+            )}
+            isValidIntermediate={() => true}
+            isValidValue={(candidate: string) => {
+              return Computation.parseWith(new CodePointBuffer(candidate), NumberUOL.parse) !== null;
+            }}
             numeric
           />
           <ObserverInput
             label="Height"
             getValue={() => gc.robotHeight.toUser() + ""}
-            setValue={
-              (value: string) => app.history.execute(
-                `Change robot height`,
-                new UpdateProperties(gc, {
-                  "robotHeight": parseNumberInString(
-                    value,
-                    gc.uol,
-                    new Quantity(1, UnitOfLength.Centimeter),
-                    new Quantity(100, UnitOfLength.Centimeter)
-                  )
-                })
-              )
-            }
-            isValidIntermediate={(candidate: string) => candidate === "" || new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
-            isValidValue={(candidate: string) => new RegExp(/^[0-9]+(\.[0-9]*)?$/g).test(candidate)}
+            setValue={(value: string) => app.history.execute(
+              `Change robot height`,
+              new UpdateProperties(gc, {
+                "robotHeight": parseNumberInString(
+                  Computation.parseWith(new CodePointBuffer(value), NumberUOL.parse)!.compute(app.gc.uol).toString(),
+                  gc.uol,
+                  new Quantity(1, UnitOfLength.Centimeter),
+                  new Quantity(100, UnitOfLength.Centimeter)
+                )
+              })
+            )}
+            isValidIntermediate={() => true}
+            isValidValue={(candidate: string) => {
+              return Computation.parseWith(new CodePointBuffer(candidate), NumberUOL.parse) !== null;
+            }}
             numeric
           />
           <ObserverCheckbox label="Visible" title='Toggle Robot Visibility (R)' checked={gc.showRobot} onCheckedChange={(c) => gc.showRobot = c} />
