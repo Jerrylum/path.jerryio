@@ -402,7 +402,7 @@ function nmm(n: string) {
 function o(o: string) {
   return new Operator(o);
 }
-function c<T extends NumberWithUnit<U>, U extends Unit>(left: Computable<T, U>, operator: Operator, right: Computable<T, U>) {
+function c<U extends Unit>(left: Computable<U>, operator: Operator, right: Computable<U>) {
   return new Computation(left, operator, right);
 }
 

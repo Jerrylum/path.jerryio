@@ -622,6 +622,10 @@ export class Operator extends Token {
 export class Expression<T extends NumberWithUnit<Unit>> extends Token {
   constructor(public tokens: (OpenBracket | CloseBracket | T | Operator)[]) { super(); }
 
+  public static parse<T extends NumberWithUnit<Unit>>(buffer: CodePointBuffer): Expression<T> | null {
+    throw new Error("not implemented");
+  }
+
   public static parseWith<T extends NumberWithUnit<Unit>>(
     buffer: CodePointBuffer,
     numParser: TokenParser<T>
@@ -676,10 +680,10 @@ export class Expression<T extends NumberWithUnit<Unit>> extends Token {
   }
 }
 
-export type Computable<T extends NumberWithUnit<U>, U extends Unit> = T | Computation<T, U>;
+export type Computable<U extends Unit> = NumberWithUnit<U> | Computation<U>;
 
-export class Computation<T extends NumberWithUnit<U>, U extends Unit> extends Token {
-  constructor(public left: Computable<T, U>, public operator: Operator, public right: Computable<T, U>) { super(); }
+export class Computation<U extends Unit> extends Token {
+  constructor(public left: Computable<U>, public operator: Operator, public right: Computable<U>) { super(); }
 
   public compute(inherit: U): number {
     const left = this.left instanceof Computation
@@ -703,19 +707,23 @@ export class Computation<T extends NumberWithUnit<U>, U extends Unit> extends To
     }
   }
 
-  public static parseWith<T extends NumberWithUnit<U>, U extends Unit>(
+  public static parse<U extends Unit>(buffer: CodePointBuffer): Computation<U> | null {
+    throw new Error("not implemented");
+  }
+
+  public static parseWith<U extends Unit>(
     buffer: CodePointBuffer,
-    numParser: TokenParser<T>
-  ): Computation<T, U> | null {
+    numParser: TokenParser<NumberWithUnit<U>>
+  ): Computation<U> | null {
     const e = Expression.parseWith(buffer, numParser);
     if (!e) return null;
     if (buffer.hasNext()) return null;
 
-    const output: Computable<T, U>[] = [];
+    const output: Computable<U>[] = [];
     const stack: (OpenBracket | Operator)[] = [];
 
     function peek() { return stack.at(-1); }
-    function out(token: Computable<T, U>) { output.push(token); }
+    function out(token: Computable<U>) { output.push(token); }
     function handlePop() {
       const op = stack.pop()!;
       if (op instanceof OpenBracket) return undefined;
@@ -725,8 +733,8 @@ export class Computation<T extends NumberWithUnit<U>, U extends Unit> extends To
 
       return new Computation(left, op, right);
     }
-    function handleToken(token: (OpenBracket | CloseBracket | T | Operator)) {
-      if (token instanceof NumberUOL) {
+    function handleToken(token: (OpenBracket | CloseBracket | NumberWithUnit<U> | Operator)) {
+      if (token instanceof NumberWithUnit) {
         out(token);
       } else if (token instanceof Operator) {
         const o1 = token;
