@@ -470,6 +470,7 @@ test('Expression valid case', () => {
 });
 
 test('Expression invalid case', () => {
+  expect(Expression.parse(cpb(""))).toBeNull();
   expect(Expression.parse(cpb("123+"))).toBeNull();
   expect(Expression.parse(cpb("123 +"))).toBeNull();
   expect(Expression.parse(cpb("123 + "))).toBeNull();
