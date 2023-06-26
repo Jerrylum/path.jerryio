@@ -3,6 +3,8 @@ import { runInAction } from "mobx"
 import { useHotkeys } from 'react-hotkeys-hook'
 import { HotkeysEvent, HotkeyCallback, Options, RefType, Trigger } from 'react-hotkeys-hook/dist/types';
 import { useAppStores } from "./MainApp";
+import { TokenParser, NumberWithUnit, CodePointBuffer, Computation } from "../token/Tokens";
+import { Unit } from "../types/Unit";
 
 export function useTimer(ms: number) {
   const [time, setTime] = React.useState(Date.now());
@@ -203,6 +205,10 @@ export function removeFromArray<T>(array: T[], item: T): boolean {
   } else {
     return false;
   }
+}
+
+export function parseFormula<U extends Unit>(input: string, numParser: TokenParser<NumberWithUnit<U>>): Computation<U> | null {
+  return Computation.parseWith(new CodePointBuffer(input), numParser);
 }
 
 declare global {

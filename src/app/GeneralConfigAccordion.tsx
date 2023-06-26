@@ -3,13 +3,14 @@ import { Accordion, AccordionDetails, AccordionSummary, Box, MenuItem, Select, S
 import { action } from "mobx"
 import { observer } from "mobx-react-lite";
 import { getAllFormats } from '../format/Format';
-import { ObserverInput, parseNumberInString } from './ObserverInput';
+import { ObserverInput, clampQuantity } from './ObserverInput';
 import { Quantity, UnitOfLength } from '../types/Unit';
 import { UpdateProperties } from '../types/Command';
 import { useAppStores } from './MainApp';
 import { ObserverEnumSelect } from './ObserverEnumSelect';
 import { ObserverCheckbox } from './ObserverCheckbox';
-import { CodePointBuffer, Computation, NumberUOL } from '../token/Tokens';
+import { NumberUOL } from '../token/Tokens';
+import { parseFormula } from './Util';
 
 const GeneralConfigAccordion = observer((props: {}) => {
   const { app, confirmation } = useAppStores();
@@ -56,8 +57,8 @@ const GeneralConfigAccordion = observer((props: {}) => {
             setValue={(value: string) => app.history.execute(
               `Change point density`,
               new UpdateProperties(gc, {
-                "pointDensity": parseNumberInString(
-                  Computation.parseWith(new CodePointBuffer(value), NumberUOL.parse)!.compute(app.gc.uol).toString(),
+                "pointDensity": clampQuantity(
+                  parseFormula(value, NumberUOL.parse)!.compute(app.gc.uol),
                   gc.uol,
                   new Quantity(0.1, UnitOfLength.Centimeter),
                   new Quantity(100, UnitOfLength.Centimeter)
@@ -65,9 +66,7 @@ const GeneralConfigAccordion = observer((props: {}) => {
               })
             )}
             isValidIntermediate={() => true}
-            isValidValue={(candidate: string) => {
-              return Computation.parseWith(new CodePointBuffer(candidate), NumberUOL.parse) !== null;
-            }}
+            isValidValue={(candidate: string) => parseFormula(candidate, NumberUOL.parse) !== null}
             numeric
           />
         </Box>
@@ -79,8 +78,8 @@ const GeneralConfigAccordion = observer((props: {}) => {
             setValue={(value: string) => app.history.execute(
               `Change robot width`,
               new UpdateProperties(gc, {
-                "robotWidth": parseNumberInString(
-                  Computation.parseWith(new CodePointBuffer(value), NumberUOL.parse)!.compute(app.gc.uol).toString(),
+                "robotWidth": clampQuantity(
+                  parseFormula(value, NumberUOL.parse)!.compute(app.gc.uol),
                   gc.uol,
                   new Quantity(1, UnitOfLength.Centimeter),
                   new Quantity(100, UnitOfLength.Centimeter)
@@ -88,9 +87,7 @@ const GeneralConfigAccordion = observer((props: {}) => {
               })
             )}
             isValidIntermediate={() => true}
-            isValidValue={(candidate: string) => {
-              return Computation.parseWith(new CodePointBuffer(candidate), NumberUOL.parse) !== null;
-            }}
+            isValidValue={(candidate: string) => parseFormula(candidate, NumberUOL.parse) !== null}
             numeric
           />
           <ObserverInput
@@ -99,8 +96,8 @@ const GeneralConfigAccordion = observer((props: {}) => {
             setValue={(value: string) => app.history.execute(
               `Change robot height`,
               new UpdateProperties(gc, {
-                "robotHeight": parseNumberInString(
-                  Computation.parseWith(new CodePointBuffer(value), NumberUOL.parse)!.compute(app.gc.uol).toString(),
+                "robotHeight": clampQuantity(
+                  parseFormula(value, NumberUOL.parse)!.compute(app.gc.uol),
                   gc.uol,
                   new Quantity(1, UnitOfLength.Centimeter),
                   new Quantity(100, UnitOfLength.Centimeter)
@@ -108,9 +105,7 @@ const GeneralConfigAccordion = observer((props: {}) => {
               })
             )}
             isValidIntermediate={() => true}
-            isValidValue={(candidate: string) => {
-              return Computation.parseWith(new CodePointBuffer(candidate), NumberUOL.parse) !== null;
-            }}
+            isValidValue={(candidate: string) => parseFormula(candidate, NumberUOL.parse) !== null}
             numeric
           />
           <ObserverCheckbox label="Visible" title='Toggle Robot Visibility (R)' checked={gc.showRobot} onCheckedChange={(c) => gc.showRobot = c} />

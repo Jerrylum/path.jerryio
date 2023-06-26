@@ -2,11 +2,12 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import { EndPointControl } from '../types/Path';
-import { ObserverInput, parseNumberInString } from './ObserverInput';
+import { ObserverInput, clampQuantity } from './ObserverInput';
 import { Quantity, UnitOfAngle, UnitOfLength } from '../types/Unit';
 import { UpdateInteractiveEntities } from '../types/Command';
 import { useAppStores } from './MainApp';
-import { CodePointBuffer, Computation, NumberUOA, NumberUOL } from '../token/Tokens';
+import { NumberUOA, NumberUOL } from '../token/Tokens';
+import { parseFormula } from './Util';
 
 const ControlAccordion = observer((props: {}) => {
   const { app } = useAppStores();
@@ -33,11 +34,9 @@ const ControlAccordion = observer((props: {}) => {
                 const control = app.selectedControl;
                 if (control === undefined) return;
 
-                const c = Computation.parseWith(new CodePointBuffer(value), NumberUOL.parse);
-
                 const controlUid = control.uid;
-                const finalVal = parseNumberInString(
-                  c!.compute(app.gc.uol).toString(), // ALGO: Assume the value is still the same after isValidValue 
+                const finalVal = clampQuantity(
+                  parseFormula(value, NumberUOL.parse)!.compute(app.gc.uol),
                   app.gc.uol,
                   new Quantity(-1000, UnitOfLength.Centimeter),
                   new Quantity(1000, UnitOfLength.Centimeter)
@@ -47,9 +46,7 @@ const ControlAccordion = observer((props: {}) => {
                   new UpdateInteractiveEntities([control], { x: finalVal }));
               }}
               isValidIntermediate={() => true}
-              isValidValue={(candidate: string) => {
-                return Computation.parseWith(new CodePointBuffer(candidate), NumberUOL.parse) !== null;
-              }}
+              isValidValue={(candidate: string) => parseFormula(candidate, NumberUOL.parse) !== null}
               disabled={app.selectedEntityCount !== 1 || app.selectedControl === undefined}
               numeric
             />
@@ -67,11 +64,9 @@ const ControlAccordion = observer((props: {}) => {
                 const control = app.selectedControl;
                 if (control === undefined) return;
 
-                const c = Computation.parseWith(new CodePointBuffer(value), NumberUOL.parse);
-
                 const controlUid = control.uid;
-                const finalVal = parseNumberInString(
-                  c!.compute(app.gc.uol).toString(), // ALGO: Assume the value is still the same after isValidValue 
+                const finalVal = clampQuantity(
+                  parseFormula(value, NumberUOL.parse)!.compute(app.gc.uol),
                   app.gc.uol,
                   new Quantity(-1000, UnitOfLength.Centimeter),
                   new Quantity(1000, UnitOfLength.Centimeter)
@@ -81,9 +76,7 @@ const ControlAccordion = observer((props: {}) => {
                   new UpdateInteractiveEntities([control], { y: finalVal }));
               }}
               isValidIntermediate={() => true}
-              isValidValue={(candidate: string) => {
-                return Computation.parseWith(new CodePointBuffer(candidate), NumberUOL.parse) !== null;
-              }}
+              isValidValue={(candidate: string) => parseFormula(candidate, NumberUOL.parse) !== null}
               disabled={app.selectedEntityCount !== 1 || app.selectedControl === undefined}
               numeric
             />
@@ -101,18 +94,14 @@ const ControlAccordion = observer((props: {}) => {
                 const control = app.selectedControl;
                 if (!(control instanceof EndPointControl)) return;
 
-                const c = Computation.parseWith(new CodePointBuffer(value), NumberUOA.parse);
-
                 const controlUid = control.uid;
-                const finalVal = c!.compute(UnitOfAngle.Degree).toUser(); // ALGO: Assume the value is still the same after isValidValue 
+                const finalVal = parseFormula(value, NumberUOA.parse)!.compute(UnitOfAngle.Degree).toUser();
 
                 app.history.execute(`Update control ${controlUid} heading value`,
                   new UpdateInteractiveEntities([control], { heading: finalVal }));
               }}
               isValidIntermediate={() => true}
-              isValidValue={(candidate: string) => {
-                return Computation.parseWith(new CodePointBuffer(candidate), NumberUOA.parse) !== null;
-              }}
+              isValidValue={(candidate: string) => parseFormula(candidate, NumberUOA.parse) !== null}
               disabled={app.selectedEntityCount !== 1 || app.selectedControl === undefined}
               sx={{ visibility: app.selectedEntityCount === 1 && !(app.selectedControl instanceof EndPointControl) ? "hidden" : "" }}
               numeric

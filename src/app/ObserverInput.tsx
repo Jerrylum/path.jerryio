@@ -5,15 +5,13 @@ import { useEffect, useMemo, useRef } from "react";
 import { Quantity, UnitConverter, UnitOfLength } from "../types/Unit";
 import { clamp } from "./Util";
 
-export function parseNumberInString(value: string, uol: UnitOfLength,
+export function clampQuantity(value: number, uol: UnitOfLength,
   min = new Quantity(-Infinity, UnitOfLength.Centimeter),
-  max = new Quantity(-Infinity, UnitOfLength.Centimeter)): number {
+  max = new Quantity(+Infinity, UnitOfLength.Centimeter)): number {
   const minInUOL = new UnitConverter(min.unit, uol).fromAtoB(min.value);
   const maxInUOL = new UnitConverter(max.unit, uol).fromAtoB(max.value);
 
-  const valueInUOL = parseFloat(value);
-
-  return clamp(valueInUOL, minInUOL, maxInUOL).toUser();
+  return clamp(value, minInUOL, maxInUOL).toUser();
 }
 
 const ObserverInput = observer((props: TextFieldProps & {
