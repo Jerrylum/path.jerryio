@@ -18,9 +18,9 @@ export function parseNumberInString(value: string, uol: UnitOfLength,
 
 const ObserverInput = observer((props: TextFieldProps & {
   getValue: () => string
-  setValue: (value: string) => void
+  setValue: (value: string, payload: any) => void
   isValidIntermediate: (candidate: string) => boolean
-  isValidValue: (candidate: string) => boolean
+  isValidValue: (candidate: string) => boolean | [boolean, any]
   numeric?: boolean // default false
   allowEmpty?: boolean // default true
 }
@@ -77,13 +77,16 @@ const ObserverInput = observer((props: TextFieldProps & {
     const candidate = element.value;
     let rtn: string;
 
-    if (isValidValue(candidate) === false || (allowEmpty !== true && candidate === "")) {
+    const result = isValidValue(candidate);
+    const isValid = Array.isArray(result) ? result[0] : result;
+    const payload = Array.isArray(result) ? result[1] : undefined;
+    if (isValid === false || (allowEmpty !== true && candidate === "")) {
       element.value = rtn = initialValue.current;
     } else {
       rtn = candidate;
     }
 
-    setValue(rtn);
+    setValue(rtn, payload);
     inputRef.current && (inputRef.current.value = initialValue.current = lastValidIntermediate.current = getValue());
   }
 

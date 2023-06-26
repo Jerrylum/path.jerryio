@@ -22,9 +22,8 @@ const ObserverEnumSelect = observer(<T extends number | string>(props: FormContr
         value={enumValue}
         onChange={action((e: SelectChangeEvent<T>) => onEnumChange(e.target.value as T))}>
         {
-          Object.keys(enumType).filter((x) => !isNaN(parseInt(x))).map((x) => {
-            return <MenuItem key={x} value={parseInt(x)}>{enumType[parseInt(x)]}
-            </MenuItem>
+          Object.keys(enumType).filter((x) => isNaN(parseInt(x))).map((x) => {
+            return <MenuItem key={x} value={enumType[x]}>{x}</MenuItem>
           })
         }
       </Select>
