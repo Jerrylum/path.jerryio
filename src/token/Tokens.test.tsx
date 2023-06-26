@@ -1,5 +1,5 @@
 import { UnitOfLength } from "../types/Unit";
-import { Zero, CodePointBuffer, isDelimiter, isSafeDelimiter, BooleanT, DecimalPoint, Digit1To9, Digit, DoubleQuoteString, Frac, Int, Minus, NegativeInt, NumberT, PositiveInt, SingleQuoteString, StringT, NumberWithUnit, Operator, CloseBracket, OpenBracket, Expression } from "./Tokens";
+import { Zero, CodePointBuffer, isDelimiter, isSafeDelimiter, BooleanT, DecimalPoint, Digit1To9, Digit, DoubleQuoteString, Frac, Int, Minus, NegativeInt, NumberT, PositiveInt, SingleQuoteString, StringT, NumberWithUnit, Operator, CloseBracket, OpenBracket, Expression, Computation, Computable } from "./Tokens";
 
 function cpb(s: string): CodePointBuffer {
   return new CodePointBuffer(s);
@@ -28,13 +28,13 @@ test('BooleanT valid case', () => {
   expect("True").toBe(t.value);
   expect(true).toBe(t.bool);
 
-  expect(new BooleanT("True", true)).toEqual(BooleanT.parse(cpb("True")));
-  expect(new BooleanT("true", true)).toEqual(BooleanT.parse(cpb("true")));
-  expect(new BooleanT("False", false)).toEqual(BooleanT.parse(cpb("False")));
-  expect(new BooleanT("false", false)).toEqual(BooleanT.parse(cpb("false")));
-  expect(new BooleanT("True", true)).toEqual(BooleanT.parse(cpb("True ")));
-  expect(new BooleanT("TrUe", true)).toEqual(BooleanT.parse(cpb("TrUe ")));
-  expect(new BooleanT("fAlse", false)).toEqual(BooleanT.parse(cpb("fAlse")));
+  expect(new BooleanT("True", true)).toStrictEqual(BooleanT.parse(cpb("True")));
+  expect(new BooleanT("true", true)).toStrictEqual(BooleanT.parse(cpb("true")));
+  expect(new BooleanT("False", false)).toStrictEqual(BooleanT.parse(cpb("False")));
+  expect(new BooleanT("false", false)).toStrictEqual(BooleanT.parse(cpb("false")));
+  expect(new BooleanT("True", true)).toStrictEqual(BooleanT.parse(cpb("True ")));
+  expect(new BooleanT("TrUe", true)).toStrictEqual(BooleanT.parse(cpb("TrUe ")));
+  expect(new BooleanT("fAlse", false)).toStrictEqual(BooleanT.parse(cpb("fAlse")));
 });
 
 test('BooleanT invalid case', () => {
@@ -47,10 +47,10 @@ test('BooleanT invalid case', () => {
 });
 
 test('DecimalPoint valid case', () => {
-  expect(new DecimalPoint('.')).toEqual(DecimalPoint.parse(cpb(".")));
-  expect(new DecimalPoint('.')).toEqual(DecimalPoint.parse(cpb(". ")));
-  expect(new DecimalPoint('.')).toEqual(DecimalPoint.parse(cpb(".a")));
-  expect(new DecimalPoint('.')).toEqual(DecimalPoint.parse(cpb(".123")));
+  expect(new DecimalPoint()).toStrictEqual(DecimalPoint.parse(cpb(".")));
+  expect(new DecimalPoint()).toStrictEqual(DecimalPoint.parse(cpb(". ")));
+  expect(new DecimalPoint()).toStrictEqual(DecimalPoint.parse(cpb(".a")));
+  expect(new DecimalPoint()).toStrictEqual(DecimalPoint.parse(cpb(".123")));
 });
 
 test('DecimalPoint invalid case', () => {
@@ -65,17 +65,17 @@ test('DecimalPoint invalid case', () => {
 });
 
 test('Digit1To9 valid case', () => {
-  expect(new Digit1To9('1')).toEqual(Digit1To9.parse(cpb("1")));
-  expect(new Digit1To9('2')).toEqual(Digit1To9.parse(cpb("2")));
-  expect(new Digit1To9('3')).toEqual(Digit1To9.parse(cpb("3")));
-  expect(new Digit1To9('4')).toEqual(Digit1To9.parse(cpb("4")));
-  expect(new Digit1To9('5')).toEqual(Digit1To9.parse(cpb("5")));
-  expect(new Digit1To9('6')).toEqual(Digit1To9.parse(cpb("6")));
-  expect(new Digit1To9('7')).toEqual(Digit1To9.parse(cpb("7")));
-  expect(new Digit1To9('8')).toEqual(Digit1To9.parse(cpb("8")));
-  expect(new Digit1To9('9')).toEqual(Digit1To9.parse(cpb("9")));
-  expect(new Digit1To9('1')).toEqual(Digit1To9.parse(cpb("10")));
-  expect(new Digit1To9('1')).toEqual(Digit1To9.parse(cpb("1 ")));
+  expect(new Digit1To9('1')).toStrictEqual(Digit1To9.parse(cpb("1")));
+  expect(new Digit1To9('2')).toStrictEqual(Digit1To9.parse(cpb("2")));
+  expect(new Digit1To9('3')).toStrictEqual(Digit1To9.parse(cpb("3")));
+  expect(new Digit1To9('4')).toStrictEqual(Digit1To9.parse(cpb("4")));
+  expect(new Digit1To9('5')).toStrictEqual(Digit1To9.parse(cpb("5")));
+  expect(new Digit1To9('6')).toStrictEqual(Digit1To9.parse(cpb("6")));
+  expect(new Digit1To9('7')).toStrictEqual(Digit1To9.parse(cpb("7")));
+  expect(new Digit1To9('8')).toStrictEqual(Digit1To9.parse(cpb("8")));
+  expect(new Digit1To9('9')).toStrictEqual(Digit1To9.parse(cpb("9")));
+  expect(new Digit1To9('1')).toStrictEqual(Digit1To9.parse(cpb("10")));
+  expect(new Digit1To9('1')).toStrictEqual(Digit1To9.parse(cpb("1 ")));
 });
 
 test('Digit1To9 invalid case', () => {
@@ -89,17 +89,17 @@ test('Digit1To9 invalid case', () => {
 });
 
 test('Digit valid case', () => {
-  expect(new Digit('0')).toEqual(Digit.parse(cpb("0")));
-  expect(new Digit('1')).toEqual(Digit.parse(cpb("1")));
-  expect(new Digit('2')).toEqual(Digit.parse(cpb("2")));
-  expect(new Digit('3')).toEqual(Digit.parse(cpb("3")));
-  expect(new Digit('4')).toEqual(Digit.parse(cpb("4")));
-  expect(new Digit('5')).toEqual(Digit.parse(cpb("5")));
-  expect(new Digit('6')).toEqual(Digit.parse(cpb("6")));
-  expect(new Digit('7')).toEqual(Digit.parse(cpb("7")));
-  expect(new Digit('8')).toEqual(Digit.parse(cpb("8")));
-  expect(new Digit('9')).toEqual(Digit.parse(cpb("9")));
-  expect(new Digit('1')).toEqual(Digit.parse(cpb("1 ")));
+  expect(new Digit('0')).toStrictEqual(Digit.parse(cpb("0")));
+  expect(new Digit('1')).toStrictEqual(Digit.parse(cpb("1")));
+  expect(new Digit('2')).toStrictEqual(Digit.parse(cpb("2")));
+  expect(new Digit('3')).toStrictEqual(Digit.parse(cpb("3")));
+  expect(new Digit('4')).toStrictEqual(Digit.parse(cpb("4")));
+  expect(new Digit('5')).toStrictEqual(Digit.parse(cpb("5")));
+  expect(new Digit('6')).toStrictEqual(Digit.parse(cpb("6")));
+  expect(new Digit('7')).toStrictEqual(Digit.parse(cpb("7")));
+  expect(new Digit('8')).toStrictEqual(Digit.parse(cpb("8")));
+  expect(new Digit('9')).toStrictEqual(Digit.parse(cpb("9")));
+  expect(new Digit('1')).toStrictEqual(Digit.parse(cpb("1 ")));
 });
 
 test('Digit invalid case', () => {
@@ -114,17 +114,17 @@ test('Digit invalid case', () => {
 
 test('DoubleQuoteString valid case', () => {
   let t = new DoubleQuoteString("\"test\"", "test");
-  expect("\"test\"").toEqual(t.value);
-  expect("test").toEqual(t.content);
+  expect("\"test\"").toStrictEqual(t.value);
+  expect("test").toStrictEqual(t.content);
 
-  expect(new DoubleQuoteString("\"\\\\\"", "\\")).toEqual(DoubleQuoteString.parse(cpb("\"\\\\\""))); // \
-  expect(new DoubleQuoteString("\"\\\"\"", "\"")).toEqual(DoubleQuoteString.parse(cpb("\"\\\"\""))); // \"
-  expect(new DoubleQuoteString("\"\\\\\\\"\"", "\\\"")).toEqual(DoubleQuoteString.parse(cpb("\"\\\\\\\"\""))); // \\"
-  expect(new DoubleQuoteString("\"\\\\\\\\\"", "\\\\")).toEqual(DoubleQuoteString.parse(cpb("\"\\\\\\\\\""))); // \\
-  expect(new DoubleQuoteString("\"test\\\\\"", "test\\")).toEqual(DoubleQuoteString.parse(cpb("\"test\\\\\""))); // test\
-  expect(new DoubleQuoteString("\"test\\\"\"", "test\"")).toEqual(DoubleQuoteString.parse(cpb("\"test\\\"\""))); // test\"
-  expect(new DoubleQuoteString("\"test\\\\\\\"\"", "test\\\"")).toEqual(DoubleQuoteString.parse(cpb("\"test\\\\\\\"\""))); // test\\"
-  expect(new DoubleQuoteString("\"\"", "")).toEqual(DoubleQuoteString.parse(cpb("\"\""))); // empty
+  expect(new DoubleQuoteString("\"\\\\\"", "\\")).toStrictEqual(DoubleQuoteString.parse(cpb("\"\\\\\""))); // \
+  expect(new DoubleQuoteString("\"\\\"\"", "\"")).toStrictEqual(DoubleQuoteString.parse(cpb("\"\\\"\""))); // \"
+  expect(new DoubleQuoteString("\"\\\\\\\"\"", "\\\"")).toStrictEqual(DoubleQuoteString.parse(cpb("\"\\\\\\\"\""))); // \\"
+  expect(new DoubleQuoteString("\"\\\\\\\\\"", "\\\\")).toStrictEqual(DoubleQuoteString.parse(cpb("\"\\\\\\\\\""))); // \\
+  expect(new DoubleQuoteString("\"test\\\\\"", "test\\")).toStrictEqual(DoubleQuoteString.parse(cpb("\"test\\\\\""))); // test\
+  expect(new DoubleQuoteString("\"test\\\"\"", "test\"")).toStrictEqual(DoubleQuoteString.parse(cpb("\"test\\\"\""))); // test\"
+  expect(new DoubleQuoteString("\"test\\\\\\\"\"", "test\\\"")).toStrictEqual(DoubleQuoteString.parse(cpb("\"test\\\\\\\"\""))); // test\\"
+  expect(new DoubleQuoteString("\"\"", "")).toStrictEqual(DoubleQuoteString.parse(cpb("\"\""))); // empty
 });
 
 test('DoubleQuoteString invalid case', () => {
@@ -137,12 +137,12 @@ test('DoubleQuoteString invalid case', () => {
 });
 
 test('Frac valid case', () => {
-  expect(new Frac(".14")).toEqual(Frac.parse(cpb(".14")));
-  expect(new Frac(".14")).toEqual(Frac.parse(cpb(".14.15")));
-  expect(new Frac(".14")).toEqual(Frac.parse(cpb(".14 ")));
-  expect(new Frac(".14")).toEqual(Frac.parse(cpb(".14abc")));
-  expect(new Frac(".14")).toEqual(Frac.parse(cpb(".14\\")));
-  expect(new Frac(".14")).toEqual(Frac.parse(cpb(".14\'")));
+  expect(new Frac(".14")).toStrictEqual(Frac.parse(cpb(".14")));
+  expect(new Frac(".14")).toStrictEqual(Frac.parse(cpb(".14.15")));
+  expect(new Frac(".14")).toStrictEqual(Frac.parse(cpb(".14 ")));
+  expect(new Frac(".14")).toStrictEqual(Frac.parse(cpb(".14abc")));
+  expect(new Frac(".14")).toStrictEqual(Frac.parse(cpb(".14\\")));
+  expect(new Frac(".14")).toStrictEqual(Frac.parse(cpb(".14\'")));
 });
 
 test('Frac invalid case', () => {
@@ -156,12 +156,12 @@ test('Frac invalid case', () => {
 });
 
 test('Int valid case', () => {
-  expect(new Int("0")).toEqual(Int.parse(cpb("0")));
-  expect(new Int("123")).toEqual(Int.parse(cpb("123")));
-  expect(new Int("0")).toEqual(Int.parse(cpb("0 ")));
-  expect(new Int("123")).toEqual(Int.parse(cpb("123 ")));
-  expect(new Int("0")).toEqual(Int.parse(cpb("0.16")));
-  expect(new Int("3")).toEqual(Int.parse(cpb("3.14")));
+  expect(new Int("0")).toStrictEqual(Int.parse(cpb("0")));
+  expect(new Int("123")).toStrictEqual(Int.parse(cpb("123")));
+  expect(new Int("0")).toStrictEqual(Int.parse(cpb("0 ")));
+  expect(new Int("123")).toStrictEqual(Int.parse(cpb("123 ")));
+  expect(new Int("0")).toStrictEqual(Int.parse(cpb("0.16")));
+  expect(new Int("3")).toStrictEqual(Int.parse(cpb("3.14")));
 });
 
 test('Int invalid case', () => {
@@ -172,8 +172,8 @@ test('Int invalid case', () => {
 });
 
 test('Minus valid case', () => {
-  expect(new Minus("-")).toEqual(Minus.parse(cpb("-")));
-  expect(new Minus("-")).toEqual(Minus.parse(cpb("- ")));
+  expect(new Minus()).toStrictEqual(Minus.parse(cpb("-")));
+  expect(new Minus()).toStrictEqual(Minus.parse(cpb("- ")));
 });
 
 test('Minus invalid case', () => {
@@ -187,11 +187,11 @@ test('Minus invalid case', () => {
 });
 
 test('NegativeInt valid case', () => {
-  expect(new NegativeInt("-123")).toEqual(NegativeInt.parse(cpb("-123")));
-  expect(new NegativeInt("-123")).toEqual(NegativeInt.parse(cpb("-123abc")));
-  expect(new NegativeInt("-123")).toEqual(NegativeInt.parse(cpb("-123 ")));
-  expect(new NegativeInt("-123")).toEqual(NegativeInt.parse(cpb("-123 456")));
-  expect(new NegativeInt("-3")).toEqual(NegativeInt.parse(cpb("-3.14")));
+  expect(new NegativeInt("-123")).toStrictEqual(NegativeInt.parse(cpb("-123")));
+  expect(new NegativeInt("-123")).toStrictEqual(NegativeInt.parse(cpb("-123abc")));
+  expect(new NegativeInt("-123")).toStrictEqual(NegativeInt.parse(cpb("-123 ")));
+  expect(new NegativeInt("-123")).toStrictEqual(NegativeInt.parse(cpb("-123 456")));
+  expect(new NegativeInt("-3")).toStrictEqual(NegativeInt.parse(cpb("-3.14")));
 });
 
 test('NegativeInt invalid case', () => {
@@ -205,31 +205,31 @@ test('NegativeInt invalid case', () => {
 test('NumberT valid case', () => {
   const number = NumberT.parse(cpb("0"));
   if (number === null) throw new Error("t is null");
-  expect(number.value).toEqual("0");
+  expect(number.value).toStrictEqual("0");
   expect(number.isPositive).toBeTruthy();
   expect(number.isDouble).toBeFalsy();
-  expect(NumberT.parse(cpb("14a"))?.toInt()).toEqual(14);
-  expect(new NumberT("0", true, false)).toEqual(NumberT.parse(cpb("0")));
-  expect(new NumberT("-14", false, false)).toEqual(NumberT.parse(cpb("-14")));
-  expect(new NumberT("14", true, false)).toEqual(NumberT.parse(cpb("14")));
-  expect(new NumberT("3.14", true, true)).toEqual(NumberT.parse(cpb("3.14 ")));
-  expect(new NumberT("-3.14", false, true)).toEqual(NumberT.parse(cpb("-3.14")));
-  expect(new NumberT("14", true, false)).toEqual(NumberT.parse(cpb("14\\")));
-  expect(new NumberT("14", true, false)).toEqual(NumberT.parse(cpb("14\'")));
-  expect(new NumberT("14", true, false)).toEqual(NumberT.parse(cpb("14\"")));
-  expect(new NumberT("14", true, false)).toEqual(NumberT.parse(cpb("14 ")));
-  expect(new NumberT("-14", false, false)).toEqual(NumberT.parse(cpb("-14\\")));
-  expect(new NumberT("-14", false, false)).toEqual(NumberT.parse(cpb("-14\'")));
-  expect(new NumberT("-14", false, false)).toEqual(NumberT.parse(cpb("-14\"")));
-  expect(new NumberT("-14", false, false)).toEqual(NumberT.parse(cpb("-14 ")));
-  expect(new NumberT("3.14", true, true)).toEqual(NumberT.parse(cpb("3.14\\")));
-  expect(new NumberT("3.14", true, true)).toEqual(NumberT.parse(cpb("3.14\'")));
-  expect(new NumberT("3.14", true, true)).toEqual(NumberT.parse(cpb("3.14\"")));
-  expect(new NumberT("3.14", true, true)).toEqual(NumberT.parse(cpb("3.14 ")));
-  expect(new NumberT("-3.14", false, true)).toEqual(NumberT.parse(cpb("-3.14\\")));
-  expect(new NumberT("-3.14", false, true)).toEqual(NumberT.parse(cpb("-3.14\'")));
-  expect(new NumberT("-3.14", false, true)).toEqual(NumberT.parse(cpb("-3.14\"")));
-  expect(new NumberT("-3.14", false, true)).toEqual(NumberT.parse(cpb("-3.14 ")));
+  expect(NumberT.parse(cpb("14a"))?.toInt()).toStrictEqual(14);
+  expect(new NumberT("0", true, false)).toStrictEqual(NumberT.parse(cpb("0")));
+  expect(new NumberT("-14", false, false)).toStrictEqual(NumberT.parse(cpb("-14")));
+  expect(new NumberT("14", true, false)).toStrictEqual(NumberT.parse(cpb("14")));
+  expect(new NumberT("3.14", true, true)).toStrictEqual(NumberT.parse(cpb("3.14 ")));
+  expect(new NumberT("-3.14", false, true)).toStrictEqual(NumberT.parse(cpb("-3.14")));
+  expect(new NumberT("14", true, false)).toStrictEqual(NumberT.parse(cpb("14\\")));
+  expect(new NumberT("14", true, false)).toStrictEqual(NumberT.parse(cpb("14\'")));
+  expect(new NumberT("14", true, false)).toStrictEqual(NumberT.parse(cpb("14\"")));
+  expect(new NumberT("14", true, false)).toStrictEqual(NumberT.parse(cpb("14 ")));
+  expect(new NumberT("-14", false, false)).toStrictEqual(NumberT.parse(cpb("-14\\")));
+  expect(new NumberT("-14", false, false)).toStrictEqual(NumberT.parse(cpb("-14\'")));
+  expect(new NumberT("-14", false, false)).toStrictEqual(NumberT.parse(cpb("-14\"")));
+  expect(new NumberT("-14", false, false)).toStrictEqual(NumberT.parse(cpb("-14 ")));
+  expect(new NumberT("3.14", true, true)).toStrictEqual(NumberT.parse(cpb("3.14\\")));
+  expect(new NumberT("3.14", true, true)).toStrictEqual(NumberT.parse(cpb("3.14\'")));
+  expect(new NumberT("3.14", true, true)).toStrictEqual(NumberT.parse(cpb("3.14\"")));
+  expect(new NumberT("3.14", true, true)).toStrictEqual(NumberT.parse(cpb("3.14 ")));
+  expect(new NumberT("-3.14", false, true)).toStrictEqual(NumberT.parse(cpb("-3.14\\")));
+  expect(new NumberT("-3.14", false, true)).toStrictEqual(NumberT.parse(cpb("-3.14\'")));
+  expect(new NumberT("-3.14", false, true)).toStrictEqual(NumberT.parse(cpb("-3.14\"")));
+  expect(new NumberT("-3.14", false, true)).toStrictEqual(NumberT.parse(cpb("-3.14 ")));
 });
 
 test('NumberT invalid case', () => {
@@ -249,11 +249,11 @@ test('NumberT invalid case', () => {
 });
 
 test('PositiveInt valid case', () => {
-  expect(new PositiveInt("123")).toEqual(PositiveInt.parse(cpb("123")));
-  expect(new PositiveInt("123")).toEqual(PositiveInt.parse(cpb("123abc")));
-  expect(new PositiveInt("123")).toEqual(PositiveInt.parse(cpb("123 ")));
-  expect(new PositiveInt("123")).toEqual(PositiveInt.parse(cpb("123 456")));
-  expect(new PositiveInt("3")).toEqual(PositiveInt.parse(cpb("3.14")));
+  expect(new PositiveInt("123")).toStrictEqual(PositiveInt.parse(cpb("123")));
+  expect(new PositiveInt("123")).toStrictEqual(PositiveInt.parse(cpb("123abc")));
+  expect(new PositiveInt("123")).toStrictEqual(PositiveInt.parse(cpb("123 ")));
+  expect(new PositiveInt("123")).toStrictEqual(PositiveInt.parse(cpb("123 456")));
+  expect(new PositiveInt("3")).toStrictEqual(PositiveInt.parse(cpb("3.14")));
 });
 
 test('PositiveInt invalid case', () => {
@@ -265,14 +265,14 @@ test('PositiveInt invalid case', () => {
 });
 
 test('SingleQuoteString valid case', () => {
-  expect(new SingleQuoteString("'\\\\'", "\\")).toEqual(SingleQuoteString.parse(cpb("'\\\\'"))); // \
-  expect(new SingleQuoteString("'\\''", "'")).toEqual(SingleQuoteString.parse(cpb("'\\''"))); // '
-  expect(new SingleQuoteString("'\\\\\\''", "\\'")).toEqual(SingleQuoteString.parse(cpb("'\\\\\\''"))); // \'
-  expect(new SingleQuoteString("'\\\\\\\\'", "\\\\")).toEqual(SingleQuoteString.parse(cpb("'\\\\\\\\'"))); // \\
-  expect(new SingleQuoteString("'test\\\\'", "test\\")).toEqual(SingleQuoteString.parse(cpb("'test\\\\'"))); // test\
-  expect(new SingleQuoteString("'test\\''", "test'")).toEqual(SingleQuoteString.parse(cpb("'test\\''"))); // test'
-  expect(new SingleQuoteString("'test\\\\\\''", "test\\'")).toEqual(SingleQuoteString.parse(cpb("'test\\\\\\''"))); // test\'
-  expect(new SingleQuoteString("''", "")).toEqual(SingleQuoteString.parse(cpb("''"))); // empty
+  expect(new SingleQuoteString("'\\\\'", "\\")).toStrictEqual(SingleQuoteString.parse(cpb("'\\\\'"))); // \
+  expect(new SingleQuoteString("'\\''", "'")).toStrictEqual(SingleQuoteString.parse(cpb("'\\''"))); // '
+  expect(new SingleQuoteString("'\\\\\\''", "\\'")).toStrictEqual(SingleQuoteString.parse(cpb("'\\\\\\''"))); // \'
+  expect(new SingleQuoteString("'\\\\\\\\'", "\\\\")).toStrictEqual(SingleQuoteString.parse(cpb("'\\\\\\\\'"))); // \\
+  expect(new SingleQuoteString("'test\\\\'", "test\\")).toStrictEqual(SingleQuoteString.parse(cpb("'test\\\\'"))); // test\
+  expect(new SingleQuoteString("'test\\''", "test'")).toStrictEqual(SingleQuoteString.parse(cpb("'test\\''"))); // test'
+  expect(new SingleQuoteString("'test\\\\\\''", "test\\'")).toStrictEqual(SingleQuoteString.parse(cpb("'test\\\\\\''"))); // test\'
+  expect(new SingleQuoteString("''", "")).toStrictEqual(SingleQuoteString.parse(cpb("''"))); // empty
 });
 
 test('SingleQuoteString invalid case', () => {
@@ -285,17 +285,17 @@ test('SingleQuoteString invalid case', () => {
 });
 
 test('StringT valid case', () => {
-  expect(new StringT("test")).toEqual(StringT.parse(cpb("test")));// test
-  expect(new StringT("")).toEqual(StringT.parse(cpb(" ")));// empty
-  expect(new StringT("test")).toEqual(StringT.parse(cpb("test test")));// test
-  expect(new StringT("test")).toEqual(StringT.parse(cpb("'test'"))); // 'test'
-  expect(new StringT("test")).toEqual(StringT.parse(cpb("\"test\""))); // "test"
-  expect(new StringT("\\")).toEqual(StringT.parse(cpb("'\\\\'"))); // '\\'
-  expect(new StringT("'")).toEqual(StringT.parse(cpb("'\\''"))); // '\''
-  expect(new StringT("\\")).toEqual(StringT.parse(cpb("\"\\\\\""))); // "\\"
-  expect(new StringT("\"")).toEqual(StringT.parse(cpb("'\\\"'"))); // '\"'
-  expect(new StringT("\\test")).toEqual(StringT.parse(cpb("'\\\\test'"))); // '\\test'
-  expect(new StringT("\\test")).toEqual(StringT.parse(cpb("\"\\\\test\""))); // "\\test"
+  expect(new StringT("test")).toStrictEqual(StringT.parse(cpb("test")));// test
+  expect(new StringT("")).toStrictEqual(StringT.parse(cpb(" ")));// empty
+  expect(new StringT("test")).toStrictEqual(StringT.parse(cpb("test test")));// test
+  expect(new StringT("test")).toStrictEqual(StringT.parse(cpb("'test'"))); // 'test'
+  expect(new StringT("test")).toStrictEqual(StringT.parse(cpb("\"test\""))); // "test"
+  expect(new StringT("\\")).toStrictEqual(StringT.parse(cpb("'\\\\'"))); // '\\'
+  expect(new StringT("'")).toStrictEqual(StringT.parse(cpb("'\\''"))); // '\''
+  expect(new StringT("\\")).toStrictEqual(StringT.parse(cpb("\"\\\\\""))); // "\\"
+  expect(new StringT("\"")).toStrictEqual(StringT.parse(cpb("'\\\"'"))); // '\"'
+  expect(new StringT("\\test")).toStrictEqual(StringT.parse(cpb("'\\\\test'"))); // '\\test'
+  expect(new StringT("\\test")).toStrictEqual(StringT.parse(cpb("\"\\\\test\""))); // "\\test"
 });
 
 test('StringT invalid case', () => {
@@ -309,8 +309,8 @@ test('StringT invalid case', () => {
 });
 
 test('Zero valid case', () => {
-  expect(new Zero('0')).toEqual(Zero.parse(cpb("0")));
-  expect(new Zero('0')).toEqual(Zero.parse(cpb("0 ")));
+  expect(new Zero('0')).toStrictEqual(Zero.parse(cpb("0")));
+  expect(new Zero('0')).toStrictEqual(Zero.parse(cpb("0 ")));
 });
 
 test('Zero invalid case', () => {
@@ -323,29 +323,29 @@ test('Zero invalid case', () => {
 });
 
 test('NumberWithUnit valid case', () => {
-  expect(new NumberWithUnit('0', null)).toEqual(NumberWithUnit.parse(cpb("0")));
-  expect(new NumberWithUnit('100', null)).toEqual(NumberWithUnit.parse(cpb("100")));
-  expect(new NumberWithUnit('3.14', null)).toEqual(NumberWithUnit.parse(cpb("3.14")));
-  expect(new NumberWithUnit('31.4', null)).toEqual(NumberWithUnit.parse(cpb("31.4")));
-  expect(new NumberWithUnit('-31.4', null)).toEqual(NumberWithUnit.parse(cpb("-31.4")));
-  expect(new NumberWithUnit('0', UnitOfLength.Millimeter)).toEqual(NumberWithUnit.parse(cpb("0mm")));
-  expect(new NumberWithUnit('123', UnitOfLength.Millimeter)).toEqual(NumberWithUnit.parse(cpb("123mm+")));
-  expect(new NumberWithUnit('123', UnitOfLength.Millimeter)).toEqual(NumberWithUnit.parse(cpb("123mm(")));
-  expect(new NumberWithUnit('123', UnitOfLength.Millimeter)).toEqual(NumberWithUnit.parse(cpb("123mm +")));
-  expect(new NumberWithUnit('123', UnitOfLength.Millimeter)).toEqual(NumberWithUnit.parse(cpb("123 mm +")));
-  expect(new NumberWithUnit('123', UnitOfLength.Millimeter)).toEqual(NumberWithUnit.parse(cpb("123 mm+")));
-  expect(new NumberWithUnit('-123', UnitOfLength.Millimeter)).toEqual(NumberWithUnit.parse(cpb("-123mm")));
-  expect(new NumberWithUnit('-123', UnitOfLength.Millimeter)).toEqual(NumberWithUnit.parse(cpb("-123 mm")));
-  expect(new NumberWithUnit('-123', UnitOfLength.Millimeter)).toEqual(NumberWithUnit.parse(cpb("-123 mm ")));
-  expect(new NumberWithUnit('-123.45', UnitOfLength.Millimeter)).toEqual(NumberWithUnit.parse(cpb("-123.45  mm")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Centimeter)).toEqual(NumberWithUnit.parse(cpb("123.45cm")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Meter)).toEqual(NumberWithUnit.parse(cpb("123.45m")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Inch)).toEqual(NumberWithUnit.parse(cpb("123.45in")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Inch)).toEqual(NumberWithUnit.parse(cpb("123.45inch")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Foot)).toEqual(NumberWithUnit.parse(cpb("123.45ft")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Foot)).toEqual(NumberWithUnit.parse(cpb("123.45foot")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Foot)).toEqual(NumberWithUnit.parse(cpb("123.45feet")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Foot)).toEqual(NumberWithUnit.parse(cpb("123.45   feet")));
+  expect(new NumberWithUnit('0', null)).toStrictEqual(NumberWithUnit.parse(cpb("0")));
+  expect(new NumberWithUnit('100', null)).toStrictEqual(NumberWithUnit.parse(cpb("100")));
+  expect(new NumberWithUnit('3.14', null)).toStrictEqual(NumberWithUnit.parse(cpb("3.14")));
+  expect(new NumberWithUnit('31.4', null)).toStrictEqual(NumberWithUnit.parse(cpb("31.4")));
+  expect(new NumberWithUnit('-31.4', null)).toStrictEqual(NumberWithUnit.parse(cpb("-31.4")));
+  expect(new NumberWithUnit('0', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("0mm")));
+  expect(new NumberWithUnit('123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("123mm+")));
+  expect(new NumberWithUnit('123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("123mm(")));
+  expect(new NumberWithUnit('123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("123mm +")));
+  expect(new NumberWithUnit('123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("123 mm +")));
+  expect(new NumberWithUnit('123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("123 mm+")));
+  expect(new NumberWithUnit('-123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("-123mm")));
+  expect(new NumberWithUnit('-123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("-123 mm")));
+  expect(new NumberWithUnit('-123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("-123 mm ")));
+  expect(new NumberWithUnit('-123.45', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("-123.45  mm")));
+  expect(new NumberWithUnit('123.45', UnitOfLength.Centimeter)).toStrictEqual(NumberWithUnit.parse(cpb("123.45cm")));
+  expect(new NumberWithUnit('123.45', UnitOfLength.Meter)).toStrictEqual(NumberWithUnit.parse(cpb("123.45m")));
+  expect(new NumberWithUnit('123.45', UnitOfLength.Inch)).toStrictEqual(NumberWithUnit.parse(cpb("123.45in")));
+  expect(new NumberWithUnit('123.45', UnitOfLength.Inch)).toStrictEqual(NumberWithUnit.parse(cpb("123.45inch")));
+  expect(new NumberWithUnit('123.45', UnitOfLength.Foot)).toStrictEqual(NumberWithUnit.parse(cpb("123.45ft")));
+  expect(new NumberWithUnit('123.45', UnitOfLength.Foot)).toStrictEqual(NumberWithUnit.parse(cpb("123.45foot")));
+  expect(new NumberWithUnit('123.45', UnitOfLength.Foot)).toStrictEqual(NumberWithUnit.parse(cpb("123.45feet")));
+  expect(new NumberWithUnit('123.45', UnitOfLength.Foot)).toStrictEqual(NumberWithUnit.parse(cpb("123.45   feet")));
 });
 
 test('NumberWithUnit invalid case', () => {
@@ -357,9 +357,9 @@ test('NumberWithUnit invalid case', () => {
 });
 
 test('OpenBracket valid case', () => {
-  expect(new OpenBracket('(')).toEqual(OpenBracket.parse(cpb("(")));
-  expect(new OpenBracket('(')).toEqual(OpenBracket.parse(cpb("( ")));
-  expect(new OpenBracket('(')).toEqual(OpenBracket.parse(cpb("((")));
+  expect(new OpenBracket()).toStrictEqual(OpenBracket.parse(cpb("(")));
+  expect(new OpenBracket()).toStrictEqual(OpenBracket.parse(cpb("( ")));
+  expect(new OpenBracket()).toStrictEqual(OpenBracket.parse(cpb("((")));
 });
 
 test('OpenBracket invalid case', () => {
@@ -368,8 +368,9 @@ test('OpenBracket invalid case', () => {
 });
 
 test('CloseBracket valid case', () => {
-  expect(new CloseBracket(')')).toEqual(CloseBracket.parse(cpb(")")));
-  expect(new CloseBracket(')')).toEqual(CloseBracket.parse(cpb(") ")));
+  expect(new OpenBracket()).not.toStrictEqual(CloseBracket.parse(cpb(")")));
+  expect(new CloseBracket()).toStrictEqual(CloseBracket.parse(cpb(")")));
+  expect(new CloseBracket()).toStrictEqual(CloseBracket.parse(cpb(") ")));
 });
 
 test('CloseBracket invalid case', () => {
@@ -378,13 +379,13 @@ test('CloseBracket invalid case', () => {
 });
 
 test('Operator valid case', () => {
-  expect(new Operator('+')).toEqual(Operator.parse(cpb("+")));
-  expect(new Operator('-')).toEqual(Operator.parse(cpb("-")));
-  expect(new Operator('*')).toEqual(Operator.parse(cpb("*")));
-  expect(new Operator('/')).toEqual(Operator.parse(cpb("/")));
-  expect(new Operator('+')).toEqual(Operator.parse(cpb("+1")));
-  expect(new Operator('-')).toEqual(Operator.parse(cpb("-1")));
-  expect(new Operator('-')).toEqual(Operator.parse(cpb("- 1")));
+  expect(new Operator('+')).toStrictEqual(Operator.parse(cpb("+")));
+  expect(new Operator('-')).toStrictEqual(Operator.parse(cpb("-")));
+  expect(new Operator('*')).toStrictEqual(Operator.parse(cpb("*")));
+  expect(new Operator('/')).toStrictEqual(Operator.parse(cpb("/")));
+  expect(new Operator('+')).toStrictEqual(Operator.parse(cpb("+1")));
+  expect(new Operator('-')).toStrictEqual(Operator.parse(cpb("-1")));
+  expect(new Operator('-')).toStrictEqual(Operator.parse(cpb("- 1")));
 });
 
 test('Operator invalid case', () => {
@@ -401,67 +402,70 @@ function nmm(n: string) {
 function o(o: string) {
   return new Operator(o);
 }
+function c(left: Computable, operator: Operator, right: Computable) {
+  return new Computation(left, operator, right);
+}
 
-const ob = new OpenBracket('(');
-const cb = new CloseBracket(')');
+const ob = new OpenBracket();
+const cb = new CloseBracket();
 
 test('Expression valid case', () => {
-  expect(new Expression([n('123')])).toEqual(Expression.parse(cpb("123")));
-  expect(new Expression([n('123')])).toEqual(Expression.parse(cpb("123)")));
-  expect(new Expression([n('123')])).toEqual(Expression.parse(cpb("123 )")));
-  expect(new Expression([n('123')])).toEqual(Expression.parse(cpb("123 (456)")));
-  expect(new Expression([n('123')])).toEqual(Expression.parse(cpb(" 123")));
-  expect(new Expression([n('-123')])).toEqual(Expression.parse(cpb("-123")));
-  expect(new Expression([n('123.45')])).toEqual(Expression.parse(cpb("123.45")));
-  expect(new Expression([nmm('123.45')])).toEqual(Expression.parse(cpb("123.45mm ")));
-  expect(new Expression([nmm('123.45')])).toEqual(Expression.parse(cpb("123.45mm ")));
-  expect(new Expression([n('123'), o('+'), n('456')])).toEqual(Expression.parse(cpb("123+456")));
-  expect(new Expression([n('123'), o('+'), n('456')])).toEqual(Expression.parse(cpb("123 +456")));
-  expect(new Expression([n('123'), o('+'), n('456')])).toEqual(Expression.parse(cpb("123+ 456")));
-  expect(new Expression([n('123'), o('+'), n('456')])).toEqual(Expression.parse(cpb("123 + 456")));
-  expect(new Expression([n('123'), o('-'), n('456')])).toEqual(Expression.parse(cpb("123-456")));
-  expect(new Expression([n('123'), o('-'), n('456')])).toEqual(Expression.parse(cpb("123 -456")));
-  expect(new Expression([n('123'), o('-'), n('456')])).toEqual(Expression.parse(cpb("123- 456")));
-  expect(new Expression([n('123'), o('-'), n('456')])).toEqual(Expression.parse(cpb("123 - 456")));
-  expect(new Expression([n('123'), o('+'), n('-456')])).toEqual(Expression.parse(cpb("123+-456")));
-  expect(new Expression([n('123'), o('+'), n('-456')])).toEqual(Expression.parse(cpb("123 +-456")));
-  expect(new Expression([n('123'), o('+'), n('-456')])).toEqual(Expression.parse(cpb("123+ -456")));
-  expect(new Expression([n('123'), o('+'), n('-456')])).toEqual(Expression.parse(cpb("123 + -456")));
-  expect(new Expression([nmm('123'), o('+'), n('-456')])).toEqual(Expression.parse(cpb("123mm + -456")));
-  expect(new Expression([nmm('123'), o('+'), nmm('-456')])).toEqual(Expression.parse(cpb("123mm + -456mm")));
-  expect(new Expression([n('123'), o('+'), nmm('-456')])).toEqual(Expression.parse(cpb("123 + -456mm")));
-  expect(new Expression([n('123'), o('+'), n('456'), o('+'), n('789')])).toEqual(Expression.parse(cpb("123+456+789")));
-  expect(new Expression([n('123'), o('+'), n('456'), o('+'), n('789')])).toEqual(Expression.parse(cpb("123 +456 + 789")));
-  expect(new Expression([ob, n('123'), cb])).toEqual(Expression.parse(cpb("(123)")));
-  expect(new Expression([ob, n('123'), cb])).toEqual(Expression.parse(cpb("(123)(456)")));
-  expect(new Expression([ob, ob, n('123'), cb, cb])).toEqual(Expression.parse(cpb("((123))")));
-  expect(new Expression([ob, ob, n('123'), cb, cb])).toEqual(Expression.parse(cpb("( (123 ))")));
-  expect(new Expression([ob, ob, n('123'), cb, cb])).toEqual(Expression.parse(cpb("(( 123) )")));
-  expect(new Expression([ob, ob, n('123'), cb, cb])).toEqual(Expression.parse(cpb(" ( ( 123) ) ")));
-  expect(new Expression([ob, ob, n('123'), cb, cb])).toEqual(Expression.parse(cpb(" ( ( 123 ) ) ")));
-  expect(new Expression([ob, ob, n('123'), o('+'), n('456'), cb, cb])).toEqual(Expression.parse(cpb(" ( ( 123+456 ) ) ")));
-  expect(new Expression([ob, ob, n('123'), o('+'), n('456'), cb, cb])).toEqual(Expression.parse(cpb(" ( ( 123 + 456 ) ) ")));
-  expect(new Expression([ob, ob, n('123'), o('+'), ob, n('456'), o('-'), n('3'), cb, cb, cb])).toEqual(Expression.parse(cpb(" ( ( 123 + (456-3) ) ) ")));
+  expect(new Expression([n('123')])).toStrictEqual(Expression.parse(cpb("123")));
+  expect(new Expression([n('123')])).toStrictEqual(Expression.parse(cpb("123)")));
+  expect(new Expression([n('123')])).toStrictEqual(Expression.parse(cpb("123 )")));
+  expect(new Expression([n('123')])).toStrictEqual(Expression.parse(cpb("123 (456)")));
+  expect(new Expression([n('123')])).toStrictEqual(Expression.parse(cpb(" 123")));
+  expect(new Expression([n('-123')])).toStrictEqual(Expression.parse(cpb("-123")));
+  expect(new Expression([n('123.45')])).toStrictEqual(Expression.parse(cpb("123.45")));
+  expect(new Expression([nmm('123.45')])).toStrictEqual(Expression.parse(cpb("123.45mm ")));
+  expect(new Expression([nmm('123.45')])).toStrictEqual(Expression.parse(cpb("123.45mm ")));
+  expect(new Expression([n('123'), o('+'), n('456')])).toStrictEqual(Expression.parse(cpb("123+456")));
+  expect(new Expression([n('123'), o('+'), n('456')])).toStrictEqual(Expression.parse(cpb("123 +456")));
+  expect(new Expression([n('123'), o('+'), n('456')])).toStrictEqual(Expression.parse(cpb("123+ 456")));
+  expect(new Expression([n('123'), o('+'), n('456')])).toStrictEqual(Expression.parse(cpb("123 + 456")));
+  expect(new Expression([n('123'), o('-'), n('456')])).toStrictEqual(Expression.parse(cpb("123-456")));
+  expect(new Expression([n('123'), o('-'), n('456')])).toStrictEqual(Expression.parse(cpb("123 -456")));
+  expect(new Expression([n('123'), o('-'), n('456')])).toStrictEqual(Expression.parse(cpb("123- 456")));
+  expect(new Expression([n('123'), o('-'), n('456')])).toStrictEqual(Expression.parse(cpb("123 - 456")));
+  expect(new Expression([n('123'), o('+'), n('-456')])).toStrictEqual(Expression.parse(cpb("123+-456")));
+  expect(new Expression([n('123'), o('+'), n('-456')])).toStrictEqual(Expression.parse(cpb("123 +-456")));
+  expect(new Expression([n('123'), o('+'), n('-456')])).toStrictEqual(Expression.parse(cpb("123+ -456")));
+  expect(new Expression([n('123'), o('+'), n('-456')])).toStrictEqual(Expression.parse(cpb("123 + -456")));
+  expect(new Expression([nmm('123'), o('+'), n('-456')])).toStrictEqual(Expression.parse(cpb("123mm + -456")));
+  expect(new Expression([nmm('123'), o('+'), nmm('-456')])).toStrictEqual(Expression.parse(cpb("123mm + -456mm")));
+  expect(new Expression([n('123'), o('+'), nmm('-456')])).toStrictEqual(Expression.parse(cpb("123 + -456mm")));
+  expect(new Expression([n('123'), o('+'), n('456'), o('+'), n('789')])).toStrictEqual(Expression.parse(cpb("123+456+789")));
+  expect(new Expression([n('123'), o('+'), n('456'), o('+'), n('789')])).toStrictEqual(Expression.parse(cpb("123 +456 + 789")));
+  expect(new Expression([ob, n('123'), cb])).toStrictEqual(Expression.parse(cpb("(123)")));
+  expect(new Expression([ob, n('123'), cb])).toStrictEqual(Expression.parse(cpb("(123)(456)")));
+  expect(new Expression([ob, ob, n('123'), cb, cb])).toStrictEqual(Expression.parse(cpb("((123))")));
+  expect(new Expression([ob, ob, n('123'), cb, cb])).toStrictEqual(Expression.parse(cpb("( (123 ))")));
+  expect(new Expression([ob, ob, n('123'), cb, cb])).toStrictEqual(Expression.parse(cpb("(( 123) )")));
+  expect(new Expression([ob, ob, n('123'), cb, cb])).toStrictEqual(Expression.parse(cpb(" ( ( 123) ) ")));
+  expect(new Expression([ob, ob, n('123'), cb, cb])).toStrictEqual(Expression.parse(cpb(" ( ( 123 ) ) ")));
+  expect(new Expression([ob, ob, n('123'), o('+'), n('456'), cb, cb])).toStrictEqual(Expression.parse(cpb(" ( ( 123+456 ) ) ")));
+  expect(new Expression([ob, ob, n('123'), o('+'), n('456'), cb, cb])).toStrictEqual(Expression.parse(cpb(" ( ( 123 + 456 ) ) ")));
+  expect(new Expression([ob, ob, n('123'), o('+'), ob, n('456'), o('-'), n('3'), cb, cb, cb])).toStrictEqual(Expression.parse(cpb(" ( ( 123 + (456-3) ) ) ")));
   expect(new Expression([
     ob, n('123'), o('+'), n('456'), cb,
     o('*'),
     n('789')
-  ])).toEqual(Expression.parse(cpb("(123+456)*789")));
+  ])).toStrictEqual(Expression.parse(cpb("(123+456)*789")));
   expect(new Expression([
     n('123'),
     o('*'),
     ob, n('789'), o('/'), n('3.14'), cb
-  ])).toEqual(Expression.parse(cpb("123*(789/3.14)")));
+  ])).toStrictEqual(Expression.parse(cpb("123*(789/3.14)")));
   expect(new Expression([
     ob, n('123'), cb,
     o('*'),
     ob, n('789'), o('/'), n('3.14'), cb
-  ])).toEqual(Expression.parse(cpb("(123)*(789/3.14)")));
+  ])).toStrictEqual(Expression.parse(cpb("(123)*(789/3.14)")));
   expect(new Expression([
     ob, n('123'), o('+'), n('456'), cb,
     o('*'),
     ob, n('789'), o('/'), n('3.14'), cb
-  ])).toEqual(Expression.parse(cpb("(123+456)*(789/3.14)")));
+  ])).toStrictEqual(Expression.parse(cpb("(123+456)*(789/3.14)")));
 
 });
 
@@ -474,4 +478,86 @@ test('Expression invalid case', () => {
   expect(Expression.parse(cpb("123 + - 1"))).toBeNull();
   expect(Expression.parse(cpb("(123"))).toBeNull();
   expect(Expression.parse(cpb("123 456"))).toBeNull(); // Due to NumberWithUnit token
+});
+
+test('Computation valid case', () => {
+  expect(c(n('123'), o('+'), n('0'))).toStrictEqual(Computation.parse(cpb("123")));
+  expect(c(n('123'), o('+'), n('0'))).toStrictEqual(Computation.parse(cpb("(123)")));
+  expect(c(n('123'), o('+'), n('0'))).toStrictEqual(Computation.parse(cpb(" (  ( ( 123)  ) )  ")));
+  expect(c(n('123'), o('+'), n('0'))).toStrictEqual(Computation.parse(cpb("(((123)))")));
+
+  expect(c(n('123'), o('+'), n('456'))).toStrictEqual(Computation.parse(cpb("123+456")));
+  expect(c(
+    c(n('123'), o('+'), n('456')),
+    o('-'),
+    n('789')
+  )).toStrictEqual(Computation.parse(cpb("123+456-789")));
+  expect(c(
+    n('123'),
+    o('+'),
+    c(n('456'), o('*'), n('789'))
+  )).toStrictEqual(Computation.parse(cpb("123+456*789")));
+  expect(c(
+    c(n('123'), o('/'), n('456')),
+    o('-'),
+    n('789')
+  )).toStrictEqual(Computation.parse(cpb("123/456-789")));
+  expect(c(
+    c(
+      c(n('1'), o('+'), n('2')),
+      o('*'),
+      n('3')
+    ),
+    o('-'),
+    n('4')
+  )).toStrictEqual(Computation.parse(cpb("(1+2)*3-4")));
+  expect(c(
+    c(n('1'), o('+'), n('2')),
+    o('/'),
+    c(n('3'), o('-'), n('4'))
+  )).toStrictEqual(Computation.parse(cpb("(1+2)/(3-4)")));
+  expect(c(
+    n('1'),
+    o('+'),
+    c(
+      n('2'),
+      o('/'),
+      c(n('3'), o('-'), n('4'))
+    ),
+  )).toStrictEqual(Computation.parse(cpb("1+2/(3-4)")));
+  expect(c(
+    c(
+      n('1'),
+      o('+'),
+      c(n('2'), o('/'), n('3'))
+    ),
+    o('-'),
+    n('4'),
+  )).toStrictEqual(Computation.parse(cpb("1+2/3-4")));
+  expect(c(
+    n('1'),
+    o('+'),
+    c(
+      n('2'),
+      o('/'),
+      c(
+        n('3'),
+        o('-'),
+        c(n('4'), o('+'), n('5'))
+      )
+    ),
+  )).toStrictEqual(Computation.parse(cpb("1+2/(3-(4+5))")));
+  expect(c(
+    n('1'),
+    o('+'),
+    c(
+      n('2'),
+      o('/'),
+      c(
+        c(n('3'), o('-'), n('4')),
+        o('+'),
+        n('5')
+      )
+    ),
+  )).toStrictEqual(Computation.parse(cpb("1+2/((3-4)+5)")));
 });

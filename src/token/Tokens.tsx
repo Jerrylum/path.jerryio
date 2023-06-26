@@ -293,11 +293,11 @@ export class BooleanT extends Token {
 // Skip CommandLine
 
 export class DecimalPoint extends Token {
-  constructor(public value: string) { super(); }
-
   public static parse(buffer: CodePointBuffer): DecimalPoint | null {
     return doParseCodepoint(buffer, ["."], DecimalPoint);
   }
+
+  readonly value = ".";
 }
 
 export class Digit extends Token {
@@ -379,11 +379,11 @@ export class Int extends Token {
 }
 
 export class Minus extends Token {
-  constructor(public value: string) { super(); }
-
   public static parse(buffer: CodePointBuffer): Minus | null {
     return doParseCodepoint(buffer, ["-"], Minus);
   }
+
+  readonly value = "-";
 }
 
 export class NegativeInt extends Token {
@@ -523,19 +523,19 @@ export class Zero extends Token {
 // Start application logic
 
 export class OpenBracket extends Token {
-  constructor(public value: string) { super(); }
-
   public static parse(buffer: CodePointBuffer): OpenBracket | null {
     return doParseCodepoint(buffer, ["("], OpenBracket);
   }
+
+  readonly value: string = "(";
 }
 
 export class CloseBracket extends Token {
-  constructor(public value: string) { super(); }
-
   public static parse(buffer: CodePointBuffer): CloseBracket | null {
     return doParseCodepoint(buffer, [")"], CloseBracket);
   }
+
+  readonly value: string = ")";
 }
 
 export class NumberWithUnit extends Token {
@@ -598,17 +598,30 @@ export class Operator extends Token {
   public static parse(buffer: CodePointBuffer): Operator | null {
     return doParseCodepoint(buffer, ["+", "-", "*", "/"], Operator);
   }
+
+  get prec(): number {
+    switch (this.value) {
+      case "+":
+      case "-":
+        return 0;
+      case "*":
+      case "/":
+        return 1;
+      default:
+        return -1; // never
+    }
+  }
 }
 
 export class Expression extends Token {
-  constructor(public tokens: (OpenBracket | CloseBracket | NumberInUnit | Operator)[]) { super(); }
+  constructor(public tokens: (OpenBracket | CloseBracket | NumberWithUnit | Operator)[]) { super(); }
 
   public static parse(buffer: CodePointBuffer): Expression | null {
     buffer.savepoint();
 
     buffer.readDelimiter();
 
-    let tokens: (OpenBracket | CloseBracket | NumberInUnit | Operator)[] = [];
+    let tokens: (OpenBracket | CloseBracket | NumberWithUnit | Operator)[] = [];
 
     const bracket = OpenBracket.parse(buffer);
     if (bracket) {
@@ -651,5 +664,74 @@ export class Expression extends Token {
     }
 
     return buffer.commitAndReturn(new Expression(tokens));
+  }
+}
+
+export type Computable = NumberWithUnit | Computation;
+
+export class Computation extends Token {
+  constructor(public left: Computable, public operator: Operator, public right: Computable) { super(); }
+
+  public static parse(buffer: CodePointBuffer): Computation | null {
+    const e = Expression.parse(buffer);
+    if (!e) return null;
+    if (buffer.hasNext()) return null;
+
+    const output: Computable[] = [];
+    const stack: (OpenBracket | Operator)[] = [];
+
+    function peek() { return stack.at(-1); }
+    function out(token: Computable) { output.push(token); }
+    function handlePop() {
+      const op = stack.pop()!;
+      if (op instanceof OpenBracket) return undefined;
+
+      const right = output.pop()!;
+      const left = output.pop()!;
+
+      return new Computation(left, op, right);
+    }
+    function handleToken(token: (OpenBracket | CloseBracket | NumberWithUnit | Operator)) {
+      if (token instanceof NumberWithUnit) {
+        out(token);
+      } else if (token instanceof Operator) {
+        const o1 = token;
+        let o2 = peek();
+
+        while (
+          o2 !== undefined &&
+          o2 instanceof Operator &&
+          o1.prec <= o2.prec) {
+          out(handlePop()!);
+          o2 = peek();
+        }
+
+        stack.push(o1);
+      } else if (token instanceof OpenBracket) {
+        stack.push(token);
+      } else if (token instanceof CloseBracket) {
+        let o = peek();
+        while (o !== undefined && !(o instanceof OpenBracket)) {
+          out(handlePop()!);
+          o = peek();
+        }
+        // ALGO: if o is undefined, then there was no open bracket, but it will never happen
+        stack.pop();
+      }
+    }
+
+    e.tokens.forEach(handleToken);
+
+    while (stack.length > 0) {
+      out(handlePop()!);
+    }
+
+    // ALGO: output should have only one element
+    const rtn = output[0];
+    if (rtn instanceof NumberWithUnit) {
+      return new Computation(rtn, new Operator("+"), new NumberWithUnit("0", null));
+    } else {
+      return rtn;
+    }
   }
 }
