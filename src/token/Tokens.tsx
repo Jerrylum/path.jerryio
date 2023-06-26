@@ -432,8 +432,9 @@ export class NumberT extends Token {
     }
 
     const f = Frac.parse(buffer);
-    if (isDouble = (f !== null)) {
-      rtn += f.value;
+    isDouble = (f !== null);
+    if (isDouble) {
+      rtn += f!.value;
     }
 
     return buffer.commitAndReturn(new NumberT(rtn, isPositive, isDouble));
