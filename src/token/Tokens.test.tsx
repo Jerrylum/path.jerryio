@@ -563,6 +563,21 @@ test('Computation valid case', () => {
 
   expect(Computation.parse(cpb("1"))?.compute(UnitOfLength.Centimeter)).toBe(1);
   expect(Computation.parse(cpb("2"))?.compute(UnitOfLength.Centimeter)).toBe(2);
+  expect(Computation.parse(cpb("(2)"))?.compute(UnitOfLength.Centimeter)).toBe(2);
   expect(Computation.parse(cpb("3.14"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(3.14);
   expect(Computation.parse(cpb("1+1"))?.compute(UnitOfLength.Centimeter)).toBe(2);
+  expect(Computation.parse(cpb("1cm+2cm"))?.compute(UnitOfLength.Centimeter)).toBe(3);
+  expect(Computation.parse(cpb("1cm+3.14cm"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(4.14);
+  expect(Computation.parse(cpb("1cm+31.4mm"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(4.14);
+  expect(Computation.parse(cpb("10mm+31.4mm"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(4.14);
+  expect(Computation.parse(cpb("10mm+31.4mm"))?.compute(UnitOfLength.Meter)).toBeCloseTo(4.14/100);
+  expect(Computation.parse(cpb("1m/100+31.4mm"))?.compute(UnitOfLength.Meter)).toBeCloseTo(4.14/100);
+  expect(Computation.parse(cpb("1m/100+31.4mm"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(4.14);
+  
+  expect(Computation.parse(cpb("(1+2)/(3-4)"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(-3);
+  expect(Computation.parse(cpb("(1+2)/3-4"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(-3);
+  expect(Computation.parse(cpb("1+2/(3-4)"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(-1);
+  expect(Computation.parse(cpb("1+2/3-4"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(-2.33333);
+  expect(Computation.parse(cpb("1+2/(3-(4+5))"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(0.66666);
+  expect(Computation.parse(cpb("1+2/((3-4)+5)"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(1.5);
 });
