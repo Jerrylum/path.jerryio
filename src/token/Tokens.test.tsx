@@ -560,4 +560,9 @@ test('Computation valid case', () => {
       )
     ),
   )).toStrictEqual(Computation.parse(cpb("1+2/((3-4)+5)")));
+
+  expect(Computation.parse(cpb("1"))?.compute(UnitOfLength.Centimeter)).toBe(1);
+  expect(Computation.parse(cpb("2"))?.compute(UnitOfLength.Centimeter)).toBe(2);
+  expect(Computation.parse(cpb("3.14"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(3.14);
+  expect(Computation.parse(cpb("1+1"))?.compute(UnitOfLength.Centimeter)).toBe(2);
 });

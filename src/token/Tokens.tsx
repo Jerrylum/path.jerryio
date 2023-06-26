@@ -608,7 +608,7 @@ export class Operator extends Token {
       case "/":
         return 1;
       default:
-        return -1; // never
+        throw new Error("never");
     }
   }
 }
@@ -671,6 +671,28 @@ export type Computable = NumberWithUnit | Computation;
 
 export class Computation extends Token {
   constructor(public left: Computable, public operator: Operator, public right: Computable) { super(); }
+
+  public compute(inherit: UnitOfLength): number {
+    const left = this.left instanceof NumberWithUnit
+      ? this.left.toNumberInUnit(inherit).to(inherit)
+      : this.left.compute(inherit);
+    const right = this.right instanceof NumberWithUnit
+      ? this.right.toNumberInUnit(inherit).to(inherit)
+      : this.right.compute(inherit);
+
+    switch (this.operator.value) {
+      case "+":
+        return left + right;
+      case "-":
+        return left - right;
+      case "*":
+        return left * right;
+      case "/":
+        return left / right;
+      default:
+        throw new Error("never");
+    }
+  }
 
   public static parse(buffer: CodePointBuffer): Computation | null {
     const e = Expression.parse(buffer);
