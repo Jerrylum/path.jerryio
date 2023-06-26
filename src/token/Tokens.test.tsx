@@ -1,5 +1,5 @@
-import { UnitOfLength } from "../types/Unit";
-import { Zero, CodePointBuffer, isDelimiter, isSafeDelimiter, BooleanT, DecimalPoint, Digit1To9, Digit, DoubleQuoteString, Frac, Int, Minus, NegativeInt, NumberT, PositiveInt, SingleQuoteString, StringT, NumberWithUnit, Operator, CloseBracket, OpenBracket, Expression, Computation, Computable } from "./Tokens";
+import { Unit, UnitOfLength } from "../types/Unit";
+import { Zero, CodePointBuffer, isDelimiter, isSafeDelimiter, BooleanT, DecimalPoint, Digit1To9, Digit, DoubleQuoteString, Frac, Int, Minus, NegativeInt, NumberT, PositiveInt, SingleQuoteString, StringT, NumberUOL, Operator, CloseBracket, OpenBracket, Expression, Computation, Computable, NumberWithUnit } from "./Tokens";
 
 function cpb(s: string): CodePointBuffer {
   return new CodePointBuffer(s);
@@ -323,37 +323,37 @@ test('Zero invalid case', () => {
 });
 
 test('NumberWithUnit valid case', () => {
-  expect(new NumberWithUnit('0', null)).toStrictEqual(NumberWithUnit.parse(cpb("0")));
-  expect(new NumberWithUnit('100', null)).toStrictEqual(NumberWithUnit.parse(cpb("100")));
-  expect(new NumberWithUnit('3.14', null)).toStrictEqual(NumberWithUnit.parse(cpb("3.14")));
-  expect(new NumberWithUnit('31.4', null)).toStrictEqual(NumberWithUnit.parse(cpb("31.4")));
-  expect(new NumberWithUnit('-31.4', null)).toStrictEqual(NumberWithUnit.parse(cpb("-31.4")));
-  expect(new NumberWithUnit('0', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("0mm")));
-  expect(new NumberWithUnit('123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("123mm+")));
-  expect(new NumberWithUnit('123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("123mm(")));
-  expect(new NumberWithUnit('123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("123mm +")));
-  expect(new NumberWithUnit('123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("123 mm +")));
-  expect(new NumberWithUnit('123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("123 mm+")));
-  expect(new NumberWithUnit('-123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("-123mm")));
-  expect(new NumberWithUnit('-123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("-123 mm")));
-  expect(new NumberWithUnit('-123', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("-123 mm ")));
-  expect(new NumberWithUnit('-123.45', UnitOfLength.Millimeter)).toStrictEqual(NumberWithUnit.parse(cpb("-123.45  mm")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Centimeter)).toStrictEqual(NumberWithUnit.parse(cpb("123.45cm")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Meter)).toStrictEqual(NumberWithUnit.parse(cpb("123.45m")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Inch)).toStrictEqual(NumberWithUnit.parse(cpb("123.45in")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Inch)).toStrictEqual(NumberWithUnit.parse(cpb("123.45inch")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Foot)).toStrictEqual(NumberWithUnit.parse(cpb("123.45ft")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Foot)).toStrictEqual(NumberWithUnit.parse(cpb("123.45foot")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Foot)).toStrictEqual(NumberWithUnit.parse(cpb("123.45feet")));
-  expect(new NumberWithUnit('123.45', UnitOfLength.Foot)).toStrictEqual(NumberWithUnit.parse(cpb("123.45   feet")));
+  expect(new NumberUOL('0', null)).toStrictEqual(NumberUOL.parse(cpb("0")));
+  expect(new NumberUOL('100', null)).toStrictEqual(NumberUOL.parse(cpb("100")));
+  expect(new NumberUOL('3.14', null)).toStrictEqual(NumberUOL.parse(cpb("3.14")));
+  expect(new NumberUOL('31.4', null)).toStrictEqual(NumberUOL.parse(cpb("31.4")));
+  expect(new NumberUOL('-31.4', null)).toStrictEqual(NumberUOL.parse(cpb("-31.4")));
+  expect(new NumberUOL('0', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("0mm")));
+  expect(new NumberUOL('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123mm+")));
+  expect(new NumberUOL('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123mm(")));
+  expect(new NumberUOL('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123mm +")));
+  expect(new NumberUOL('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123 mm +")));
+  expect(new NumberUOL('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123 mm+")));
+  expect(new NumberUOL('-123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("-123mm")));
+  expect(new NumberUOL('-123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("-123 mm")));
+  expect(new NumberUOL('-123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("-123 mm ")));
+  expect(new NumberUOL('-123.45', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("-123.45  mm")));
+  expect(new NumberUOL('123.45', UnitOfLength.Centimeter)).toStrictEqual(NumberUOL.parse(cpb("123.45cm")));
+  expect(new NumberUOL('123.45', UnitOfLength.Meter)).toStrictEqual(NumberUOL.parse(cpb("123.45m")));
+  expect(new NumberUOL('123.45', UnitOfLength.Inch)).toStrictEqual(NumberUOL.parse(cpb("123.45in")));
+  expect(new NumberUOL('123.45', UnitOfLength.Inch)).toStrictEqual(NumberUOL.parse(cpb("123.45inch")));
+  expect(new NumberUOL('123.45', UnitOfLength.Foot)).toStrictEqual(NumberUOL.parse(cpb("123.45ft")));
+  expect(new NumberUOL('123.45', UnitOfLength.Foot)).toStrictEqual(NumberUOL.parse(cpb("123.45foot")));
+  expect(new NumberUOL('123.45', UnitOfLength.Foot)).toStrictEqual(NumberUOL.parse(cpb("123.45feet")));
+  expect(new NumberUOL('123.45', UnitOfLength.Foot)).toStrictEqual(NumberUOL.parse(cpb("123.45   feet")));
 });
 
 test('NumberWithUnit invalid case', () => {
-  expect(NumberWithUnit.parse(cpb("-0"))).toBeNull();
-  expect(NumberWithUnit.parse(cpb("0mmm"))).toBeNull();
-  expect(NumberWithUnit.parse(cpb("0 mmm"))).toBeNull();
-  expect(NumberWithUnit.parse(cpb("0 mmm"))).toBeNull();
-  expect(NumberWithUnit.parse(cpb("0 456"))).toBeNull();
+  expect(NumberUOL.parse(cpb("-0"))).toBeNull();
+  expect(NumberUOL.parse(cpb("0mmm"))).toBeNull();
+  expect(NumberUOL.parse(cpb("0 mmm"))).toBeNull();
+  expect(NumberUOL.parse(cpb("0 mmm"))).toBeNull();
+  expect(NumberUOL.parse(cpb("0 456"))).toBeNull();
 });
 
 test('OpenBracket valid case', () => {
@@ -394,15 +394,15 @@ test('Operator invalid case', () => {
 });
 
 function n(n: string, u: UnitOfLength | null = null) {
-  return new NumberWithUnit(n, u);
+  return new NumberUOL(n, u);
 }
 function nmm(n: string) {
-  return new NumberWithUnit(n, UnitOfLength.Millimeter);
+  return new NumberUOL(n, UnitOfLength.Millimeter);
 }
 function o(o: string) {
   return new Operator(o);
 }
-function c(left: Computable, operator: Operator, right: Computable) {
+function c<T extends NumberWithUnit<U>, U extends Unit>(left: Computable<T, U>, operator: Operator, right: Computable<T, U>) {
   return new Computation(left, operator, right);
 }
 
@@ -410,99 +410,99 @@ const ob = new OpenBracket();
 const cb = new CloseBracket();
 
 test('Expression valid case', () => {
-  expect(new Expression([n('123')])).toStrictEqual(Expression.parse(cpb("123")));
-  expect(new Expression([n('123')])).toStrictEqual(Expression.parse(cpb("123)")));
-  expect(new Expression([n('123')])).toStrictEqual(Expression.parse(cpb("123 )")));
-  expect(new Expression([n('123')])).toStrictEqual(Expression.parse(cpb("123 (456)")));
-  expect(new Expression([n('123')])).toStrictEqual(Expression.parse(cpb(" 123")));
-  expect(new Expression([n('-123')])).toStrictEqual(Expression.parse(cpb("-123")));
-  expect(new Expression([n('123.45')])).toStrictEqual(Expression.parse(cpb("123.45")));
-  expect(new Expression([nmm('123.45')])).toStrictEqual(Expression.parse(cpb("123.45mm ")));
-  expect(new Expression([nmm('123.45')])).toStrictEqual(Expression.parse(cpb("123.45mm ")));
-  expect(new Expression([n('123'), o('+'), n('456')])).toStrictEqual(Expression.parse(cpb("123+456")));
-  expect(new Expression([n('123'), o('+'), n('456')])).toStrictEqual(Expression.parse(cpb("123 +456")));
-  expect(new Expression([n('123'), o('+'), n('456')])).toStrictEqual(Expression.parse(cpb("123+ 456")));
-  expect(new Expression([n('123'), o('+'), n('456')])).toStrictEqual(Expression.parse(cpb("123 + 456")));
-  expect(new Expression([n('123'), o('-'), n('456')])).toStrictEqual(Expression.parse(cpb("123-456")));
-  expect(new Expression([n('123'), o('-'), n('456')])).toStrictEqual(Expression.parse(cpb("123 -456")));
-  expect(new Expression([n('123'), o('-'), n('456')])).toStrictEqual(Expression.parse(cpb("123- 456")));
-  expect(new Expression([n('123'), o('-'), n('456')])).toStrictEqual(Expression.parse(cpb("123 - 456")));
-  expect(new Expression([n('123'), o('+'), n('-456')])).toStrictEqual(Expression.parse(cpb("123+-456")));
-  expect(new Expression([n('123'), o('+'), n('-456')])).toStrictEqual(Expression.parse(cpb("123 +-456")));
-  expect(new Expression([n('123'), o('+'), n('-456')])).toStrictEqual(Expression.parse(cpb("123+ -456")));
-  expect(new Expression([n('123'), o('+'), n('-456')])).toStrictEqual(Expression.parse(cpb("123 + -456")));
-  expect(new Expression([nmm('123'), o('+'), n('-456')])).toStrictEqual(Expression.parse(cpb("123mm + -456")));
-  expect(new Expression([nmm('123'), o('+'), nmm('-456')])).toStrictEqual(Expression.parse(cpb("123mm + -456mm")));
-  expect(new Expression([n('123'), o('+'), nmm('-456')])).toStrictEqual(Expression.parse(cpb("123 + -456mm")));
-  expect(new Expression([n('123'), o('+'), n('456'), o('+'), n('789')])).toStrictEqual(Expression.parse(cpb("123+456+789")));
-  expect(new Expression([n('123'), o('+'), n('456'), o('+'), n('789')])).toStrictEqual(Expression.parse(cpb("123 +456 + 789")));
-  expect(new Expression([ob, n('123'), cb])).toStrictEqual(Expression.parse(cpb("(123)")));
-  expect(new Expression([ob, n('123'), cb])).toStrictEqual(Expression.parse(cpb("(123)(456)")));
-  expect(new Expression([ob, ob, n('123'), cb, cb])).toStrictEqual(Expression.parse(cpb("((123))")));
-  expect(new Expression([ob, ob, n('123'), cb, cb])).toStrictEqual(Expression.parse(cpb("( (123 ))")));
-  expect(new Expression([ob, ob, n('123'), cb, cb])).toStrictEqual(Expression.parse(cpb("(( 123) )")));
-  expect(new Expression([ob, ob, n('123'), cb, cb])).toStrictEqual(Expression.parse(cpb(" ( ( 123) ) ")));
-  expect(new Expression([ob, ob, n('123'), cb, cb])).toStrictEqual(Expression.parse(cpb(" ( ( 123 ) ) ")));
-  expect(new Expression([ob, ob, n('123'), o('+'), n('456'), cb, cb])).toStrictEqual(Expression.parse(cpb(" ( ( 123+456 ) ) ")));
-  expect(new Expression([ob, ob, n('123'), o('+'), n('456'), cb, cb])).toStrictEqual(Expression.parse(cpb(" ( ( 123 + 456 ) ) ")));
-  expect(new Expression([ob, ob, n('123'), o('+'), ob, n('456'), o('-'), n('3'), cb, cb, cb])).toStrictEqual(Expression.parse(cpb(" ( ( 123 + (456-3) ) ) ")));
+  expect(new Expression([n('123')])).toStrictEqual(Expression.parseWith(cpb("123"), NumberUOL.parse));
+  expect(new Expression([n('123')])).toStrictEqual(Expression.parseWith(cpb("123)"), NumberUOL.parse));
+  expect(new Expression([n('123')])).toStrictEqual(Expression.parseWith(cpb("123 )"), NumberUOL.parse));
+  expect(new Expression([n('123')])).toStrictEqual(Expression.parseWith(cpb("123 (456)"), NumberUOL.parse));
+  expect(new Expression([n('123')])).toStrictEqual(Expression.parseWith(cpb(" 123"), NumberUOL.parse));
+  expect(new Expression([n('-123')])).toStrictEqual(Expression.parseWith(cpb("-123"), NumberUOL.parse));
+  expect(new Expression([n('123.45')])).toStrictEqual(Expression.parseWith(cpb("123.45"), NumberUOL.parse));
+  expect(new Expression([nmm('123.45')])).toStrictEqual(Expression.parseWith(cpb("123.45mm "), NumberUOL.parse));
+  expect(new Expression([nmm('123.45')])).toStrictEqual(Expression.parseWith(cpb("123.45mm "), NumberUOL.parse));
+  expect(new Expression([n('123'), o('+'), n('456')])).toStrictEqual(Expression.parseWith(cpb("123+456"), NumberUOL.parse));
+  expect(new Expression([n('123'), o('+'), n('456')])).toStrictEqual(Expression.parseWith(cpb("123 +456"), NumberUOL.parse));
+  expect(new Expression([n('123'), o('+'), n('456')])).toStrictEqual(Expression.parseWith(cpb("123+ 456"), NumberUOL.parse));
+  expect(new Expression([n('123'), o('+'), n('456')])).toStrictEqual(Expression.parseWith(cpb("123 + 456"), NumberUOL.parse));
+  expect(new Expression([n('123'), o('-'), n('456')])).toStrictEqual(Expression.parseWith(cpb("123-456"), NumberUOL.parse));
+  expect(new Expression([n('123'), o('-'), n('456')])).toStrictEqual(Expression.parseWith(cpb("123 -456"), NumberUOL.parse));
+  expect(new Expression([n('123'), o('-'), n('456')])).toStrictEqual(Expression.parseWith(cpb("123- 456"), NumberUOL.parse));
+  expect(new Expression([n('123'), o('-'), n('456')])).toStrictEqual(Expression.parseWith(cpb("123 - 456"), NumberUOL.parse));
+  expect(new Expression([n('123'), o('+'), n('-456')])).toStrictEqual(Expression.parseWith(cpb("123+-456"), NumberUOL.parse));
+  expect(new Expression([n('123'), o('+'), n('-456')])).toStrictEqual(Expression.parseWith(cpb("123 +-456"), NumberUOL.parse));
+  expect(new Expression([n('123'), o('+'), n('-456')])).toStrictEqual(Expression.parseWith(cpb("123+ -456"), NumberUOL.parse));
+  expect(new Expression([n('123'), o('+'), n('-456')])).toStrictEqual(Expression.parseWith(cpb("123 + -456"), NumberUOL.parse));
+  expect(new Expression([nmm('123'), o('+'), n('-456')])).toStrictEqual(Expression.parseWith(cpb("123mm + -456"), NumberUOL.parse));
+  expect(new Expression([nmm('123'), o('+'), nmm('-456')])).toStrictEqual(Expression.parseWith(cpb("123mm + -456mm"), NumberUOL.parse));
+  expect(new Expression([n('123'), o('+'), nmm('-456')])).toStrictEqual(Expression.parseWith(cpb("123 + -456mm"), NumberUOL.parse));
+  expect(new Expression([n('123'), o('+'), n('456'), o('+'), n('789')])).toStrictEqual(Expression.parseWith(cpb("123+456+789"), NumberUOL.parse));
+  expect(new Expression([n('123'), o('+'), n('456'), o('+'), n('789')])).toStrictEqual(Expression.parseWith(cpb("123 +456 + 789"), NumberUOL.parse));
+  expect(new Expression([ob, n('123'), cb])).toStrictEqual(Expression.parseWith(cpb("(123)"), NumberUOL.parse));
+  expect(new Expression([ob, n('123'), cb])).toStrictEqual(Expression.parseWith(cpb("(123)(456)"), NumberUOL.parse));
+  expect(new Expression([ob, ob, n('123'), cb, cb])).toStrictEqual(Expression.parseWith(cpb("((123))"), NumberUOL.parse));
+  expect(new Expression([ob, ob, n('123'), cb, cb])).toStrictEqual(Expression.parseWith(cpb("( (123 ))"), NumberUOL.parse));
+  expect(new Expression([ob, ob, n('123'), cb, cb])).toStrictEqual(Expression.parseWith(cpb("(( 123) )"), NumberUOL.parse));
+  expect(new Expression([ob, ob, n('123'), cb, cb])).toStrictEqual(Expression.parseWith(cpb(" ( ( 123) ) "), NumberUOL.parse));
+  expect(new Expression([ob, ob, n('123'), cb, cb])).toStrictEqual(Expression.parseWith(cpb(" ( ( 123 ) ) "), NumberUOL.parse));
+  expect(new Expression([ob, ob, n('123'), o('+'), n('456'), cb, cb])).toStrictEqual(Expression.parseWith(cpb(" ( ( 123+456 ) ) "), NumberUOL.parse));
+  expect(new Expression([ob, ob, n('123'), o('+'), n('456'), cb, cb])).toStrictEqual(Expression.parseWith(cpb(" ( ( 123 + 456 ) ) "), NumberUOL.parse));
+  expect(new Expression([ob, ob, n('123'), o('+'), ob, n('456'), o('-'), n('3'), cb, cb, cb])).toStrictEqual(Expression.parseWith(cpb(" ( ( 123 + (456-3) ) ) "), NumberUOL.parse));
   expect(new Expression([
     ob, n('123'), o('+'), n('456'), cb,
     o('*'),
     n('789')
-  ])).toStrictEqual(Expression.parse(cpb("(123+456)*789")));
+  ])).toStrictEqual(Expression.parseWith(cpb("(123+456)*789"), NumberUOL.parse));
   expect(new Expression([
     n('123'),
     o('*'),
     ob, n('789'), o('/'), n('3.14'), cb
-  ])).toStrictEqual(Expression.parse(cpb("123*(789/3.14)")));
+  ])).toStrictEqual(Expression.parseWith(cpb("123*(789/3.14)"), NumberUOL.parse));
   expect(new Expression([
     ob, n('123'), cb,
     o('*'),
     ob, n('789'), o('/'), n('3.14'), cb
-  ])).toStrictEqual(Expression.parse(cpb("(123)*(789/3.14)")));
+  ])).toStrictEqual(Expression.parseWith(cpb("(123)*(789/3.14)"), NumberUOL.parse));
   expect(new Expression([
     ob, n('123'), o('+'), n('456'), cb,
     o('*'),
     ob, n('789'), o('/'), n('3.14'), cb
-  ])).toStrictEqual(Expression.parse(cpb("(123+456)*(789/3.14)")));
+  ])).toStrictEqual(Expression.parseWith(cpb("(123+456)*(789/3.14)"), NumberUOL.parse));
 
 });
 
 test('Expression invalid case', () => {
-  expect(Expression.parse(cpb(""))).toBeNull();
-  expect(Expression.parse(cpb("123+"))).toBeNull();
-  expect(Expression.parse(cpb("123 +"))).toBeNull();
-  expect(Expression.parse(cpb("123 + "))).toBeNull();
-  expect(Expression.parse(cpb("123 + -0"))).toBeNull();
-  expect(Expression.parse(cpb("- 123"))).toBeNull();
-  expect(Expression.parse(cpb("123 + - 1"))).toBeNull();
-  expect(Expression.parse(cpb("(123"))).toBeNull();
-  expect(Expression.parse(cpb("123 456"))).toBeNull(); // Due to NumberWithUnit token
+  expect(Expression.parseWith(cpb(""), NumberUOL.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("123+"), NumberUOL.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("123 +"), NumberUOL.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("123 + "), NumberUOL.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("123 + -0"), NumberUOL.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("- 123"), NumberUOL.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("123 + - 1"), NumberUOL.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("(123"), NumberUOL.parse)).toBeNull();
+  expect(Expression.parseWith(cpb("123 456"), NumberUOL.parse)).toBeNull(); // Due to NumberWithUnit token
 });
 
 test('Computation valid case', () => {
-  expect(c(n('123'), o('+'), n('0'))).toStrictEqual(Computation.parse(cpb("123")));
-  expect(c(n('123'), o('+'), n('0'))).toStrictEqual(Computation.parse(cpb("(123)")));
-  expect(c(n('123'), o('+'), n('0'))).toStrictEqual(Computation.parse(cpb(" (  ( ( 123)  ) )  ")));
-  expect(c(n('123'), o('+'), n('0'))).toStrictEqual(Computation.parse(cpb("(((123)))")));
+  expect(c(n('123'), o('+'), n('0'))).toStrictEqual(Computation.parseWith(cpb("123"), NumberUOL.parse));
+  expect(c(n('123'), o('+'), n('0'))).toStrictEqual(Computation.parseWith(cpb("(123)"), NumberUOL.parse));
+  expect(c(n('123'), o('+'), n('0'))).toStrictEqual(Computation.parseWith(cpb(" (  ( ( 123)  ) )  "), NumberUOL.parse));
+  expect(c(n('123'), o('+'), n('0'))).toStrictEqual(Computation.parseWith(cpb("(((123)))"), NumberUOL.parse));
 
-  expect(c(n('123'), o('+'), n('456'))).toStrictEqual(Computation.parse(cpb("123+456")));
+  expect(c(n('123'), o('+'), n('456'))).toStrictEqual(Computation.parseWith(cpb("123+456"), NumberUOL.parse));
   expect(c(
     c(n('123'), o('+'), n('456')),
     o('-'),
     n('789')
-  )).toStrictEqual(Computation.parse(cpb("123+456-789")));
+  )).toStrictEqual(Computation.parseWith(cpb("123+456-789"), NumberUOL.parse));
   expect(c(
     n('123'),
     o('+'),
     c(n('456'), o('*'), n('789'))
-  )).toStrictEqual(Computation.parse(cpb("123+456*789")));
+  )).toStrictEqual(Computation.parseWith(cpb("123+456*789"), NumberUOL.parse));
   expect(c(
     c(n('123'), o('/'), n('456')),
     o('-'),
     n('789')
-  )).toStrictEqual(Computation.parse(cpb("123/456-789")));
+  )).toStrictEqual(Computation.parseWith(cpb("123/456-789"), NumberUOL.parse));
   expect(c(
     c(
       c(n('1'), o('+'), n('2')),
@@ -511,12 +511,12 @@ test('Computation valid case', () => {
     ),
     o('-'),
     n('4')
-  )).toStrictEqual(Computation.parse(cpb("(1+2)*3-4")));
+  )).toStrictEqual(Computation.parseWith(cpb("(1+2)*3-4"), NumberUOL.parse));
   expect(c(
     c(n('1'), o('+'), n('2')),
     o('/'),
     c(n('3'), o('-'), n('4'))
-  )).toStrictEqual(Computation.parse(cpb("(1+2)/(3-4)")));
+  )).toStrictEqual(Computation.parseWith(cpb("(1+2)/(3-4)"), NumberUOL.parse));
   expect(c(
     n('1'),
     o('+'),
@@ -525,7 +525,7 @@ test('Computation valid case', () => {
       o('/'),
       c(n('3'), o('-'), n('4'))
     ),
-  )).toStrictEqual(Computation.parse(cpb("1+2/(3-4)")));
+  )).toStrictEqual(Computation.parseWith(cpb("1+2/(3-4)"), NumberUOL.parse));
   expect(c(
     c(
       n('1'),
@@ -534,7 +534,7 @@ test('Computation valid case', () => {
     ),
     o('-'),
     n('4'),
-  )).toStrictEqual(Computation.parse(cpb("1+2/3-4")));
+  )).toStrictEqual(Computation.parseWith(cpb("1+2/3-4"), NumberUOL.parse));
   expect(c(
     n('1'),
     o('+'),
@@ -547,7 +547,7 @@ test('Computation valid case', () => {
         c(n('4'), o('+'), n('5'))
       )
     ),
-  )).toStrictEqual(Computation.parse(cpb("1+2/(3-(4+5))")));
+  )).toStrictEqual(Computation.parseWith(cpb("1+2/(3-(4+5))"), NumberUOL.parse));
   expect(c(
     n('1'),
     o('+'),
@@ -560,25 +560,25 @@ test('Computation valid case', () => {
         n('5')
       )
     ),
-  )).toStrictEqual(Computation.parse(cpb("1+2/((3-4)+5)")));
+  )).toStrictEqual(Computation.parseWith(cpb("1+2/((3-4)+5)"), NumberUOL.parse));
 
-  expect(Computation.parse(cpb("1"))?.compute(UnitOfLength.Centimeter)).toBe(1);
-  expect(Computation.parse(cpb("2"))?.compute(UnitOfLength.Centimeter)).toBe(2);
-  expect(Computation.parse(cpb("(2)"))?.compute(UnitOfLength.Centimeter)).toBe(2);
-  expect(Computation.parse(cpb("3.14"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(3.14);
-  expect(Computation.parse(cpb("1+1"))?.compute(UnitOfLength.Centimeter)).toBe(2);
-  expect(Computation.parse(cpb("1cm+2cm"))?.compute(UnitOfLength.Centimeter)).toBe(3);
-  expect(Computation.parse(cpb("1cm+3.14cm"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(4.14);
-  expect(Computation.parse(cpb("1cm+31.4mm"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(4.14);
-  expect(Computation.parse(cpb("10mm+31.4mm"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(4.14);
-  expect(Computation.parse(cpb("10mm+31.4mm"))?.compute(UnitOfLength.Meter)).toBeCloseTo(4.14/100);
-  expect(Computation.parse(cpb("1m/100+31.4mm"))?.compute(UnitOfLength.Meter)).toBeCloseTo(4.14/100);
-  expect(Computation.parse(cpb("1m/100+31.4mm"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(4.14);
-  
-  expect(Computation.parse(cpb("(1+2)/(3-4)"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(-3);
-  expect(Computation.parse(cpb("(1+2)/3-4"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(-3);
-  expect(Computation.parse(cpb("1+2/(3-4)"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(-1);
-  expect(Computation.parse(cpb("1+2/3-4"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(-2.33333);
-  expect(Computation.parse(cpb("1+2/(3-(4+5))"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(0.66666);
-  expect(Computation.parse(cpb("1+2/((3-4)+5)"))?.compute(UnitOfLength.Centimeter)).toBeCloseTo(1.5);
+  expect(Computation.parseWith(cpb("1"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBe(1);
+  expect(Computation.parseWith(cpb("2"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBe(2);
+  expect(Computation.parseWith(cpb("(2)"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBe(2);
+  expect(Computation.parseWith(cpb("3.14"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBeCloseTo(3.14);
+  expect(Computation.parseWith(cpb("1+1"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBe(2);
+  expect(Computation.parseWith(cpb("1cm+2cm"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBe(3);
+  expect(Computation.parseWith(cpb("1cm+3.14cm"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBeCloseTo(4.14);
+  expect(Computation.parseWith(cpb("1cm+31.4mm"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBeCloseTo(4.14);
+  expect(Computation.parseWith(cpb("10mm+31.4mm"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBeCloseTo(4.14);
+  expect(Computation.parseWith(cpb("10mm+31.4mm"), NumberUOL.parse)?.compute(UnitOfLength.Meter)).toBeCloseTo(4.14 / 100);
+  expect(Computation.parseWith(cpb("1m/100+31.4mm"), NumberUOL.parse)?.compute(UnitOfLength.Meter)).toBeCloseTo(4.14 / 100);
+  expect(Computation.parseWith(cpb("1m/100+31.4mm"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBeCloseTo(4.14);
+
+  expect(Computation.parseWith(cpb("(1+2)/(3-4)"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBeCloseTo(-3);
+  expect(Computation.parseWith(cpb("(1+2)/3-4"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBeCloseTo(-3);
+  expect(Computation.parseWith(cpb("1+2/(3-4)"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBeCloseTo(-1);
+  expect(Computation.parseWith(cpb("1+2/3-4"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBeCloseTo(-2.33333);
+  expect(Computation.parseWith(cpb("1+2/(3-(4+5))"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBeCloseTo(0.66666);
+  expect(Computation.parseWith(cpb("1+2/((3-4)+5)"), NumberUOL.parse)?.compute(UnitOfLength.Centimeter)).toBeCloseTo(1.5);
 });

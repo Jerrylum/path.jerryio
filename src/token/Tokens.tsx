@@ -1,6 +1,6 @@
 // ALGO: Tokens implementation is adopted from https://github.com/Jerrylum/ProtocolDiagram under the GPLv3 license.
 
-import { NumberInUnit, UnitOfLength } from "../types/Unit";
+import { NumberInUnit, Unit, UnitOfLength } from "../types/Unit";
 
 /**
  * A utility function that checks whether the character is delimiter (null | ' ')
@@ -263,6 +263,9 @@ export abstract class Token {
     return null;
   }
 }
+
+export type TokenParser<T extends Token> = (buffer: CodePointBuffer, ...args: any[]) => T | null;
+export type TokenConstructor<T extends Token> = new (...args: any[]) => T;
 
 /**
  * A class that represents a boolean token.
@@ -539,10 +542,16 @@ export class CloseBracket extends Token {
   readonly value: string = ")";
 }
 
-export class NumberWithUnit extends Token {
-  constructor(public value: string, public unit: UnitOfLength | null) { super(); }
+export abstract class NumberWithUnit<T extends Unit> extends Token {
+  constructor(public value: string, public unit: T | null) { super(); }
 
-  public static parse(buffer: CodePointBuffer): NumberWithUnit | null {
+  toNumberInUnit(inherit: T) {
+    return new NumberInUnit(parseFloat(this.value), this.unit || inherit);
+  }
+}
+
+export class NumberUOL extends NumberWithUnit<UnitOfLength> {
+  public static parse(buffer: CodePointBuffer): NumberUOL | null {
     buffer.savepoint();
 
     const n = NumberT.parse(buffer);
@@ -585,11 +594,7 @@ export class NumberWithUnit extends Token {
       default:
         return buffer.rollbackAndReturn(null);
     }
-    return buffer.commitAndReturn(new NumberWithUnit(n.value, unit));
-  }
-
-  toNumberInUnit(inherit: UnitOfLength) {
-    return new NumberInUnit(parseFloat(this.value), this.unit || inherit);
+    return buffer.commitAndReturn(new NumberUOL(n.value, unit));
   }
 }
 
@@ -614,21 +619,24 @@ export class Operator extends Token {
   }
 }
 
-export class Expression extends Token {
-  constructor(public tokens: (OpenBracket | CloseBracket | NumberWithUnit | Operator)[]) { super(); }
+export class Expression<T extends NumberWithUnit<Unit>> extends Token {
+  constructor(public tokens: (OpenBracket | CloseBracket | T | Operator)[]) { super(); }
 
-  public static parse(buffer: CodePointBuffer): Expression | null {
+  public static parseWith<T extends NumberWithUnit<Unit>>(
+    buffer: CodePointBuffer,
+    numParser: TokenParser<T>
+  ): Expression<T> | null {
     buffer.savepoint();
 
     buffer.readDelimiter();
 
-    let tokens: (OpenBracket | CloseBracket | NumberWithUnit | Operator)[] = [];
+    let tokens: (OpenBracket | CloseBracket | T | Operator)[] = [];
 
     const bracket = OpenBracket.parse(buffer);
     if (bracket) {
       tokens.push(bracket);
 
-      const e = Expression.parse(buffer);
+      const e = Expression.parseWith(buffer, numParser);
       if (!e) {
         return buffer.rollbackAndReturn(null);
       }
@@ -642,7 +650,7 @@ export class Expression extends Token {
 
       tokens.push(closeBracket);
     } else {
-      const n = NumberWithUnit.parse(buffer);
+      const n = numParser(buffer);
       if (!n) {
         return buffer.rollbackAndReturn(null);
       }
@@ -656,7 +664,7 @@ export class Expression extends Token {
     if (op) {
       tokens.push(op);
 
-      const e = Expression.parse(buffer);
+      const e = Expression.parseWith(buffer, numParser);
       if (!e) {
         return buffer.rollbackAndReturn(null);
       }
@@ -664,22 +672,22 @@ export class Expression extends Token {
       tokens.push(...e.tokens);
     }
 
-    return buffer.commitAndReturn(new Expression(tokens));
+    return buffer.commitAndReturn(new Expression<T>(tokens));
   }
 }
 
-export type Computable = NumberWithUnit | Computation;
+export type Computable<T extends NumberWithUnit<U>, U extends Unit> = T | Computation<T, U>;
 
-export class Computation extends Token {
-  constructor(public left: Computable, public operator: Operator, public right: Computable) { super(); }
+export class Computation<T extends NumberWithUnit<U>, U extends Unit> extends Token {
+  constructor(public left: Computable<T, U>, public operator: Operator, public right: Computable<T, U>) { super(); }
 
-  public compute(inherit: UnitOfLength): number {
-    const left = this.left instanceof NumberWithUnit
-      ? this.left.toNumberInUnit(inherit).to(inherit)
-      : this.left.compute(inherit);
-    const right = this.right instanceof NumberWithUnit
-      ? this.right.toNumberInUnit(inherit).to(inherit)
-      : this.right.compute(inherit);
+  public compute(inherit: U): number {
+    const left = this.left instanceof Computation
+      ? this.left.compute(inherit)
+      : this.left.toNumberInUnit(inherit).to(inherit);
+    const right = this.right instanceof Computation
+      ? this.right.compute(inherit)
+      : this.right.toNumberInUnit(inherit).to(inherit);
 
     switch (this.operator.value) {
       case "+":
@@ -695,16 +703,19 @@ export class Computation extends Token {
     }
   }
 
-  public static parse(buffer: CodePointBuffer): Computation | null {
-    const e = Expression.parse(buffer);
+  public static parseWith<T extends NumberWithUnit<U>, U extends Unit>(
+    buffer: CodePointBuffer,
+    numParser: TokenParser<T>
+  ): Computation<T, U> | null {
+    const e = Expression.parseWith(buffer, numParser);
     if (!e) return null;
     if (buffer.hasNext()) return null;
 
-    const output: Computable[] = [];
+    const output: Computable<T, U>[] = [];
     const stack: (OpenBracket | Operator)[] = [];
 
     function peek() { return stack.at(-1); }
-    function out(token: Computable) { output.push(token); }
+    function out(token: Computable<T, U>) { output.push(token); }
     function handlePop() {
       const op = stack.pop()!;
       if (op instanceof OpenBracket) return undefined;
@@ -714,8 +725,8 @@ export class Computation extends Token {
 
       return new Computation(left, op, right);
     }
-    function handleToken(token: (OpenBracket | CloseBracket | NumberWithUnit | Operator)) {
-      if (token instanceof NumberWithUnit) {
+    function handleToken(token: (OpenBracket | CloseBracket | T | Operator)) {
+      if (token instanceof NumberUOL) {
         out(token);
       } else if (token instanceof Operator) {
         const o1 = token;
@@ -751,10 +762,10 @@ export class Computation extends Token {
 
     // ALGO: output should have only one element
     const rtn = output[0];
-    if (rtn instanceof NumberWithUnit) {
-      return new Computation(rtn, new Operator("+"), new NumberWithUnit("0", null));
-    } else {
+    if (rtn instanceof Computation) {
       return rtn;
+    } else {
+      return new Computation(rtn, new Operator("+"), numParser(new CodePointBuffer("0"))!);
     }
   }
 }
