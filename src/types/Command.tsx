@@ -388,86 +388,6 @@ export class SplitSegment implements CancellableCommand, InteractiveEntitiesComm
   }
 }
 
-export class RemoveSegment implements CancellableCommand, InteractiveEntitiesCommand {
-  protected _entities: InteractiveEntity[] = [];
-
-  protected forward: boolean = true;
-  protected index: number = -1;
-  protected segment?: Segment;
-
-  constructor(protected path: Path, protected point: EndPointControl) { }
-
-  execute(): void {
-    for (let i = 0; i < this.path.segments.length; i++) {
-      const segment = this.path.segments[i];
-      if (segment.first === this.point) { // pointer comparison
-        // ALGO: This is the first control of the segment
-        if (i !== 0) {
-          const prev = this.path.segments[i - 1];
-          prev.last = segment.last; // pointer assignment
-
-          this._entities = segment.controls.slice(0, -1); // keep the last control
-        } else {
-          this._entities = segment.controls.slice();
-        }
-        this.path.segments.splice(i, 1);
-      } else if (i + 1 === this.path.segments.length && segment.last === this.point) { // pointer comparison
-        // ALGO: This is the last control of the last segment
-        if (i !== 0) { // if this segment is not the first segment
-          this._entities = segment.controls.slice(1); // keep the first control
-        } else {
-          this._entities = segment.controls.slice();
-        }
-
-        this.path.segments.splice(i, 1);
-      } else {
-        continue;
-      }
-
-      this.index = i;
-      this.segment = segment;
-      break;
-    }
-
-    this.forward = true;
-  }
-
-  undo(): void {
-    if (this.index === -1) return;
-
-    this.path.segments.splice(this.index, 0, this.segment!);
-    if (this.segment?.first === this.point && this.index > 0) {
-      const prev = this.path.segments[this.index - 1];
-      prev.last = this.segment.first; // pointer assignment
-    }
-
-    this.forward = false;
-  }
-
-  redo(): void {
-    // this.execute();
-    // ALGO: Instead of executing, we just add the segment back
-    // ALGO: Assume that the command is executed
-    if (this.index === -1) return;
-
-    this.path.segments.splice(this.index, 1);
-    if (this.segment?.first === this.point && this.index > 0) {
-      const prev = this.path.segments[this.index - 1];
-      prev.last = this.segment.last; // pointer assignment
-    }
-
-    this.forward = true;
-  }
-
-  get removedEntities(): InteractiveEntity[] {
-    return this._entities;
-  }
-
-  get entities(): InteractiveEntity[] {
-    return this.forward ? [] : this._entities;
-  }
-}
-
 export class DragControls implements CancellableCommand, MergeableCommand, InteractiveEntitiesCommand {
 
   constructor(protected main: Control, protected from: Vector, protected to: Vector, protected followers: Control[]) { }
@@ -656,33 +576,6 @@ export class AddPath implements CancellableCommand, InteractiveEntitiesCommand {
 
   get entities(): InteractiveEntity[] {
     return this.forward ? [this.path, ...this.path.controls] : [];
-  }
-}
-
-export class RemovePath implements CancellableCommand, InteractiveEntitiesCommand {
-  protected index: number = -1;
-  protected forward: boolean = false;
-
-  constructor(protected paths: Path[], protected path: Path) { }
-
-  execute(): void {
-    this.index = this.paths.indexOf(this.path);
-    this.paths.splice(this.index, 1);
-    this.forward = true;
-  }
-
-  undo(): void {
-    this.paths.splice(this.index, 0, this.path);
-    this.forward = false;
-  }
-
-  redo(): void {
-    this.paths.splice(this.index, 1);
-    this.forward = true;
-  }
-
-  get entities(): InteractiveEntity[] {
-    return this.forward ? [] : [this.path, ...this.path.controls];
   }
 }
 
