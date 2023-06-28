@@ -25,11 +25,10 @@ const ObserverInput = observer(
       isValidIntermediate: (candidate: string) => boolean;
       isValidValue: (candidate: string) => boolean | [boolean, any];
       numeric?: boolean; // default false
-      allowEmpty?: boolean; // default true
     }
   ) => {
     // rest is used to send props to TextField without custom attributes
-    const { getValue, setValue, isValidIntermediate, isValidValue, numeric: isNumeric, allowEmpty, ...rest } = props;
+    const { getValue, setValue, isValidIntermediate, isValidValue, numeric: isNumeric, ...rest } = props;
 
     const memoInitialValue = useMemo(() => getValue(), []); // eslint-disable-line react-hooks/exhaustive-deps
     const inputRef = useRef<HTMLInputElement>(null);
@@ -83,7 +82,7 @@ const ObserverInput = observer(
       const result = isValidValue(candidate);
       const isValid = Array.isArray(result) ? result[0] : result;
       const payload = Array.isArray(result) ? result[1] : undefined;
-      if (isValid === false || (allowEmpty !== true && candidate === "")) {
+      if (isValid === false) {
         element.value = rtn = initialValue.current;
       } else {
         rtn = candidate;
