@@ -5,7 +5,7 @@ import { PathConfig } from "../format/Config";
 import { InteractiveEntity, CanvasEntity } from "./Canvas";
 
 import 'reflect-metadata';
-import {  PointCalculationResult } from './Calculation';
+import { PointCalculationResult } from './Calculation';
 
 // Not observable
 export class Vector {
