@@ -4,7 +4,7 @@ import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity }
 import { InteractiveEntity } from "../types/Canvas";
 import { Control, EndPointControl, Path, Vector } from "../types/Path";
 import { addToArray, clamp, removeFromArray } from "./Util";
-import { PathFileData, Format, getAllFormats } from "../format/Format";
+import { PathFileData, Format, getAllFormats, convertPathFileData } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from "class-transformer";
 import { Quantity, UnitConverter, UnitOfLength } from "../types/Unit";
@@ -18,10 +18,10 @@ import { GoogleAnalytics } from "../types/GoogleAnalytics";
 import { OutputFileHandle } from "../format/Output";
 import { getPathSamplePoints, getUniformPointsFromSamples } from "../types/Calculation";
 
+export const APP_VERSION = new SemVer("0.2.0");
+
 // observable class
 export class MainApp {
-  readonly appVersion = new SemVer("0.1.0");
-
   public format: Format = new PathDotJerryioFormatV0_1();
   private usingUOL: UnitOfLength = UnitOfLength.Centimeter;
   public mountingFile: OutputFileHandle = new OutputFileHandle(null); // This is intended to be modified outside the class
@@ -316,29 +316,21 @@ export class MainApp {
   }
 
   importPathFileData(data: Record<string, any>): void {
+    // ALGO: Convert the path file to the app version
+    while (data.appVersion !== APP_VERSION.version) {
+      if (convertPathFileData(data) === false) throw new Error("Unable to open the path file. Try updating the app.");
+    }
+
     const format = getAllFormats().find(f => f.getName() === data.format);
     if (format === undefined) throw new Error("Format not found.");
     format.init(); // ALGO: Suspend format reaction
 
-    const appVersion = new SemVer(data.appVersion); // ALGO: Throw error if the app version is not a valid semver
-    const compareResult = appVersion.compare(this.appVersion);
-    if (appVersion.major !== this.appVersion.major) {
-      throw new Error("The path file was created with a different major version of the editor. Import failed.");
-    }
-    if (compareResult > 0) {
-      throw new Error("The path file was created with a newer version of the editor. Please update the editor.");
-    } else if (compareResult < 0) {
-      // TODO: Resolve backward compatibility
-    }
+    // ALGO: Assume the path file is valid
 
-    if (typeof data.gc !== "object") throw new Error("Invalid data format: gc is not an object.");
     const gc = plainToClassFromExist(format.getGeneralConfig(), data.gc);
-
-    if (!Array.isArray(data.paths)) throw new Error("Invalid data format: paths is not an array.");
     const paths = plainToInstance(Path, data.paths);
 
     for (const path of paths) {
-      if (typeof path.pc !== "object") throw new Error("Invalid data format: pc is not an object.");
       path.pc = plainToClassFromExist(format.buildPathConfig(), path.pc);
     }
 
@@ -349,7 +341,7 @@ export class MainApp {
 
   exportPathFileData(): Record<string, any> {
     const data: PathFileData = { gc: this.format.getGeneralConfig(), paths: this.paths };
-    return { ...{ appVersion: this.appVersion.version, format: this.format.getName() }, ...instanceToPlain(data) };
+    return { ...{ appVersion: APP_VERSION.version, format: this.format.getName() }, ...instanceToPlain(data) };
   }
 
   newPathFile() {
@@ -372,8 +364,8 @@ export class MainApp {
     const lines = fileContent.split("\n");
     for (const line of lines) {
       if (line.startsWith("#PATH.JERRYIO-DATA")) {
-        const json = line.substring("#PATH.JERRYIO-DATA".length).trim();
-        this.importPathFileData(JSON.parse(json));
+        const pathFileDataInString = line.substring("#PATH.JERRYIO-DATA".length).trim();
+        this.importPathFileData(JSON.parse(pathFileDataInString));
         return;
       }
     }

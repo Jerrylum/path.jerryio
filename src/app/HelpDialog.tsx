@@ -1,7 +1,7 @@
 import { Backdrop, Card, Typography } from "@mui/material";
 import { makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useAppStores } from "./MainApp";
+import { APP_VERSION, useAppStores } from "./MainApp";
 import { useBackdropDialog } from "./Util";
 import React from "react";
 import Welcome from "./Welcome.mdx";
@@ -73,7 +73,7 @@ const HelpDialog = observer((props: {}) => {
         <Card className="help-about-page" onClick={e => e.stopPropagation()} tabIndex={1000}>
           <img src="logo464.svg" alt="app logo" />
           <Typography variant="h3" gutterBottom align="center">
-            PATH.JERRYIO Version {app.appVersion.version}
+            PATH.JERRYIO Version {APP_VERSION.version}
           </Typography>
           <Typography variant="body1" align="center" sx={{ marginBottom: "2rem" }}>
             Made by Jerry Lum
