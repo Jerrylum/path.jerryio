@@ -810,6 +810,10 @@ export class RemovePathsAndEndControls implements CancellableCommand, Interactiv
     }
   }
 
+  get hasTargets(): boolean {
+    return this.removalPaths.length > 0 || this.removalEndControls.length > 0;
+  }
+
   get removedEntities(): InteractiveEntity[] {
     return this._entities;
   }

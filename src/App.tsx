@@ -28,6 +28,7 @@ import { PreferencesDialog } from './app/Preferences';
 import { Quantity } from './types/Unit';
 import { getPathPoints } from './types/Calculation';
 import { DragDropBackdrop } from './app/DragDropBackdrop';
+import { RemovePathsAndEndControls } from './types/Command';
 
 export interface AppProps {
   paths: Path[];
@@ -99,6 +100,16 @@ const App = observer(() => {
         (kvEvt.target as HTMLInputElement).type === "checkbox"
       )
   });
+
+  useCustomHotkeys("Backspace,Delete", () => {
+    const command = new RemovePathsAndEndControls(app.paths, app.selectedEntityIds);
+    if (command.hasTargets === false) return;
+    app.history.execute(`Remove paths and end controls`, command);
+    for (const id of command.removedEntities) {
+      app.unselect(id);
+      app.removeExpanded(id);
+    }
+  }, { ...optionsToEnableHotkeys, preventDefaultOnlyIfEnabled: true });
 
   useUnsavedChangesPrompt();
 

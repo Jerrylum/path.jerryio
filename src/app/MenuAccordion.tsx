@@ -10,6 +10,7 @@ import { onDownload, onDownloadAs, onNew, onOpen, onSave, onSaveAs } from "../fo
 import { MainApp, useAppStores } from "./MainApp";
 import { HelpPage } from "./HelpDialog";
 import { AppTheme } from "./Theme";
+import { RemovePathsAndEndControls } from "../types/Command";
 
 const CustomMenuItem = observer((props: DefaultComponentProps<MenuItemTypeMap> & {
   done: boolean,
@@ -69,6 +70,16 @@ const MenuAccordion = observer((props: {}) => {
         open={isOpenEditMenu} onClose={() => setIsOpenEditMenu(false)}>
         <CustomMenuItem done={false} text="Undo" hotkey={useKeyName("Ctrl+Z")} onClick={onMenuClick(() => app.history.undo())} />
         <CustomMenuItem done={false} text="Redo" hotkey={useKeyName("Ctrl+Y")} onClick={onMenuClick(() => app.history.redo())} />
+        <Divider />
+        <CustomMenuItem done={false} text="Delete" hotkey={useKeyName("Del")} onClick={onMenuClick(() => {
+          const command = new RemovePathsAndEndControls(app.paths, app.selectedEntityIds);
+          if (command.hasTargets === false) return;
+          app.history.execute(`Remove paths and end controls`, command);
+          for (const id of command.removedEntities) {
+            app.unselect(id);
+            app.removeExpanded(id);
+          }
+        })} />
         <Divider />
         <CustomMenuItem done={false} text="Select All" hotkey={useKeyName("Ctrl+A")} onClick={onMenuClick(() => {
           const path = app.selectedPath;
