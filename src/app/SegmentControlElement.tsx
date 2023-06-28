@@ -5,7 +5,7 @@ import Konva from 'konva';
 import { Circle, Line } from 'react-konva';
 import { useState } from "react";
 import { SegmentElementProps } from "./SegmentElement";
-import { DragControls, RemoveSegment } from "../types/Command";
+import { DragControls, RemovePathsAndEndControls } from "../types/Command";
 import { useAppStores } from "./MainApp";
 
 export interface SegmentControlElementProps extends SegmentElementProps {
@@ -213,11 +213,11 @@ const SegmentControlElement = observer((props: SegmentControlElementProps) => {
 
     // UX: Remove end point from the path, selected and expanded list if: right click
     if (evt.button === 2) {
-      const command = new RemoveSegment(props.path, props.cp as EndPointControl);
-      app.history.execute(`Remove segment with control ${props.cp.uid} in path ${props.path.uid}`, command);
-      for (const control of command.removedEntities) {
-        app.unselect(control);
-        app.removeExpanded(control);
+      const command = new RemovePathsAndEndControls(app.paths, [props.cp as EndPointControl]);
+      app.history.execute(`Remove paths and end controls`, command);
+      for (const id of command.removedEntities) {
+        app.unselect(id);
+        app.removeExpanded(id);
       }
     }
   }

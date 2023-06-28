@@ -11,7 +11,7 @@ import { TreeItem } from '@mui/lab';
 import { EndPointControl, Path } from '../types/Path';
 import { useRef } from 'react';
 import { InteractiveEntity } from '../types/Canvas';
-import { RemovePath, RemoveSegment, UpdateInteractiveEntities, UpdateProperties } from '../types/Command';
+import { RemovePathsAndEndControls, UpdateInteractiveEntities, UpdateProperties } from '../types/Command';
 import { useAppStores } from './MainApp';
 
 export interface PathTreeProps {
@@ -21,7 +21,7 @@ export interface PathTreeProps {
 export interface PathTreeItemLabelProps extends PathTreeProps {
   entity: InteractiveEntity;
   parent?: InteractiveEntity;
-  onDelete?: () => void;
+  canDelete?: boolean;
   children?: React.ReactNode;
 }
 
@@ -51,6 +51,17 @@ const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
       new UpdateInteractiveEntities(affected, { lock: setTo }), 0); // Disable merge
   }
 
+  function onDeleteClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
+    const target = entity.uid; // ALGO: use uid to have better performance
+    const affected = app.isSelected(target) ? app.selectedEntityIds : [target];
+    const command = new RemovePathsAndEndControls(app.paths, affected);
+    app.history.execute(`Remove paths and end controls`, command);
+    for (const id of command.removedEntities) {
+      app.unselect(id);
+      app.removeExpanded(id);
+    }
+  }
+
   return (
     <div className='tree-node-label'>
       {props.children}
@@ -74,7 +85,7 @@ const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
           : <LockOutlinedIcon className='tree-node-func-icon show' onClick={action(onLockClick)} />
       }
       {
-        props.onDelete ? <DeleteIcon className='tree-node-func-icon' onClick={props.onDelete} /> : null
+        props.canDelete ? <DeleteIcon className='tree-node-func-icon' onClick={action(onDeleteClick)} /> : null
       }
     </div>
   )
@@ -116,19 +127,13 @@ const PathTreeItem = observer((props: PathTreeProps) => {
       new UpdateProperties(path, { name: pathName }));
   }
 
-  function onPathDeleteClick() {
-    app.history.execute(`Remove path ${path.uid}`, new RemovePath(app.paths, path));
-    app.unselect(path);
-    app.removeExpanded(path);
-  }
-
   reaction(() => path.name, (name) => {
     initialValue.current = name;
   });
 
   return (
     <TreeItem nodeId={path.uid} label={
-      <PathTreeItemLabel entity={path} onDelete={action(onPathDeleteClick)} {...props}>
+      <PathTreeItemLabel entity={path} canDelete {...props}>
         <span contentEditable
           style={{ display: 'inline-block' }}
           onInput={(e) => onPathNameChange(e)}
@@ -141,27 +146,13 @@ const PathTreeItem = observer((props: PathTreeProps) => {
       </PathTreeItemLabel>
     } >
       {
-        path.controls.map((control) => {
-          function onControlDeleteClick() {
-            const command = new RemoveSegment(props.path, control as EndPointControl);
-            app.history.execute(`Remove segment with control ${control.uid} in path ${props.path.uid}`, command);
-            for (const control of command.removedEntities) {
-              app.unselect(control);
-              app.removeExpanded(control);
-            }
-          }
-
-          return (
-            <TreeItem nodeId={control.uid} key={control.uid}
-              label={control instanceof EndPointControl
-                ? <PathTreeItemLabel entity={control} parent={path} onDelete={action(onControlDeleteClick)} {...props}>
-                  <span>End Control</span>
-                </PathTreeItemLabel>
-                : <PathTreeItemLabel entity={control} parent={path} {...props}>
-                  <span>Control</span>
-                </PathTreeItemLabel>} />
-          )
-        })
+        path.controls.map((control) => (
+          <TreeItem nodeId={control.uid} key={control.uid}
+            label={control instanceof EndPointControl
+              ? <PathTreeItemLabel entity={control} parent={path} canDelete {...props}><span>End Control</span></PathTreeItemLabel>
+              : <PathTreeItemLabel entity={control} parent={path} {...props}><span>Control</span></PathTreeItemLabel>
+            } />
+        ))
       }
     </TreeItem>
   )
