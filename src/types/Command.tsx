@@ -685,3 +685,136 @@ export class RemovePath implements CancellableCommand, InteractiveEntitiesComman
     return this.forward ? [] : [this.path, ...this.path.controls];
   }
 }
+
+export class RemovePathsAndEndControls implements CancellableCommand, InteractiveEntitiesCommand {
+  protected _entities: InteractiveEntity[] = [];
+
+  protected forward: boolean = true;
+  protected removalPaths: Path[] = [];
+  protected removalEndControls: { path: Path, control: EndPointControl }[] = [];
+  protected affectedPaths: { index: number, path: Path }[] = [];
+  protected affectedSegments: { index: number, segment: Segment, path: Path, linkNeeded: boolean }[] = [];
+
+  /**
+   * Remove paths and end controls in the entities list
+   * @param paths all paths in the editor
+   * @param entities entities to remove
+   */
+  constructor(protected paths: Path[], entities: (string | InteractiveEntity)[]) {
+    // ALGO: Create a set of all entity uids
+    const allEntities = new Set(entities.map(e => typeof e === 'string' ? e : e.uid));
+
+    // ALGO: Loop through all paths, add the path and end controls to the removal list if they are in the entity list
+    for (const path of paths) {
+      if (allEntities.delete(path.uid)) {
+        this.removalPaths.push(path);
+      } else {
+        // ALGO: Only add the end control if the path is not already in the removal list
+        for (const control of path.controls) {
+          if (control instanceof EndPointControl && allEntities.delete(control.uid)) {
+            this.removalEndControls.push({ path, control });
+          }
+        }
+      }
+    }
+  }
+
+  protected removePath(path: Path): boolean {
+    const idx = this.paths.indexOf(path);
+    if (idx === -1) return false;
+
+    this.paths.splice(idx, 1);
+    this.affectedPaths.push({ index: idx, path });
+    this._entities.push(path, ...path.controls);
+    return true;
+  }
+
+  protected removeControl(request: { path: Path, control: EndPointControl }): boolean {
+    const { path, control } = request;
+    for (let index = 0; index < path.segments.length; index++) {
+      const segment = path.segments[index];
+
+      const isFirstControlOfSegment = segment.first === control; // pointer comparison
+      const isLastSegment = index + 1 === path.segments.length;
+      const isLastControlOfLastSegment = isLastSegment && segment.last === control; // pointer comparison
+
+      if ((isFirstControlOfSegment || isLastControlOfLastSegment) === false) continue;
+
+      const isFirstSegment = index === 0;
+      const isOnlySegment = path.segments.length === 1;
+      const linkNeeded = isFirstControlOfSegment && isFirstSegment === false;
+
+      if (linkNeeded) {
+        const prev = path.segments[index - 1];
+        prev.last = segment.last; // pointer assignment
+      }
+
+      // ALGO: Remove the segment at index i of the path segment list
+      path.segments.splice(index, 1);
+      this.affectedSegments.push({ index, segment, path, linkNeeded });
+
+      if (isOnlySegment) {
+        // ALGO: Define that all controls for the segment disappear
+        this._entities.push(...segment.controls);
+      } else if (isFirstControlOfSegment) {
+        // ALGO: Define that all controls for the segment disappear except for the last one
+        this._entities.push(...segment.controls.slice(0, -1));
+      } else if (isLastControlOfLastSegment) {
+        // ALGO: Define that all controls for the segment disappear except for the first one
+        this._entities.push(...segment.controls.slice(1)); // keep the first control
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+  execute(): void {
+    this.removalPaths.forEach(this.removePath.bind(this));
+    this.removalEndControls.forEach(this.removeControl.bind(this));
+  }
+
+  undo(): void {
+    this.forward = false;
+
+    for (let i = this.affectedPaths.length - 1; i >= 0; i--) {
+      const { index, path } = this.affectedPaths[i];
+      this.paths.splice(index, 0, path);
+    }
+
+    for (let i = this.affectedSegments.length - 1; i >= 0; i--) {
+      const { index, segment, path, linkNeeded } = this.affectedSegments[i];
+      path.segments.splice(index, 0, segment);
+
+      if (linkNeeded) {
+        const prev = path.segments[index - 1];
+        prev.last = segment.first; // pointer assignment
+      }
+    }
+  }
+
+  redo(): void {
+    this.forward = true;
+
+    for (const { index, path } of this.affectedPaths) {
+      this.paths.splice(index, 1);
+    }
+
+    for (const { index, segment, path, linkNeeded } of this.affectedSegments) {
+      path.segments.splice(index, 1);
+
+      if (linkNeeded) {
+        const prev = path.segments[index - 1];
+        prev.last = segment.last; // pointer assignment
+      }
+    }
+  }
+
+  get removedEntities(): InteractiveEntity[] {
+    return this._entities;
+  }
+
+  get entities(): InteractiveEntity[] {
+    return this.forward ? [] : this._entities;
+  }
+}
