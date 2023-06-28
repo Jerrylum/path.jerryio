@@ -38,7 +38,7 @@ export class Help {
 }
 
 const HelpDialog = observer((props: {}) => {
-  const { app, help, appPreferences } = useAppStores();
+  const { help, appPreferences } = useAppStores();
 
   const rawGAEnabled = localStorage.getItem("googleAnalyticsEnabled");
   const [isGAEnabled, setIsGAEnabled] = React.useState(rawGAEnabled !== "false"); // UX: Default to true

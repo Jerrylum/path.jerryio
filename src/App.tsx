@@ -41,9 +41,9 @@ const App = observer(() => {
 
   const { app, confirmation, help, appPreferences } = useAppStores();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(
     action(() => {
-      // eslint-disable-line react-hooks/exhaustive-deps
       const density = new Quantity(app.gc.pointDensity, app.gc.uol);
       const interested = app.interestedPath();
 

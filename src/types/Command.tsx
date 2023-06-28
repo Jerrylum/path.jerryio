@@ -701,7 +701,7 @@ export class RemovePathsAndEndControls implements CancellableCommand, Interactiv
   redo(): void {
     this.forward = true;
 
-    for (const { index, path } of this.affectedPaths) {
+    for (const { index } of this.affectedPaths) {
       this.paths.splice(index, 1);
     }
 
