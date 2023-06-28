@@ -1,6 +1,6 @@
 import { Confirmation } from "../app/Confirmation";
 import { MainApp, getAppStores } from "../app/MainApp";
-import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from '../app/Notice';
+import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "../app/Notice";
 
 async function saveConfirm(app: MainApp, conf: Confirmation, callback: () => void) {
   return new Promise<boolean>((resolve, reject) => {
@@ -9,7 +9,10 @@ async function saveConfirm(app: MainApp, conf: Confirmation, callback: () => voi
       description: "Do you want to save the changes made to " + app.mountingFile.name + "?",
       buttons: [
         {
-          label: "Save", color: "success", hotkey: "s", onClick: async () => {
+          label: "Save",
+          color: "success",
+          hotkey: "s",
+          onClick: async () => {
             if (await onSave(app, conf)) {
               callback();
               resolve(true);
@@ -19,12 +22,14 @@ async function saveConfirm(app: MainApp, conf: Confirmation, callback: () => voi
           }
         },
         {
-          label: "Don't Save", hotkey: "n", onClick: () => {
+          label: "Don't Save",
+          hotkey: "n",
+          onClick: () => {
             callback();
             resolve(true);
           }
         },
-        { label: "Cancel", onClick: () => resolve(false) },
+        { label: "Cancel", onClick: () => resolve(false) }
       ]
     });
   });
@@ -35,18 +40,23 @@ async function fileNameConfirm(app: MainApp, conf: Confirmation, description: st
     conf.prompt({
       title: "Download",
       description,
-      buttons: [{
-        label: "Confirm", color: "success", onClick: async () => {
-          let candidate = conf.input ?? app.mountingFile.name;
-          if (candidate.indexOf(".") === -1) candidate += ".txt";
-          app.mountingFile.name = candidate;
-          app.mountingFile.isNameSet = true;
-          callback();
-          resolve();
-        }
-      }, { label: "Cancel", onClick: () => resolve() }],
+      buttons: [
+        {
+          label: "Confirm",
+          color: "success",
+          onClick: async () => {
+            let candidate = conf.input ?? app.mountingFile.name;
+            if (candidate.indexOf(".") === -1) candidate += ".txt";
+            app.mountingFile.name = conf.input ?? app.mountingFile.name;
+            app.mountingFile.isNameSet = true;
+            callback();
+            resolve();
+          }
+        },
+        { label: "Cancel", onClick: () => resolve() }
+      ],
       inputLabel: "File Name",
-      inputDefaultValue: app.mountingFile.name,
+      inputDefaultValue: app.mountingFile.name
     });
   });
 }
@@ -73,7 +83,7 @@ async function writeFile(app: MainApp, contents: string): Promise<boolean> {
     await writable.write(contents);
     await writable.close();
 
-    getAppStores().ga.gtag('event', 'write_file_format', { format: app.format.getName() });
+    getAppStores().ga.gtag("event", "write_file_format", { format: app.format.getName() });
 
     enqueueSuccessSnackbar("Saved");
     return true;
@@ -86,7 +96,7 @@ async function writeFile(app: MainApp, contents: string): Promise<boolean> {
 
 async function readFile(app: MainApp): Promise<string | undefined> {
   const options = {
-    types: [{ description: 'Path File', accept: { 'text/plain': [] } }],
+    types: [{ description: "Path File", accept: { "text/plain": [] } }],
     excludeAcceptAllOption: false,
     multiple: false
   };
@@ -110,23 +120,23 @@ async function readFile(app: MainApp): Promise<string | undefined> {
 }
 
 async function readFileFromInput(app: MainApp): Promise<string | undefined> {
-  const input = document.createElement('input');
-  input.type = 'file';
+  const input = document.createElement("input");
+  input.type = "file";
   input.multiple = false;
   input.accept = "text/plain";
 
   // See https://stackoverflow.com/questions/47664777/javascript-file-input-onchange-not-working-ios-safari-only
-  Object.assign(input.style, { position: 'fixed', top: '-100000px', left: '-100000px' });
+  Object.assign(input.style, { position: "fixed", top: "-100000px", left: "-100000px" });
 
   document.body.appendChild(input);
 
   await new Promise(resolve => {
-    input.addEventListener('change', resolve, { once: true });
+    input.addEventListener("change", resolve, { once: true });
     input.click();
   });
 
   // ALGO: Remove polyfill input[type=file] elements, including elements from last time
-  document.querySelectorAll("body > input[type=file]").forEach((input) => input.remove());
+  document.querySelectorAll("body > input[type=file]").forEach(input => input.remove());
 
   const file = input.files?.[0];
   if (file === undefined) return undefined;
@@ -151,12 +161,12 @@ function downloadFile(app: MainApp, contents: string) {
   a.download = app.mountingFile.name;
   a.click();
 
-  getAppStores().ga.gtag('event', 'download_file_format', { format: app.format.getName() });
+  getAppStores().ga.gtag("event", "download_file_format", { format: app.format.getName() });
 }
 
 async function choiceSave(app: MainApp): Promise<boolean> {
   const options = {
-    types: [{ description: 'Path File', accept: { 'text/plain': [] } }],
+    types: [{ description: "Path File", accept: { "text/plain": [] } }],
     suggestedName: app.mountingFile.name,
     excludeAcceptAllOption: false,
     multiple: false
@@ -181,7 +191,7 @@ function isFirefox() {
 
 export class OutputFileHandle {
   public isNameSet: boolean = false;
-  constructor(public handle: FileSystemFileHandle | null = null, public name: string = "path.jerryio.txt") { }
+  constructor(public handle: FileSystemFileHandle | null = null, public name: string = "path.jerryio.txt") {}
 }
 
 export function isFileSystemSupported() {
@@ -218,7 +228,7 @@ export async function onSaveAs(app: MainApp, conf: Confirmation): Promise<boolea
   const output = exportPathFile(app);
   if (output === undefined) return false;
 
-  if (!await choiceSave(app)) return false;
+  if (!(await choiceSave(app))) return false;
 
   if (await writeFile(app, output)) {
     app.history.save();
@@ -228,7 +238,12 @@ export async function onSaveAs(app: MainApp, conf: Confirmation): Promise<boolea
   }
 }
 
-export async function onOpen(app: MainApp, conf: Confirmation, saveCheck: boolean = true, interactive: boolean = true): Promise<boolean> {
+export async function onOpen(
+  app: MainApp,
+  conf: Confirmation,
+  saveCheck: boolean = true,
+  interactive: boolean = true
+): Promise<boolean> {
   if (saveCheck && app.history.isModified()) return saveConfirm(app, conf, onOpen.bind(null, app, conf, false, false));
 
   if (interactive && isFirefox()) {
@@ -268,13 +283,24 @@ export async function onDownloadAs(app: MainApp, conf: Confirmation, fallback: b
   const output = exportPathFile(app);
   if (output === undefined) return false;
 
-  fileNameConfirm(app, conf, fallback ? "Writing file to the disk is not supported in this browser. Falling back to download." : "", downloadFile.bind(null, app, output));
+  fileNameConfirm(
+    app,
+    conf,
+    fallback ? "Writing file to the disk is not supported in this browser. Falling back to download." : "",
+    downloadFile.bind(null, app, output)
+  );
 
   return true;
 }
 
-export async function onDropFile(app: MainApp, conf: Confirmation, file: File, saveCheck: boolean = true): Promise<boolean> {
-  if (saveCheck && app.history.isModified()) return saveConfirm(app, conf, onDropFile.bind(null, app, conf, file, false));
+export async function onDropFile(
+  app: MainApp,
+  conf: Confirmation,
+  file: File,
+  saveCheck: boolean = true
+): Promise<boolean> {
+  if (saveCheck && app.history.isModified())
+    return saveConfirm(app, conf, onDropFile.bind(null, app, conf, file, false));
 
   app.mountingFile.handle = null;
   app.mountingFile.name = file.name;

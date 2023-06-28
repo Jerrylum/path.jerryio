@@ -1,12 +1,11 @@
 import { Backdrop, Card, Divider, Typography } from "@mui/material";
-import { makeAutoObservable, action } from "mobx"
+import { makeAutoObservable, action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useAppStores } from "./MainApp";
 import { lightTheme, darkTheme, AppTheme, AppThemeInfo } from "./Theme";
 import { useBackdropDialog } from "./Util";
 import { ObserverEnumSelect } from "./ObserverEnumSelect";
 import { ObserverCheckbox } from "./ObserverCheckbox";
-
 
 export class Preferences {
   private isDialogOpen: boolean = false;
@@ -74,21 +73,31 @@ const PreferencesDialog = observer((props: {}) => {
   return (
     <Backdrop
       className="preferences-dialog"
-      sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      sx={{ zIndex: theme => theme.zIndex.drawer + 1 }}
       open={true}
       onClick={action(() => appPreferences.close())}
       tabIndex={-1}>
-      <Card className="preferences-card" onClick={(e) => e.stopPropagation()}>
+      <Card className="preferences-card" onClick={e => e.stopPropagation()}>
         <Typography className="title">Appearance</Typography>
-        <ObserverEnumSelect sx={{ width: "8rem" }} label="Theme" enumValue={appPreferences.themeType} onEnumChange={(v) => appPreferences.themeType = v} enumType={AppTheme} />
+        <ObserverEnumSelect
+          sx={{ width: "8rem" }}
+          label="Theme"
+          enumValue={appPreferences.themeType}
+          onEnumChange={v => (appPreferences.themeType = v)}
+          enumType={AppTheme}
+        />
 
         <Divider />
 
         <Typography className="title">Other</Typography>
-        <ObserverCheckbox label="Enable Google Analytics" checked={appPreferences.isGoogleAnalyticsEnabled} onCheckedChange={(v) => appPreferences.isGoogleAnalyticsEnabled = v} />
+        <ObserverCheckbox
+          label="Enable Google Analytics"
+          checked={appPreferences.isGoogleAnalyticsEnabled}
+          onCheckedChange={v => (appPreferences.isGoogleAnalyticsEnabled = v)}
+        />
       </Card>
     </Backdrop>
-  )
+  );
 });
 
 export { PreferencesDialog };

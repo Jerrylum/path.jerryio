@@ -1,20 +1,26 @@
-import { action } from "mobx"
+import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Checkbox, FormControlLabel, FormControlLabelProps } from "@mui/material";
 
-const ObserverCheckbox = observer((props: Omit<FormControlLabelProps, "control"> & {
-  label: string,
-  checked: boolean
-  onCheckedChange: (value: boolean) => void,
-}) => {
+const ObserverCheckbox = observer(
+  (
+    props: Omit<FormControlLabelProps, "control"> & {
+      label: string;
+      checked: boolean;
+      onCheckedChange: (value: boolean) => void;
+    }
+  ) => {
+    const { label, checked, onCheckedChange, ...rest } = props;
 
-  const { label, checked, onCheckedChange, ...rest } = props;
-
-  return (
-    <FormControlLabel control={
-      <Checkbox checked={checked} onChange={action((e, c) => onCheckedChange(c))} />
-    } label={label} sx={{ whiteSpace: "nowrap" }} {...rest} />
-  );
-});
+    return (
+      <FormControlLabel
+        control={<Checkbox checked={checked} onChange={action((e, c) => onCheckedChange(c))} />}
+        label={label}
+        sx={{ whiteSpace: "nowrap" }}
+        {...rest}
+      />
+    );
+  }
+);
 
 export { ObserverCheckbox };

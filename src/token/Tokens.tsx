@@ -4,36 +4,51 @@ import { Quantity, Unit, UnitOfAngle, UnitOfLength } from "../types/Unit";
 
 /**
  * A utility function that checks whether the character is delimiter (null | ' ')
- * 
+ *
  * @param c the character to be checked
  * @return whether the character is delimiter
  */
 export function isDelimiter(c: string | null): boolean {
-  return c === null || c === ' ';
+  return c === null || c === " ";
 }
 
 /**
  * A utility function that checks whether the character is delimiter (null | ' ' | ':' | ',')
- * 
+ *
  * @param c the character to be checked
  * @return whether the character is delimiter
  */
 export function isSafeDelimiter(c: string | null): boolean {
-  return c === null || c === ' ' || c === ':' || c === ',' || c === '+' || c === '-' || c === '*' || c === '/' || c === '(' || c === ')';
+  return (
+    c === null ||
+    c === " " ||
+    c === ":" ||
+    c === "," ||
+    c === "+" ||
+    c === "-" ||
+    c === "*" ||
+    c === "/" ||
+    c === "(" ||
+    c === ")"
+  );
 }
 
 /**
  * A utility function that reads the code point buffer, returns a Token instance
  * typed with T which given by the parameter class T if the code point buffer
  * does match one of our specified acceptable characters, else return null.
- * 
+ *
  * @template T - The type of the token to be created.
  * @param {CodePointBuffer} buffer - The code point buffer to be read.
  * @param {string[]} accepts - The array of acceptable characters.
  * @param {new (value: string) => T} tokenClass - The constructor of the token to be created.
  * @returns {T|null} - The token instance, or null if the buffer does not match any acceptable characters.
  */
-function doParseCodepoint<T extends Token>(buffer: CodePointBuffer, accepts: string[], tokenClass: new (value: string) => T): T | null {
+function doParseCodepoint<T extends Token>(
+  buffer: CodePointBuffer,
+  accepts: string[],
+  tokenClass: new (value: string) => T
+): T | null {
   buffer.savepoint();
 
   const target = buffer.next();
@@ -53,7 +68,11 @@ function doParseCodepoint<T extends Token>(buffer: CodePointBuffer, accepts: str
  * @param {new (value: string, content: string) => T} tokenClass - The class of the token to be returned.
  * @returns {T|null} - The parsed token instance or null if the buffer does not contain a valid quoted string.
  */
-function doParseQuoteString<T extends Token>(buffer: CodePointBuffer, quote: string, tokenClass: new (value: string, content: string) => T): T | null {
+function doParseQuoteString<T extends Token>(
+  buffer: CodePointBuffer,
+  quote: string,
+  tokenClass: new (value: string, content: string) => T
+): T | null {
   buffer.savepoint();
 
   let valueSb = "";
@@ -74,7 +93,7 @@ function doParseQuoteString<T extends Token>(buffer: CodePointBuffer, quote: str
       contentSb += c;
       valueSb += c;
     } else {
-      if (c === '\\') {
+      if (c === "\\") {
         escape = true;
         valueSb += c;
       } else if (c === quote) {
@@ -277,19 +296,18 @@ export class BooleanT extends Token {
    * @param {string} value - The string representation of the boolean value.
    * @param {boolean} bool - The boolean value.
    */
-  constructor(public value: string, public bool: boolean) { super(); }
+  constructor(public value: string, public bool: boolean) {
+    super();
+  }
 
   public static parse(buffer: CodePointBuffer): BooleanT | null {
     buffer.savepoint();
 
     const s = buffer.readChunk();
 
-    if (s.toLowerCase() === "true")
-      return buffer.commitAndReturn(new BooleanT(s, true));
-    else if (s.toLowerCase() === "false")
-      return buffer.commitAndReturn(new BooleanT(s, false));
-    else
-      return buffer.rollbackAndReturn(null);
+    if (s.toLowerCase() === "true") return buffer.commitAndReturn(new BooleanT(s, true));
+    else if (s.toLowerCase() === "false") return buffer.commitAndReturn(new BooleanT(s, false));
+    else return buffer.rollbackAndReturn(null);
   }
 }
 
@@ -304,7 +322,9 @@ export class DecimalPoint extends Token {
 }
 
 export class Digit extends Token {
-  constructor(public value: string) { super(); }
+  constructor(public value: string) {
+    super();
+  }
 
   public static parse(buffer: CodePointBuffer): Digit | null {
     return doParseCodepoint(buffer, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], Digit);
@@ -312,7 +332,9 @@ export class Digit extends Token {
 }
 
 export class Digit1To9 extends Token {
-  constructor(public value: string) { super(); }
+  constructor(public value: string) {
+    super();
+  }
 
   public static parse(buffer: CodePointBuffer): Digit1To9 | null {
     return doParseCodepoint(buffer, ["1", "2", "3", "4", "5", "6", "7", "8", "9"], Digit1To9);
@@ -320,7 +342,9 @@ export class Digit1To9 extends Token {
 }
 
 export class DoubleQuoteString extends Token {
-  constructor(public value: string, public content: string) { super(); }
+  constructor(public value: string, public content: string) {
+    super();
+  }
 
   public static parse(buffer: CodePointBuffer): DoubleQuoteString | null {
     return doParseQuoteString(buffer, '"', DoubleQuoteString);
@@ -333,7 +357,9 @@ export class Frac extends Token {
    * Creates a new instance of `Frac`.
    * @param {string} value - The string representation of the fractional value.
    */
-  constructor(public value: string) { super(); }
+  constructor(public value: string) {
+    super();
+  }
 
   public static parse(buffer: CodePointBuffer): Frac | null {
     buffer.savepoint();
@@ -361,7 +387,9 @@ export class Frac extends Token {
 }
 
 export class Int extends Token {
-  constructor(public value: string) { super(); }
+  constructor(public value: string) {
+    super();
+  }
 
   public static parse(buffer: CodePointBuffer): Int | null {
     buffer.savepoint();
@@ -390,7 +418,9 @@ export class Minus extends Token {
 }
 
 export class NegativeInt extends Token {
-  constructor(public value: string) { super(); }
+  constructor(public value: string) {
+    super();
+  }
 
   public static parse(buffer: CodePointBuffer): NegativeInt | null {
     buffer.savepoint();
@@ -413,7 +443,9 @@ export class NegativeInt extends Token {
 }
 
 export class NumberT extends Token {
-  constructor(public value: string, public isPositive: boolean, public isDouble: boolean) { super(); }
+  constructor(public value: string, public isPositive: boolean, public isDouble: boolean) {
+    super();
+  }
 
   public static parse(buffer: CodePointBuffer): NumberT | null {
     buffer.savepoint();
@@ -435,7 +467,7 @@ export class NumberT extends Token {
     }
 
     const f = Frac.parse(buffer);
-    isDouble = (f !== null);
+    isDouble = f !== null;
     if (isDouble) {
       rtn += f!.value;
     }
@@ -457,7 +489,9 @@ export class NumberT extends Token {
 // Skip Parameter
 
 export class PositiveInt extends Token {
-  constructor(public value: string) { super(); }
+  constructor(public value: string) {
+    super();
+  }
 
   public static parse(buffer: CodePointBuffer): PositiveInt | null {
     buffer.savepoint();
@@ -482,7 +516,9 @@ export class PositiveInt extends Token {
 // Skip SafeString
 
 export class SingleQuoteString extends Token {
-  constructor(public value: string, public content: string) { super(); }
+  constructor(public value: string, public content: string) {
+    super();
+  }
 
   public static parse(buffer: CodePointBuffer): SingleQuoteString | null {
     return doParseQuoteString(buffer, "'", SingleQuoteString);
@@ -490,7 +526,9 @@ export class SingleQuoteString extends Token {
 }
 
 export class StringT extends Token {
-  constructor(public content: string) { super(); }
+  constructor(public content: string) {
+    super();
+  }
 
   public static parse(buffer: CodePointBuffer): StringT | null {
     const c = buffer.peek();
@@ -517,7 +555,9 @@ export class StringT extends Token {
 }
 
 export class Zero extends Token {
-  constructor(public value: string) { super(); }
+  constructor(public value: string) {
+    super();
+  }
 
   public static parse(buffer: CodePointBuffer): Zero | null {
     return doParseCodepoint(buffer, ["0"], Zero);
@@ -543,7 +583,9 @@ export class CloseBracket extends Token {
 }
 
 export abstract class NumberWithUnit<U extends Unit> extends Token {
-  constructor(public value: string, public unit: U | null) { super(); }
+  constructor(public value: string, public unit: U | null) {
+    super();
+  }
 
   toQuantity(inherit: U) {
     return new Quantity(parseFloat(this.value), this.unit || inherit);
@@ -637,7 +679,9 @@ export class NumberUOA extends NumberWithUnit<UnitOfAngle> {
 }
 
 export class Operator extends Token {
-  constructor(public value: string) { super(); }
+  constructor(public value: string) {
+    super();
+  }
 
   public static parse(buffer: CodePointBuffer): Operator | null {
     return doParseCodepoint(buffer, ["+", "-", "*", "/"], Operator);
@@ -658,7 +702,9 @@ export class Operator extends Token {
 }
 
 export class Expression<T extends NumberWithUnit<Unit>> extends Token {
-  constructor(public tokens: (OpenBracket | CloseBracket | T | Operator)[]) { super(); }
+  constructor(public tokens: (OpenBracket | CloseBracket | T | Operator)[]) {
+    super();
+  }
 
   public static parse<T extends NumberWithUnit<Unit>>(buffer: CodePointBuffer): Expression<T> | null {
     throw new Error("not implemented");
@@ -721,15 +767,15 @@ export class Expression<T extends NumberWithUnit<Unit>> extends Token {
 export type Computable<U extends Unit> = NumberWithUnit<U> | Computation<U>;
 
 export class Computation<U extends Unit> extends Token {
-  constructor(public left: Computable<U>, public operator: Operator, public right: Computable<U>) { super(); }
+  constructor(public left: Computable<U>, public operator: Operator, public right: Computable<U>) {
+    super();
+  }
 
   public compute(inherit: U): number {
-    const left = this.left instanceof Computation
-      ? this.left.compute(inherit)
-      : this.left.toQuantity(inherit).to(inherit);
-    const right = this.right instanceof Computation
-      ? this.right.compute(inherit)
-      : this.right.toQuantity(inherit).to(inherit);
+    const left =
+      this.left instanceof Computation ? this.left.compute(inherit) : this.left.toQuantity(inherit).to(inherit);
+    const right =
+      this.right instanceof Computation ? this.right.compute(inherit) : this.right.toQuantity(inherit).to(inherit);
 
     switch (this.operator.value) {
       case "+":
@@ -760,8 +806,12 @@ export class Computation<U extends Unit> extends Token {
     const output: Computable<U>[] = [];
     const stack: (OpenBracket | Operator)[] = [];
 
-    function peek() { return stack.at(-1); }
-    function out(token: Computable<U>) { output.push(token); }
+    function peek() {
+      return stack.at(-1);
+    }
+    function out(token: Computable<U>) {
+      output.push(token);
+    }
     function handlePop() {
       const op = stack.pop()!;
       if (op instanceof OpenBracket) return undefined;
@@ -771,17 +821,14 @@ export class Computation<U extends Unit> extends Token {
 
       return new Computation(left, op, right);
     }
-    function handleToken(token: (OpenBracket | CloseBracket | NumberWithUnit<U> | Operator)) {
+    function handleToken(token: OpenBracket | CloseBracket | NumberWithUnit<U> | Operator) {
       if (token instanceof NumberWithUnit) {
         out(token);
       } else if (token instanceof Operator) {
         const o1 = token;
         let o2 = peek();
 
-        while (
-          o2 !== undefined &&
-          o2 instanceof Operator &&
-          o1.prec <= o2.prec) {
+        while (o2 !== undefined && o2 instanceof Operator && o1.prec <= o2.prec) {
           out(handlePop()!);
           o2 = peek();
         }

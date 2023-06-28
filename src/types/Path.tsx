@@ -1,16 +1,15 @@
-import { Exclude, Expose, Type } from 'class-transformer';
-import { observable, makeAutoObservable, makeObservable, computed } from "mobx"
+import { Exclude, Expose, Type } from "class-transformer";
+import { observable, makeAutoObservable, makeObservable, computed } from "mobx";
 import { makeId } from "../app/Util";
 import { PathConfig } from "../format/Config";
 import { InteractiveEntity, CanvasEntity } from "./Canvas";
 
-import 'reflect-metadata';
-import { PointCalculationResult } from './Calculation';
+import "reflect-metadata";
+import { PointCalculationResult } from "./Calculation";
 
 // Not observable
 export class Vector {
-
-  constructor(public x: number, public y: number) { }
+  constructor(public x: number, public y: number) {}
 
   add<T extends Vector>(vector: T): T {
     let rtn = vector.clone() as T;
@@ -81,12 +80,15 @@ export class Vector {
 export class SamplePoint extends Vector {
   public isLast: boolean = false;
 
-  constructor(x: number, y: number,
+  constructor(
+    x: number,
+    y: number,
     public delta: number, // distance to the previous point after ratio is applied
     public integral: number, // integral distance from the first point
     public ref: Segment, // The referenced segment
     public t: number, // [0, 1] The step of the sample point
-    public heading?: number) {
+    public heading?: number
+  ) {
     super(x, y);
   }
 
@@ -102,11 +104,14 @@ export class Point extends Vector {
 
   // ALGO: It is possible that the heading is defined and isLast is true but sampleT is not 1.
 
-  constructor(x: number, y: number,
+  constructor(
+    x: number,
+    y: number,
     public sampleRef: Segment, // The referenced sample segment
     public sampleT: number,
     public speed: number = 0,
-    public heading: number | undefined) {
+    public heading: number | undefined
+  ) {
     super(x, y);
   }
 
@@ -152,7 +157,7 @@ export class Control extends Vector implements InteractiveEntity {
 
 // observable class
 export class EndPointControl extends Control implements Position {
-  @Expose({ name: 'heading' })
+  @Expose({ name: "heading" })
   public heading_: number = 0;
 
   constructor(x: number, y: number, heading: number) {
@@ -174,7 +179,7 @@ export class EndPointControl extends Control implements Position {
   }
 
   headingInRadian(): number {
-    return this.heading * Math.PI / 180;
+    return (this.heading * Math.PI) / 180;
   }
 
   clone(): EndPointControl {
@@ -183,9 +188,9 @@ export class EndPointControl extends Control implements Position {
 }
 
 export interface KeyframePos {
-  segment: Segment,
-  xPos: number, // [0...1)
-  yPos: number // [0...1]
+  segment: Segment;
+  xPos: number; // [0...1)
+  yPos: number; // [0...1]
 }
 
 // observable class
@@ -195,7 +200,8 @@ export class Keyframe {
   constructor(
     public xPos: number, // [0...1)
     public yPos: number, // [0...1]
-    public followBentRate: boolean = false) {
+    public followBentRate: boolean = false
+  ) {
     this.uid = makeId(10);
     makeAutoObservable(this);
   }
@@ -216,14 +222,15 @@ export class Keyframe {
     const length = responsible.length;
     for (let i = 0; i < length; i++) {
       const point = responsible[i];
-      const y = yFrom + yDiff * i / length; // length - 1 + 1
+      const y = yFrom + (yDiff * i) / length; // length - 1 + 1
       let speed = limitFrom + limitDiff * y;
 
       if (this.followBentRate) {
         const bentRate = point.bentRate;
         if (bentRate < pc.bentRateApplicableRange.from && bentRate !== 0) speed = Math.min(speed, limitFrom);
         else if (bentRate > pc.bentRateApplicableRange.to) speed = Math.min(speed, limitTo);
-        else if (useRatio && bentRate !== 0) speed = Math.min(speed, limitFrom + (bentRate - pc.bentRateApplicableRange.from) * applicationRatio);
+        else if (useRatio && bentRate !== 0)
+          speed = Math.min(speed, limitFrom + (bentRate - pc.bentRateApplicableRange.from) * applicationRatio);
       }
 
       point.speed = speed;
@@ -232,19 +239,19 @@ export class Keyframe {
 }
 
 export enum SegmentVariant {
-  LINEAR = 'linear',
-  CUBIC = 'cubic',
+  LINEAR = "linear",
+  CUBIC = "cubic"
 }
 
 // observable class
 export class Segment implements CanvasEntity {
   @Type(() => Control, {
     discriminator: {
-      property: '__type',
+      property: "__type",
       subTypes: [
-        { value: EndPointControl, name: 'end-point' },
-        { value: Control, name: 'control' },
-      ],
+        { value: EndPointControl, name: "end-point" },
+        { value: Control, name: "control" }
+      ]
     },
     keepDiscriminatorProperty: true
   })
@@ -254,7 +261,8 @@ export class Segment implements CanvasEntity {
   public uid: string;
 
   constructor(start: EndPointControl, middle: Control[], end: EndPointControl) {
-    if (start === undefined) { // for serialization
+    if (start === undefined) {
+      // for serialization
       this.controls = [];
     } else {
       this.controls = [start, ...middle, end];
@@ -281,11 +289,11 @@ export class Segment implements CanvasEntity {
   }
 
   isLocked(): boolean {
-    return this.controls.some((cp) => cp.lock);
+    return this.controls.some(cp => cp.lock);
   }
 
   isVisible(): boolean {
-    return this.controls.some((cp) => cp.visible);
+    return this.controls.some(cp => cp.visible);
   }
 }
 

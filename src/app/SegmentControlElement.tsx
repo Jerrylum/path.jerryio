@@ -1,8 +1,8 @@
-import { action } from "mobx"
+import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Control, EndPointControl, Vector } from '../types/Path';
-import Konva from 'konva';
-import { Circle, Line } from 'react-konva';
+import { Control, EndPointControl, Vector } from "../types/Path";
+import Konva from "konva";
+import { Circle, Line } from "react-konva";
 import { useState } from "react";
 import { SegmentElementProps } from "./SegmentElement";
 import { DragControls, RemovePathsAndEndControls } from "../types/Command";
@@ -38,7 +38,8 @@ const SegmentControlElement = observer((props: SegmentControlElementProps) => {
 
     if (!shouldInteract(event)) return;
 
-    if (evt.button === 0) { // left click
+    if (evt.button === 0) {
+      // left click
       setPosBeforeDrag(props.cp.clone());
 
       if (evt.shiftKey) {
@@ -52,7 +53,8 @@ const SegmentControlElement = observer((props: SegmentControlElementProps) => {
         app.setSelected([props.cp]);
         setJustSelected(false);
       }
-    } else if (evt.button === 1) { // middle click
+    } else if (evt.button === 1) {
+      // middle click
       // UX: Do not interact with control points if not left click
       event.target.stopDrag();
     }
@@ -110,8 +112,9 @@ const SegmentControlElement = observer((props: SegmentControlElementProps) => {
         if (control.visible === false || path.visible === false) continue;
         if (
           (!(control instanceof EndPointControl) && !shouldControlFollow) ||
-          (!app.isSelected(control)) ||
-          (control.lock || path.lock)
+          !app.isSelected(control) ||
+          control.lock ||
+          path.lock
         ) {
           others.push(control);
         } else {
@@ -172,8 +175,11 @@ const SegmentControlElement = observer((props: SegmentControlElementProps) => {
       app.magnet = new Vector(Infinity, Infinity);
     }
 
-    app.history.execute(`Move control ${props.cp.uid} with ${followers.length} followers`,
-      new DragControls(props.cp, oldCpInUOL, cpInUOL, followers), 5000);
+    app.history.execute(
+      `Move control ${props.cp.uid} with ${followers.length} followers`,
+      new DragControls(props.cp, oldCpInUOL, cpInUOL, followers),
+      5000
+    );
 
     cpInPx = props.cc.toPx(cpInUOL);
     event.target.x(cpInPx.x);
@@ -224,32 +230,46 @@ const SegmentControlElement = observer((props: SegmentControlElementProps) => {
 
   return (
     <>
-      {
-        isMainControl ? (
-          <>
-            <Circle x={cpInPx.x} y={cpInPx.y} radius={cpRadius} fill={fillColor}
-              draggable onDragMove={action(onDragControlPoint)}
-              onMouseDown={action(onMouseDownControlPoint)}
-              onMouseUp={action(onMouseUpControlPoint)}
-              onWheel={action(onWheel)}
-              onClick={action(onClickFirstOrLastControlPoint)} />
-            <Line points={[
-              cpInPx.x, cpInPx.y,
-              cpInPx.x + Math.sin(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius,
-              cpInPx.y + Math.cos(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius
-            ]} stroke="ffffff" strokeWidth={lineWidth} />
-          </>
-        ) : (
-          <Circle x={cpInPx.x} y={cpInPx.y} radius={cpRadius / 2} fill={fillColor}
-            draggable onDragMove={action(onDragControlPoint)}
+      {isMainControl ? (
+        <>
+          <Circle
+            x={cpInPx.x}
+            y={cpInPx.y}
+            radius={cpRadius}
+            fill={fillColor}
+            draggable
+            onDragMove={action(onDragControlPoint)}
             onMouseDown={action(onMouseDownControlPoint)}
             onMouseUp={action(onMouseUpControlPoint)}
-            onClick={action(onClickControlPoint)} />
-        )
-      }
-
+            onWheel={action(onWheel)}
+            onClick={action(onClickFirstOrLastControlPoint)}
+          />
+          <Line
+            points={[
+              cpInPx.x,
+              cpInPx.y,
+              cpInPx.x + Math.sin(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius,
+              cpInPx.y + Math.cos(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius
+            ]}
+            stroke="ffffff"
+            strokeWidth={lineWidth}
+          />
+        </>
+      ) : (
+        <Circle
+          x={cpInPx.x}
+          y={cpInPx.y}
+          radius={cpRadius / 2}
+          fill={fillColor}
+          draggable
+          onDragMove={action(onDragControlPoint)}
+          onMouseDown={action(onMouseDownControlPoint)}
+          onMouseUp={action(onMouseUpControlPoint)}
+          onClick={action(onClickControlPoint)}
+        />
+      )}
     </>
-  )
+  );
 });
 
 export { SegmentControlElement };

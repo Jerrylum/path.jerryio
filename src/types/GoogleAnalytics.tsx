@@ -1,4 +1,4 @@
-import { makeAutoObservable, reaction } from "mobx"
+import { makeAutoObservable, reaction } from "mobx";
 import { getAppStores } from "../app/MainApp";
 
 // observable class
@@ -22,18 +22,22 @@ export class GoogleAnalytics {
     script.async = true;
     document.body.appendChild(script);
 
-    this.gtag('js', new Date());
-    this.gtag('config', this.GTAG);
+    this.gtag("js", new Date());
+    this.gtag("config", this.GTAG);
   }
 
   private init() {
     const { appPreferences } = getAppStores();
 
-    reaction(() => appPreferences.isGoogleAnalyticsEnabled, (newVal: boolean) => {
-      if (newVal) this.loadGA();
-      // @ts-ignore
-      window["ga-disable-" + this.GTAG] = !newVal;
-    }, { fireImmediately: true });
+    reaction(
+      () => appPreferences.isGoogleAnalyticsEnabled,
+      (newVal: boolean) => {
+        if (newVal) this.loadGA();
+        // @ts-ignore
+        window["ga-disable-" + this.GTAG] = !newVal;
+      },
+      { fireImmediately: true }
+    );
   }
 
   public gtag(...args: any[]) {

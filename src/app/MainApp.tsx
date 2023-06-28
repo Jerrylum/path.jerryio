@@ -1,12 +1,12 @@
-import { makeAutoObservable, computed, runInAction, reaction, action } from "mobx"
-import DOMPurify from 'dompurify'; // cspell:disable-line
+import { makeAutoObservable, computed, runInAction, reaction, action } from "mobx";
+import DOMPurify from "dompurify"; // cspell:disable-line
 import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "../format/Config";
 import { InteractiveEntity } from "../types/Canvas";
 import { Control, EndPointControl, Path, Vector } from "../types/Path";
 import { addToArray, clamp, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
-import { plainToInstance, instanceToPlain, plainToClassFromExist } from 'class-transformer';
+import { plainToInstance, instanceToPlain, plainToClassFromExist } from "class-transformer";
 import { Quantity, UnitConverter, UnitOfLength } from "../types/Unit";
 import { CommandHistory } from "../types/Command";
 import { SemVer } from "semver";
@@ -36,18 +36,18 @@ export class MainApp {
   private _history: CommandHistory = new CommandHistory(this);
 
   public robot = {
-    position: new EndPointControl(0, 0, 0),
-  }
+    position: new EndPointControl(0, 0, 0)
+  };
 
   public view = {
     showSpeedCanvas: true,
     showRightPanel: true
-  }
+  };
 
   private fieldDisplay = {
     offset: new Vector(0, 0), // Clamp user input only
-    scale: 1, // 1 = 100%, [1..3]
-  }
+    scale: 1 // 1 = 100%, [1..3]
+  };
 
   constructor() {
     makeAutoObservable(this);
@@ -55,58 +55,70 @@ export class MainApp {
     // NOTE: There is a reason why reactions are made here instead of in the constructor of the config class
     // A lot of things need to be updated when the format is changed, and it's easier to do it here
 
-    reaction(() => this.format, action((newFormat: Format, oldFormat: Format) => {
-      if (newFormat.isInit) return;
+    reaction(
+      () => this.format,
+      action((newFormat: Format, oldFormat: Format) => {
+        if (newFormat.isInit) return;
 
-      // ALGO: this reaction should only be triggered when the format is changed by the user, not loading a file
+        // ALGO: this reaction should only be triggered when the format is changed by the user, not loading a file
 
-      newFormat.init();
+        newFormat.init();
 
-      const oldGC = oldFormat.getGeneralConfig();
+        const oldGC = oldFormat.getGeneralConfig();
 
-      const keepPointDensity = this.gc.pointDensity;
+        const keepPointDensity = this.gc.pointDensity;
 
-      this.gc.robotWidth = oldGC.robotWidth;
-      this.gc.robotHeight = oldGC.robotHeight;
-      convertGeneralConfigUOL(this.gc, oldGC.uol);
-      this.gc.pointDensity = keepPointDensity; // UX: Keep some values
+        this.gc.robotWidth = oldGC.robotWidth;
+        this.gc.robotHeight = oldGC.robotHeight;
+        convertGeneralConfigUOL(this.gc, oldGC.uol);
+        this.gc.pointDensity = keepPointDensity; // UX: Keep some values
 
-      for (const path of this.paths) {
-        const newPC = newFormat.buildPathConfig();
+        for (const path of this.paths) {
+          const newPC = newFormat.buildPathConfig();
 
-        if (newPC.speedLimit.minLimit === path.pc.speedLimit.minLimit && newPC.speedLimit.maxLimit === path.pc.speedLimit.maxLimit) {
-          newPC.speedLimit = path.pc.speedLimit; // UX: Keep speed limit if the new format has the same speed limit range as the old one
+          if (
+            newPC.speedLimit.minLimit === path.pc.speedLimit.minLimit &&
+            newPC.speedLimit.maxLimit === path.pc.speedLimit.maxLimit
+          ) {
+            newPC.speedLimit = path.pc.speedLimit; // UX: Keep speed limit if the new format has the same speed limit range as the old one
+          }
+          newPC.bentRateApplicableRange = path.pc.bentRateApplicableRange; // UX: Keep application range
+          path.pc = newPC;
+          convertPathConfigPointDensity(newPC, oldGC.pointDensity, this.gc.pointDensity);
         }
-        newPC.bentRateApplicableRange = path.pc.bentRateApplicableRange; // UX: Keep application range
-        path.pc = newPC;
-        convertPathConfigPointDensity(newPC, oldGC.pointDensity, this.gc.pointDensity);
-      }
 
-      this.resetUserControl();
+        this.resetUserControl();
 
-      this._history.clearHistory();
-    }));
+        this._history.clearHistory();
+      })
+    );
 
-    reaction(() => this.gc.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
-      if (this.usingUOL === newUOL) return;
+    reaction(
+      () => this.gc.uol,
+      action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
+        if (this.usingUOL === newUOL) return;
 
-      const uc = new UnitConverter(oldUOL, newUOL);
+        const uc = new UnitConverter(oldUOL, newUOL);
 
-      for (const path of this.paths) {
-        for (const control of path.controls) {
-          control.x = uc.fromAtoB(control.x);
-          control.y = uc.fromAtoB(control.y);
+        for (const path of this.paths) {
+          for (const control of path.controls) {
+            control.x = uc.fromAtoB(control.x);
+            control.y = uc.fromAtoB(control.y);
+          }
         }
-      }
 
-      this.usingUOL = newUOL;
-    }));
+        this.usingUOL = newUOL;
+      })
+    );
 
-    reaction(() => this.gc.showRobot, action((showRobot: boolean) => {
-      if (!showRobot) {
-        this.robot.position.visible = false;
-      }
-    }));
+    reaction(
+      () => this.gc.showRobot,
+      action((showRobot: boolean) => {
+        if (!showRobot) {
+          this.robot.position.visible = false;
+        }
+      })
+    );
 
     this.newPathFile();
   }
@@ -132,7 +144,7 @@ export class MainApp {
   }
 
   setSelected(x: InteractiveEntity[] | string[]): void {
-    this.selected = typeof x[0] === "string" ? (x as string[]).slice() : x.map((cp) => (cp as InteractiveEntity).uid);
+    this.selected = typeof x[0] === "string" ? (x as string[]).slice() : x.map(cp => (cp as InteractiveEntity).uid);
   }
 
   clearSelected(): void {
@@ -165,19 +177,21 @@ export class MainApp {
 
     // ALGO: Select all controls that are within the area
     const highlighted = this.selectableControls
-      .filter((control) => control.isWithinArea(fixedFrom, fixedTo))
-      .map((cp) => cp.uid);
+      .filter(control => control.isWithinArea(fixedFrom, fixedTo))
+      .map(cp => cp.uid);
 
     // UX: select all highlighted controls except the ones that were selected before the area selection
     // outer-excluding-join
-    const selected = [...this.selectedBefore, ...highlighted].filter((uid) => !(this.selectedBefore.includes(uid) && highlighted.includes(uid)));
+    const selected = [...this.selectedBefore, ...highlighted].filter(
+      uid => !(this.selectedBefore.includes(uid) && highlighted.includes(uid))
+    );
 
     // remove duplicates
     this.selected = Array.from(new Set(selected));
   }
 
   @computed get allEntities(): InteractiveEntity[] {
-    return [...this.paths, ...this.paths.flatMap((path) => path.controls)];
+    return [...this.paths, ...this.paths.flatMap(path => path.controls)];
   }
 
   @computed get expandedEntityIds(): string[] {
@@ -189,26 +203,26 @@ export class MainApp {
   }
 
   @computed get selectableControls(): Control[] {
-    return this.selectablePaths.flatMap((path) => path.controls.filter((control) => control.visible && !control.lock));
+    return this.selectablePaths.flatMap(path => path.controls.filter(control => control.visible && !control.lock));
   }
 
   @computed get selectablePaths(): Path[] {
-    return this.paths.filter((path) => path.visible && !path.lock);
+    return this.paths.filter(path => path.visible && !path.lock);
   }
 
   @computed get selectedControl(): EndPointControl | Control | undefined {
-    return this.paths.map(
-      (path) => path.controls.find((control) => control.uid === this.selected[0])
-    ).find((control) => control !== undefined);
+    return this.paths
+      .map(path => path.controls.find(control => control.uid === this.selected[0]))
+      .find(control => control !== undefined);
   }
 
   @computed get selectedPath(): Path | undefined {
     if (this.selected.length === 0) return undefined;
 
     // ALGO: Return the first selected path if: some paths are selected
-    let rtn = this.paths.find((path) => this.isSelected(path));
+    let rtn = this.paths.find(path => this.isSelected(path));
     // ALGO: Return the first selected control point's path if: some control point is selected, the path visible and not locked
-    if (rtn === undefined) rtn = this.paths.find((path) => path.controls.some((control) => this.isSelected(control)));
+    if (rtn === undefined) rtn = this.paths.find(path => path.controls.some(control => this.isSelected(control)));
 
     return rtn;
   }
@@ -235,9 +249,9 @@ export class MainApp {
   interestedPath(): Path | undefined {
     // ALGO: Return the selected path or last selected path or first path
     const check = this.selectedPath ?? this.lastInterestedPath ?? this.paths[0];
-    const rtn = this.paths.some((path) => path.uid === check?.uid) ? check : undefined;
+    const rtn = this.paths.some(path => path.uid === check?.uid) ? check : undefined;
 
-    runInAction(() => this.lastInterestedPath = rtn);
+    runInAction(() => (this.lastInterestedPath = rtn));
 
     return rtn;
   }
@@ -270,7 +284,7 @@ export class MainApp {
     this.fieldDisplay = {
       offset: new Vector(0, 0),
       scale: 1
-    }
+    };
   }
 
   private setPathFileData(format: Format, pfd: PathFileData): void {
@@ -306,11 +320,12 @@ export class MainApp {
     if (format === undefined) throw new Error("Format not found.");
     format.init(); // ALGO: Suspend format reaction
 
-    const appVersion = new SemVer(data.appVersion) // ALGO: Throw error if the app version is not a valid semver
+    const appVersion = new SemVer(data.appVersion); // ALGO: Throw error if the app version is not a valid semver
     const compareResult = appVersion.compare(this.appVersion);
     if (appVersion.major !== this.appVersion.major) {
       throw new Error("The path file was created with a different major version of the editor. Import failed.");
-    } if (compareResult > 0) {
+    }
+    if (compareResult > 0) {
       throw new Error("The path file was created with a newer version of the editor. Please update the editor.");
     } else if (compareResult < 0) {
       // TODO: Resolve backward compatibility
@@ -327,7 +342,7 @@ export class MainApp {
       path.pc = plainToClassFromExist(format.buildPathConfig(), path.pc);
     }
 
-    getAppStores().ga.gtag('event', 'import_file_format', { format: format.getName() });
+    getAppStores().ga.gtag("event", "import_file_format", { format: format.getName() });
 
     this.setPathFileData(format, { gc: gc, paths: paths });
   }

@@ -1,5 +1,5 @@
-import { makeAutoObservable, reaction, action } from "mobx"
-import { MainApp } from '../app/MainApp';
+import { makeAutoObservable, reaction, action } from "mobx";
+import { MainApp } from "../app/MainApp";
 import { makeId } from "../app/Util";
 import { Quantity, UnitConverter, UnitOfLength } from "../types/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
@@ -27,13 +27,16 @@ class GeneralConfigImpl implements GeneralConfig {
     this.format = format;
     makeAutoObservable(this);
 
-    reaction(() => this.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
-      convertGeneralConfigUOL(this, oldUOL);
-    }));
+    reaction(
+      () => this.uol,
+      action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
+        convertGeneralConfigUOL(this, oldUOL);
+      })
+    );
   }
 
   getConfigPanel(app: MainApp) {
-    return <></>
+    return <></>;
   }
 }
 
@@ -44,14 +47,14 @@ class PathConfigImpl implements PathConfig {
     maxLimit: { value: 600, label: "600" },
     step: 1,
     from: 40,
-    to: 120,
+    to: 120
   };
   bentRateApplicableRange: NumberRange = {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 4, label: "4" },
     step: 0.01,
     from: 1.4,
-    to: 1.8,
+    to: 1.8
   };
 
   @Exclude()
@@ -61,9 +64,12 @@ class PathConfigImpl implements PathConfig {
     this.format = format;
     makeAutoObservable(this);
 
-    reaction(() => format.getGeneralConfig().pointDensity, action((val: number, oldVal: number) => {
-      convertPathConfigPointDensity(this, oldVal, val);
-    }));
+    reaction(
+      () => format.getGeneralConfig().pointDensity,
+      action((val: number, oldVal: number) => {
+        convertPathConfigPointDensity(this, oldVal, val);
+      })
+    );
 
     // ALGO: Convert the default parameters to the current point density
     // ALGO: This is only used when a new path is added, not when the path config is loaded
@@ -77,24 +83,30 @@ class PathConfigImpl implements PathConfig {
       <>
         <Box className="panel-box">
           <Typography>Min/Max Speed</Typography>
-          <RangeSlider range={this.speedLimit} onChange={
-            (from, to) => app.history.execute(
-              `Change path ${pathUid} min/max speed`,
-              new UpdateProperties(this.speedLimit, { from, to })
-            )
-          } />
+          <RangeSlider
+            range={this.speedLimit}
+            onChange={(from, to) =>
+              app.history.execute(
+                `Change path ${pathUid} min/max speed`,
+                new UpdateProperties(this.speedLimit, { from, to })
+              )
+            }
+          />
         </Box>
         <Box className="panel-box">
           <Typography>Bent Rate Applicable Range</Typography>
-          <RangeSlider range={this.bentRateApplicableRange} onChange={
-            (from, to) => app.history.execute(
-              `Change path ${pathUid} bent rate applicable range`,
-              new UpdateProperties(this.bentRateApplicableRange, { from, to })
-            )
-          } />
+          <RangeSlider
+            range={this.bentRateApplicableRange}
+            onChange={(from, to) =>
+              app.history.execute(
+                `Change path ${pathUid} bent rate applicable range`,
+                new UpdateProperties(this.bentRateApplicableRange, { from, to })
+              )
+            }
+          />
         </Box>
       </>
-    )
+    );
   }
 }
 
@@ -148,10 +160,8 @@ export class PathDotJerryioFormatV0_1 implements Format {
       for (const point of points) {
         const x = uc.fromAtoB(point.x).toUser();
         const y = uc.fromAtoB(point.y).toUser();
-        if (point.heading !== undefined)
-          rtn += `${x},${y},${point.speed.toUser()},${point.heading}\n`;
-        else
-          rtn += `${x},${y},${point.speed.toUser()}\n`;
+        if (point.heading !== undefined) rtn += `${x},${y},${point.speed.toUser()},${point.heading}\n`;
+        else rtn += `${x},${y},${point.speed.toUser()}\n`;
       }
     }
 

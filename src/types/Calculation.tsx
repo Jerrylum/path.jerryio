@@ -10,7 +10,7 @@ export class KeyframeIndexing {
    * @param segment The segment containing the keyframe, or undefined if the keyframe is not associated with a segment.
    * @param keyframe The keyframe associated with the index.
    */
-  constructor(public index: number, public segment: Segment | undefined, public keyframe: Keyframe) { }
+  constructor(public index: number, public segment: Segment | undefined, public keyframe: Keyframe) {}
 }
 
 /**
@@ -69,7 +69,11 @@ export function getPathPoints(path: Path, density: Quantity<UnitOfLength>): Poin
   // ALGO: No need to calculate speed for the final point, it is always 0
   uniformResult.points.push(finalPoint);
 
-  return { points: uniformResult.points, segmentIndexes: uniformResult.segmentIndexes, keyframeIndexes };
+  return {
+    points: uniformResult.points,
+    segmentIndexes: uniformResult.segmentIndexes,
+    keyframeIndexes
+  };
 }
 
 /**
@@ -109,7 +113,7 @@ export function getPathKeyframeIndexes(path: Path, segmentIndexes: IndexBoundary
     const pointIdxRange = segmentIndexes[segmentIdx];
     if (pointIdxRange.from === pointIdxRange.to) continue; // ALGO: Skip empty segments
     // ALGO: Assume the keyframes are sorted
-    segment.speedProfiles.forEach((kf) => {
+    segment.speedProfiles.forEach(kf => {
       const pointIdx = pointIdxRange.from + Math.floor((pointIdxRange.to - pointIdxRange.from) * kf.xPos);
       ikf.push(new KeyframeIndexing(pointIdx, segment, kf));
     });
@@ -120,29 +124,32 @@ export function getPathKeyframeIndexes(path: Path, segmentIndexes: IndexBoundary
 
 /**
  * Calculates the uniformly spaced points of a path from a set of sample points.
- * 
- * At least one point and one segment index boundary are returned. The number of segment indexes is 
+ *
+ * At least one point and one segment index boundary are returned. The number of segment indexes is
  * equal to the number of segments in the path.
- * 
- * Note that if more than one headings from the samples are present between two uniform points, some of 
+ *
+ * Note that if more than one headings from the samples are present between two uniform points, some of
  * the headings will be lost.
- * 
+ *
  * The joined result is illustrated as below:
- * 
+ *
  * A B B B ... B B B C B B B ... B B B C B B B ... B B B D
- * 
+ *
  * A: The first point with heading
  * B: A point of the segment
  * C: A point with heading and isLast flag
  * D: The last point with heading and isLast flag
- * 
+ *
  * Point A and D must be the same as the first and last points of the samples.
- * 
+ *
  * @param sampleResult - The result of sampling the path.
  * @param density - The density of points to generate.
  * @returns The uniformly spaced points along the path and the start and end indexes of each segment.
  */
-export function getUniformPointsFromSamples(sampleResult: SampleCalculationResult, density: Quantity<UnitOfLength>): UniformCalculationResult {
+export function getUniformPointsFromSamples(
+  sampleResult: SampleCalculationResult,
+  density: Quantity<UnitOfLength>
+): UniformCalculationResult {
   /*
   ALGO: Assume:
   Samples must have at least 2 points
@@ -166,14 +173,22 @@ export function getUniformPointsFromSamples(sampleResult: SampleCalculationResul
   let segmentIdx = 0;
 
   function addSegment(idx: number) {
-    segmentIndexes.push({ index: segmentIdx, from: segmentFromIdx, to: idx + 1 });
+    segmentIndexes.push({
+      index: segmentIdx,
+      from: segmentFromIdx,
+      to: idx + 1
+    });
     segmentFromIdx = idx + 1;
     points[idx].isLast = true;
     segmentIdx++;
   }
 
   function addEmptySegment() {
-    segmentIndexes.push({ index: segmentIdx, from: segmentFromIdx, to: segmentFromIdx });
+    segmentIndexes.push({
+      index: segmentIdx,
+      from: segmentFromIdx,
+      to: segmentFromIdx
+    });
     segmentIdx++;
   }
 
@@ -230,7 +245,9 @@ export function getUniformPointsFromSamples(sampleResult: SampleCalculationResul
     const p3Delta = p1.delta + (p2.delta - p1.delta) * pRatio;
     // ALGO: pRatio is NaN/Infinity if p1 and p2 are the same point or too close
     const useRatio = !isNaN(pRatio) && pRatio !== Infinity;
-    const p3: Point = useRatio ? new Point(p3X, p3Y, p2.ref, p2.t, 0, heading) : new Point(p1.x, p1.y, p2.ref, p2.t, 0, heading);
+    const p3: Point = useRatio
+      ? new Point(p3X, p3Y, p2.ref, p2.t, 0, heading)
+      : new Point(p1.x, p1.y, p2.ref, p2.t, 0, heading);
 
     // ALGO: Use point delta as bent rate by default,
     // point delta is NaN if the first point is the same as the second point, otherwise it is always positive
@@ -259,21 +276,21 @@ export function getUniformPointsFromSamples(sampleResult: SampleCalculationResul
 
 /**
  * Calculates the sample points of the whole path, join segment results together
- * 
+ *
  * The joined result is illustrated as below:
- * 
+ *
  * A B B B ... B B B C B B B ... B B B C B B B ... B B B D
- * 
+ *
  * A: The first point of the first segment with heading
  * B: The sample points of the segment
  * C: The last point of the segment with heading and isLast flag,
  *    also the first point of the next segment
  * D: The last point of the last segment with heading and isLast flag
- * 
+ *
  * At least two points are returned.
- * 
+ *
  * The path arc length must be the same as the last point integral.
- * 
+ *
  * @param path The path to calculate
  * @param density The density of points to generate
  * @returns The sample result of the path
@@ -297,20 +314,24 @@ export function getPathSamplePoints(path: Path, density: Quantity<UnitOfLength>)
 /**
  * Calculates the sample points on a bezier curve. Sample means the points are not uniformly distributed.
  * This result is then used to calculate the uniform points later.
- * 
+ *
  * The first and the last point of the result are the end control points of the bezier curve.
  * That said, they included the heading information.
  * And the last point is marked as the last point of the segment with flag isLast = true.
- * 
+ *
  * Note that the last sample is manually added to the result.
  * This is because the last sample from getBezierCurvePoints() is not exactly the same as the last control point with t value 1.
- * 
+ *
  * @param segment The segment to calculate
  * @param density The density of points to generate
  * @param prevIntegral The previous integral added to the total distance
  * @returns The sample points of the segment, at least 2 points are returned
  */
-export function getSegmentSamplePoints(segment: Segment, density: Quantity<UnitOfLength>, prevIntegral = 0): SamplePoint[] {
+export function getSegmentSamplePoints(
+  segment: Segment,
+  density: Quantity<UnitOfLength>,
+  prevIntegral = 0
+): SamplePoint[] {
   // ALGO: Calculate the target interval based on the density of points to generate points more than enough
   const targetInterval = density.to(UnitOfLength.Centimeter) / 200;
 
@@ -323,7 +344,15 @@ export function getSegmentSamplePoints(segment: Segment, density: Quantity<UnitO
   const lastControl = segment.last;
   const distance = lastPoint.distance(lastControl);
   const integralDistance = lastPoint.integral + distance;
-  const finalPoint = new SamplePoint(lastControl.x, lastControl.y, distance, integralDistance, segment, 1, segment.last.heading);
+  const finalPoint = new SamplePoint(
+    lastControl.x,
+    lastControl.y,
+    distance,
+    integralDistance,
+    segment,
+    1,
+    segment.last.heading
+  );
   finalPoint.isLast = true;
   points.push(finalPoint);
 
@@ -343,7 +372,7 @@ export function getSegmentSamplePoints(segment: Segment, density: Quantity<UnitO
   Therefore, we have to adjust the delta value of the points of every segment to have the same scale.  
   */
 
-  const segmentDeltaRatio = (1 / targetInterval) / ((integralDistance - prevIntegral) / density.value);
+  const segmentDeltaRatio = 1 / targetInterval / ((integralDistance - prevIntegral) / density.value);
   if (segmentDeltaRatio !== Infinity) {
     for (const point of points) {
       point.delta *= segmentDeltaRatio;
@@ -384,10 +413,10 @@ export function getBezierCurveArcLength(segment: Segment, interval: number = 0.0
 
 /**
  * Calculates the sample points of a bezier curve segment
- * 
+ *
  * The x and y value of the first sample is exactly the same as the first control point.
  * But the x and y value of the last sample is not exactly the same as the last control point.
- * 
+ *
  * @param segment The segment to calculate
  * @param interval 1 divided by the number of points to calculate
  * @param prevIntegral The previous integral added to the total distance
@@ -411,7 +440,7 @@ export function getBezierCurvePoints(segment: Segment, interval: number, prevInt
       point.y += controlPoint.y * ber;
     }
     let delta = point.distance(lastPoint);
-    points.push(new SamplePoint(point.x, point.y, delta, totalDistance += delta, segment, t));
+    points.push(new SamplePoint(point.x, point.y, delta, (totalDistance += delta), segment, t));
     lastPoint = point;
   }
 
@@ -455,7 +484,7 @@ export function firstDerivative(segment: Segment, t: number): Vector {
 }
 
 export function toHeading(vec: Vector) {
-  const canvasDegree = 90 - Math.atan2(vec.y, vec.x) * 180 / Math.PI;
+  const canvasDegree = 90 - (Math.atan2(vec.y, vec.x) * 180) / Math.PI;
   return canvasDegree < 0 ? canvasDegree + 360 : canvasDegree;
 }
 

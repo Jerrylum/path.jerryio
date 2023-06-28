@@ -7,7 +7,7 @@ Remember to change your settings in your editor to use 2 spaces when you create 
 Add comments to your code to explain the code related to user experience and algorithms.
 
 ### Format Your Code
-Self explanatory. Use a formatter. If you are using VSCode, press `Shift + Alt + F` to format your code.
+Self explanatory. Use [Prettier](https://prettier.io/). If you are using VSCode, press `Shift + Alt + F` to format your code.
 
 ### Follow Naming Conventions
 Self explanatory. Follow the conventions of the language you are using. For example, in TypeScript, use camelCase for variables and functions, and PascalCase for classes.

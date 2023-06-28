@@ -1,13 +1,13 @@
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import { EndPointControl } from '../types/Path';
-import { ObserverInput, clampQuantity } from './ObserverInput';
-import { Quantity, UnitOfAngle, UnitOfLength } from '../types/Unit';
-import { UpdateInteractiveEntities } from '../types/Command';
-import { useAppStores } from './MainApp';
-import { NumberUOA, NumberUOL } from '../token/Tokens';
-import { parseFormula } from './Util';
+import { EndPointControl } from "../types/Path";
+import { ObserverInput, clampQuantity } from "./ObserverInput";
+import { Quantity, UnitOfAngle, UnitOfLength } from "../types/Unit";
+import { UpdateInteractiveEntities } from "../types/Command";
+import { useAppStores } from "./MainApp";
+import { NumberUOA, NumberUOL } from "../token/Tokens";
+import { parseFormula } from "./Util";
 
 const ControlAccordion = observer((props: {}) => {
   const { app } = useAppStores();
@@ -18,8 +18,8 @@ const ControlAccordion = observer((props: {}) => {
         <Typography>Control</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <Box id='control-editor'>
-          <Box className='flex-editor-panel'>
+        <Box id="control-editor">
+          <Box className="flex-editor-panel">
             <ObserverInput
               label="X"
               getValue={() => {
@@ -42,8 +42,10 @@ const ControlAccordion = observer((props: {}) => {
                   new Quantity(1000, UnitOfLength.Centimeter)
                 );
 
-                app.history.execute(`Update control ${controlUid} x value`,
-                  new UpdateInteractiveEntities([control], { x: finalVal }));
+                app.history.execute(
+                  `Update control ${controlUid} x value`,
+                  new UpdateInteractiveEntities([control], { x: finalVal })
+                );
               }}
               isValidIntermediate={() => true}
               isValidValue={(candidate: string) => parseFormula(candidate, NumberUOL.parse) !== null}
@@ -57,7 +59,7 @@ const ControlAccordion = observer((props: {}) => {
                 if (app.selectedEntityCount > 1) return "(mixed)";
                 const control = app.selectedControl;
                 if (control === undefined) return "";
-                return control.y.toUser().toString()
+                return control.y.toUser().toString();
               }}
               setValue={(value: string) => {
                 if (app.selectedEntityCount !== 1) return;
@@ -72,8 +74,10 @@ const ControlAccordion = observer((props: {}) => {
                   new Quantity(1000, UnitOfLength.Centimeter)
                 );
 
-                app.history.execute(`Update control ${controlUid} y value`,
-                  new UpdateInteractiveEntities([control], { y: finalVal }));
+                app.history.execute(
+                  `Update control ${controlUid} y value`,
+                  new UpdateInteractiveEntities([control], { y: finalVal })
+                );
               }}
               isValidIntermediate={() => true}
               isValidValue={(candidate: string) => parseFormula(candidate, NumberUOL.parse) !== null}
@@ -97,20 +101,25 @@ const ControlAccordion = observer((props: {}) => {
                 const controlUid = control.uid;
                 const finalVal = parseFormula(value, NumberUOA.parse)!.compute(UnitOfAngle.Degree).toUser();
 
-                app.history.execute(`Update control ${controlUid} heading value`,
-                  new UpdateInteractiveEntities([control], { heading: finalVal }));
+                app.history.execute(
+                  `Update control ${controlUid} heading value`,
+                  new UpdateInteractiveEntities([control], { heading: finalVal })
+                );
               }}
               isValidIntermediate={() => true}
               isValidValue={(candidate: string) => parseFormula(candidate, NumberUOA.parse) !== null}
               disabled={app.selectedEntityCount !== 1 || app.selectedControl === undefined}
-              sx={{ visibility: app.selectedEntityCount === 1 && !(app.selectedControl instanceof EndPointControl) ? "hidden" : "" }}
+              sx={{
+                visibility:
+                  app.selectedEntityCount === 1 && !(app.selectedControl instanceof EndPointControl) ? "hidden" : ""
+              }}
               numeric
             />
           </Box>
         </Box>
       </AccordionDetails>
     </Accordion>
-  )
+  );
 });
 
 export { ControlAccordion };

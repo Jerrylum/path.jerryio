@@ -1,13 +1,13 @@
-import { action } from "mobx"
+import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { EndPointControl, Path, Segment, SegmentVariant, Vector } from '../types/Path';
-import Konva from 'konva';
-import { Circle, Image, Layer, Line, Stage } from 'react-konva';
+import { EndPointControl, Path, Segment, SegmentVariant, Vector } from "../types/Path";
+import Konva from "konva";
+import { Circle, Image, Layer, Line, Stage } from "react-konva";
 import { SegmentElement } from "./SegmentElement";
 import React from "react";
 import useImage from "use-image";
 
-import fieldImageUrl from '../static/field2023.png'
+import fieldImageUrl from "../static/field2023.png";
 import { SegmentControlElement } from "./SegmentControlElement";
 import { AreaElement } from "./AreaElement";
 import { UnitConverter, UnitOfLength } from "../types/Unit";
@@ -86,8 +86,12 @@ const FieldCanvasElement = observer((props: {}) => {
       setIsAddingControl(true);
     }
 
-    if (evt.button === 0 && offsetStart === undefined &&
-      (event.target instanceof Konva.Stage || event.target instanceof Konva.Image)) { // left click
+    if (
+      evt.button === 0 &&
+      offsetStart === undefined &&
+      (event.target instanceof Konva.Stage || event.target instanceof Konva.Image)
+    ) {
+      // left click
       // UX: Only start selection if: left click on the canvas or field image
       // UX: Do not start selection if it is in "Grab & Move"
 
@@ -102,7 +106,8 @@ const FieldCanvasElement = observer((props: {}) => {
       const posInPx = cc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
       setAreaSelectionStart(posInPx);
-    } else if (evt.button === 1 && areaSelectionStart === undefined) { // middle click
+    } else if (evt.button === 1 && areaSelectionStart === undefined) {
+      // middle click
       // UX: Start "Grab & Move" if: middle click at any position
       evt.preventDefault(); // UX: Prevent default action (scrolling)
 
@@ -110,7 +115,8 @@ const FieldCanvasElement = observer((props: {}) => {
       if (posInPx === undefined) return;
 
       setOffsetStart(posInPx.add(offset));
-    } else if (evt.button === 1 && areaSelectionStart !== undefined) { // middle click
+    } else if (evt.button === 1 && areaSelectionStart !== undefined) {
+      // middle click
       // UX: Do not start "Grab & Move" if it is in area selection, but still prevent default
       evt.preventDefault(); // UX: Prevent default action (scrolling)
     }
@@ -132,13 +138,15 @@ const FieldCanvasElement = observer((props: {}) => {
 
     setIsAddingControl(false);
 
-    if (areaSelectionStart !== undefined) { // UX: Select control point if mouse down on field image
+    if (areaSelectionStart !== undefined) {
+      // UX: Select control point if mouse down on field image
       const posInPx = cc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
 
       setAreaSelectionEnd(posInPx);
       app.updateAreaSelection(cc.toUOL(areaSelectionStart), cc.toUOL(posInPx));
-    } else if (offsetStart !== undefined) { // UX: Move field if: middle click
+    } else if (offsetStart !== undefined) {
+      // UX: Move field if: middle click
       const posInPx = cc.getUnboundedPxFromEvent(event, false);
       if (posInPx === undefined) return;
 
@@ -146,7 +154,8 @@ const FieldCanvasElement = observer((props: {}) => {
       newOffset.x = clamp(newOffset.x, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
       newOffset.y = clamp(newOffset.y, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
       app.fieldOffset = newOffset;
-    } else if (app.gc.showRobot) { // UX: Show robot if: alt key is down and no other action is performed
+    } else if (app.gc.showRobot) {
+      // UX: Show robot if: alt key is down and no other action is performed
       const posInPx = cc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
       const posInUOL = cc.toUOL(posInPx);
@@ -179,7 +188,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
         if (app.gc.robotIsHolonomic) {
           const c3Heading = toDerivativeHeading(c0.heading, c3.heading);
-          app.robot.position.heading = c0.heading + (c3Heading * t);
+          app.robot.position.heading = c0.heading + c3Heading * t;
         } else {
           const heading = toHeading(firstDerivative(closestPoint.sampleRef, closestPoint.sampleT));
           app.robot.position.heading = heading;
@@ -194,10 +203,12 @@ const FieldCanvasElement = observer((props: {}) => {
     // UX: This event is triggered only if the mouse is up inside the canvas.
     // UX: Only reset selection or "Grab & Move" if: left click or middle click released respectively
 
-    if (event.evt.button === 0) { // left click
+    if (event.evt.button === 0) {
+      // left click
       setAreaSelectionStart(undefined);
       setAreaSelectionEnd(undefined);
-    } else if (event.evt.button === 1) { // middle click
+    } else if (event.evt.button === 1) {
+      // middle click
       setOffsetStart(undefined);
     }
   }
@@ -238,7 +249,6 @@ const FieldCanvasElement = observer((props: {}) => {
 
     const cpInUOL = cc.toUOL(new EndPointControl(posInPx.x, posInPx.y, 0));
 
-
     // UX: Set target path to "interested path"
     let targetPath: Path | undefined = app.interestedPath();
     if (targetPath === undefined) {
@@ -250,12 +260,16 @@ const FieldCanvasElement = observer((props: {}) => {
       // UX: Add control point if: path is selected and visible and not locked
       if (evt.button === 0) {
         // UX: Add 4-controls curve if: left click
-        app.history.execute(`Add curve segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-          new AddSegment(targetPath, cpInUOL, SegmentVariant.CUBIC));
+        app.history.execute(
+          `Add curve segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
+          new AddSegment(targetPath, cpInUOL, SegmentVariant.CUBIC)
+        );
       } else if (evt.button === 2) {
         // UX: Add straight line if: right click
-        app.history.execute(`Add linear segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-          new AddSegment(targetPath, cpInUOL, SegmentVariant.LINEAR));
+        app.history.execute(
+          `Add linear segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
+          new AddSegment(targetPath, cpInUOL, SegmentVariant.LINEAR)
+        );
       }
     }
 
@@ -267,15 +281,20 @@ const FieldCanvasElement = observer((props: {}) => {
 
   const lineWidth = 1;
   const magnetInPx = cc.toPx(app.magnet);
-  const visiblePaths = paths.filter((path) => path.visible);
+  const visiblePaths = paths.filter(path => path.visible);
 
   const pointRadius = cc.pixelWidth / 320;
 
   return (
-    <Stage className='field-canvas' width={cc.pixelWidth} height={cc.pixelHeight}
-      scale={new Vector(scale, scale)} offset={offset} draggable
-      style={{ cursor: offsetStart ? 'grab' : '' }}
-      onContextMenu={(e) => e.evt.preventDefault()}
+    <Stage
+      className="field-canvas"
+      width={cc.pixelWidth}
+      height={cc.pixelHeight}
+      scale={new Vector(scale, scale)}
+      offset={offset}
+      draggable
+      style={{ cursor: offsetStart ? "grab" : "" }}
+      onContextMenu={e => e.evt.preventDefault()}
       onWheel={action(onWheelStage)}
       onMouseDown={action(onMouseDownStage)}
       onMouseMove={action(onMouseMoveOrDragStage)}
@@ -283,73 +302,65 @@ const FieldCanvasElement = observer((props: {}) => {
       onDragMove={action(onMouseMoveOrDragStage)}
       onDragEnd={action(onDragEndStage)}>
       <Layer>
-        <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight}
-          onClick={action(onClickFieldImage)} />
-        {
-          app.magnet.x !== Infinity ? (
-            <Line points={[magnetInPx.x, 0, magnetInPx.x, cc.pixelHeight]} stroke="red" strokeWidth={lineWidth} />
-          ) : null
-        }
-        {
-          app.magnet.y !== Infinity ? (
-            <Line points={[0, magnetInPx.y, cc.pixelHeight, magnetInPx.y]} stroke="red" strokeWidth={lineWidth} />
-          ) : null
-        }
-        {
-          visiblePaths.map((path, index) => (
-            <React.Fragment key={index}>
-              {
-                path.cachedResult.points.map((pointInUOL, index) => {
-                  const pc = path.pc;
+        <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight} onClick={action(onClickFieldImage)} />
+        {app.magnet.x !== Infinity ? (
+          <Line points={[magnetInPx.x, 0, magnetInPx.x, cc.pixelHeight]} stroke="red" strokeWidth={lineWidth} />
+        ) : null}
+        {app.magnet.y !== Infinity ? (
+          <Line points={[0, magnetInPx.y, cc.pixelHeight, magnetInPx.y]} stroke="red" strokeWidth={lineWidth} />
+        ) : null}
+        {visiblePaths.map((path, index) => (
+          <React.Fragment key={index}>
+            {path.cachedResult.points.map((pointInUOL, index) => {
+              const pc = path.pc;
 
-                  const speedFrom = pc.speedLimit.from;
-                  const speedTo = pc.speedLimit.to;
+              const speedFrom = pc.speedLimit.from;
+              const speedTo = pc.speedLimit.to;
 
-                  const pointInPx = cc.toPx(pointInUOL);
-                  const percentage = (pointInUOL.speed - speedFrom) / (speedTo - speedFrom);
-                  // h => hue
-                  // s => saturation
-                  // l => lightness
-                  const color = `hsl(${percentage * 90}, 70%, 50%)`; // red = min speed, green = max speed
-                  return <Circle key={index} x={pointInPx.x} y={pointInPx.y} radius={pointRadius} fill={color} />
-                })
-              }
-            </React.Fragment>
-          ))
-        }
-        {
-          visiblePaths.map((path, index) => (
-            <React.Fragment key={index}>
-              {
-                path.segments.map((segment) => {
-                  if (segment.isVisible()) return <SegmentElement key={segment.uid} {...{ segment, path, cc }} />
-                  else return null;
-                })
-              }
-            </React.Fragment>
-          ))
-        }
-        {
-          visiblePaths.map((path, index) => (
-            <React.Fragment key={index}>
-              {
-                path.segments.map((segment) =>
-                  segment.controls.map((cp, cpIdx) => {
-                    const isFirstSegment = path.segments[0] === segment;
-                    if (!isFirstSegment && cpIdx === 0) return null;
-                    if (cp.visible) return <SegmentControlElement key={cpIdx} isGrabAndMove={offsetStart !== undefined} {...{ segment, path, cc, cp }} />;
-                    else return null;
-                  })
-                )
-              }
-            </React.Fragment>
-          ))
-        }
-        {app.gc.showRobot && app.robot.position.visible && <RobotElement cc={cc} pos={app.robot.position} width={app.gc.robotWidth} height={app.gc.robotHeight} />}
+              const pointInPx = cc.toPx(pointInUOL);
+              const percentage = (pointInUOL.speed - speedFrom) / (speedTo - speedFrom);
+              // h => hue
+              // s => saturation
+              // l => lightness
+              const color = `hsl(${percentage * 90}, 70%, 50%)`; // red = min speed, green = max speed
+              return <Circle key={index} x={pointInPx.x} y={pointInPx.y} radius={pointRadius} fill={color} />;
+            })}
+          </React.Fragment>
+        ))}
+        {visiblePaths.map((path, index) => (
+          <React.Fragment key={index}>
+            {path.segments.map(segment => {
+              if (segment.isVisible()) return <SegmentElement key={segment.uid} {...{ segment, path, cc }} />;
+              else return null;
+            })}
+          </React.Fragment>
+        ))}
+        {visiblePaths.map((path, index) => (
+          <React.Fragment key={index}>
+            {path.segments.map(segment =>
+              segment.controls.map((cp, cpIdx) => {
+                const isFirstSegment = path.segments[0] === segment;
+                if (!isFirstSegment && cpIdx === 0) return null;
+                if (cp.visible)
+                  return (
+                    <SegmentControlElement
+                      key={cpIdx}
+                      isGrabAndMove={offsetStart !== undefined}
+                      {...{ segment, path, cc, cp }}
+                    />
+                  );
+                else return null;
+              })
+            )}
+          </React.Fragment>
+        ))}
+        {app.gc.showRobot && app.robot.position.visible && (
+          <RobotElement cc={cc} pos={app.robot.position} width={app.gc.robotWidth} height={app.gc.robotHeight} />
+        )}
         <AreaElement from={areaSelectionStart} to={areaSelectionEnd} />
       </Layer>
     </Stage>
-  )
+  );
 });
 
 export { FieldCanvasElement };

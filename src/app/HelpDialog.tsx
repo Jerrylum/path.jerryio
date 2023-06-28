@@ -1,5 +1,5 @@
 import { Backdrop, Card, Typography } from "@mui/material";
-import { makeAutoObservable } from "mobx"
+import { makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useAppStores } from "./MainApp";
 import { useBackdropDialog } from "./Util";
@@ -10,7 +10,7 @@ import { MarkdownOverwrittenComponents } from "./MarkdownSupport";
 export enum HelpPage {
   None,
   Welcome,
-  About,
+  About
 }
 
 export class Help {
@@ -60,34 +60,51 @@ const HelpDialog = observer((props: {}) => {
   return (
     <Backdrop
       className="help-dialog"
-      sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      sx={{ zIndex: theme => theme.zIndex.drawer + 1 }}
       open={true}
       onClick={onClose}
       tabIndex={-1}>
-      {
-        help.currentPage === HelpPage.Welcome &&
-        <Card className="help-welcome-page" onClick={(e) => e.stopPropagation()} tabIndex={1000}>
+      {help.currentPage === HelpPage.Welcome && (
+        <Card className="help-welcome-page" onClick={e => e.stopPropagation()} tabIndex={1000}>
           <Welcome {...{ isGAEnabled, setIsGAEnabled }} components={MarkdownOverwrittenComponents} />
         </Card>
-      }
-      {
-        help.currentPage === HelpPage.About &&
-        <Card className="help-about-page" onClick={(e) => e.stopPropagation()} tabIndex={1000}>
+      )}
+      {help.currentPage === HelpPage.About && (
+        <Card className="help-about-page" onClick={e => e.stopPropagation()} tabIndex={1000}>
           <img src="logo464.svg" alt="app logo" />
-          <Typography variant="h3" gutterBottom align="center">PATH.JERRYIO Version {app.appVersion.version}</Typography>
-          <Typography variant="body1" align="center" sx={{ marginBottom: "2rem" }}>Made by Jerry Lum</Typography>
-          <Typography variant="body1" align="center">This is a free software licensing under GPL-3.0</Typography>
+          <Typography variant="h3" gutterBottom align="center">
+            PATH.JERRYIO Version {app.appVersion.version}
+          </Typography>
+          <Typography variant="body1" align="center" sx={{ marginBottom: "2rem" }}>
+            Made by Jerry Lum
+          </Typography>
           <Typography variant="body1" align="center">
-            <a target="_blank" rel="noreferrer" href="https://github.com/Jerrylum/path.jerryio">Source Code</a>
-            <a target="_blank" rel="noreferrer" href="https://www.tldrlegal.com/license/gnu-general-public-license-v3-gpl-3">License</a>
-            <a target="_blank" rel="noreferrer" href="https://github.com/Jerrylum/path.jerryio/blob/main/PRIVACY.md">Privacy Terms</a>
-            <a target="_blank" rel="noreferrer" href="https://www.gnu.org/philosophy/free-sw.html">About Free Software</a>
-            <a target="_blank" rel="noreferrer" href="https://discord.gg/4uVSVXXBBa">Join Our Discord Server</a>
+            This is a free software licensing under GPL-3.0
+          </Typography>
+          <Typography variant="body1" align="center">
+            <a target="_blank" rel="noreferrer" href="https://github.com/Jerrylum/path.jerryio">
+              Source Code
+            </a>
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href="https://www.tldrlegal.com/license/gnu-general-public-license-v3-gpl-3">
+              License
+            </a>
+            <a target="_blank" rel="noreferrer" href="https://github.com/Jerrylum/path.jerryio/blob/main/PRIVACY.md">
+              Privacy Terms
+            </a>
+            <a target="_blank" rel="noreferrer" href="https://www.gnu.org/philosophy/free-sw.html">
+              About Free Software
+            </a>
+            <a target="_blank" rel="noreferrer" href="https://discord.gg/4uVSVXXBBa">
+              Join Our Discord Server
+            </a>
           </Typography>
         </Card>
-      }
+      )}
     </Backdrop>
-  )
+  );
 });
 
 export { HelpDialog };

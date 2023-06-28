@@ -1,34 +1,34 @@
-import './App.scss';
+import "./App.scss";
 
-import { Path } from './types/Path';
+import { Path } from "./types/Path";
 
-import { action } from "mobx"
-import { observer } from "mobx-react-lite"
+import { action } from "mobx";
+import { observer } from "mobx-react-lite";
 
-import { ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from "@mui/material/styles";
 
-import { Box, Card } from '@mui/material';
-import { useCustomHotkeys, useDragDropFile, useTimer, useUnsavedChangesPrompt } from './app/Util';
-import { MenuAccordion } from './app/MenuAccordion';
-import { PathTreeAccordion } from './app/PathTreeAccordion';
-import { GeneralConfigAccordion } from './app/GeneralConfigAccordion';
-import { PathConfigAccordion } from './app/PathAccordion';
-import { ControlAccordion } from './app/ControlAccordion';
-import { GraphCanvasElement } from './app/GraphCanvasElement';
-import { FieldCanvasElement } from './app/FieldCanvasElement';
-import { MainApp, useAppStores } from './app/MainApp';
+import { Box, Card } from "@mui/material";
+import { useCustomHotkeys, useDragDropFile, useTimer, useUnsavedChangesPrompt } from "./app/Util";
+import { MenuAccordion } from "./app/MenuAccordion";
+import { PathTreeAccordion } from "./app/PathTreeAccordion";
+import { GeneralConfigAccordion } from "./app/GeneralConfigAccordion";
+import { PathConfigAccordion } from "./app/PathAccordion";
+import { ControlAccordion } from "./app/ControlAccordion";
+import { GraphCanvasElement } from "./app/GraphCanvasElement";
+import { FieldCanvasElement } from "./app/FieldCanvasElement";
+import { MainApp, useAppStores } from "./app/MainApp";
 
-import React from 'react';
-import classNames from 'classnames';
-import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from './format/Output';
-import { NoticeProvider } from './app/Notice';
-import { ConfirmationDialog } from './app/Confirmation';
-import { HelpDialog } from './app/HelpDialog';
-import { PreferencesDialog } from './app/Preferences';
-import { Quantity } from './types/Unit';
-import { getPathPoints } from './types/Calculation';
-import { DragDropBackdrop } from './app/DragDropBackdrop';
-import { RemovePathsAndEndControls } from './types/Command';
+import React from "react";
+import classNames from "classnames";
+import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./format/Output";
+import { NoticeProvider } from "./app/Notice";
+import { ConfirmationDialog } from "./app/Confirmation";
+import { HelpDialog } from "./app/HelpDialog";
+import { PreferencesDialog } from "./app/Preferences";
+import { Quantity } from "./types/Unit";
+import { getPathPoints } from "./types/Calculation";
+import { DragDropBackdrop } from "./app/DragDropBackdrop";
+import { RemovePathsAndEndControls } from "./types/Command";
 
 export interface AppProps {
   paths: Path[];
@@ -41,15 +41,24 @@ const App = observer(() => {
 
   const { app, confirmation, help, appPreferences } = useAppStores();
 
-  React.useEffect(action(() => { // eslint-disable-line react-hooks/exhaustive-deps
-    const density = new Quantity(app.gc.pointDensity, app.gc.uol);
-    const interested = app.interestedPath();
+  React.useEffect(
+    action(() => {
+      // eslint-disable-line react-hooks/exhaustive-deps
+      const density = new Quantity(app.gc.pointDensity, app.gc.uol);
+      const interested = app.interestedPath();
 
-    app.paths.filter(path => path.visible || path === interested).forEach(path => path.cachedResult = getPathPoints(path, density));
-  }), undefined);
+      app.paths
+        .filter((path) => path.visible || path === interested)
+        .forEach((path) => (path.cachedResult = getPathPoints(path, density)));
+    }),
+    undefined
+  );
 
   const isUsingEditor = !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen;
-  const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(isUsingEditor, onDropFile.bind(null, app, confirmation));
+  const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(
+    isUsingEditor,
+    onDropFile.bind(null, app, confirmation)
+  );
 
   const optionsToEnableHotkeys = { enabled: isUsingEditor && !isDraggingFile };
 
@@ -69,47 +78,56 @@ const App = observer(() => {
 
   useCustomHotkeys("Ctrl+Z", () => app.history.undo(), optionsToEnableHotkeys);
   useCustomHotkeys("Ctrl+Y,Ctrl+Shift+Z", () => app.history.redo(), optionsToEnableHotkeys);
-  useCustomHotkeys("Ctrl+A", () => {
-    const path = app.selectedPath;
-    const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
-    app.setSelected(all);
-  }, optionsToEnableHotkeys);
+  useCustomHotkeys(
+    "Ctrl+A",
+    () => {
+      const path = app.selectedPath;
+      const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
+      app.setSelected(all);
+    },
+    optionsToEnableHotkeys
+  );
   useCustomHotkeys("Esc", () => app.clearSelected(), optionsToEnableHotkeys);
-  useCustomHotkeys("Ctrl+Shift+A", () => {
-    const path = app.selectedPath;
-    const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
-    app.setSelected(all.filter(e => !app.selectedEntities.includes(e)));
-  }, optionsToEnableHotkeys);
+  useCustomHotkeys(
+    "Ctrl+Shift+A",
+    () => {
+      const path = app.selectedPath;
+      const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
+      app.setSelected(all.filter((e) => !app.selectedEntities.includes(e)));
+    },
+    optionsToEnableHotkeys
+  );
 
-  useCustomHotkeys("Ctrl+B", () => app.view.showSpeedCanvas = !app.view.showSpeedCanvas, optionsToEnableHotkeys);
-  useCustomHotkeys("Ctrl+J", () => app.view.showRightPanel = !app.view.showRightPanel, optionsToEnableHotkeys);
+  useCustomHotkeys("Ctrl+B", () => (app.view.showSpeedCanvas = !app.view.showSpeedCanvas), optionsToEnableHotkeys);
+  useCustomHotkeys("Ctrl+J", () => (app.view.showRightPanel = !app.view.showRightPanel), optionsToEnableHotkeys);
 
-  useCustomHotkeys("Ctrl+Add,Ctrl+Equal", () => app.fieldScale += 0.5, optionsToEnableHotkeys);
-  useCustomHotkeys("Ctrl+Subtract,Ctrl+Minus", () => app.fieldScale -= 0.5, optionsToEnableHotkeys);
+  useCustomHotkeys("Ctrl+Add,Ctrl+Equal", () => (app.fieldScale += 0.5), optionsToEnableHotkeys);
+  useCustomHotkeys("Ctrl+Subtract,Ctrl+Minus", () => (app.fieldScale -= 0.5), optionsToEnableHotkeys);
   useCustomHotkeys("Ctrl+0", () => app.resetFieldDisplay(), optionsToEnableHotkeys);
 
-  useCustomHotkeys("R", () => app.gc.showRobot = !app.gc.showRobot, {
+  useCustomHotkeys("R", () => (app.gc.showRobot = !app.gc.showRobot), {
     ...optionsToEnableHotkeys,
     preventDefaultOnlyIfEnabled: true,
-    enableOnFormTags: ['input', "INPUT"],
+    enableOnFormTags: ["input", "INPUT"],
     // UX: A special case for input[type="checkbox"], it is okay to enable hotkeys on it
     enabled: (kvEvt: KeyboardEvent) =>
       optionsToEnableHotkeys.enabled &&
-      (
-        (kvEvt.target instanceof HTMLInputElement) === false ||
-        (kvEvt.target as HTMLInputElement).type === "checkbox"
-      )
+      (kvEvt.target instanceof HTMLInputElement === false || (kvEvt.target as HTMLInputElement).type === "checkbox"),
   });
 
-  useCustomHotkeys("Backspace,Delete", () => {
-    const command = new RemovePathsAndEndControls(app.paths, app.selectedEntityIds);
-    if (command.hasTargets === false) return;
-    app.history.execute(`Remove paths and end controls`, command);
-    for (const id of command.removedEntities) {
-      app.unselect(id);
-      app.removeExpanded(id);
-    }
-  }, { ...optionsToEnableHotkeys, preventDefaultOnlyIfEnabled: true });
+  useCustomHotkeys(
+    "Backspace,Delete",
+    () => {
+      const command = new RemovePathsAndEndControls(app.paths, app.selectedEntityIds);
+      if (command.hasTargets === false) return;
+      app.history.execute(`Remove paths and end controls`, command);
+      for (const id of command.removedEntities) {
+        app.unselect(id);
+        app.removeExpanded(id);
+      }
+    },
+    { ...optionsToEnableHotkeys, preventDefaultOnlyIfEnabled: true }
+  );
 
   useUnsavedChangesPrompt();
 
@@ -119,35 +137,32 @@ const App = observer(() => {
       tabIndex={-1}
       className={classNames("App", appPreferences.theme.className)}
       {...{ onDragEnter, onDragOver, onDrop }}
-      key={app.format.uid + "-" + app.gc.uol}>
+      key={app.format.uid + "-" + app.gc.uol}
+    >
       <ThemeProvider theme={appPreferences.theme.theme}>
         <NoticeProvider />
-        <Box id='left-editor-panel'>
+        <Box id="left-editor-panel">
           <MenuAccordion />
           <PathTreeAccordion />
         </Box>
 
-        <Box id='middle-panel' className={app.view.showSpeedCanvas ? "" : "full-height"}>
-          <Card id='field-panel'>
+        <Box id="middle-panel" className={app.view.showSpeedCanvas ? "" : "full-height"}>
+          <Card id="field-panel">
             <FieldCanvasElement />
           </Card>
-          {
-            app.view.showSpeedCanvas && (
-              <Card id='graph-panel'>
-                <GraphCanvasElement />
-              </Card>
-            )
-          }
+          {app.view.showSpeedCanvas && (
+            <Card id="graph-panel">
+              <GraphCanvasElement />
+            </Card>
+          )}
         </Box>
-        {
-          app.view.showRightPanel && (
-            <Box id='right-editor-panel'>
-              <GeneralConfigAccordion />
-              <ControlAccordion />
-              <PathConfigAccordion />
-            </Box>
-          )
-        }
+        {app.view.showRightPanel && (
+          <Box id="right-editor-panel">
+            <GeneralConfigAccordion />
+            <ControlAccordion />
+            <PathConfigAccordion />
+          </Box>
+        )}
         <ConfirmationDialog />
         <HelpDialog />
         <PreferencesDialog />
@@ -158,4 +173,3 @@ const App = observer(() => {
 });
 
 export default App;
-

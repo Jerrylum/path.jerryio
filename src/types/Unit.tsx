@@ -11,18 +11,18 @@ export enum UnitOfLength {
   Meter = 100 * Centimeter, // SI base unit
   Inch = 2.54 * Centimeter,
   Foot = 12 * Inch,
-  Tile = 24 * Inch,
+  Tile = 24 * Inch
 }
 
 export enum UnitOfAngle {
   Degree = 1, // default
-  Radian = 180 / Math.PI,
+  Radian = 180 / Math.PI
 }
 
 export type Unit = UnitOfLength | UnitOfAngle;
 
 export class Quantity<T extends Unit> {
-  constructor(public value: number, public unit: T) { }
+  constructor(public value: number, public unit: T) {}
 
   to(unit: T): number {
     return new UnitConverter(this.unit, unit).fromAtoB(this.value);
@@ -30,13 +30,13 @@ export class Quantity<T extends Unit> {
 }
 
 export class UnitConverter<T extends Unit> {
-  constructor(public alpha: T, public beta: T) { }
+  constructor(public alpha: T, public beta: T) {}
 
   fromAtoB(a: number): number {
-    return a * this.alpha / this.beta;
+    return (a * this.alpha) / this.beta;
   }
 
   fromBtoA(b: number): number {
-    return b * this.beta / this.alpha;
+    return (b * this.beta) / this.alpha;
   }
 }

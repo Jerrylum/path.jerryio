@@ -1,7 +1,7 @@
-import { MainApp } from '../app/MainApp';
+import { MainApp } from "../app/MainApp";
 import { Path } from "../types/Path";
-import { LemLibFormatV0_4 } from './LemLibFormatV0_4';
-import { PathDotJerryioFormatV0_1 } from './PathDotJerryioFormatV0_1';
+import { LemLibFormatV0_4 } from "./LemLibFormatV0_4";
+import { PathDotJerryioFormatV0_1 } from "./PathDotJerryioFormatV0_1";
 import { GeneralConfig, PathConfig } from "./Config";
 
 export interface Format {
@@ -30,7 +30,7 @@ export interface PathFileData {
 
 export function getAllFormats(): Format[] {
   return [
-    new LemLibFormatV0_4(),
+    new LemLibFormatV0_4(), //
     new PathDotJerryioFormatV0_1()
   ];
 }

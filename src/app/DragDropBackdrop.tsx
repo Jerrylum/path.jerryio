@@ -6,11 +6,13 @@ const DragDropBackdrop = observer((props: Omit<DefaultComponentProps<BackdropTyp
   return (
     <Backdrop
       className="drag-drop-backdrop"
-      sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      sx={{ zIndex: theme => theme.zIndex.drawer + 1 }}
       open={true}
       tabIndex={-1}
       {...props}>
-      <Typography variant="h1" color="white" sx={{ pointerEvents: "none" }} gutterBottom>Drop Here</Typography>
+      <Typography variant="h1" color="white" sx={{ pointerEvents: "none" }} gutterBottom>
+        Drop Here
+      </Typography>
     </Backdrop>
   );
 });

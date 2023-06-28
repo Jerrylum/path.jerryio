@@ -15,19 +15,21 @@ export class CommandHistory {
   private redoHistory: CancellableCommand[] = [];
   private savedCommand: CancellableCommand | undefined = undefined;
 
-  constructor(private app: MainApp) { }
+  constructor(private app: MainApp) {}
 
   execute(title: string, command: CancellableCommand, mergeTimeout = 500): void {
     command.execute();
 
     const exe = { title, command, time: Date.now(), mergeTimeout };
 
-    if (exe.title === this.lastExecution?.title &&
+    if (
+      exe.title === this.lastExecution?.title &&
       isMergeable(exe.command) &&
       isMergeable(this.lastExecution.command) &&
-      typeof (exe.command) === typeof (this.lastExecution.command) &&
+      typeof exe.command === typeof this.lastExecution.command &&
       exe.time - this.lastExecution.time < exe.mergeTimeout &&
-      this.lastExecution.command.merge(exe.command)) {
+      this.lastExecution.command.merge(exe.command)
+    ) {
       this.lastExecution.time = exe.time;
     } else {
       this.commit();
@@ -107,11 +109,11 @@ export interface InteractiveEntitiesCommand extends Command {
 }
 
 export function isMergeable(object: Command): object is MergeableCommand {
-  return 'merge' in object;
+  return "merge" in object;
 }
 
 export function isInteractiveEntitiesCommand(object: Command): object is InteractiveEntitiesCommand {
-  return 'entities' in object;
+  return "entities" in object;
 }
 
 /**
@@ -121,7 +123,7 @@ export function isInteractiveEntitiesCommand(object: Command): object is Interac
 export class UpdateInstancesProperties<TTarget> implements CancellableCommand, MergeableCommand {
   protected previousValue?: Partial<TTarget>[];
 
-  constructor(protected targets: TTarget[], protected newValues: Partial<TTarget>) { }
+  constructor(protected targets: TTarget[], protected newValues: Partial<TTarget>) {}
 
   execute(): void {
     this.previousValue = [];
@@ -144,7 +146,10 @@ export class UpdateInstancesProperties<TTarget> implements CancellableCommand, M
   merge(latest: UpdateInstancesProperties<TTarget>): boolean {
     // ALGO: Assume that the targets are the same and both commands are executed
     for (let i = 0; i < this.targets.length; i++) {
-      this.previousValue![i] = { ...latest.previousValue![i], ...this.previousValue![i] };
+      this.previousValue![i] = {
+        ...latest.previousValue![i],
+        ...this.previousValue![i]
+      };
       this.newValues = { ...this.newValues, ...latest.newValues };
     }
     return true;
@@ -167,7 +172,10 @@ export class UpdateProperties<TTarget> extends UpdateInstancesProperties<TTarget
   }
 }
 
-export class UpdateInteractiveEntities<TTarget extends InteractiveEntity> extends UpdateInstancesProperties<TTarget> implements InteractiveEntitiesCommand {
+export class UpdateInteractiveEntities<TTarget extends InteractiveEntity>
+  extends UpdateInstancesProperties<TTarget>
+  implements InteractiveEntitiesCommand
+{
   constructor(protected targets: TTarget[], protected newValues: Partial<TTarget>) {
     super(targets, newValues);
   }
@@ -183,7 +191,7 @@ export class AddSegment implements CancellableCommand, InteractiveEntitiesComman
   protected forward: boolean = true;
   protected segment?: Segment;
 
-  constructor(protected path: Path, protected end: EndPointControl, protected variant: SegmentVariant) { }
+  constructor(protected path: Path, protected end: EndPointControl, protected variant: SegmentVariant) {}
 
   protected addLine(): void {
     if (this.path.segments.length === 0) {
@@ -250,7 +258,7 @@ export class ConvertSegment implements CancellableCommand, InteractiveEntitiesCo
   protected previousControls: Control[] = [];
   protected newControls: Control[] = [];
 
-  constructor(protected path: Path, protected segment: Segment, protected variant: SegmentVariant) { }
+  constructor(protected path: Path, protected segment: Segment, protected variant: SegmentVariant) {}
 
   protected convertToLine(): void {
     this.segment.controls.splice(1, this.segment.controls.length - 2);
@@ -327,7 +335,7 @@ export class SplitSegment implements CancellableCommand, InteractiveEntitiesComm
   protected newOriginalSegmentControls: Control[] = [];
   protected newSegment?: Segment;
 
-  constructor(protected path: Path, protected originalSegment: Segment, protected point: EndPointControl) { }
+  constructor(protected path: Path, protected originalSegment: Segment, protected point: EndPointControl) {}
 
   execute(): void {
     this.previousOriginalSegmentControls = this.originalSegment.controls.slice();
@@ -389,8 +397,7 @@ export class SplitSegment implements CancellableCommand, InteractiveEntitiesComm
 }
 
 export class DragControls implements CancellableCommand, MergeableCommand, InteractiveEntitiesCommand {
-
-  constructor(protected main: Control, protected from: Vector, protected to: Vector, protected followers: Control[]) { }
+  constructor(protected main: Control, protected from: Vector, protected to: Vector, protected followers: Control[]) {}
 
   execute(): void {
     for (let cp of this.followers) {
@@ -436,7 +443,7 @@ export class DragControls implements CancellableCommand, MergeableCommand, Inter
 export class AddKeyframe implements CancellableCommand {
   protected kf?: Keyframe;
 
-  constructor(protected path: Path, protected pos: KeyframePos) { }
+  constructor(protected path: Path, protected pos: KeyframePos) {}
 
   execute(): void {
     // sort and push
@@ -465,7 +472,7 @@ export class AddKeyframe implements CancellableCommand {
 export class MoveKeyframe implements CancellableCommand, MergeableCommand {
   protected oldPos?: KeyframePos;
 
-  constructor(protected path: Path, protected newPos: KeyframePos, protected kf: Keyframe) { }
+  constructor(protected path: Path, protected newPos: KeyframePos, protected kf: Keyframe) {}
 
   removeKeyframe(pos: KeyframePos) {
     const idx = pos.segment.speedProfiles.indexOf(this.kf);
@@ -524,7 +531,7 @@ export class RemoveKeyframe implements CancellableCommand {
   protected segment?: Segment;
   protected oldIdx = -1;
 
-  constructor(protected path: Path, protected kf: Keyframe) { }
+  constructor(protected path: Path, protected kf: Keyframe) {}
 
   execute(): void {
     for (const segment of this.path.segments) {
@@ -557,7 +564,7 @@ export class RemoveKeyframe implements CancellableCommand {
 export class AddPath implements CancellableCommand, InteractiveEntitiesCommand {
   protected forward: boolean = false;
 
-  constructor(protected paths: Path[], protected path: Path) { }
+  constructor(protected paths: Path[], protected path: Path) {}
 
   execute(): void {
     this.paths.push(this.path);
@@ -584,9 +591,14 @@ export class RemovePathsAndEndControls implements CancellableCommand, Interactiv
 
   protected forward: boolean = true;
   protected removalPaths: Path[] = [];
-  protected removalEndControls: { path: Path, control: EndPointControl }[] = [];
-  protected affectedPaths: { index: number, path: Path }[] = [];
-  protected affectedSegments: { index: number, segment: Segment, path: Path, linkNeeded: boolean }[] = [];
+  protected removalEndControls: { path: Path; control: EndPointControl }[] = [];
+  protected affectedPaths: { index: number; path: Path }[] = [];
+  protected affectedSegments: {
+    index: number;
+    segment: Segment;
+    path: Path;
+    linkNeeded: boolean;
+  }[] = [];
 
   /**
    * Remove paths and end controls in the entities list
@@ -595,7 +607,7 @@ export class RemovePathsAndEndControls implements CancellableCommand, Interactiv
    */
   constructor(protected paths: Path[], entities: (string | InteractiveEntity)[]) {
     // ALGO: Create a set of all entity uids
-    const allEntities = new Set(entities.map(e => typeof e === 'string' ? e : e.uid));
+    const allEntities = new Set(entities.map(e => (typeof e === "string" ? e : e.uid)));
 
     // ALGO: Loop through all paths, add the path and end controls to the removal list if they are in the entity list
     for (const path of paths) {
@@ -622,7 +634,7 @@ export class RemovePathsAndEndControls implements CancellableCommand, Interactiv
     return true;
   }
 
-  protected removeControl(request: { path: Path, control: EndPointControl }): boolean {
+  protected removeControl(request: { path: Path; control: EndPointControl }): boolean {
     const { path, control } = request;
     for (let index = 0; index < path.segments.length; index++) {
       const segment = path.segments[index];

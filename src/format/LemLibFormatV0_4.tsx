@@ -1,5 +1,5 @@
-import { makeAutoObservable, reaction, action } from "mobx"
-import { MainApp } from '../app/MainApp';
+import { makeAutoObservable, reaction, action } from "mobx";
+import { MainApp } from "../app/MainApp";
 import { clamp, makeId } from "../app/Util";
 import { Control, EndPointControl, Path, Segment, Vector } from "../types/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../types/Unit";
@@ -28,13 +28,16 @@ class GeneralConfigImpl implements GeneralConfig {
     this.format = format;
     makeAutoObservable(this);
 
-    reaction(() => this.uol, action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
-      convertGeneralConfigUOL(this, oldUOL);
-    }));
+    reaction(
+      () => this.uol,
+      action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
+        convertGeneralConfigUOL(this, oldUOL);
+      })
+    );
   }
 
   getConfigPanel(app: MainApp) {
-    return <></>
+    return <></>;
   }
 }
 
@@ -45,14 +48,14 @@ class PathConfigImpl implements PathConfig {
     maxLimit: { value: 127, label: "127" },
     step: 1,
     from: 20,
-    to: 100,
+    to: 100
   };
   bentRateApplicableRange: NumberRange = {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 4, label: "4" },
     step: 0.01,
     from: 1.4,
-    to: 1.8,
+    to: 1.8
   };
 
   @Exclude()
@@ -62,9 +65,12 @@ class PathConfigImpl implements PathConfig {
     this.format = format;
     makeAutoObservable(this);
 
-    reaction(() => format.getGeneralConfig().pointDensity, action((val: number, oldVal: number) => {
-      convertPathConfigPointDensity(this, oldVal, val);
-    }));
+    reaction(
+      () => format.getGeneralConfig().pointDensity,
+      action((val: number, oldVal: number) => {
+        convertPathConfigPointDensity(this, oldVal, val);
+      })
+    );
 
     // ALGO: Convert the default parameters to the current point density
     // ALGO: This is only used when a new path is added, not when the path config is loaded
@@ -78,24 +84,30 @@ class PathConfigImpl implements PathConfig {
       <>
         <Box className="panel-box">
           <Typography>Min/Max Speed</Typography>
-          <RangeSlider range={this.speedLimit} onChange={
-            (from, to) => app.history.execute(
-              `Update path ${pathUid} min/max speed`,
-              new UpdateProperties(this.speedLimit, { from, to })
-            )
-          } />
+          <RangeSlider
+            range={this.speedLimit}
+            onChange={(from, to) =>
+              app.history.execute(
+                `Update path ${pathUid} min/max speed`,
+                new UpdateProperties(this.speedLimit, { from, to })
+              )
+            }
+          />
         </Box>
         <Box className="panel-box">
           <Typography>Bent Rate Applicable Range</Typography>
-          <RangeSlider range={this.bentRateApplicableRange} onChange={
-            (from, to) => app.history.execute(
-              `Update path ${pathUid} bent rate applicable range`,
-              new UpdateProperties(this.bentRateApplicableRange, { from, to })
-            )
-          } />
+          <RangeSlider
+            range={this.bentRateApplicableRange}
+            onChange={(from, to) =>
+              app.history.execute(
+                `Update path ${pathUid} bent rate applicable range`,
+                new UpdateProperties(this.bentRateApplicableRange, { from, to })
+              )
+            }
+          />
         </Box>
       </>
-    )
+    );
   }
 }
 
@@ -140,7 +152,7 @@ export class LemLibFormatV0_4 implements Format {
     // find the first line that is "endData"
     const lines = fileContent.split("\n");
 
-    let i = lines.findIndex((line) => line === "endData");
+    let i = lines.findIndex(line => line === "endData");
     if (i === -1) throw new Error("Invalid file format, unable to find line 'endData'");
 
     // i + 1 Deceleration not supported.
@@ -154,19 +166,23 @@ export class LemLibFormatV0_4 implements Format {
 
     const error = () => {
       throw new Error("Invalid file format, unable to parse segment at line " + (i + 1));
-    }
+    };
 
     const num = (str: string): number => {
       const num = Number(str);
       if (isNaN(num)) error();
       return num; // ALGO: removed fix precision
-    }
+    };
 
     const push = (segment: Segment) => {
       // check if there is a path
       if (paths.length === 0) {
         const path = new Path(this.buildPathConfig(), segment);
-        path.pc.speedLimit.to = clamp(maxSpeed.toUser(), path.pc.speedLimit.minLimit.value, path.pc.speedLimit.maxLimit.value);
+        path.pc.speedLimit.to = clamp(
+          maxSpeed.toUser(),
+          path.pc.speedLimit.minLimit.value,
+          path.pc.speedLimit.maxLimit.value
+        );
         paths.push(path);
       } else {
         const path = paths[paths.length - 1];
@@ -178,9 +194,10 @@ export class LemLibFormatV0_4 implements Format {
 
         path.segments.push(segment);
       }
-    }
+    };
 
-    while (i < lines.length - 1) { // ALGO: the last line is always empty, follow the original implementation.
+    while (i < lines.length - 1) {
+      // ALGO: the last line is always empty, follow the original implementation.
       const line = lines[i];
       const tokens = line.split(", ");
       if (tokens.length !== 8) error();

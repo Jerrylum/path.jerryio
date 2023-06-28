@@ -1,7 +1,7 @@
 import { Backdrop, Box, Button, Card, Typography } from "@mui/material";
 import React from "react";
 import { useAppStores } from "./MainApp";
-import { makeAutoObservable, action, when } from "mobx"
+import { makeAutoObservable, action, when } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useBackdropDialog } from "./Util";
 import { ObserverInput } from "./ObserverInput";
@@ -170,44 +170,51 @@ const ConfirmationDialog = observer((props: {}) => {
   return (
     <Backdrop
       className="confirmation-dialog"
-      sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      sx={{ zIndex: theme => theme.zIndex.drawer + 1 }}
       open={true}
       onClick={action(onClick.bind(null, -1))}
-      onKeyDown={action(onKeyDown)} >
-      <Card className="confirmation-card" onClick={(e) => e.stopPropagation()} tabIndex={-1}>
-        <Typography variant="h2" gutterBottom>{cfm.title}</Typography>
+      onKeyDown={action(onKeyDown)}>
+      <Card className="confirmation-card" onClick={e => e.stopPropagation()} tabIndex={-1}>
+        <Typography variant="h2" gutterBottom>
+          {cfm.title}
+        </Typography>
         {/* https://stackoverflow.com/questions/9769587/set-div-to-have-its-siblings-width */}
         <Box className="description-box">
-          <Typography variant="body1" gutterBottom>{cfm.description}</Typography>
+          <Typography variant="body1" gutterBottom>
+            {cfm.description}
+          </Typography>
         </Box>
-        {
-          cfm.input &&
+        {cfm.input && (
           <Box className="input-box">
             <ObserverInput
               label={cfm.inputLabel}
               getValue={() => cfm.input ?? ""}
-              setValue={(value) => cfm.input = value}
+              setValue={value => (cfm.input = value)}
               isValidIntermediate={() => true}
               isValidValue={() => true}
               tabIndex={1000}
               autoFocus
-              onKeyDown={onInputKeyDown} />
+              onKeyDown={onInputKeyDown}
+            />
           </Box>
-        }
+        )}
         <Box className="button-box">
-          {
-            cfm.buttons.map((btn, i) => {
-              return <Button key={i}
+          {cfm.buttons.map((btn, i) => {
+            return (
+              <Button
+                key={i}
                 disableRipple
                 variant="text"
                 color={btn.color ?? "inherit"}
                 tabIndex={1000}
                 autoFocus={i === 0 && cfm.input === undefined}
-                ref={(element) => buttons.current[i] = element!}
+                ref={element => (buttons.current[i] = element!)}
                 onClick={action(onClick.bind(null, i))}>
-                {btn.label}{btn.hotkey ? `(${btn.hotkey.toUpperCase()})` : ""}</Button>
-            })
-          }
+                {btn.label}
+                {btn.hotkey ? `(${btn.hotkey.toUpperCase()})` : ""}
+              </Button>
+            );
+          })}
         </Box>
       </Card>
     </Backdrop>

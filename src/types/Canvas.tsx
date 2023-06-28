@@ -1,4 +1,4 @@
-import Konva from 'konva';
+import Konva from "konva";
 import { Vector } from "./Path";
 
 export interface CanvasEntity {
@@ -17,10 +17,13 @@ export class CanvasConverter {
   public pixel2uol: number; // in uol/pixel
 
   constructor(
-    public pixelWidth: number, public pixelHeight: number,
-    public fieldWidth: number, public fieldHeight: number,
+    public pixelWidth: number,
+    public pixelHeight: number,
+    public fieldWidth: number,
+    public fieldHeight: number,
     public offset: Vector,
-    public scale: number) {
+    public scale: number
+  ) {
     this.pixelWidthHalf = pixelWidth / 2;
     this.pixelHeightHalf = pixelHeight / 2;
     this.uol2pixel = pixelWidth / fieldWidth;
@@ -41,7 +44,12 @@ export class CanvasConverter {
     return rtn;
   }
 
-  getUnboundedPxFromNativeEvent(event: DragEvent | MouseEvent, element: HTMLElement | null, useOffset = true, useScale = true): Vector | undefined {
+  getUnboundedPxFromNativeEvent(
+    event: DragEvent | MouseEvent,
+    element: HTMLElement | null,
+    useOffset = true,
+    useScale = true
+  ): Vector | undefined {
     const canvasPos = element?.getBoundingClientRect();
     if (canvasPos === undefined) return;
 
@@ -55,7 +63,16 @@ export class CanvasConverter {
     return rtn.divide(new Vector(scale, scale)).add(new Vector(offset.x, offset.y));
   }
 
-  getUnboundedPxFromEvent(event: Konva.KonvaEventObject<DragEvent | MouseEvent>, useOffset = true, useScale = true): Vector | undefined {
-    return this.getUnboundedPxFromNativeEvent(event.evt, event.target.getStage()?.container() || null, useOffset, useScale);
+  getUnboundedPxFromEvent(
+    event: Konva.KonvaEventObject<DragEvent | MouseEvent>,
+    useOffset = true,
+    useScale = true
+  ): Vector | undefined {
+    return this.getUnboundedPxFromNativeEvent(
+      event.evt,
+      event.target.getStage()?.container() || null,
+      useOffset,
+      useScale
+    );
   }
 }

@@ -1,7 +1,7 @@
 import React, { DependencyList } from "react";
-import { runInAction } from "mobx"
-import { useHotkeys } from 'react-hotkeys-hook'
-import { HotkeysEvent, HotkeyCallback, Options, RefType, Trigger } from 'react-hotkeys-hook/dist/types';
+import { runInAction } from "mobx";
+import { useHotkeys } from "react-hotkeys-hook";
+import { HotkeysEvent, HotkeyCallback, Options, RefType, Trigger } from "react-hotkeys-hook/dist/types";
 import { useAppStores } from "./MainApp";
 import { TokenParser, NumberWithUnit, CodePointBuffer, Computation } from "../token/Tokens";
 import { Unit } from "../types/Unit";
@@ -22,9 +22,9 @@ export function useTimer(ms: number) {
 export function useIsMacOS() {
   return React.useMemo(() => {
     const os = navigator.userAgent;
-    if (os.search('Windows') !== -1) {
+    if (os.search("Windows") !== -1) {
       return false;
-    } else if (os.search('Mac') !== -1) {
+    } else if (os.search("Mac") !== -1) {
       return true;
     } else {
       return false;
@@ -33,12 +33,15 @@ export function useIsMacOS() {
 }
 
 export interface CustomHotkeysOptions extends Options {
-  preventDefaultOnlyIfEnabled?: boolean
+  preventDefaultOnlyIfEnabled?: boolean;
 }
 
 export function useCustomHotkeys<T extends HTMLElement>(
-  keys: string, callback: () => void,
-  options?: CustomHotkeysOptions, dependencies?: DependencyList): React.MutableRefObject<RefType<T>> {
+  keys: string,
+  callback: () => void,
+  options?: CustomHotkeysOptions,
+  dependencies?: DependencyList
+): React.MutableRefObject<RefType<T>> {
   const timeRef = React.useRef<number | null>(null);
   const enabledRef = React.useRef<boolean>(false);
 
@@ -55,49 +58,55 @@ export function useCustomHotkeys<T extends HTMLElement>(
       if (kvEvt.type === "keyup") {
         timeRef.current = null;
       } else if (kvEvt.type === "keydown") {
-        if (timeRef.current === null || (Date.now() - timeRef.current) > 800) { // it is randomly chosen
+        if (timeRef.current === null || Date.now() - timeRef.current > 800) {
+          // 800 is randomly chosen
           runInAction(func);
         }
         timeRef.current = Date.now();
       }
-    }
+    };
   }
 
-  return useHotkeys(useKeyName(keys), onKeydown(callback), {
-    ...options,
-    keydown: true,
-    keyup: true,
-    preventDefault: false,
-    enabled: (kvEvt: KeyboardEvent, hkEvt: HotkeysEvent): boolean => {
-      let rtn: boolean;
+  return useHotkeys(
+    useKeyName(keys),
+    onKeydown(callback),
+    {
+      ...options,
+      keydown: true,
+      keyup: true,
+      preventDefault: false,
+      enabled: (kvEvt: KeyboardEvent, hkEvt: HotkeysEvent): boolean => {
+        let rtn: boolean;
 
-      const enabledOptions: Trigger | undefined = options?.enabled;
-      if (enabledOptions === undefined) {
-        rtn = true;
-      } else if (typeof enabledOptions === "function") {
-        rtn = enabledOptions(kvEvt, hkEvt);
-      } else {
-        rtn = enabledOptions;
+        const enabledOptions: Trigger | undefined = options?.enabled;
+        if (enabledOptions === undefined) {
+          rtn = true;
+        } else if (typeof enabledOptions === "function") {
+          rtn = enabledOptions(kvEvt, hkEvt);
+        } else {
+          rtn = enabledOptions;
+        }
+
+        enabledRef.current = rtn;
+
+        /*
+        ALGO:
+        If the hotkey is enabled: preventDefault
+        If the hotkey is not enabled, it is allowed to preventDefault: preventDefault
+        Else: do not preventDefault, but return true to prevent useHotkeys from calling preventDefault
+        */
+        if (rtn === true || options?.preventDefaultOnlyIfEnabled !== true) {
+          kvEvt.preventDefault();
+          kvEvt.stopPropagation();
+        } else {
+          rtn = true;
+        }
+
+        return rtn;
       }
-
-      enabledRef.current = rtn;
-
-      /*
-      ALGO:
-      If the hotkey is enabled: preventDefault
-      If the hotkey is not enabled, it is allowed to preventDefault: preventDefault
-      Else: do not preventDefault, but return true to prevent useHotkeys from calling preventDefault
-      */
-      if (rtn === true || options?.preventDefaultOnlyIfEnabled !== true) {
-        kvEvt.preventDefault();
-        kvEvt.stopPropagation();
-      } else {
-        rtn = true;
-      }
-
-      return rtn;
-    }
-  }, dependencies);
+    },
+    dependencies
+  );
 }
 
 export function useKeyName(key: string) {
@@ -113,14 +122,14 @@ export function useUnsavedChangesPrompt() {
         // Cancel the event and show alert that
         // the unsaved changes would be lost
         e.preventDefault();
-        e.returnValue = '';
+        e.returnValue = "";
       }
     };
 
-    window.addEventListener('beforeunload', onBeforeUnload);
+    window.addEventListener("beforeunload", onBeforeUnload);
 
     return () => {
-      window.removeEventListener('beforeunload', onBeforeUnload);
+      window.removeEventListener("beforeunload", onBeforeUnload);
     };
   }, [app.history]);
 }
@@ -147,7 +156,7 @@ export function useBackdropDialog(enable: boolean, onClose?: () => void) {
 
     return () => {
       document.removeEventListener("keydown", onKeydown);
-    }
+    };
   }, [enable, onClose]);
 }
 
@@ -158,7 +167,10 @@ export function useDragDropFile(enable: boolean, onDrop: (file: File) => void) {
     isDraggingFile,
     onDragEnter: (e: React.DragEvent<HTMLDivElement>) => setIsDraggingFile(true),
     onDragLeave: (e: React.DragEvent<HTMLDivElement>) => setIsDraggingFile(false),
-    onDragOver: (e: React.DragEvent<HTMLDivElement>) => { e.preventDefault(); e.stopPropagation(); },
+    onDragOver: (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+    },
     onDrop: (e: React.DragEvent<HTMLDivElement>) => {
       setIsDraggingFile(false);
       e.preventDefault();
@@ -168,13 +180,13 @@ export function useDragDropFile(enable: boolean, onDrop: (file: File) => void) {
       const file = e.dataTransfer.files?.[0];
       if (file === undefined) return;
       onDrop(file);
-    },
+    }
   };
 }
 
 export function makeId(length: number) {
-  let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = "";
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   const charactersLength = characters.length;
   let counter = 0;
   while (counter < length) {
@@ -207,7 +219,10 @@ export function removeFromArray<T>(array: T[], item: T): boolean {
   }
 }
 
-export function parseFormula<U extends Unit>(input: string, numParser: TokenParser<NumberWithUnit<U>>): Computation<U> | null {
+export function parseFormula<U extends Unit>(
+  input: string,
+  numParser: TokenParser<NumberWithUnit<U>>
+): Computation<U> | null {
   return Computation.parseWith(new CodePointBuffer(input), numParser);
 }
 
@@ -217,9 +232,10 @@ declare global {
   }
 }
 
-Number.prototype.toUser = function (digits: number = 3) { // eslint-disable-line no-extend-native
+Number.prototype.toUser = function (digits: number = 3) {
+  // eslint-disable-line no-extend-native
   return parseFloat(this.toFixed(digits));
-}
+};
 
 export function parseUser(value: string, digits: number = 3): number {
   return parseFloat(value).toUser(digits);

@@ -1,13 +1,13 @@
-import { styled } from '@mui/material';
-import { MaterialDesignContent, SnackbarProvider, enqueueSnackbar } from 'notistack'
+import { styled } from "@mui/material";
+import { MaterialDesignContent, SnackbarProvider, enqueueSnackbar } from "notistack";
 
 const StyledMaterialDesignContent = styled(MaterialDesignContent)(() => ({
-  '&.notistack-MuiContent-success': {
-    maxWidth: '16rem',
+  "&.notistack-MuiContent-success": {
+    maxWidth: "16rem"
   },
-  '&.notistack-MuiContent-error': {
-    maxWidth: '16rem',
-  },
+  "&.notistack-MuiContent-error": {
+    maxWidth: "16rem"
+  }
 }));
 
 export function enqueueSuccessSnackbar(message: string) {
@@ -21,8 +21,13 @@ export function enqueueErrorSnackbar(err: unknown) {
 }
 
 export function NoticeProvider() {
-  return <SnackbarProvider maxSnack={3} Components={{
-    success: StyledMaterialDesignContent,
-    error: StyledMaterialDesignContent,
-  }} />;
+  return (
+    <SnackbarProvider
+      maxSnack={3}
+      Components={{
+        success: StyledMaterialDesignContent,
+        error: StyledMaterialDesignContent
+      }}
+    />
+  );
 }
