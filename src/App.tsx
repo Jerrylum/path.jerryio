@@ -2,7 +2,6 @@ import "./App.scss";
 
 import { Path } from "./types/Path";
 
-import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 
 import { ThemeProvider } from "@mui/material/styles";
