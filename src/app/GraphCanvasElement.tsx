@@ -1,6 +1,6 @@
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { KeyframePos, Point, Path, Vector } from "../types/Path";
+import { Point, Path, Vector } from "../types/Path";
 import Konva from "konva";
 import { Circle, Layer, Line, Rect, Stage, Text } from "react-konva";
 import React from "react";
@@ -9,80 +9,7 @@ import { clamp } from "./Util";
 import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateInstancesProperties } from "../types/Command";
 import { useAppStores } from "./MainApp";
 import { KeyframeIndexing } from "../types/Calculation";
-
-export class GraphCanvasConverter {
-  public pointsOnPage: number = 200;
-  public pointWidth: number;
-  public pointRadius: number;
-  public lineWidth: number = 0.5;
-  public twoSidePaddingWidth: number;
-  public rightPaddingStart: number;
-  public axisTitleWidth: number;
-  public axisLineTopX: number;
-  public bodyHeight: number;
-  public axisLineBottomX: number;
-
-  constructor(public pixelWidth: number, public pixelHeight: number, public xOffset: number, public path: Path) {
-    this.pointWidth = pixelWidth / this.pointsOnPage;
-    this.pointRadius = this.pointWidth / 2;
-    this.twoSidePaddingWidth = this.pointWidth * 14;
-    this.rightPaddingStart = this.pixelWidth - this.twoSidePaddingWidth;
-    this.axisTitleWidth = this.pointWidth * 12;
-    this.axisLineTopX = this.pixelHeight * 0.2;
-    this.bodyHeight = this.pixelHeight * 0.6;
-    this.axisLineBottomX = this.pixelHeight * 0.8;
-  }
-
-  toPxNumber(index: number): number {
-    return index * this.pointWidth + this.pointWidth * 14 - this.xOffset;
-  }
-
-  toIndexNumber(px: number): number {
-    return Math.floor((px + this.xOffset - this.twoSidePaddingWidth) / this.pointWidth);
-  }
-
-  toPos(px: Vector): KeyframePos | undefined {
-    const x = px.x;
-    const y = px.y;
-
-    let index = this.toIndexNumber(x);
-    if (index >= this.path.cachedResult.points.length - 2) {
-      index = this.path.cachedResult.points.length - 2;
-    }
-    if (index < 0) {
-      index = 0;
-    }
-
-    const segmentIndex = this.path.cachedResult.segmentIndexes.findIndex(
-      range => range.from <= index && range.to > index
-    );
-    if (segmentIndex === -1) return;
-
-    const range = this.path.cachedResult.segmentIndexes[segmentIndex];
-    const segment = this.path.segments[segmentIndex];
-
-    let xPos = (index - range.from) / (range.to - range.from);
-    if (xPos === Infinity || xPos === -Infinity || isNaN(xPos)) return;
-
-    let yPos = 1 - (y - this.axisLineTopX) / (this.axisLineBottomX - this.axisLineTopX);
-    if (yPos === Infinity || yPos === -Infinity || isNaN(yPos)) return;
-    if (yPos < 0) yPos = 0;
-    if (yPos > 1) yPos = 1;
-
-    return { segment, xPos, yPos };
-  }
-
-  toPx(pos: KeyframePos): Vector {
-    const segment = pos.segment;
-    const segmentIndex = this.path.segments.findIndex(s => s === segment);
-    const range = this.path.cachedResult.segmentIndexes[segmentIndex];
-
-    const x = range.from + pos.xPos * (range.to - range.from);
-    const y = this.axisLineTopX + (1 - pos.yPos) * (this.axisLineBottomX - this.axisLineTopX);
-
-    return new Vector(this.toPxNumber(x), y);
-  }
-}
+import { GraphCanvasConverter } from "../types/Canvas";
 
 const PathPoints = observer((props: { path: Path; gcc: GraphCanvasConverter }) => {
   const { path, gcc } = props;
