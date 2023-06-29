@@ -8,7 +8,8 @@ import { NumberRange, RangeSlider } from "../app/RangeSlider";
 import { Box, Typography } from "@mui/material";
 import { UpdateProperties } from "../types/Command";
 import { Exclude } from "class-transformer";
-import { getPathPoints } from "../types/Calculation";
+import { PointCalculationResult, getPathPoints } from "../types/Calculation";
+import { Path } from "../types/Path";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -141,6 +142,10 @@ export class PathDotJerryioFormatV0_1 implements Format {
 
   buildPathConfig(): PathConfig {
     return new PathConfigImpl(this);
+  }
+
+  getPathPoints(path: Path): PointCalculationResult {
+    return getPathPoints(path, new Quantity(this.gc.pointDensity, this.gc.uol));
   }
 
   recoverPathFileData(fileContent: string): PathFileData {

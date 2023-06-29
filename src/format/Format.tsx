@@ -5,6 +5,7 @@ import { PathDotJerryioFormatV0_1 } from "./PathDotJerryioFormatV0_1";
 import { GeneralConfig, PathConfig } from "./Config";
 import { Range } from "semver";
 import { UnitOfLength } from "../types/Unit";
+import { PointCalculationResult } from "../types/Calculation";
 
 export interface Format {
   isInit: boolean;
@@ -19,6 +20,8 @@ export interface Format {
   getGeneralConfig(): GeneralConfig;
 
   buildPathConfig(): PathConfig;
+
+  getPathPoints(path: Path): PointCalculationResult;
 
   recoverPathFileData(fileContent: string): PathFileData;
 

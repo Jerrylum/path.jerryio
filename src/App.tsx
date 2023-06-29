@@ -25,8 +25,6 @@ import { NoticeProvider } from "./app/Notice";
 import { ConfirmationDialog } from "./app/Confirmation";
 import { HelpDialog } from "./app/HelpDialog";
 import { PreferencesDialog } from "./app/Preferences";
-import { Quantity } from "./types/Unit";
-import { getPathPoints } from "./types/Calculation";
 import { DragDropBackdrop } from "./app/DragDropBackdrop";
 import { RemovePathsAndEndControls } from "./types/Command";
 
@@ -44,12 +42,10 @@ const App = observer(() => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(
     action(() => {
-      const density = new Quantity(app.gc.pointDensity, app.gc.uol);
       const interested = app.interestedPath();
-
       app.paths
-        .filter((path) => path.visible || path === interested)
-        .forEach((path) => (path.cachedResult = getPathPoints(path, density)));
+        .filter(path => path.visible || path === interested)
+        .forEach(path => (path.cachedResult = app.format.getPathPoints(path)));
     }),
     undefined
   );
@@ -93,7 +89,7 @@ const App = observer(() => {
     () => {
       const path = app.selectedPath;
       const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
-      app.setSelected(all.filter((e) => !app.selectedEntities.includes(e)));
+      app.setSelected(all.filter(e => !app.selectedEntities.includes(e)));
     },
     optionsToEnableHotkeys
   );
@@ -112,7 +108,7 @@ const App = observer(() => {
     // UX: A special case for input[type="checkbox"], it is okay to enable hotkeys on it
     enabled: (kvEvt: KeyboardEvent) =>
       optionsToEnableHotkeys.enabled &&
-      (kvEvt.target instanceof HTMLInputElement === false || (kvEvt.target as HTMLInputElement).type === "checkbox"),
+      (kvEvt.target instanceof HTMLInputElement === false || (kvEvt.target as HTMLInputElement).type === "checkbox")
   });
 
   useCustomHotkeys(
@@ -137,8 +133,7 @@ const App = observer(() => {
       tabIndex={-1}
       className={classNames("App", appPreferences.theme.className)}
       {...{ onDragEnter, onDragOver, onDrop }}
-      key={app.format.uid + "-" + app.gc.uol}
-    >
+      key={app.format.uid + "-" + app.gc.uol}>
       <ThemeProvider theme={appPreferences.theme.theme}>
         <NoticeProvider />
         <Box id="left-editor-panel">

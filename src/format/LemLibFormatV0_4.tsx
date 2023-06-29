@@ -9,7 +9,7 @@ import { Box, Typography } from "@mui/material";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
 import { UpdateProperties } from "../types/Command";
 import { Exclude } from "class-transformer";
-import { getPathPoints } from "../types/Calculation";
+import { PointCalculationResult, getPathPoints } from "../types/Calculation";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -144,6 +144,10 @@ export class LemLibFormatV0_4 implements Format {
     return new PathConfigImpl(this);
   }
 
+  getPathPoints(path: Path): PointCalculationResult {
+    return getPathPoints(path, new Quantity(this.gc.pointDensity, this.gc.uol));
+  }
+
   recoverPathFileData(fileContent: string): PathFileData {
     // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.
 
@@ -225,7 +229,7 @@ export class LemLibFormatV0_4 implements Format {
     if (path.segments.length === 0) throw new Error("No segment to export");
 
     const uc = new UnitConverter(this.gc.uol, UnitOfLength.Inch);
-    const density = new Quantity(app.gc.pointDensity, app.gc.uol);
+    const density = new Quantity(this.gc.pointDensity, this.gc.uol);
 
     const points = getPathPoints(path, density).points;
     for (const point of points) {

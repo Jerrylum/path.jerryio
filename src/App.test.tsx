@@ -12,7 +12,7 @@ import { Format, PathFileData } from './format/Format';
 import { Quantity, UnitOfLength } from "./types/Unit";
 import DOMPurify from "dompurify";
 import { NumberRange } from "./app/RangeSlider";
-import { getBezierCurveArcLength, getBezierCurvePoints, getPathSamplePoints, getSegmentSamplePoints, getUniformPointsFromSamples, toDerivativeHeading } from "./types/Calculation";
+import { PointCalculationResult, getBezierCurveArcLength, getBezierCurvePoints, getPathSamplePoints, getSegmentSamplePoints, getUniformPointsFromSamples, toDerivativeHeading } from "./types/Calculation";
 
 class CustomFormat implements Format {
   isInit: boolean;
@@ -38,6 +38,9 @@ class CustomFormat implements Format {
   }
   buildPathConfig(): PathConfig {
     return new CustomPathConfig();
+  }
+  getPathPoints(path: Path): PointCalculationResult {
+    throw new Error("Method not implemented.");
   }
   recoverPathFileData(fileContent: string): PathFileData {
     throw new Error("Method not implemented.");
