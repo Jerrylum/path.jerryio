@@ -8,12 +8,12 @@ import { SegmentElementProps } from "./SegmentElement";
 import { DragControls, RemovePathsAndEndControls } from "../types/Command";
 import { useAppStores } from "./MainApp";
 
-export interface SegmentControlElementProps extends SegmentElementProps {
+export interface ControlElementProps extends SegmentElementProps {
   cp: EndPointControl | Control;
   isGrabAndMove: boolean;
 }
 
-const SegmentControlElement = observer((props: SegmentControlElementProps) => {
+const ControlElement = observer((props: ControlElementProps) => {
   const { app } = useAppStores();
 
   const [justSelected, setJustSelected] = useState(false);
@@ -78,7 +78,7 @@ const SegmentControlElement = observer((props: SegmentControlElementProps) => {
     if (props.cp.lock || props.path.lock) {
       evt.preventDefault();
 
-      const cpInUOL = props.cp.clone();
+      const cpInUOL = props.cp.toVector() // ALGO: Use toVector for better performance
       const cpInPx = props.cc.toPx(cpInUOL);
 
       // UX: Set the position of the control point back to the original position
@@ -87,7 +87,7 @@ const SegmentControlElement = observer((props: SegmentControlElementProps) => {
       return;
     }
 
-    const oldCpInUOL = props.cp.clone();
+    const oldCpInUOL = props.cp.toVector();
 
     // UX: Calculate the position of the control point by the client mouse position
     let cpInPx = props.cc.getUnboundedPxFromEvent(event);
@@ -206,7 +206,7 @@ const SegmentControlElement = observer((props: SegmentControlElementProps) => {
 
   const lineWidth = props.cc.pixelWidth / 600;
   const cpRadius = props.cc.pixelWidth / 40;
-  const cpInPx = props.cc.toPx(props.cp);
+  const cpInPx = props.cc.toPx(props.cp.toVector()); // ALGO: Use toVector() for better performance
   const fillColor = app.isSelected(props.cp) ? "#5C469Cdf" : "#5C469C6f";
   const isMainControl = props.cp instanceof EndPointControl;
 
@@ -248,8 +248,8 @@ const SegmentControlElement = observer((props: SegmentControlElementProps) => {
             points={[
               cpInPx.x,
               cpInPx.y,
-              cpInPx.x + Math.sin(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius,
-              cpInPx.y + Math.cos(-((cpInPx as EndPointControl).headingInRadian() - Math.PI)) * cpRadius
+              cpInPx.x + Math.sin(-((props.cp as EndPointControl).headingInRadian() - Math.PI)) * cpRadius,
+              cpInPx.y + Math.cos(-((props.cp as EndPointControl).headingInRadian() - Math.PI)) * cpRadius
             ]}
             stroke="ffffff"
             strokeWidth={lineWidth}
@@ -272,4 +272,4 @@ const SegmentControlElement = observer((props: SegmentControlElementProps) => {
   );
 });
 
-export { SegmentControlElement };
+export { ControlElement };

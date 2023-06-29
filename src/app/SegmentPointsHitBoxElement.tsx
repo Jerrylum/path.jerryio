@@ -48,7 +48,7 @@ const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
   let points: number[] = [];
 
   for (let cp of props.segment.controls) {
-    let cpInPx = props.cc.toPx(cp);
+    let cpInPx = props.cc.toPx(cp.toVector()); // ALGO: Use toVector for better performance
     points.push(cpInPx.x);
     points.push(cpInPx.y);
   }

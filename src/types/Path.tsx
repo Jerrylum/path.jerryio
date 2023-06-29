@@ -311,12 +311,9 @@ export class Path implements InteractiveEntity {
   public lock: boolean = false;
   public visible: boolean = true;
 
-  @Exclude()
-  public cachedResult: PointCalculationResult = {
-    points: [],
-    segmentIndexes: [],
-    keyframeIndexes: []
-  };
+  @computed get cachedResult(): PointCalculationResult {
+    return this.pc.format.getPathPoints(this);
+  }
 
   constructor(pc: PathConfig, firstSegment: Segment) {
     this.segments = [firstSegment];

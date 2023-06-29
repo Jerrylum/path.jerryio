@@ -84,6 +84,32 @@ export class GraphCanvasConverter {
   }
 }
 
+const PathPoints = observer((props: { path: Path; gcc: GraphCanvasConverter }) => {
+  const { path, gcc } = props;
+
+  // ALGO: This is a separate component because it is expensive to render.
+
+  return (
+    <>
+      {path.cachedResult.points.map((point, index) => (
+        <PointElement key={index} pc={path.pc} {...{ point, index, gcc }} />
+      ))}
+    </>
+  );
+});
+
+const Keyframes = observer((props: { path: Path; gcc: GraphCanvasConverter }) => {
+  const { path, gcc } = props;
+
+  return (
+    <>
+      {path.cachedResult.keyframeIndexes.map(ikf => (
+        <KeyframeElement key={ikf.keyframe.uid} {...{ ikf, gcc }} />
+      ))}
+    </>
+  );
+});
+
 const PointElement = observer((props: { point: Point; index: number; pc: PathConfig; gcc: GraphCanvasConverter }) => {
   const { point, index, pc, gcc } = props;
 
@@ -239,9 +265,7 @@ const GraphCanvasElement = observer((props: {}) => {
           strokeWidth={gcc.lineWidth}
         />
 
-        {path?.cachedResult.points.map((point, index) => (
-          <PointElement key={index} pc={path.pc} {...{ point, index, gcc }} />
-        ))}
+        <PathPoints {...{ path, gcc }} />
 
         <Rect x={0} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill={bgColor} />
         <Rect x={gcc.rightPaddingStart} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill={bgColor} />
@@ -253,9 +277,8 @@ const GraphCanvasElement = observer((props: {}) => {
           height={gcc.pixelHeight}
           onClick={action(onGraphClick)}
         />
-        {path?.cachedResult.keyframeIndexes.map(ikf => (
-          <KeyframeElement key={ikf.keyframe.uid} {...{ ikf, gcc }} />
-        ))}
+
+        <Keyframes {...{ path, gcc }} />
 
         <Rect x={0} y={0} width={gcc.axisTitleWidth} height={gcc.pixelHeight} fill={bgColor} />
         <Text

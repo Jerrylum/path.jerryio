@@ -8,7 +8,7 @@ import React from "react";
 import useImage from "use-image";
 
 import fieldImageUrl from "../static/field2023.png";
-import { SegmentControlElement } from "./SegmentControlElement";
+import { ControlElement } from "./ControlElement";
 import { AreaElement } from "./AreaElement";
 import { UnitConverter, UnitOfLength } from "../types/Unit";
 import { CanvasConverter } from "../types/Canvas";
@@ -17,10 +17,60 @@ import { AddPath, AddSegment } from "../types/Command";
 import { useAppStores } from "./MainApp";
 import { RobotElement } from "./RobotElement";
 import { firstDerivative, toDerivativeHeading, toHeading } from "../types/Calculation";
+import ReactDOM from "react-dom";
+
+const PathPoints = observer((props: { path: Path; cc: CanvasConverter }) => {
+  const { path, cc } = props;
+
+  const pc = path.pc;
+  const speedFrom = pc.speedLimit.from;
+  const speedTo = pc.speedLimit.to;
+  const pointRadius = cc.pixelWidth / 320;
+
+  // ALGO: This is a separate component because it is expensive to render.
+
+  return (
+    <>
+      {path.cachedResult.points.map((pointInUOL, index) => {
+        const pointInPx = cc.toPx(pointInUOL);
+        const percentage = (pointInUOL.speed - speedFrom) / (speedTo - speedFrom);
+        // h => hue, s => saturation, l => lightness
+        const color = `hsl(${percentage * 90}, 70%, 50%)`; // red = min speed, green = max speed
+        return <Circle key={index} x={pointInPx.x} y={pointInPx.y} radius={pointRadius} fill={color} />;
+      })}
+    </>
+  );
+});
+
+const PathSegments = observer((props: { path: Path; cc: CanvasConverter }) => {
+  const { path, cc } = props;
+
+  return (
+    <>
+      {path.segments.map(
+        segment => segment.isVisible() && <SegmentElement key={segment.uid} {...{ segment, path, cc }} />
+      )}
+    </>
+  );
+});
+
+const PathControls = observer((props: { path: Path; cc: CanvasConverter; isGrabAndMove: boolean }) => {
+  const { path, cc, isGrabAndMove } = props;
+
+  return (
+    <>
+      {path.segments.map(segment =>
+        segment.controls.map((cp, cpIdx) => {
+          const isFirstSegment = path.segments[0] === segment;
+          if (isFirstSegment === false && cpIdx === 0) return null;
+          return cp.visible && <ControlElement key={cp.uid} {...{ segment, path, cc, cp, isGrabAndMove }} />;
+        })
+      )}
+    </>
+  );
+});
 
 const FieldCanvasElement = observer((props: {}) => {
-  // useTimer(1000 / 30);
-
   const { app } = useAppStores();
 
   const uc = new UnitConverter(UnitOfLength.Foot, app.gc.uol);
@@ -143,7 +193,9 @@ const FieldCanvasElement = observer((props: {}) => {
       const posInPx = cc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
 
-      setAreaSelectionEnd(posInPx);
+      // UX: Use flushSync to prevent lagging
+      // See: https://github.com/reactwg/react-18/discussions/21
+      ReactDOM.flushSync(() => setAreaSelectionEnd(posInPx));
       app.updateAreaSelection(cc.toUOL(areaSelectionStart), cc.toUOL(posInPx));
     } else if (offsetStart !== undefined) {
       // UX: Move field if: middle click
@@ -283,8 +335,6 @@ const FieldCanvasElement = observer((props: {}) => {
   const magnetInPx = cc.toPx(app.magnet);
   const visiblePaths = paths.filter(path => path.visible);
 
-  const pointRadius = cc.pixelWidth / 320;
-
   return (
     <Stage
       className="field-canvas"
@@ -309,50 +359,14 @@ const FieldCanvasElement = observer((props: {}) => {
         {app.magnet.y !== Infinity ? (
           <Line points={[0, magnetInPx.y, cc.pixelHeight, magnetInPx.y]} stroke="red" strokeWidth={lineWidth} />
         ) : null}
-        {visiblePaths.map((path, index) => (
-          <React.Fragment key={index}>
-            {path.cachedResult.points.map((pointInUOL, index) => {
-              const pc = path.pc;
-
-              const speedFrom = pc.speedLimit.from;
-              const speedTo = pc.speedLimit.to;
-
-              const pointInPx = cc.toPx(pointInUOL);
-              const percentage = (pointInUOL.speed - speedFrom) / (speedTo - speedFrom);
-              // h => hue
-              // s => saturation
-              // l => lightness
-              const color = `hsl(${percentage * 90}, 70%, 50%)`; // red = min speed, green = max speed
-              return <Circle key={index} x={pointInPx.x} y={pointInPx.y} radius={pointRadius} fill={color} />;
-            })}
-          </React.Fragment>
+        {visiblePaths.map(path => (
+          <PathPoints key={path.uid} path={path} cc={cc} />
         ))}
-        {visiblePaths.map((path, index) => (
-          <React.Fragment key={index}>
-            {path.segments.map(segment => {
-              if (segment.isVisible()) return <SegmentElement key={segment.uid} {...{ segment, path, cc }} />;
-              else return null;
-            })}
-          </React.Fragment>
+        {visiblePaths.map(path => (
+          <PathSegments key={path.uid} path={path} cc={cc} />
         ))}
-        {visiblePaths.map((path, index) => (
-          <React.Fragment key={index}>
-            {path.segments.map(segment =>
-              segment.controls.map((cp, cpIdx) => {
-                const isFirstSegment = path.segments[0] === segment;
-                if (!isFirstSegment && cpIdx === 0) return null;
-                if (cp.visible)
-                  return (
-                    <SegmentControlElement
-                      key={cpIdx}
-                      isGrabAndMove={offsetStart !== undefined}
-                      {...{ segment, path, cc, cp }}
-                    />
-                  );
-                else return null;
-              })
-            )}
-          </React.Fragment>
+        {visiblePaths.map(path => (
+          <PathControls key={path.uid} path={path} cc={cc} isGrabAndMove={offsetStart !== undefined} />
         ))}
         {app.gc.showRobot && app.robot.position.visible && (
           <RobotElement cc={cc} pos={app.robot.position} width={app.gc.robotWidth} height={app.gc.robotHeight} />

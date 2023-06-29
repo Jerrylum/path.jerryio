@@ -8,7 +8,7 @@ import { observer } from "mobx-react-lite";
 import { ThemeProvider } from "@mui/material/styles";
 
 import { Box, Card } from "@mui/material";
-import { useCustomHotkeys, useDragDropFile, useTimer, useUnsavedChangesPrompt } from "./app/Util";
+import { useCustomHotkeys, useDragDropFile, useUnsavedChangesPrompt } from "./app/Util";
 import { MenuAccordion } from "./app/MenuAccordion";
 import { PathTreeAccordion } from "./app/PathTreeAccordion";
 import { GeneralConfigAccordion } from "./app/GeneralConfigAccordion";
@@ -35,20 +35,7 @@ export interface AppProps {
 }
 
 const App = observer(() => {
-  useTimer(1000 / 30);
-
   const { app, confirmation, help, appPreferences } = useAppStores();
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  React.useEffect(
-    action(() => {
-      const interested = app.interestedPath();
-      app.paths
-        .filter(path => path.visible || path === interested)
-        .forEach(path => (path.cachedResult = app.format.getPathPoints(path)));
-    }),
-    undefined
-  );
 
   const isUsingEditor = !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen;
   const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(
