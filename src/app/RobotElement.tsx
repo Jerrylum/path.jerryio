@@ -1,17 +1,17 @@
 import { observer } from "mobx-react-lite";
 import { EndPointControl, Vector } from "../types/Path";
-import { CanvasConverter } from "../types/Canvas";
+import { FieldCanvasConverter } from "../types/Canvas";
 import { Group, Line, Rect } from "react-konva";
 
-const RobotElement = observer((props: { cc: CanvasConverter; pos: EndPointControl; width: number; height: number }) => {
-  const widthInPx = props.width * props.cc.uol2pixel;
-  const heightInPx = props.height * props.cc.uol2pixel;
+const RobotElement = observer((props: { fcc: FieldCanvasConverter; pos: EndPointControl; width: number; height: number }) => {
+  const widthInPx = props.width * props.fcc.uol2pixel;
+  const heightInPx = props.height * props.fcc.uol2pixel;
   const startInUOL = new Vector(props.pos.x, props.pos.y);
-  const startInPx = props.cc.toPx(startInUOL);
+  const startInPx = props.fcc.toPx(startInUOL);
   const centerInPx = new Vector(widthInPx / 2, heightInPx / 2);
   const frontInPx = centerInPx.add(new Vector(0, -heightInPx / 2));
 
-  const lineWidth = props.cc.pixelWidth / 600;
+  const lineWidth = props.fcc.pixelWidth / 600;
 
   return (
     <Group

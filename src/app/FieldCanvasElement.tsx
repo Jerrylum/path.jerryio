@@ -11,7 +11,7 @@ import fieldImageUrl from "../static/field2023.png";
 import { ControlElement } from "./ControlElement";
 import { AreaElement } from "./AreaElement";
 import { UnitConverter, UnitOfLength } from "../types/Unit";
-import { CanvasConverter } from "../types/Canvas";
+import { FieldCanvasConverter } from "../types/Canvas";
 import { clamp } from "./Util";
 import { AddPath, AddSegment } from "../types/Command";
 import { useAppStores } from "./MainApp";
@@ -19,20 +19,20 @@ import { RobotElement } from "./RobotElement";
 import { firstDerivative, toDerivativeHeading, toHeading } from "../types/Calculation";
 import ReactDOM from "react-dom";
 
-const PathPoints = observer((props: { path: Path; cc: CanvasConverter }) => {
-  const { path, cc } = props;
+const PathPoints = observer((props: { path: Path; fcc: FieldCanvasConverter }) => {
+  const { path, fcc } = props;
 
   const pc = path.pc;
   const speedFrom = pc.speedLimit.from;
   const speedTo = pc.speedLimit.to;
-  const pointRadius = cc.pixelWidth / 320;
+  const pointRadius = fcc.pixelWidth / 320;
 
   // ALGO: This is a separate component because it is expensive to render.
 
   return (
     <>
       {path.cachedResult.points.map((pointInUOL, index) => {
-        const pointInPx = cc.toPx(pointInUOL);
+        const pointInPx = fcc.toPx(pointInUOL);
         const percentage = (pointInUOL.speed - speedFrom) / (speedTo - speedFrom);
         // h => hue, s => saturation, l => lightness
         const color = `hsl(${percentage * 90}, 70%, 50%)`; // red = min speed, green = max speed
@@ -42,20 +42,20 @@ const PathPoints = observer((props: { path: Path; cc: CanvasConverter }) => {
   );
 });
 
-const PathSegments = observer((props: { path: Path; cc: CanvasConverter }) => {
-  const { path, cc } = props;
+const PathSegments = observer((props: { path: Path; fcc: FieldCanvasConverter }) => {
+  const { path, fcc } = props;
 
   return (
     <>
       {path.segments.map(
-        segment => segment.isVisible() && <SegmentElement key={segment.uid} {...{ segment, path, cc }} />
+        segment => segment.isVisible() && <SegmentElement key={segment.uid} {...{ segment, path, fcc }} />
       )}
     </>
   );
 });
 
-const PathControls = observer((props: { path: Path; cc: CanvasConverter; isGrabAndMove: boolean }) => {
-  const { path, cc, isGrabAndMove } = props;
+const PathControls = observer((props: { path: Path; fcc: FieldCanvasConverter; isGrabAndMove: boolean }) => {
+  const { path, fcc, isGrabAndMove } = props;
 
   return (
     <>
@@ -63,7 +63,7 @@ const PathControls = observer((props: { path: Path; cc: CanvasConverter; isGrabA
         segment.controls.map((cp, cpIdx) => {
           const isFirstSegment = path.segments[0] === segment;
           if (isFirstSegment === false && cpIdx === 0) return null;
-          return cp.visible && <ControlElement key={cp.uid} {...{ segment, path, cc, cp, isGrabAndMove }} />;
+          return cp.visible && <ControlElement key={cp.uid} {...{ segment, path, fcc, cp, isGrabAndMove }} />;
         })
       )}
     </>
@@ -88,7 +88,7 @@ const FieldCanvasElement = observer((props: {}) => {
   const offset = app.fieldOffset;
   const scale = app.fieldScale;
 
-  const cc = new CanvasConverter(canvasSizeInPx, canvasSizeInPx, canvasSizeInUOL, canvasSizeInUOL, offset, scale);
+  const fcc = new FieldCanvasConverter(canvasSizeInPx, canvasSizeInPx, canvasSizeInUOL, canvasSizeInUOL, offset, scale);
 
   function onWheelStage(event: Konva.KonvaEventObject<WheelEvent>) {
     const evt = event.evt;
@@ -99,7 +99,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
     evt.preventDefault();
 
-    const pos = cc.getUnboundedPxFromEvent(event, false, false);
+    const pos = fcc.getUnboundedPxFromEvent(event, false, false);
     if (pos === undefined) return;
 
     const negative1 = new Vector(-1, -1);
@@ -112,8 +112,8 @@ const FieldCanvasElement = observer((props: {}) => {
     // offsetInCC is offset in HTML Canvas coordinate system (CC)
     const offsetInCC = offset.multiply(scaleVector).multiply(negative1);
 
-    const canvasHalfSizeWithScale = (cc.pixelWidth * scale) / 2;
-    const newCanvasHalfSizeWithScale = (cc.pixelWidth * newScale) / 2;
+    const canvasHalfSizeWithScale = (fcc.pixelWidth * scale) / 2;
+    const newCanvasHalfSizeWithScale = (fcc.pixelWidth * newScale) / 2;
 
     // UX: Maintain zoom center at mouse pointer
     const fieldCenter = offsetInCC.add(new Vector(canvasHalfSizeWithScale, canvasHalfSizeWithScale));
@@ -153,7 +153,7 @@ const FieldCanvasElement = observer((props: {}) => {
       // UX: selectedBefore is empty if: left click without shift
       app.startAreaSelection();
 
-      const posInPx = cc.getUnboundedPxFromEvent(event);
+      const posInPx = fcc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
       setAreaSelectionStart(posInPx);
     } else if (evt.button === 1 && areaSelectionStart === undefined) {
@@ -161,7 +161,7 @@ const FieldCanvasElement = observer((props: {}) => {
       // UX: Start "Grab & Move" if: middle click at any position
       evt.preventDefault(); // UX: Prevent default action (scrolling)
 
-      const posInPx = cc.getUnboundedPxFromEvent(event, false);
+      const posInPx = fcc.getUnboundedPxFromEvent(event, false);
       if (posInPx === undefined) return;
 
       setOffsetStart(posInPx.add(offset));
@@ -190,16 +190,16 @@ const FieldCanvasElement = observer((props: {}) => {
 
     if (areaSelectionStart !== undefined) {
       // UX: Select control point if mouse down on field image
-      const posInPx = cc.getUnboundedPxFromEvent(event);
+      const posInPx = fcc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
 
       // UX: Use flushSync to prevent lagging
       // See: https://github.com/reactwg/react-18/discussions/21
       ReactDOM.flushSync(() => setAreaSelectionEnd(posInPx));
-      app.updateAreaSelection(cc.toUOL(areaSelectionStart), cc.toUOL(posInPx));
+      app.updateAreaSelection(fcc.toUOL(areaSelectionStart), fcc.toUOL(posInPx));
     } else if (offsetStart !== undefined) {
       // UX: Move field if: middle click
-      const posInPx = cc.getUnboundedPxFromEvent(event, false);
+      const posInPx = fcc.getUnboundedPxFromEvent(event, false);
       if (posInPx === undefined) return;
 
       const newOffset = offsetStart.subtract(posInPx);
@@ -208,9 +208,9 @@ const FieldCanvasElement = observer((props: {}) => {
       app.fieldOffset = newOffset;
     } else if (app.gc.showRobot) {
       // UX: Show robot if: alt key is down and no other action is performed
-      const posInPx = cc.getUnboundedPxFromEvent(event);
+      const posInPx = fcc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
-      const posInUOL = cc.toUOL(posInPx);
+      const posInUOL = fcc.toUOL(posInPx);
 
       const interested = app.interestedPath();
       if (interested === undefined) return;
@@ -296,10 +296,10 @@ const FieldCanvasElement = observer((props: {}) => {
 
     setIsAddingControl(false);
 
-    const posInPx = cc.getUnboundedPxFromEvent(event);
+    const posInPx = fcc.getUnboundedPxFromEvent(event);
     if (posInPx === undefined) return;
 
-    const cpInUOL = cc.toUOL(new EndPointControl(posInPx.x, posInPx.y, 0));
+    const cpInUOL = fcc.toUOL(new EndPointControl(posInPx.x, posInPx.y, 0));
 
     // UX: Set target path to "interested path"
     let targetPath: Path | undefined = app.interestedPath();
@@ -332,14 +332,14 @@ const FieldCanvasElement = observer((props: {}) => {
   }
 
   const lineWidth = 1;
-  const magnetInPx = cc.toPx(app.magnet);
+  const magnetInPx = fcc.toPx(app.magnet);
   const visiblePaths = paths.filter(path => path.visible);
 
   return (
     <Stage
       className="field-canvas"
-      width={cc.pixelWidth}
-      height={cc.pixelHeight}
+      width={fcc.pixelWidth}
+      height={fcc.pixelHeight}
       scale={new Vector(scale, scale)}
       offset={offset}
       draggable
@@ -352,24 +352,24 @@ const FieldCanvasElement = observer((props: {}) => {
       onDragMove={action(onMouseMoveOrDragStage)}
       onDragEnd={action(onDragEndStage)}>
       <Layer>
-        <Image image={fieldImage} width={cc.pixelWidth} height={cc.pixelHeight} onClick={action(onClickFieldImage)} />
+        <Image image={fieldImage} width={fcc.pixelWidth} height={fcc.pixelHeight} onClick={action(onClickFieldImage)} />
         {app.magnet.x !== Infinity ? (
-          <Line points={[magnetInPx.x, 0, magnetInPx.x, cc.pixelHeight]} stroke="red" strokeWidth={lineWidth} />
+          <Line points={[magnetInPx.x, 0, magnetInPx.x, fcc.pixelHeight]} stroke="red" strokeWidth={lineWidth} />
         ) : null}
         {app.magnet.y !== Infinity ? (
-          <Line points={[0, magnetInPx.y, cc.pixelHeight, magnetInPx.y]} stroke="red" strokeWidth={lineWidth} />
+          <Line points={[0, magnetInPx.y, fcc.pixelHeight, magnetInPx.y]} stroke="red" strokeWidth={lineWidth} />
         ) : null}
         {visiblePaths.map(path => (
-          <PathPoints key={path.uid} path={path} cc={cc} />
+          <PathPoints key={path.uid} path={path} fcc={fcc} />
         ))}
         {visiblePaths.map(path => (
-          <PathSegments key={path.uid} path={path} cc={cc} />
+          <PathSegments key={path.uid} path={path} fcc={fcc} />
         ))}
         {visiblePaths.map(path => (
-          <PathControls key={path.uid} path={path} cc={cc} isGrabAndMove={offsetStart !== undefined} />
+          <PathControls key={path.uid} path={path} fcc={fcc} isGrabAndMove={offsetStart !== undefined} />
         ))}
         {app.gc.showRobot && app.robot.position.visible && (
-          <RobotElement cc={cc} pos={app.robot.position} width={app.gc.robotWidth} height={app.gc.robotHeight} />
+          <RobotElement fcc={fcc} pos={app.robot.position} width={app.gc.robotWidth} height={app.gc.robotHeight} />
         )}
         <AreaElement from={areaSelectionStart} to={areaSelectionEnd} />
       </Layer>

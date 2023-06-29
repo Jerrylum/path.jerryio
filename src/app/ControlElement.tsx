@@ -79,7 +79,7 @@ const ControlElement = observer((props: ControlElementProps) => {
       evt.preventDefault();
 
       const cpInUOL = props.cp.toVector() // ALGO: Use toVector for better performance
-      const cpInPx = props.cc.toPx(cpInUOL);
+      const cpInPx = props.fcc.toPx(cpInUOL);
 
       // UX: Set the position of the control point back to the original position
       event.target.x(cpInPx.x);
@@ -90,9 +90,9 @@ const ControlElement = observer((props: ControlElementProps) => {
     const oldCpInUOL = props.cp.toVector();
 
     // UX: Calculate the position of the control point by the client mouse position
-    let cpInPx = props.cc.getUnboundedPxFromEvent(event);
+    let cpInPx = props.fcc.getUnboundedPxFromEvent(event);
     if (cpInPx === undefined) return;
-    let cpInUOL = props.cc.toUOL(cpInPx);
+    let cpInUOL = props.fcc.toUOL(cpInPx);
     // first set the position of the control point so we can calculate the position of the follower control points
     props.cp.setXY(cpInUOL);
 
@@ -181,7 +181,7 @@ const ControlElement = observer((props: ControlElementProps) => {
       5000
     );
 
-    cpInPx = props.cc.toPx(cpInUOL);
+    cpInPx = props.fcc.toPx(cpInUOL);
     event.target.x(cpInPx.x);
     event.target.y(cpInPx.y);
   }
@@ -204,9 +204,9 @@ const ControlElement = observer((props: ControlElementProps) => {
     if (epc.heading < 0) epc.heading += 360;
   }
 
-  const lineWidth = props.cc.pixelWidth / 600;
-  const cpRadius = props.cc.pixelWidth / 40;
-  const cpInPx = props.cc.toPx(props.cp.toVector()); // ALGO: Use toVector() for better performance
+  const lineWidth = props.fcc.pixelWidth / 600;
+  const cpRadius = props.fcc.pixelWidth / 40;
+  const cpInPx = props.fcc.toPx(props.cp.toVector()); // ALGO: Use toVector() for better performance
   const fillColor = app.isSelected(props.cp) ? "#5C469Cdf" : "#5C469C6f";
   const isMainControl = props.cp instanceof EndPointControl;
 

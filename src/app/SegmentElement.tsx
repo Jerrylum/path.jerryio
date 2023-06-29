@@ -2,12 +2,12 @@ import { observer } from "mobx-react-lite";
 import { Path, Segment } from "../types/Path";
 import { SegmentControlVisualLineElement } from "./SegmentControlVisualLineElement";
 import { SegmentPointsHitBoxElement } from "./SegmentPointsHitBoxElement";
-import { CanvasConverter } from "../types/Canvas";
+import { FieldCanvasConverter } from "../types/Canvas";
 
 export interface SegmentElementProps {
   segment: Segment;
   path: Path;
-  cc: CanvasConverter;
+  fcc: FieldCanvasConverter;
 }
 
 const SegmentElement = observer((props: SegmentElementProps) => {
@@ -20,14 +20,14 @@ const SegmentElement = observer((props: SegmentElementProps) => {
             <SegmentControlVisualLineElement
               start={props.segment.controls[0]}
               end={props.segment.controls[1]}
-              cc={props.cc}
+              fcc={props.fcc}
             />
           )}
           {props.segment.controls[2].visible && (
             <SegmentControlVisualLineElement
               start={props.segment.controls[2]}
               end={props.segment.controls[3]}
-              cc={props.cc}
+              fcc={props.fcc}
             />
           )}
         </>

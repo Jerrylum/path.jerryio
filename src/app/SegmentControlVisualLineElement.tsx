@@ -1,13 +1,13 @@
 import { observer } from "mobx-react-lite";
 import { Vector } from "../types/Path";
-import { CanvasConverter } from "../types/Canvas";
+import { FieldCanvasConverter } from "../types/Canvas";
 import { Line } from "react-konva";
 
-const SegmentControlVisualLineElement = observer((props: { start: Vector; end: Vector; cc: CanvasConverter }) => {
-  const startInPx = props.cc.toPx(props.start);
-  const endInPx = props.cc.toPx(props.end);
+const SegmentControlVisualLineElement = observer((props: { start: Vector; end: Vector; fcc: FieldCanvasConverter }) => {
+  const startInPx = props.fcc.toPx(props.start);
+  const endInPx = props.fcc.toPx(props.end);
 
-  const lineWidth = props.cc.pixelWidth / 600;
+  const lineWidth = props.fcc.pixelWidth / 600;
 
   return (
     <Line

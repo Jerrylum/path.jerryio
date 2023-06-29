@@ -10,7 +10,7 @@ export interface InteractiveEntity extends CanvasEntity {
   visible: boolean;
 }
 
-export class CanvasConverter {
+export class FieldCanvasConverter {
   public pixelWidthHalf: number;
   public pixelHeightHalf: number;
   public uol2pixel: number; // in pixel/uol
