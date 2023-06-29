@@ -3,19 +3,23 @@ import { makeAutoObservable, action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useAppStores } from "./MainApp";
 import { lightTheme, darkTheme, AppTheme, AppThemeInfo } from "./Theme";
-import { useBackdropDialog } from "./Util";
+import { clamp, useBackdropDialog } from "./Util";
 import { ObserverEnumSelect } from "./ObserverEnumSelect";
 import { ObserverCheckbox } from "./ObserverCheckbox";
+import { ObserverInput } from "./ObserverInput";
 
 export class Preferences {
   private isDialogOpen: boolean = false;
 
   // Local storage
+  private maxHistoryState: number = 50;
   private isGoogleAnalyticsEnabledState: boolean = false;
   private themeTypeState: AppTheme = AppTheme.Dark;
 
   constructor() {
     makeAutoObservable(this);
+
+    this.maxHistoryState = parseInt(localStorage.getItem("maxHistory") ?? "50");
 
     this.isGoogleAnalyticsEnabledState = localStorage.getItem("googleAnalyticsEnabled") === "true";
 
@@ -34,6 +38,16 @@ export class Preferences {
 
   get isOpen() {
     return this.isDialogOpen;
+  }
+
+  get maxHistory() {
+    return this.maxHistoryState;
+  }
+
+  set maxHistory(value: number) {
+    this.maxHistoryState = value;
+
+    localStorage.setItem("maxHistory", value.toString());
   }
 
   get isGoogleAnalyticsEnabled() {
@@ -78,6 +92,19 @@ const PreferencesDialog = observer((props: {}) => {
       onClick={action(() => appPreferences.close())}
       tabIndex={-1}>
       <Card className="preferences-card" onClick={e => e.stopPropagation()}>
+        <Typography className="title">General</Typography>
+        <ObserverInput
+          sx={{ width: "10rem" }}
+          label="Max Undo Operations"
+          getValue={() => appPreferences.maxHistory.toString()}
+          setValue={v => (appPreferences.maxHistory = clamp(parseInt(v), 10, 1000))}
+          isValidIntermediate={v => v === "" || new RegExp("^[1-9][0-9]*$").test(v)}
+          isValidValue={v => new RegExp("^[1-9][0-9]*$").test(v)}
+          numeric
+        />
+
+        <Divider />
+
         <Typography className="title">Appearance</Typography>
         <ObserverEnumSelect
           sx={{ width: "8rem" }}

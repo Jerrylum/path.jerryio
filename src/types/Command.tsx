@@ -1,4 +1,4 @@
-import { MainApp } from "../app/MainApp";
+import { MainApp, getAppStores } from "../app/MainApp";
 import { InteractiveEntity } from "./Canvas";
 import { Control, EndPointControl, Keyframe, KeyframePos, Path, Segment, SegmentVariant, Vector } from "./Path";
 
@@ -13,7 +13,7 @@ export class CommandHistory {
   private lastExecution: Execution | undefined = undefined;
   private history: CancellableCommand[] = [];
   private redoHistory: CancellableCommand[] = [];
-  private savedCommand: CancellableCommand | undefined = undefined;
+  private saveStepCounter: number = 0;
 
   constructor(private app: MainApp) {}
 
@@ -44,7 +44,11 @@ export class CommandHistory {
   commit(): void {
     if (this.lastExecution !== undefined) {
       this.history.push(this.lastExecution.command);
+      this.saveStepCounter++;
       this.lastExecution = undefined;
+
+      const { appPreferences } = getAppStores();
+      if (this.history.length > appPreferences.maxHistory) this.history.shift();
     }
   }
 
@@ -54,6 +58,7 @@ export class CommandHistory {
       const command = this.history.pop()!;
       command.undo();
       this.redoHistory.push(command);
+      this.saveStepCounter--;
 
       if (isInteractiveEntitiesCommand(command)) this.app.setSelected(command.entities);
     }
@@ -65,6 +70,7 @@ export class CommandHistory {
     if (command !== undefined) {
       command.redo();
       this.history.push(command);
+      this.saveStepCounter++;
 
       if (isInteractiveEntitiesCommand(command)) this.app.setSelected(command.entities);
     }
@@ -75,18 +81,17 @@ export class CommandHistory {
     this.lastExecution = undefined;
     this.history = [];
     this.redoHistory = [];
-    this.savedCommand = undefined;
+    this.saveStepCounter = 0;
   }
 
   save(): void {
     this.commit();
-    this.savedCommand = this.history[this.history.length - 1];
+    this.saveStepCounter = 0;
   }
 
   isModified(): boolean {
     this.commit();
-    // ALGO: savedCommand can be undefined and the function can return true if the history is empty but redoHistory is not
-    return this.savedCommand !== this.history[this.history.length - 1];
+    return this.saveStepCounter !== 0;
   }
 }
 
