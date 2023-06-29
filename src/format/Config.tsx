@@ -1,6 +1,7 @@
 import { MainApp } from "../app/MainApp";
 import { NumberRange } from "../app/RangeSlider";
 import { UnitConverter, UnitOfLength } from "../types/Unit";
+import { Format } from "./Format";
 
 export function convertGeneralConfigUOL(gc: GeneralConfig, fromUOL: UnitOfLength) {
   const toUOL = gc.uol;
@@ -25,6 +26,7 @@ export function convertPathConfigPointDensity(pc: PathConfig, fromDensity: numbe
 }
 
 export interface ConfigSection {
+  get format(): Format;
   getConfigPanel(app: MainApp): JSX.Element;
 }
 

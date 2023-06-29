@@ -22,10 +22,10 @@ class GeneralConfigImpl implements GeneralConfig {
   controlMagnetDistance: number = 5;
 
   @Exclude()
-  private format: PathDotJerryioFormatV0_1;
+  private format_: PathDotJerryioFormatV0_1;
 
   constructor(format: PathDotJerryioFormatV0_1) {
-    this.format = format;
+    this.format_ = format;
     makeAutoObservable(this);
 
     reaction(
@@ -34,6 +34,10 @@ class GeneralConfigImpl implements GeneralConfig {
         convertGeneralConfigUOL(this, oldUOL);
       })
     );
+  }
+
+  get format() {
+    return this.format_;
   }
 
   getConfigPanel(app: MainApp) {
@@ -59,10 +63,10 @@ class PathConfigImpl implements PathConfig {
   };
 
   @Exclude()
-  private format: PathDotJerryioFormatV0_1;
+  private format_: PathDotJerryioFormatV0_1;
 
   constructor(format: PathDotJerryioFormatV0_1) {
-    this.format = format;
+    this.format_ = format;
     makeAutoObservable(this);
 
     reaction(
@@ -75,6 +79,10 @@ class PathConfigImpl implements PathConfig {
     // ALGO: Convert the default parameters to the current point density
     // ALGO: This is only used when a new path is added, not when the path config is loaded
     convertPathConfigPointDensity(this, 2, format.getGeneralConfig().pointDensity);
+  }
+
+  get format() {
+    return this.format_;
   }
 
   getConfigPanel(app: MainApp) {

@@ -65,6 +65,10 @@ class CustomGeneralConfig implements GeneralConfig {
     makeAutoObservable(this);
   }
 
+  get format(): Format {
+    throw new Error("Method not implemented.");
+  }
+
   getConfigPanel(app: MainApp): JSX.Element {
     throw new Error("Method not implemented.");
   }
@@ -90,6 +94,10 @@ class CustomPathConfig implements PathConfig {
 
   constructor() {
     makeAutoObservable(this);
+  }
+
+  get format(): Format {
+    throw new Error("Method not implemented.");
   }
 
   getConfigPanel(app: MainApp): JSX.Element {
