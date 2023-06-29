@@ -405,16 +405,22 @@ export class DragControls implements CancellableCommand, MergeableCommand, Inter
   constructor(protected main: Control, protected from: Vector, protected to: Vector, protected followers: Control[]) {}
 
   execute(): void {
+    const offsetX = this.to.x - this.from.x;
+    const offsetY = this.to.y - this.from.y;
     for (let cp of this.followers) {
-      cp.setXY(this.to.add(cp.subtract(this.from)));
+      cp.x += offsetX;
+      cp.y += offsetY;
     }
 
     this.main.setXY(this.to);
   }
 
   undo() {
+    const offsetX = this.from.x - this.to.x;
+    const offsetY = this.from.y - this.to.y;
     for (let cp of this.followers) {
-      cp.setXY(this.from.add(cp.subtract(this.to)));
+      cp.x += offsetX;
+      cp.y += offsetY;
     }
 
     this.main.setXY(this.from);
