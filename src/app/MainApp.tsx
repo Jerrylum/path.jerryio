@@ -17,8 +17,9 @@ import { Preferences } from "./Preferences";
 import { GoogleAnalytics } from "../types/GoogleAnalytics";
 import { OutputFileHandle } from "../format/Output";
 import { getPathSamplePoints, getUniformPointsFromSamples } from "../types/Calculation";
+import { APP_VERSION_STRING } from "../Version";
 
-export const APP_VERSION = new SemVer("0.2.0");
+export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
 // observable class
 export class MainApp {
