@@ -15,7 +15,7 @@ import React from "react";
 import { Help } from "./HelpDialog";
 import { Preferences } from "./Preferences";
 import { GoogleAnalytics } from "../types/GoogleAnalytics";
-import { OutputFileHandle } from "../format/Output";
+import { IOFileHandle } from "../format/InputOutput";
 import { getPathSamplePoints, getUniformPointsFromSamples } from "../types/Calculation";
 import { APP_VERSION_STRING } from "../Version";
 
@@ -25,7 +25,7 @@ export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 export class MainApp {
   public format: Format = new PathDotJerryioFormatV0_1();
   private usingUOL: UnitOfLength = UnitOfLength.Centimeter;
-  public mountingFile: OutputFileHandle = new OutputFileHandle(null); // This is intended to be modified outside the class
+  public mountingFile: IOFileHandle = new IOFileHandle(null); // This is intended to be modified outside the class
 
   public paths: Path[] = [];
   private selected: string[] = []; // ALGO: Not using Set because order matters

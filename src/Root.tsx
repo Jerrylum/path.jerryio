@@ -16,7 +16,7 @@ import { FieldCanvasElement } from "./app/FieldCanvasElement";
 import { useAppStores } from "./app/MainApp";
 
 import classNames from "classnames";
-import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./format/Output";
+import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./format/InputOutput";
 import { NoticeProvider } from "./app/Notice";
 import { ConfirmationDialog } from "./app/Confirmation";
 import { HelpDialog } from "./app/HelpDialog";

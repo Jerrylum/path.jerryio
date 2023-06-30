@@ -189,7 +189,7 @@ function isFirefox() {
   return navigator.userAgent.indexOf("Firefox") !== -1;
 }
 
-export class OutputFileHandle {
+export class IOFileHandle {
   public isNameSet: boolean = false;
   constructor(public handle: FileSystemFileHandle | null = null, public name: string = "path.jerryio.txt") {}
 }
@@ -202,7 +202,7 @@ export async function onNew(app: MainApp, conf: Confirmation, saveCheck: boolean
   if (saveCheck && app.history.isModified()) return saveConfirm(app, conf, onNew.bind(null, app, conf, false));
 
   app.newPathFile();
-  app.mountingFile = new OutputFileHandle();
+  app.mountingFile = new IOFileHandle();
   return true;
 }
 

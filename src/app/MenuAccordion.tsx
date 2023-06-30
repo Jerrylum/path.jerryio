@@ -6,7 +6,7 @@ import { observer } from "mobx-react-lite";
 import React from "react";
 import { DefaultComponentProps } from "@mui/material/OverridableComponent";
 import { useKeyName } from "./Util";
-import { onDownload, onDownloadAs, onNew, onOpen, onSave, onSaveAs } from "../format/Output";
+import { onDownload, onDownloadAs, onNew, onOpen, onSave, onSaveAs } from "../format/InputOutput";
 import { MainApp, useAppStores } from "./MainApp";
 import { HelpPage } from "./HelpDialog";
 import { AppTheme } from "./Theme";
