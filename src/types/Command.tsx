@@ -1,6 +1,9 @@
 import { MainApp, getAppStores } from "../app/MainApp";
 import { InteractiveEntity } from "./Canvas";
+import { Logger } from "./Logger";
 import { Control, EndPointControl, Keyframe, KeyframePos, Path, Segment, SegmentVariant, Vector } from "./Path";
+
+const logger = Logger("History");
 
 export interface Execution {
   title: string;
@@ -35,7 +38,7 @@ export class CommandHistory {
       this.commit();
       this.lastExecution = exe;
 
-      console.log("EXECUTE", exe.title);
+      logger.log("EXECUTE", exe.title);
     }
 
     this.redoHistory = [];
@@ -62,7 +65,7 @@ export class CommandHistory {
 
       if (isInteractiveEntitiesCommand(command)) this.app.setSelected(command.entities);
     }
-    console.log("UNDO", this.history.length, "->", this.redoHistory.length);
+    logger.log("UNDO", this.history.length, "->", this.redoHistory.length);
   }
 
   redo(): void {
@@ -74,7 +77,7 @@ export class CommandHistory {
 
       if (isInteractiveEntitiesCommand(command)) this.app.setSelected(command.entities);
     }
-    console.log("REDO", this.history.length, "<-", this.redoHistory.length);
+    logger.log("REDO", this.history.length, "<-", this.redoHistory.length);
   }
 
   clearHistory(): void {

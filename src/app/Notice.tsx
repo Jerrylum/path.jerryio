@@ -1,5 +1,6 @@
 import { styled } from "@mui/material";
 import { MaterialDesignContent, SnackbarProvider, enqueueSnackbar } from "notistack";
+import { Logger } from "../types/Logger";
 
 const StyledMaterialDesignContent = styled(MaterialDesignContent)(() => ({
   "&.notistack-MuiContent-success": {
@@ -10,14 +11,15 @@ const StyledMaterialDesignContent = styled(MaterialDesignContent)(() => ({
   }
 }));
 
-export function enqueueSuccessSnackbar(message: string) {
+export function enqueueSuccessSnackbar(logger: Logger, message: string) {
   enqueueSnackbar(message, { variant: "success", autoHideDuration: 2000 });
+  logger.log(message);
 }
 
-export function enqueueErrorSnackbar(err: unknown) {
-  console.log(err);
+export function enqueueErrorSnackbar(logger: Logger, err: unknown) {
   const errMsg = err instanceof Error ? err.message : err + "";
   enqueueSnackbar(errMsg, { variant: "error" });
+  logger.error(errMsg);
 }
 
 export function NoticeProvider() {

@@ -1,6 +1,9 @@
 import { Confirmation } from "../app/Confirmation";
 import { MainApp, getAppStores } from "../app/MainApp";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "../app/Notice";
+import { Logger } from "../types/Logger";
+
+const logger = Logger("I/O");
 
 async function saveConfirm(app: MainApp, conf: Confirmation, callback: () => void) {
   return new Promise<boolean>((resolve, reject) => {
@@ -65,8 +68,7 @@ function exportPathFile(app: MainApp): string | undefined {
   try {
     return app.format.exportPathFile(app);
   } catch (err) {
-    console.log(err);
-    enqueueErrorSnackbar(err);
+    enqueueErrorSnackbar(logger, err);
     return undefined;
   }
 }
@@ -85,11 +87,11 @@ async function writeFile(app: MainApp, contents: string): Promise<boolean> {
 
     getAppStores().ga.gtag("event", "write_file_format", { format: app.format.getName() });
 
-    enqueueSuccessSnackbar("Saved");
+    enqueueSuccessSnackbar(logger, "Saved");
     return true;
   } catch (err) {
-    if (err instanceof DOMException) enqueueErrorSnackbar("Failed to save file");
-    else enqueueErrorSnackbar(err);
+    if (err instanceof DOMException) enqueueErrorSnackbar(logger, "Failed to save file");
+    else enqueueErrorSnackbar(logger, err);
     return false;
   }
 }
@@ -112,8 +114,8 @@ async function readFile(app: MainApp): Promise<string | undefined> {
 
     return contents;
   } catch (err) {
-    if (err instanceof DOMException) console.log(err); // ignore error
-    else enqueueErrorSnackbar(err);
+    if (err instanceof DOMException === false) enqueueErrorSnackbar(logger, err);
+    else logger.error(err); // UX: Do not show DOMException to user, usually means user cancelled
 
     return undefined;
   }
@@ -180,7 +182,7 @@ async function choiceSave(app: MainApp): Promise<boolean> {
 
     return true;
   } catch (err) {
-    console.log(err); // ignore error
+    logger.error(err); // ignore error
     return false;
   }
 }
@@ -263,7 +265,7 @@ export async function onOpen(
     app.importPathFile(contents);
     return true;
   } catch (err) {
-    enqueueErrorSnackbar(err);
+    enqueueErrorSnackbar(logger, err);
     return false;
   }
 }
@@ -319,7 +321,7 @@ export async function onDropFile(
     app.importPathFile(contents);
     return true;
   } catch (err) {
-    enqueueErrorSnackbar(err);
+    enqueueErrorSnackbar(logger, err);
     return false;
   }
 }

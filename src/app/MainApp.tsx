@@ -18,8 +18,11 @@ import { GoogleAnalytics } from "../types/GoogleAnalytics";
 import { IOFileHandle } from "../format/InputOutput";
 import { getPathSamplePoints, getUniformPointsFromSamples } from "../types/Calculation";
 import { APP_VERSION_STRING } from "../Version";
+import { Logger } from "../types/Logger";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
+
+const logger = Logger("App");
 
 // observable class
 export class MainApp {
@@ -52,6 +55,8 @@ export class MainApp {
 
   constructor() {
     makeAutoObservable(this);
+
+    logger.log("Version", APP_VERSION_STRING);
 
     // NOTE: There is a reason why reactions are made here instead of in the constructor of the config class
     // A lot of things need to be updated when the format is changed, and it's easier to do it here
@@ -418,11 +423,13 @@ export { useAppStores };
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
 
+  const logger = Logger("Test");
+
   for (const path of app.paths) {
-    console.log("path", path.uid);
+    logger.log("path", path.uid);
     const sampleResult = getPathSamplePoints(path, density);
-    console.log(sampleResult);
+    logger.log(sampleResult);
     const uniformResult = getUniformPointsFromSamples(sampleResult, density);
-    console.log(uniformResult);
+    logger.log(uniformResult);
   }
 }))();
