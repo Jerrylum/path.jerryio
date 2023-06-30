@@ -1,7 +1,5 @@
 import "./App.scss";
 
-import { Path } from "./types/Path";
-
 import { observer } from "mobx-react-lite";
 
 import { ThemeProvider } from "@mui/material/styles";
@@ -15,9 +13,8 @@ import { PathConfigAccordion } from "./app/PathAccordion";
 import { ControlAccordion } from "./app/ControlAccordion";
 import { GraphCanvasElement } from "./app/GraphCanvasElement";
 import { FieldCanvasElement } from "./app/FieldCanvasElement";
-import { MainApp, useAppStores } from "./app/MainApp";
+import { useAppStores } from "./app/MainApp";
 
-import React from "react";
 import classNames from "classnames";
 import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./format/Output";
 import { NoticeProvider } from "./app/Notice";
@@ -27,13 +24,7 @@ import { PreferencesDialog } from "./app/Preferences";
 import { DragDropBackdrop } from "./app/DragDropBackdrop";
 import { RemovePathsAndEndControls } from "./types/Command";
 
-export interface AppProps {
-  paths: Path[];
-
-  app: MainApp;
-}
-
-const App = observer(() => {
+const Root = observer(() => {
   const { app, confirmation, help, appPreferences } = useAppStores();
 
   const isUsingEditor = !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen;
@@ -153,4 +144,4 @@ const App = observer(() => {
   );
 });
 
-export default App;
+export default Root;
