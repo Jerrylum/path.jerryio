@@ -10,12 +10,7 @@ module.exports = {
     newConfig.plugins.push(
       new CopyPlugin({
         patterns: [
-          { from: "*.png", context: "public", noErrorOnMissing: true },
-          { from: "*.jpg", context: "public", noErrorOnMissing: true },
-          { from: "*.jpeg", context: "public", noErrorOnMissing: true },
-          { from: "*.svg", context: "public", noErrorOnMissing: true },
-          { from: "*.gif", context: "public", noErrorOnMissing: true },
-          { from: "*.ico", context: "public", noErrorOnMissing: true }
+          { from: "static/*.*", context: "public", noErrorOnMissing: true }
         ]
       })
     );

@@ -1,5 +1,5 @@
 <p align="center">
-	<a href="https://path.jerryio.com/"><img src="./public/logo464.svg" alt="IntroIcon" width="100"></a>
+	<a href="https://path.jerryio.com/"><img src="./public/static/logo464.svg" alt="IntroIcon" width="100"></a>
 </p>
 <h3 align="center">PATH.JERRYIO</h3>
 <p align="center">The best path editor in VRC for designing skills routes and generating path files.</p>
@@ -12,7 +12,7 @@ PATH.JERRYIO is a Progressive Web Apps (PWA) that can be used without installati
 
 It is a powerful and flexible multi-purpose path editor/planner, which allows users to design and edit paths with intuitive click-and-drag interactions. After that, a path file can be generated that the robot reads to travel the designed paths in the autonomous period with path-following algorithms.
 
-![Screenshot of path.jerryio with a path in the editor](./public/screenshot-1.png)
+![Screenshot of path.jerryio with a path in the editor](./assets/screenshot-1.png)
 
 
 ## Demonstration
@@ -22,17 +22,17 @@ We aim to provide the best environment for path editing and planning within PATH
 ### Smooth and User-Friendly
 The dragging, panning, and area selection interaction continue even though the cursor is outside the canvas. This is a great example of how much effort went into user experience with great attention to detail.
 
-![Example of dragging, panning, and area selection](./public/editor-demo1.gif)
+![Example of dragging, panning, and area selection](./assets/editor-demo1.gif)
 
 ### Intuitive and Straightforward
 It is designed to have a similar editing experience to other graphic design software. For example, press shift key to drag multiple controls, hold shift key to enable magnet snapping. The hotkeys, shortcuts and mouse gestures are similar and easy to catch up.
 
-![Example of zooming, panning, magnet, and selection](./public/editor-demo2.gif)
+![Example of zooming, panning, magnet, and selection](./assets/editor-demo2.gif)
 
 ### Professional and Powerful
 You'll be amazed at what you can do with PATH.JERRYIO: hide or lock entities, undo/redo any changes you make, manipulate speed for every waypoint. It is the most powerful path editor in VRC.
 
-![Example of undo/redo and lock entities](./public/editor-demo3.gif)
+![Example of undo/redo and lock entities](./assets/editor-demo3.gif)
 
 
 ## It Is for Everyone

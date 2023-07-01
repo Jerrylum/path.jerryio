@@ -71,7 +71,7 @@ const HelpDialog = observer((props: {}) => {
       )}
       {help.currentPage === HelpPage.About && (
         <Card className="help-about-page" onClick={e => e.stopPropagation()} tabIndex={1000}>
-          <img src="logo464.svg" alt="app logo" />
+          <img src="static/logo464.svg" alt="app logo" />
           <Typography variant="h3" gutterBottom align="center">
             PATH.JERRYIO Version {APP_VERSION.version}
           </Typography>
