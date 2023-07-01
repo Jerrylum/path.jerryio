@@ -7,16 +7,28 @@ import { ExpirationPlugin } from "workbox-expiration";
 import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching";
 import { registerRoute } from "workbox-routing";
 import { StaleWhileRevalidate } from "workbox-strategies";
+import LoggerImpl from "./types/LoggerImpl";
 import { APP_VERSION_STRING } from "./Version";
 
 declare const self: ServiceWorkerGlobalScope;
+
+/*
+XXX:
+For some reason, "./Logger" cannot be imported here. It exports a function and causes the following error:
+TypeError: Cannot read properties of undefined (reading 'register')
+
+Instead, we use "./types/LoggerImpl" which exports a class only. We use it directly to create a logger instance.
+This is also the reason why we separate the Logger interface and its implementation in two files.
+*/
+const logger = new LoggerImpl("Service Worker");
 
 clientsClaim();
 
 // See: https://developer.chrome.com/docs/workbox/modules/workbox-precaching/
 const MANIFEST = self.__WB_MANIFEST;
-console.log("MANIFEST", MANIFEST);
-console.log("APP VERSION", APP_VERSION_STRING);
+
+logger.log("MANIFEST", MANIFEST);
+logger.log("Version", APP_VERSION_STRING);
 
 precacheAndRoute(MANIFEST);
 

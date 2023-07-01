@@ -15,4 +15,3 @@ root.render(
 // See: https://web.dev/service-worker-caching-and-http-caching/
 // See: https://web.dev/progressive-web-apps/
 serviceWorkerRegistration.register();
-// serviceWorkerRegistration.unregister();
