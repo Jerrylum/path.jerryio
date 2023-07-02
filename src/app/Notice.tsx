@@ -11,15 +11,15 @@ const StyledMaterialDesignContent = styled(MaterialDesignContent)(() => ({
   }
 }));
 
-export function enqueueSuccessSnackbar(logger: Logger, message: string) {
-  enqueueSnackbar(message, { variant: "success", autoHideDuration: 2000 });
+export function enqueueSuccessSnackbar(logger: Logger, message: string, autoHideDuration: number | null = 2000) {
   logger.log(message);
+  return enqueueSnackbar(message, { variant: "success", autoHideDuration });
 }
 
-export function enqueueErrorSnackbar(logger: Logger, err: unknown) {
+export function enqueueErrorSnackbar(logger: Logger, err: unknown, autoHideDuration: number | null = 2000) {
   const errMsg = err instanceof Error ? err.message : err + "";
-  enqueueSnackbar(errMsg, { variant: "error" });
   logger.error(errMsg);
+  return enqueueSnackbar(errMsg, { variant: "error", autoHideDuration });
 }
 
 export function NoticeProvider() {
