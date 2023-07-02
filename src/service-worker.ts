@@ -9,6 +9,7 @@ import { registerRoute } from "workbox-routing";
 import { StaleWhileRevalidate } from "workbox-strategies";
 import LoggerImpl from "./types/LoggerImpl";
 import { APP_VERSION_STRING } from "./Version";
+import { Message, SkipWaitingResponse, VersionResponse, isMessage } from "./types/ServiceWorkerMessages";
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -38,13 +39,17 @@ registerRoute(
   })
 );
 
-// This allows the web app to trigger skipWaiting via
-// registration.waiting.postMessage({type: 'SKIP_WAITING'})
 self.addEventListener("message", event => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
+  if (isMessage(event.data) === false) return;
+  const msg = event.data as Message;
+
+  if (msg.type === "GET_VERSION") {
+    event.ports[0].postMessage(APP_VERSION_STRING as VersionResponse);
+  } else if (msg.type === "SKIP_WAITING") {
     self.skipWaiting();
+    event.ports[0].postMessage(undefined as SkipWaitingResponse);
   }
 });
 
 logger.log("Precache", MANIFEST);
-logger.log("Version", APP_VERSION_STRING);
+logger.log("Version", APP_VERSION_STRING); // IMPORTANT: Include the version string in service worker

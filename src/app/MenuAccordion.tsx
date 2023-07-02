@@ -11,6 +11,7 @@ import { MainApp, useAppStores } from "./MainApp";
 import { HelpPage } from "./HelpDialog";
 import { AppTheme } from "./Theme";
 import { RemovePathsAndEndControls } from "../types/Command";
+import { checkForUpdates } from "./Versioning";
 
 const CustomMenuItem = observer(
   (
@@ -256,6 +257,7 @@ const MenuAccordion = observer((props: {}) => {
           text="Wiki Page"
           onClick={onMenuClick(() => window.open("https://github.com/Jerrylum/path.jerryio/wiki", "_blank"))}
         />
+        <CustomMenuItem done={false} text="Check for Updates" onClick={onMenuClick(() => checkForUpdates())} />
         <CustomMenuItem done={false} text="About" onClick={onMenuClick(() => help.open(HelpPage.About))} />
       </Menu>
     </Card>

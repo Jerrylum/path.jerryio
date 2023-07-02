@@ -19,6 +19,7 @@ import { IOFileHandle } from "../format/InputOutput";
 import { getPathSamplePoints, getUniformPointsFromSamples } from "../types/Calculation";
 import { APP_VERSION_STRING } from "../Version";
 import { Logger } from "../types/Logger";
+import { onLatestVersionChange } from "./Versioning";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
@@ -52,6 +53,8 @@ export class MainApp {
     offset: new Vector(0, 0), // Clamp user input only
     scale: 1 // 1 = 100%, [1..3]
   };
+
+  public latestVersion: SemVer | null | undefined = undefined;
 
   constructor() {
     makeAutoObservable(this);
@@ -125,6 +128,8 @@ export class MainApp {
         }
       })
     );
+
+    reaction(() => this.latestVersion, onLatestVersionChange);
 
     this.newPathFile();
   }
