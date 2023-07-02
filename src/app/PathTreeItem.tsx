@@ -8,10 +8,10 @@ import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined
 import { action, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import { TreeItem } from "@mui/lab";
-import { EndPointControl, Path } from "../types/Path";
+import { EndPointControl, Path } from "../core/Path";
 import { useRef } from "react";
-import { InteractiveEntity } from "../types/Canvas";
-import { RemovePathsAndEndControls, UpdateInteractiveEntities, UpdateProperties } from "../types/Command";
+import { InteractiveEntity } from "../core/Canvas";
+import { RemovePathsAndEndControls, UpdateInteractiveEntities, UpdateProperties } from "../core/Command";
 import { useAppStores } from "./MainApp";
 
 export interface PathTreeProps {

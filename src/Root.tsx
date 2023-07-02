@@ -22,7 +22,7 @@ import { ConfirmationDialog } from "./app/Confirmation";
 import { HelpDialog } from "./app/HelpDialog";
 import { PreferencesDialog } from "./app/Preferences";
 import { DragDropBackdrop } from "./app/DragDropBackdrop";
-import { RemovePathsAndEndControls } from "./types/Command";
+import { RemovePathsAndEndControls } from "./core/Command";
 
 const Root = observer(() => {
   const { app, confirmation, help, appPreferences } = useAppStores();

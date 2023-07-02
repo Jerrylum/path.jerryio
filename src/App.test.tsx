@@ -3,16 +3,16 @@ import { makeAutoObservable, action } from "mobx"
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MainApp } from './app/MainApp';
-import { Control, EndPointControl, Path, Segment, Vector } from './types/Path';
+import { Control, EndPointControl, Path, Segment, Vector } from './core/Path';
 
 import { plainToClassFromExist, plainToInstance } from 'class-transformer';
 import { instanceToPlain } from 'class-transformer';
 import { GeneralConfig, PathConfig } from './format/Config';
 import { Format, PathFileData } from './format/Format';
-import { Quantity, UnitOfLength } from "./types/Unit";
+import { Quantity, UnitOfLength } from "./core/Unit";
 import DOMPurify from "dompurify";
 import { NumberRange } from "./app/RangeSlider";
-import { PointCalculationResult, getBezierCurveArcLength, getBezierCurvePoints, getPathSamplePoints, getSegmentSamplePoints, getUniformPointsFromSamples, toDerivativeHeading } from "./types/Calculation";
+import { PointCalculationResult, getBezierCurveArcLength, getBezierCurvePoints, getPathSamplePoints, getSegmentSamplePoints, getUniformPointsFromSamples, toDerivativeHeading } from "./core/Calculation";
 
 class CustomFormat implements Format {
   isInit: boolean;

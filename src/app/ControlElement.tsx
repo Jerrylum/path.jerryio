@@ -1,11 +1,11 @@
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Control, EndPointControl, Vector } from "../types/Path";
+import { Control, EndPointControl, Vector } from "../core/Path";
 import Konva from "konva";
 import { Circle, Line } from "react-konva";
 import { useState } from "react";
 import { SegmentElementProps } from "./SegmentElement";
-import { DragControls, RemovePathsAndEndControls } from "../types/Command";
+import { DragControls, RemovePathsAndEndControls } from "../core/Command";
 import { useAppStores } from "./MainApp";
 
 export interface ControlElementProps extends SegmentElementProps {

@@ -1,24 +1,24 @@
 import { makeAutoObservable, computed, runInAction, reaction, action } from "mobx";
 import DOMPurify from "dompurify"; // cspell:disable-line
 import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "../format/Config";
-import { InteractiveEntity } from "../types/Canvas";
-import { Control, EndPointControl, Path, Vector } from "../types/Path";
+import { InteractiveEntity } from "../core/Canvas";
+import { Control, EndPointControl, Path, Vector } from "../core/Path";
 import { addToArray, clamp, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats, convertPathFileData } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from "class-transformer";
-import { Quantity, UnitConverter, UnitOfLength } from "../types/Unit";
-import { CommandHistory } from "../types/Command";
+import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
+import { CommandHistory } from "../core/Command";
 import { SemVer } from "semver";
 import { Confirmation } from "./Confirmation";
 import React from "react";
 import { Help } from "./HelpDialog";
 import { Preferences } from "./Preferences";
-import { GoogleAnalytics } from "../types/GoogleAnalytics";
+import { GoogleAnalytics } from "../core/GoogleAnalytics";
 import { IOFileHandle } from "../format/InputOutput";
-import { getPathSamplePoints, getUniformPointsFromSamples } from "../types/Calculation";
+import { getPathSamplePoints, getUniformPointsFromSamples } from "../core/Calculation";
 import { APP_VERSION_STRING } from "../Version";
-import { Logger } from "../types/Logger";
+import { Logger } from "../core/Logger";
 import { onLatestVersionChange } from "./Versioning";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);

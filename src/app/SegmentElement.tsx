@@ -1,8 +1,8 @@
 import { observer } from "mobx-react-lite";
-import { Path, Segment } from "../types/Path";
+import { Path, Segment } from "../core/Path";
 import { SegmentControlVisualLineElement } from "./SegmentControlVisualLineElement";
 import { SegmentPointsHitBoxElement } from "./SegmentPointsHitBoxElement";
-import { FieldCanvasConverter } from "../types/Canvas";
+import { FieldCanvasConverter } from "../core/Canvas";
 
 export interface SegmentElementProps {
   segment: Segment;

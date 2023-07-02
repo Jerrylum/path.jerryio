@@ -1,11 +1,11 @@
 import { APP_VERSION, MainApp } from "../app/MainApp";
-import { Path } from "../types/Path";
+import { Path } from "../core/Path";
 import { LemLibFormatV0_4 } from "./LemLibFormatV0_4";
 import { PathDotJerryioFormatV0_1 } from "./PathDotJerryioFormatV0_1";
 import { GeneralConfig, PathConfig } from "./Config";
 import { Range } from "semver";
-import { UnitOfLength } from "../types/Unit";
-import { PointCalculationResult } from "../types/Calculation";
+import { UnitOfLength } from "../core/Unit";
+import { PointCalculationResult } from "../core/Calculation";
 
 export interface Format {
   isInit: boolean;

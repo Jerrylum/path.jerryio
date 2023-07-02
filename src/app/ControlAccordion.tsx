@@ -1,10 +1,10 @@
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import { EndPointControl } from "../types/Path";
+import { EndPointControl } from "../core/Path";
 import { ObserverInput, clampQuantity } from "./ObserverInput";
-import { Quantity, UnitOfAngle, UnitOfLength } from "../types/Unit";
-import { UpdateInteractiveEntities } from "../types/Command";
+import { Quantity, UnitOfAngle, UnitOfLength } from "../core/Unit";
+import { UpdateInteractiveEntities } from "../core/Command";
 import { useAppStores } from "./MainApp";
 import { NumberUOA, NumberUOL } from "../token/Tokens";
 import { parseFormula } from "./Util";

@@ -1,6 +1,6 @@
 import { MainApp } from "../app/MainApp";
 import { NumberRange } from "../app/RangeSlider";
-import { UnitConverter, UnitOfLength } from "../types/Unit";
+import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { Format } from "./Format";
 
 export function convertGeneralConfigUOL(gc: GeneralConfig, fromUOL: UnitOfLength) {

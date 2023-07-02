@@ -1,15 +1,15 @@
 import { makeAutoObservable, reaction, action } from "mobx";
 import { MainApp } from "../app/MainApp";
 import { clamp, makeId } from "../app/Util";
-import { Control, EndPointControl, Path, Segment, Vector } from "../types/Path";
-import { UnitOfLength, UnitConverter, Quantity } from "../types/Unit";
+import { Control, EndPointControl, Path, Segment, Vector } from "../core/Path";
+import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { Box, Typography } from "@mui/material";
 import { NumberRange, RangeSlider } from "../app/RangeSlider";
-import { UpdateProperties } from "../types/Command";
+import { UpdateProperties } from "../core/Command";
 import { Exclude } from "class-transformer";
-import { PointCalculationResult, getPathPoints } from "../types/Calculation";
+import { PointCalculationResult, getPathPoints } from "../core/Calculation";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {

@@ -7,9 +7,9 @@ import { ExpirationPlugin } from "workbox-expiration";
 import { precacheAndRoute } from "workbox-precaching";
 import { registerRoute } from "workbox-routing";
 import { StaleWhileRevalidate } from "workbox-strategies";
-import LoggerImpl from "./types/LoggerImpl";
+import LoggerImpl from "./core/LoggerImpl";
 import { APP_VERSION_STRING } from "./Version";
-import { Message, SkipWaitingResponse, VersionResponse, isMessage } from "./types/ServiceWorkerMessages";
+import { Message, SkipWaitingResponse, VersionResponse, isMessage } from "./core/ServiceWorkerMessages";
 
 declare const self: ServiceWorkerGlobalScope;
 

@@ -2,7 +2,7 @@ import { TextField, TextFieldProps } from "@mui/material";
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useRef } from "react";
-import { Quantity, UnitConverter, UnitOfLength } from "../types/Unit";
+import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
 import { clamp } from "./Util";
 
 export function clampQuantity(

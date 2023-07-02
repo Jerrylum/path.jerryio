@@ -10,7 +10,7 @@ import { onDownload, onDownloadAs, onNew, onOpen, onSave, onSaveAs } from "../fo
 import { MainApp, useAppStores } from "./MainApp";
 import { HelpPage } from "./HelpDialog";
 import { AppTheme } from "./Theme";
-import { RemovePathsAndEndControls } from "../types/Command";
+import { RemovePathsAndEndControls } from "../core/Command";
 import { checkForUpdates } from "./Versioning";
 
 const CustomMenuItem = observer(

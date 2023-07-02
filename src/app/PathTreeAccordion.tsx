@@ -8,8 +8,8 @@ import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { TreeView } from "@mui/lab";
 import { PathTreeItem } from "./PathTreeItem";
-import { Segment, EndPointControl, Path } from "../types/Path";
-import { AddPath } from "../types/Command";
+import { Segment, EndPointControl, Path } from "../core/Path";
+import { AddPath } from "../core/Command";
 import { useAppStores } from "./MainApp";
 
 const PathTreeAccordion = observer((props: {}) => {

@@ -1,15 +1,15 @@
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Point, Path, Vector } from "../types/Path";
+import { Point, Path, Vector } from "../core/Path";
 import Konva from "konva";
 import { Circle, Layer, Line, Rect, Stage, Text } from "react-konva";
 import React from "react";
 import { PathConfig } from "../format/Config";
 import { clamp } from "./Util";
-import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateInstancesProperties } from "../types/Command";
+import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateInstancesProperties } from "../core/Command";
 import { useAppStores } from "./MainApp";
-import { KeyframeIndexing } from "../types/Calculation";
-import { GraphCanvasConverter } from "../types/Canvas";
+import { KeyframeIndexing } from "../core/Calculation";
+import { GraphCanvasConverter } from "../core/Canvas";
 
 const PathPoints = observer((props: { path: Path; gcc: GraphCanvasConverter }) => {
   const { path, gcc } = props;

@@ -1,6 +1,6 @@
 import { styled } from "@mui/material";
 import { MaterialDesignContent, SnackbarProvider, enqueueSnackbar } from "notistack";
-import { Logger } from "../types/Logger";
+import { Logger } from "../core/Logger";
 
 const StyledMaterialDesignContent = styled(MaterialDesignContent)(() => ({
   "&.notistack-MuiContent-success": {

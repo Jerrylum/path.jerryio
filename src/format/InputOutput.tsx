@@ -1,7 +1,7 @@
 import { Confirmation } from "../app/Confirmation";
 import { MainApp, getAppStores } from "../app/MainApp";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "../app/Notice";
-import { Logger } from "../types/Logger";
+import { Logger } from "../core/Logger";
 
 const logger = Logger("I/O");
 

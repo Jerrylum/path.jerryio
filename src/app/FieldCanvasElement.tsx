@@ -1,6 +1,6 @@
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { EndPointControl, Path, Segment, SegmentVariant, Vector } from "../types/Path";
+import { EndPointControl, Path, Segment, SegmentVariant, Vector } from "../core/Path";
 import Konva from "konva";
 import { Circle, Image, Layer, Line, Stage } from "react-konva";
 import { SegmentElement } from "./SegmentElement";
@@ -10,13 +10,13 @@ import useImage from "use-image";
 import fieldImageUrl from "../static/field2023.png";
 import { ControlElement } from "./ControlElement";
 import { AreaElement } from "./AreaElement";
-import { UnitConverter, UnitOfLength } from "../types/Unit";
-import { FieldCanvasConverter } from "../types/Canvas";
+import { UnitConverter, UnitOfLength } from "../core/Unit";
+import { FieldCanvasConverter } from "../core/Canvas";
 import { clamp } from "./Util";
-import { AddPath, AddSegment } from "../types/Command";
+import { AddPath, AddSegment } from "../core/Command";
 import { useAppStores } from "./MainApp";
 import { RobotElement } from "./RobotElement";
-import { firstDerivative, toDerivativeHeading, toHeading } from "../types/Calculation";
+import { firstDerivative, toDerivativeHeading, toHeading } from "../core/Calculation";
 import ReactDOM from "react-dom";
 
 const PathPoints = observer((props: { path: Path; fcc: FieldCanvasConverter }) => {
