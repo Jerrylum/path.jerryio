@@ -7,7 +7,7 @@ import React from "react";
 import { PathConfig } from "../format/Config";
 import { clamp } from "../core/Util";
 import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateInstancesProperties } from "../core/Command";
-import { useAppStores } from "./MainApp";
+import { useAppStores } from "../core/MainApp";
 import { KeyframeIndexing } from "../core/Calculation";
 import { GraphCanvasConverter } from "../core/Canvas";
 

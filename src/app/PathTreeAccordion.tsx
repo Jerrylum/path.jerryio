@@ -10,7 +10,7 @@ import { TreeView } from "@mui/lab";
 import { PathTreeItem } from "./PathTreeItem";
 import { Segment, EndPointControl, Path } from "../core/Path";
 import { AddPath } from "../core/Command";
-import { useAppStores } from "./MainApp";
+import { useAppStores } from "../core/MainApp";
 
 const PathTreeAccordion = observer((props: {}) => {
   const { app } = useAppStores();

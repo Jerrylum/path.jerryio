@@ -2,7 +2,7 @@ import { makeAutoObservable, action } from "mobx"
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { MainApp } from './app/MainApp';
+import { MainApp } from './core/MainApp';
 import { Control, EndPointControl, Path, Segment, Vector } from './core/Path';
 
 import { plainToClassFromExist, plainToInstance } from 'class-transformer';

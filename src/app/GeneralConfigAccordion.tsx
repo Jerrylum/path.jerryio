@@ -15,7 +15,7 @@ import { getAllFormats } from "../format/Format";
 import { ObserverInput, clampQuantity } from "../component/ObserverInput";
 import { Quantity, UnitOfLength } from "../core/Unit";
 import { UpdateProperties } from "../core/Command";
-import { useAppStores } from "./MainApp";
+import { useAppStores } from "../core/MainApp";
 import { ObserverEnumSelect } from "../component/ObserverEnumSelect";
 import { ObserverCheckbox } from "../component/ObserverCheckbox";
 import { NumberUOL } from "../token/Tokens";

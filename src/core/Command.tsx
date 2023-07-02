@@ -1,4 +1,4 @@
-import { MainApp, getAppStores } from "../app/MainApp";
+import { MainApp, getAppStores } from "./MainApp";
 import { InteractiveEntity } from "./Canvas";
 import { Logger } from "./Logger";
 import { Control, EndPointControl, Keyframe, KeyframePos, Path, Segment, SegmentVariant, Vector } from "./Path";

@@ -1,25 +1,25 @@
 import { makeAutoObservable, computed, runInAction, reaction, action } from "mobx";
 import DOMPurify from "dompurify"; // cspell:disable-line
 import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "../format/Config";
-import { InteractiveEntity } from "../core/Canvas";
-import { Control, EndPointControl, Path, Vector } from "../core/Path";
-import { addToArray, clamp, removeFromArray } from "../core/Util";
+import { InteractiveEntity } from "./Canvas";
+import { Control, EndPointControl, Path, Vector } from "./Path";
+import { addToArray, clamp, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats, convertPathFileData } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from "class-transformer";
-import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
-import { CommandHistory } from "../core/Command";
+import { Quantity, UnitConverter, UnitOfLength } from "./Unit";
+import { CommandHistory } from "./Command";
 import { SemVer } from "semver";
-import { Confirmation } from "./Confirmation";
+import { Confirmation } from "../app/Confirmation";
 import React from "react";
-import { Help } from "./HelpDialog";
-import { Preferences } from "./Preferences";
-import { GoogleAnalytics } from "../core/GoogleAnalytics";
-import { IOFileHandle } from "../core/InputOutput";
-import { getPathSamplePoints, getUniformPointsFromSamples } from "../core/Calculation";
+import { Help } from "../app/HelpDialog";
+import { Preferences } from "../app/Preferences";
+import { GoogleAnalytics } from "./GoogleAnalytics";
+import { IOFileHandle } from "./InputOutput";
+import { getPathSamplePoints, getUniformPointsFromSamples } from "./Calculation";
 import { APP_VERSION_STRING } from "../Version";
-import { Logger } from "../core/Logger";
-import { onLatestVersionChange } from "./Versioning";
+import { Logger } from "./Logger";
+import { onLatestVersionChange } from "../app/Versioning";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 

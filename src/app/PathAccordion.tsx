@@ -1,7 +1,7 @@
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import { useAppStores } from "./MainApp";
+import { useAppStores } from "../core/MainApp";
 
 const PathConfigAccordion = observer((props: {}) => {
   const { app } = useAppStores();

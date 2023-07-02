@@ -1,6 +1,6 @@
 import { Backdrop, Box, Button, Card, Typography } from "@mui/material";
 import React from "react";
-import { useAppStores } from "./MainApp";
+import { useAppStores } from "../core/MainApp";
 import { makeAutoObservable, action, when } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useBackdropDialog } from "../core/Util";

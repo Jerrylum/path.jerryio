@@ -1,7 +1,7 @@
 import { runInAction } from "mobx";
 import { SemVer } from "semver";
 import { Logger } from "../core/Logger";
-import { APP_VERSION, getAppStores } from "./MainApp";
+import { APP_VERSION, getAppStores } from "../core/MainApp";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "./Notice";
 import * as SWR from "../core/ServiceWorkerRegistration";
 

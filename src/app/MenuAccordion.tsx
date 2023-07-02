@@ -7,7 +7,7 @@ import React from "react";
 import { DefaultComponentProps } from "@mui/material/OverridableComponent";
 import { useKeyName } from "../core/Util";
 import { onDownload, onDownloadAs, onNew, onOpen, onSave, onSaveAs } from "../core/InputOutput";
-import { MainApp, useAppStores } from "./MainApp";
+import { MainApp, useAppStores } from "../core/MainApp";
 import { HelpPage } from "./HelpDialog";
 import { AppTheme } from "./Theme";
 import { RemovePathsAndEndControls } from "../core/Command";

@@ -5,7 +5,7 @@ import { Line } from "react-konva";
 import { EndPointControl, SegmentVariant } from "../core/Path";
 import { SegmentElementProps } from "./SegmentElement";
 import { ConvertSegment, SplitSegment } from "../core/Command";
-import { useAppStores } from "./MainApp";
+import { useAppStores } from "../core/MainApp";
 
 const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
   const { app } = useAppStores();

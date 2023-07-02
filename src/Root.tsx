@@ -13,7 +13,7 @@ import { PathConfigAccordion } from "./app/PathAccordion";
 import { ControlAccordion } from "./app/ControlAccordion";
 import { GraphCanvasElement } from "./app/GraphCanvasElement";
 import { FieldCanvasElement } from "./app/FieldCanvasElement";
-import { useAppStores } from "./app/MainApp";
+import { useAppStores } from "./core/MainApp";
 
 import classNames from "classnames";
 import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./core/InputOutput";

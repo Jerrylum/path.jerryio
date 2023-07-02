@@ -6,7 +6,7 @@ import { Circle, Line } from "react-konva";
 import { useState } from "react";
 import { SegmentElementProps } from "./SegmentElement";
 import { DragControls, RemovePathsAndEndControls } from "../core/Command";
-import { useAppStores } from "./MainApp";
+import { useAppStores } from "../core/MainApp";
 
 export interface ControlElementProps extends SegmentElementProps {
   cp: EndPointControl | Control;

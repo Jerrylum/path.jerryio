@@ -1,5 +1,5 @@
 import { makeAutoObservable, reaction, action } from "mobx";
-import { MainApp } from "../app/MainApp";
+import { MainApp } from "../core/MainApp";
 import { makeId } from "../core/Util";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";

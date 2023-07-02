@@ -14,7 +14,7 @@ import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { FieldCanvasConverter } from "../core/Canvas";
 import { clamp } from "../core/Util";
 import { AddPath, AddSegment } from "../core/Command";
-import { useAppStores } from "./MainApp";
+import { useAppStores } from "../core/MainApp";
 import { RobotElement } from "./RobotElement";
 import { firstDerivative, toDerivativeHeading, toHeading } from "../core/Calculation";
 import ReactDOM from "react-dom";

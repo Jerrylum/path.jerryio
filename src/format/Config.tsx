@@ -1,4 +1,4 @@
-import { MainApp } from "../app/MainApp";
+import { MainApp } from "../core/MainApp";
 import { NumberRange } from "../component/RangeSlider";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { Format } from "./Format";

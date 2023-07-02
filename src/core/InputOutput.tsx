@@ -1,5 +1,5 @@
 import { Confirmation } from "../app/Confirmation";
-import { MainApp, getAppStores } from "../app/MainApp";
+import { MainApp, getAppStores } from "./MainApp";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "../app/Notice";
 import { Logger } from "./Logger";
 

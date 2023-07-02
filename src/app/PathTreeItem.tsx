@@ -12,7 +12,7 @@ import { EndPointControl, Path } from "../core/Path";
 import { useRef } from "react";
 import { InteractiveEntity } from "../core/Canvas";
 import { RemovePathsAndEndControls, UpdateInteractiveEntities, UpdateProperties } from "../core/Command";
-import { useAppStores } from "./MainApp";
+import { useAppStores } from "../core/MainApp";
 
 export interface PathTreeProps {
   path: Path;

@@ -5,7 +5,7 @@ import { EndPointControl } from "../core/Path";
 import { ObserverInput, clampQuantity } from "../component/ObserverInput";
 import { Quantity, UnitOfAngle, UnitOfLength } from "../core/Unit";
 import { UpdateInteractiveEntities } from "../core/Command";
-import { useAppStores } from "./MainApp";
+import { useAppStores } from "../core/MainApp";
 import { NumberUOA, NumberUOL } from "../token/Tokens";
 import { parseFormula } from "../core/Util";
 

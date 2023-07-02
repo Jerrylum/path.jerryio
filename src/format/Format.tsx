@@ -1,4 +1,4 @@
-import { APP_VERSION, MainApp } from "../app/MainApp";
+import { APP_VERSION, MainApp } from "../core/MainApp";
 import { Path } from "../core/Path";
 import { LemLibFormatV0_4 } from "./LemLibFormatV0_4";
 import { PathDotJerryioFormatV0_1 } from "./PathDotJerryioFormatV0_1";

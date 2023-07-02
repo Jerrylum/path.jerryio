@@ -2,7 +2,7 @@ import React, { DependencyList } from "react";
 import { runInAction } from "mobx";
 import { useHotkeys } from "react-hotkeys-hook";
 import { HotkeysEvent, HotkeyCallback, Options, RefType, Trigger } from "react-hotkeys-hook/dist/types";
-import { useAppStores } from "../app/MainApp";
+import { useAppStores } from "./MainApp";
 import { TokenParser, NumberWithUnit, CodePointBuffer, Computation } from "../token/Tokens";
 import { Unit } from "./Unit";
 
