@@ -4,9 +4,9 @@ import { observer } from "mobx-react-lite";
 import { useAppStores } from "./MainApp";
 import { lightTheme, darkTheme, AppTheme, AppThemeInfo } from "./Theme";
 import { clamp, useBackdropDialog } from "./Util";
-import { ObserverEnumSelect } from "./ObserverEnumSelect";
-import { ObserverCheckbox } from "./ObserverCheckbox";
-import { ObserverInput } from "./ObserverInput";
+import { ObserverEnumSelect } from "../component/ObserverEnumSelect";
+import { ObserverCheckbox } from "../component/ObserverCheckbox";
+import { ObserverInput } from "../component/ObserverInput";
 
 export class Preferences {
   private isDialogOpen: boolean = false;

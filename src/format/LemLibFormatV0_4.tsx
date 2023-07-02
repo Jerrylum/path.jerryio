@@ -6,7 +6,7 @@ import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { Box, Typography } from "@mui/material";
-import { NumberRange, RangeSlider } from "../app/RangeSlider";
+import { NumberRange, RangeSlider } from "../component/RangeSlider";
 import { UpdateProperties } from "../core/Command";
 import { Exclude } from "class-transformer";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";

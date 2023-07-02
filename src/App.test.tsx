@@ -11,7 +11,7 @@ import { GeneralConfig, PathConfig } from './format/Config';
 import { Format, PathFileData } from './format/Format';
 import { Quantity, UnitOfLength } from "./core/Unit";
 import DOMPurify from "dompurify";
-import { NumberRange } from "./app/RangeSlider";
+import { NumberRange } from "./component/RangeSlider";
 import { PointCalculationResult, getBezierCurveArcLength, getBezierCurvePoints, getPathSamplePoints, getSegmentSamplePoints, getUniformPointsFromSamples, toDerivativeHeading } from "./core/Calculation";
 
 class CustomFormat implements Format {

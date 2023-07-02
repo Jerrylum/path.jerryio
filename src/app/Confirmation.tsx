@@ -4,7 +4,7 @@ import { useAppStores } from "./MainApp";
 import { makeAutoObservable, action, when } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useBackdropDialog } from "./Util";
-import { ObserverInput } from "./ObserverInput";
+import { ObserverInput } from "../component/ObserverInput";
 
 export interface ConfirmationButton {
   label: string;

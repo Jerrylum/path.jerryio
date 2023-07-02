@@ -12,12 +12,12 @@ import {
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { getAllFormats } from "../format/Format";
-import { ObserverInput, clampQuantity } from "./ObserverInput";
+import { ObserverInput, clampQuantity } from "../component/ObserverInput";
 import { Quantity, UnitOfLength } from "../core/Unit";
 import { UpdateProperties } from "../core/Command";
 import { useAppStores } from "./MainApp";
-import { ObserverEnumSelect } from "./ObserverEnumSelect";
-import { ObserverCheckbox } from "./ObserverCheckbox";
+import { ObserverEnumSelect } from "../component/ObserverEnumSelect";
+import { ObserverCheckbox } from "../component/ObserverCheckbox";
 import { NumberUOL } from "../token/Tokens";
 import { parseFormula } from "./Util";
 

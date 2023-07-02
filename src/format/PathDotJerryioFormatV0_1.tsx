@@ -4,7 +4,7 @@ import { makeId } from "../app/Util";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
-import { NumberRange, RangeSlider } from "../app/RangeSlider";
+import { NumberRange, RangeSlider } from "../component/RangeSlider";
 import { Box, Typography } from "@mui/material";
 import { UpdateProperties } from "../core/Command";
 import { Exclude } from "class-transformer";

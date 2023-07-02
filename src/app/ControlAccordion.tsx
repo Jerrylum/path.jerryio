@@ -2,7 +2,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import { EndPointControl } from "../core/Path";
-import { ObserverInput, clampQuantity } from "./ObserverInput";
+import { ObserverInput, clampQuantity } from "../component/ObserverInput";
 import { Quantity, UnitOfAngle, UnitOfLength } from "../core/Unit";
 import { UpdateInteractiveEntities } from "../core/Command";
 import { useAppStores } from "./MainApp";

@@ -2,7 +2,7 @@ import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { FormControlProps, FormControl, InputLabel, Select, SelectChangeEvent, MenuItem } from "@mui/material";
 import React from "react";
-import { makeId } from "./Util";
+import { makeId } from "../app/Util";
 
 const ObserverEnumSelect = observer(
   <T extends number | string>(
