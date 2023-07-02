@@ -3,7 +3,7 @@ import DOMPurify from "dompurify"; // cspell:disable-line
 import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "../format/Config";
 import { InteractiveEntity } from "../core/Canvas";
 import { Control, EndPointControl, Path, Vector } from "../core/Path";
-import { addToArray, clamp, removeFromArray } from "./Util";
+import { addToArray, clamp, removeFromArray } from "../core/Util";
 import { PathFileData, Format, getAllFormats, convertPathFileData } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { plainToInstance, instanceToPlain, plainToClassFromExist } from "class-transformer";
@@ -15,7 +15,7 @@ import React from "react";
 import { Help } from "./HelpDialog";
 import { Preferences } from "./Preferences";
 import { GoogleAnalytics } from "../core/GoogleAnalytics";
-import { IOFileHandle } from "../format/InputOutput";
+import { IOFileHandle } from "../core/InputOutput";
 import { getPathSamplePoints, getUniformPointsFromSamples } from "../core/Calculation";
 import { APP_VERSION_STRING } from "../Version";
 import { Logger } from "../core/Logger";

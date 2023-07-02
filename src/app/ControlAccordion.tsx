@@ -7,7 +7,7 @@ import { Quantity, UnitOfAngle, UnitOfLength } from "../core/Unit";
 import { UpdateInteractiveEntities } from "../core/Command";
 import { useAppStores } from "./MainApp";
 import { NumberUOA, NumberUOL } from "../token/Tokens";
-import { parseFormula } from "./Util";
+import { parseFormula } from "../core/Util";
 
 const ControlAccordion = observer((props: {}) => {
   const { app } = useAppStores();

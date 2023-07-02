@@ -2,7 +2,7 @@ import { Backdrop, Card, Typography } from "@mui/material";
 import { makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
 import { APP_VERSION, useAppStores } from "./MainApp";
-import { useBackdropDialog } from "./Util";
+import { useBackdropDialog } from "../core/Util";
 import React from "react";
 import Welcome from "./Welcome.mdx";
 import { MarkdownOverwrittenComponents } from "./MarkdownSupport";

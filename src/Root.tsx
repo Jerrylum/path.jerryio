@@ -5,7 +5,7 @@ import { observer } from "mobx-react-lite";
 import { ThemeProvider } from "@mui/material/styles";
 
 import { Box, Card } from "@mui/material";
-import { useCustomHotkeys, useDragDropFile, useUnsavedChangesPrompt } from "./app/Util";
+import { useCustomHotkeys, useDragDropFile, useUnsavedChangesPrompt } from "./core/Util";
 import { MenuAccordion } from "./app/MenuAccordion";
 import { PathTreeAccordion } from "./app/PathTreeAccordion";
 import { GeneralConfigAccordion } from "./app/GeneralConfigAccordion";
@@ -16,7 +16,7 @@ import { FieldCanvasElement } from "./app/FieldCanvasElement";
 import { useAppStores } from "./app/MainApp";
 
 import classNames from "classnames";
-import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./format/InputOutput";
+import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./core/InputOutput";
 import { NoticeProvider } from "./app/Notice";
 import { ConfirmationDialog } from "./app/Confirmation";
 import { HelpDialog } from "./app/HelpDialog";

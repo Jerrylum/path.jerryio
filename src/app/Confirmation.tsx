@@ -3,7 +3,7 @@ import React from "react";
 import { useAppStores } from "./MainApp";
 import { makeAutoObservable, action, when } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useBackdropDialog } from "./Util";
+import { useBackdropDialog } from "../core/Util";
 import { ObserverInput } from "../component/ObserverInput";
 
 export interface ConfirmationButton {

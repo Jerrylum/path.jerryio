@@ -3,7 +3,7 @@ import { makeAutoObservable, action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useAppStores } from "./MainApp";
 import { lightTheme, darkTheme, AppTheme, AppThemeInfo } from "./Theme";
-import { clamp, useBackdropDialog } from "./Util";
+import { clamp, useBackdropDialog } from "../core/Util";
 import { ObserverEnumSelect } from "../component/ObserverEnumSelect";
 import { ObserverCheckbox } from "../component/ObserverCheckbox";
 import { ObserverInput } from "../component/ObserverInput";

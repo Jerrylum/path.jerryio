@@ -1,6 +1,6 @@
 import { Expose, Type } from "class-transformer";
 import { observable, makeAutoObservable, makeObservable, computed } from "mobx";
-import { makeId } from "../app/Util";
+import { makeId } from "./Util";
 import { PathConfig } from "../format/Config";
 import { InteractiveEntity, CanvasEntity } from "./Canvas";
 

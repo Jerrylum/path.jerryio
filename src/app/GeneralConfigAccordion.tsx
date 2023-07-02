@@ -19,7 +19,7 @@ import { useAppStores } from "./MainApp";
 import { ObserverEnumSelect } from "../component/ObserverEnumSelect";
 import { ObserverCheckbox } from "../component/ObserverCheckbox";
 import { NumberUOL } from "../token/Tokens";
-import { parseFormula } from "./Util";
+import { parseFormula } from "../core/Util";
 
 const GeneralConfigAccordion = observer((props: {}) => {
   const { app, confirmation } = useAppStores();

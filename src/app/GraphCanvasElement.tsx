@@ -5,7 +5,7 @@ import Konva from "konva";
 import { Circle, Layer, Line, Rect, Stage, Text } from "react-konva";
 import React from "react";
 import { PathConfig } from "../format/Config";
-import { clamp } from "./Util";
+import { clamp } from "../core/Util";
 import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateInstancesProperties } from "../core/Command";
 import { useAppStores } from "./MainApp";
 import { KeyframeIndexing } from "../core/Calculation";

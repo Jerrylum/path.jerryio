@@ -12,7 +12,7 @@ import { ControlElement } from "./ControlElement";
 import { AreaElement } from "./AreaElement";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { FieldCanvasConverter } from "../core/Canvas";
-import { clamp } from "./Util";
+import { clamp } from "../core/Util";
 import { AddPath, AddSegment } from "../core/Command";
 import { useAppStores } from "./MainApp";
 import { RobotElement } from "./RobotElement";

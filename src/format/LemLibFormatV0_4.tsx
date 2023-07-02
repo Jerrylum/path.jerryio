@@ -1,6 +1,6 @@
 import { makeAutoObservable, reaction, action } from "mobx";
 import { MainApp } from "../app/MainApp";
-import { clamp, makeId } from "../app/Util";
+import { clamp, makeId } from "../core/Util";
 import { Control, EndPointControl, Path, Segment, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
