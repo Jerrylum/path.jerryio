@@ -2,6 +2,7 @@ import { SemVer } from "semver";
 import { Logger } from "./Logger";
 import { messageSW, Workbox } from "workbox-window";
 import { refreshLatestVersion } from "../app/Versioning";
+import { GetVersionMessage, VersionResponse } from "./ServiceWorkerMessages";
 
 const logger = Logger("Service Worker Registration");
 
@@ -25,7 +26,7 @@ export async function getCurrentSWVersion(): Promise<SemVer | undefined> {
 
   // ALGO: Do not use wb.messageSW because it might send message to waiting SW (if any)
 
-  const reply = (await messageSW(current, { type: "GET_VERSION" })) as string;
+  const reply = (await messageSW(current, { type: "GET_VERSION" } as GetVersionMessage)) as VersionResponse;
   const version = new SemVer(reply);
 
   return version;
@@ -38,7 +39,7 @@ export async function getWaitingSWVersion(): Promise<SemVer | undefined> {
   const waiting = reg?.waiting;
   if (!waiting) return undefined;
 
-  const reply = (await messageSW(waiting, { type: "GET_VERSION" })) as string;
+  const reply = (await messageSW(waiting, { type: "GET_VERSION" } as GetVersionMessage)) as VersionResponse;
   const version = new SemVer(reply);
 
   return version;
@@ -82,15 +83,15 @@ export function register() {
   });
 
   wb.addEventListener("installed", event => {
+    // NOTE: it seems like event.isUpdate is 100% reliable
     if (event.isUpdate) {
       logger.log("New service worker installed. Precached content has been fetched.");
     } else {
-      logger.log("Service worker installed. Precached content has been fetched. App is ready for offline use.");
+      logger.log("Service worker installed. Precached content has been fetched.");
     }
   });
 
   wb.addEventListener("waiting", event => {
-    // NOTE: Not sure if event.isUpdate is 100% reliable
     logger.log(
       "New service worker is waiting to be activated. New version will be used when all tabs for this page are closed (not reload)."
     );
