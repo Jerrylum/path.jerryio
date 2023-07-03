@@ -1,9 +1,9 @@
 import { runInAction } from "mobx";
 import { SemVer } from "semver";
-import { Logger } from "../core/Logger";
-import { APP_VERSION, getAppStores } from "../core/MainApp";
-import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "./Notice";
-import * as SWR from "../core/ServiceWorkerRegistration";
+import { Logger } from "./Logger";
+import { APP_VERSION, getAppStores } from "./MainApp";
+import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "../app/Notice";
+import * as SWR from "./ServiceWorkerRegistration";
 
 const logger = Logger("Versioning");
 

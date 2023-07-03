@@ -1,7 +1,7 @@
 import { SemVer } from "semver";
 import { Logger } from "./Logger";
 import { messageSW, Workbox } from "workbox-window";
-import { refreshLatestVersion } from "../app/Versioning";
+import { refreshLatestVersion } from "./Versioning";
 import { GetVersionMessage, VersionResponse } from "./ServiceWorkerMessages";
 
 const logger = Logger("Service Worker Registration");

@@ -11,7 +11,7 @@ import { MainApp, useAppStores } from "../core/MainApp";
 import { HelpPage } from "./HelpDialog";
 import { AppTheme } from "./Theme";
 import { RemovePathsAndEndControls } from "../core/Command";
-import { checkForUpdates } from "./Versioning";
+import { checkForUpdates } from "../core/Versioning";
 
 const CustomMenuItem = observer(
   (

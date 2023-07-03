@@ -19,7 +19,7 @@ import { IOFileHandle } from "./InputOutput";
 import { getPathSamplePoints, getUniformPointsFromSamples } from "./Calculation";
 import { APP_VERSION_STRING } from "../Version";
 import { Logger } from "./Logger";
-import { onLatestVersionChange } from "../app/Versioning";
+import { onLatestVersionChange } from "./Versioning";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
