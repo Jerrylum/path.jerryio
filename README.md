@@ -10,17 +10,17 @@
 
 PATH.JERRYIO is a Progressive Web Apps (PWA) that can be used without installation or installed and use without an internet connection.
 
-It is a powerful and flexible multi-purpose path editor/planner, which allows users to design and edit paths with intuitive click-and-drag interactions. After that, a path file can be generated that the robot reads to travel the designed paths in the autonomous period with path-following algorithms.
+It is a powerful and flexible multi-purpose path editor/planner, which allows users to design and edit paths with intuitive click-and-drag interactions. After that, A readable path file can be generated for the robot, it will be used by the robot to travel the designed paths in the autonomous period with path-following algorithms.
 
 ![Screenshot of path.jerryio with a path in the editor](./assets/screenshot-1.png)
 
 
 ## Demonstration
 
-We aim to provide the best environment for path editing and planning within PATH.JERRYIO by focusing on delivering a user experience comparable to industry-standard graphing tools. Here are some examples showing how PATH.JERRYIO can be used:
+We aim to provide the best environment for path editing and planning within PATH.JERRYIO by focusing on delivering a user experience comparable to industry-grade graphing tools. Here are some examples showing how PATH.JERRYIO can be used:
 
 ### Smooth and User-Friendly
-The dragging, panning, and area selection interaction continue even though the cursor is outside the canvas. This is a great example of how much effort went into user experience with great attention to detail.
+The dragging, panning, and area selection interaction continue even when the cursor is outside the canvas. This shows how much effort went into user experience with great attention to detail.
 
 ![Example of dragging, panning, and area selection](./assets/editor-demo1.gif)
 
@@ -72,7 +72,7 @@ By using PATH.JERRYIO, you only need to implement the path file parser and gener
 - Split path into multiple paths (Coming soon)
 - Edit the exact coordinate of each control point and end point
 - Edit the heading of each end point, support Holonomic drive and Differential drive (See data structure section for more detail)
-- Delete multiple control points all at once (Coming soon)
+- Delete multiple control points all at once
 - Undo/Redo support
 - Real-time path preview
 - Handle multiple paths with custom names at the same time
@@ -85,13 +85,12 @@ By using PATH.JERRYIO, you only need to implement the path file parser and gener
 - Support multiple output format with path editor data included
 - Support using any unit of length, even if it differs from the one in the format 
 - Support exporting path files with different coordinate systems, unit of length, and more
-- Autosave (Coming soon)
 - Unsaved change warning
 - Robot simulation with customizable robot size
 - Robot pure pursuit simulation (Coming soon)
 - Progressive Web Apps use without installation
 - Auto update
-- Offline support (Coming soon)
+- Offline support
 
 ### Editing Experience
 - Hidden shortcut keys and details which can greatly improve your work efficiency
@@ -110,7 +109,7 @@ By using PATH.JERRYIO, you only need to implement the path file parser and gener
 - Visualize speed with color
 - Customizable editor panels
 - Hotkey support
-- Drag & Drop to open path file (Coming soon)
+- Drag & Drop to open path file
 - Exclusive editing mode (Coming soon)
 - Light and dark theme
 - iPad support (Coming soon)
