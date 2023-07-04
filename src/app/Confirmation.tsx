@@ -110,8 +110,10 @@ const ConfirmationDialog = observer((props: {}) => {
   function onClick(idx: number) {
     if (idx < 0 || idx >= cfm.buttons.length) idx = cfm.buttons.length - 1;
 
-    cfm.buttons[idx]?.onClick?.();
+    const func = cfm.buttons[idx]?.onClick;
     cfm.close();
+    // ALGO: Call after closing the dialog in case the callback opens another dialog
+    func?.();
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
