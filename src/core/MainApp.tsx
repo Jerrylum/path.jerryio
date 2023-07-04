@@ -438,3 +438,8 @@ export { useAppStores };
     logger.log(uniformResult);
   }
 }))();
+
+// @ts-ignore
+window.unregisterSW = action(() => {
+  SWR.unregister();
+});
