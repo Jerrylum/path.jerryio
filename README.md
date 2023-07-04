@@ -130,8 +130,11 @@ We welcome contributions from everyone. Before you get started, please see our [
 We work closely with the community and library developers. We would like to thank the following contributors for their contributions to PATH.JERRYIO: 
 
 <a href="https://github.com/BattleCh1cken" title="Felix Hass"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/75806385?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
+<a href="https://github.com/COMMANDERWONG" title="COMMANDERWONG"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/37576365?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
+<a href="https://github.com/Cooper7196" title="Cooper7196"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/26489493?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
 <a href="https://github.com/Exortions" title="Exortions"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/75327059?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
 <a href="https://github.com/JohnDoeAntler" title="John Doe Antler"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/16289028?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
+<a href="https://github.com/Mustang8192" title="Samy Chirumamilla"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/107894608?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
 <a href="https://github.com/Rocky14683" title="THERocky"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/101498190?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
 <a href="https://github.com/SizzinSeal" title="Liam Teale"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/111480281?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
 <a href="https://github.com/SunkenSplash" title="William Castro"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/62484109?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
