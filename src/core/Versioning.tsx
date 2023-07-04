@@ -123,22 +123,22 @@ async function doPromptUpdate() {
   function getDescription(clientsCount: number) {
     let rtn = "";
     if (clientsCount <= 1) {
-      rtn += " Close this tab. Then, reopen to update the app. Reload is insufficient.";
+      rtn += "Restart the app by closing this tab and reopening it. Reload/Hard Reload will not work.";
     } else {
-      rtn += " Close all " + clientsCount + " tabs of PATH.JERRYIO. Then, reopen to update the app.";
+      rtn += "Restart the app by closing all " + clientsCount + " tabs. Then, reopen them.";
     }
 
-    if (isModified === false && isModifyingFile) {
-      rtn += " The changes made to the current file have been saved. You are safe to close this tab.";
-    } else if (isModified) {
-      rtn += " You can save the changes made to the current file before closing this tab.";
+    if (isModified) {
+      rtn += " There're unsaved change(s) in the current file, you may save before closing this tab.";
+    } else {
+      rtn += " There's no unsaved change.";
     }
 
     return rtn;
   }
 
   const prompt = conf.prompt({
-    title: `Install Update v${version}`,
+    title: `Apply Update v${version}`,
     description: getDescription(await SWR.getControllingClientsCount()),
     buttons: isModified
       ? [
