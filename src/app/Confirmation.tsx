@@ -63,8 +63,18 @@ export class Confirmation {
     return this.data?.title ?? "";
   }
 
+  set title(value: string) {
+    if (this.data === undefined) return;
+    this.data.title = value;
+  }
+
   get description() {
     return this.data?.description ?? "";
+  }
+
+  set description(value: string) {
+    if (this.data === undefined) return;
+    this.data.description = value;
   }
 
   get buttons() {
