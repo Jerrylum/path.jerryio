@@ -97,9 +97,17 @@ export async function onLatestVersionChange(newVer: SemVer | null | undefined, o
   }
 }
 
+const versioningBroadcastChannel = new BroadcastChannel("versioning");
+const PromptUpdateMessage = "PROMPT_UPDATE";
+const CloseUpdatePromptMessage = "CLOSE_UPDATE_PROMPT";
+versioningBroadcastChannel.onmessage = event => {
+  if (event.data === PromptUpdateMessage) promptUpdate(false);
+  else if (event.data === CloseUpdatePromptMessage) closeUpdatePrompt(false);
+};
+
 let isPromptingUpdate = false;
 
-export async function promptUpdate() {
+export async function promptUpdate(broadcast: boolean = true) {
   const { app } = getAppStores();
 
   if (app.latestVersion === undefined) return;
@@ -107,7 +115,20 @@ export async function promptUpdate() {
 
   isPromptingUpdate = true;
 
+  if (broadcast) versioningBroadcastChannel.postMessage(PromptUpdateMessage);
+
   await doPromptUpdate();
+}
+
+export function closeUpdatePrompt(broadcast: boolean = true) {
+  if (isPromptingUpdate === false) return;
+
+  const { confirmation: conf } = getAppStores();
+
+  isPromptingUpdate = false;
+  conf.close();
+
+  if (broadcast) versioningBroadcastChannel.postMessage(CloseUpdatePromptMessage);
 }
 
 async function doPromptUpdate() {
@@ -117,7 +138,9 @@ async function doPromptUpdate() {
 
   if (conf.isOpen) await when(() => conf.isOpen === false);
 
-  const version = app.latestVersion?.version ?? "?.?.?";
+  if (!app.latestVersion) await when(() => !!app.latestVersion);
+
+  const version = app.latestVersion!.version ?? "";
   const isModified = app.history.isModified();
 
   function getDescription(clientsCount: number): React.ReactNode {
@@ -150,13 +173,13 @@ async function doPromptUpdate() {
           },
           {
             label: "Not Now",
-            onClick: () => (isPromptingUpdate = false)
+            onClick: closeUpdatePrompt
           }
         ]
       : [
           {
             label: "Not Now",
-            onClick: () => (isPromptingUpdate = false)
+            onClick: closeUpdatePrompt
           }
         ]
   });
