@@ -21,7 +21,8 @@ export class CommandHistory {
   constructor(private app: MainApp) {}
 
   execute(title: string, command: CancellableCommand, mergeTimeout = 500): void {
-    command.execute();
+    const result = command.execute();
+    if (result === false) return;
 
     const exe = { title, command, time: Date.now(), mergeTimeout };
 
@@ -99,10 +100,19 @@ export class CommandHistory {
 }
 
 export interface Command {
-  execute(): void;
+  /**
+   * Execute the command
+   *
+   * @returns true if the command was executed, false otherwise (e.g. if the command is not valid or no change is made)
+   */
+  execute(): void | boolean;
 }
 
 export interface MergeableCommand extends Command {
+  /**
+   * @param command The command to merge with
+   * @returns true if the command was merged, false otherwise
+   */
   merge(command: MergeableCommand): boolean;
 }
 
@@ -129,15 +139,20 @@ export function isInteractiveEntitiesCommand(object: Command): object is Interac
  */
 
 export class UpdateInstancesProperties<TTarget> implements CancellableCommand, MergeableCommand {
+  protected changed = false;
   protected previousValue?: Partial<TTarget>[];
 
   constructor(protected targets: TTarget[], protected newValues: Partial<TTarget>) {}
 
-  execute(): void {
+  execute(): boolean {
     this.previousValue = [];
     for (let i = 0; i < this.targets.length; i++) {
-      this.previousValue.push(this.updatePropertiesForTarget(this.targets[i], this.newValues));
+      const { changed, previousValues } = this.updatePropertiesForTarget(this.targets[i], this.newValues);
+      this.changed = this.changed || changed;
+      this.previousValue.push(previousValues);
     }
+
+    return this.changed;
   }
 
   undo(): void {
@@ -163,14 +178,19 @@ export class UpdateInstancesProperties<TTarget> implements CancellableCommand, M
     return true;
   }
 
-  protected updatePropertiesForTarget(target: TTarget, values: Partial<TTarget>): Partial<TTarget> {
+  protected updatePropertiesForTarget(
+    target: TTarget,
+    values: Partial<TTarget>
+  ): { changed: boolean; previousValues: Partial<TTarget> } {
+    let changed = false;
     const previousValues: Partial<TTarget> = {} as Partial<TTarget>;
     for (const key in values) {
       previousValues[key] = target[key];
       target[key] = values[key]!;
+      changed = changed || target[key] !== previousValues[key];
     }
 
-    return previousValues;
+    return { changed, previousValues };
   }
 }
 
