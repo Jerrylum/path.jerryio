@@ -6,7 +6,7 @@ import { Circle, Layer, Line, Rect, Stage, Text } from "react-konva";
 import React from "react";
 import { PathConfig } from "../format/Config";
 import { clamp } from "../core/Util";
-import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateInstancesProperties } from "../core/Command";
+import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateProperties } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
 import { KeyframeIndexing } from "../core/Calculation";
 import { GraphCanvasConverter } from "../core/Canvas";
@@ -100,7 +100,7 @@ const KeyframeElement = observer((props: { ikf: KeyframeIndexing; gcc: GraphCanv
       const setTo = !ikf.keyframe.followBentRate;
       app.history.execute(
         `Update keyframe ${ikf.keyframe.uid} followCurve to ${setTo}`,
-        new UpdateInstancesProperties([ikf.keyframe], { followBentRate: setTo }),
+        new UpdateProperties(ikf.keyframe, { followBentRate: setTo }),
         0
       );
     } else if (evt.button === 2) {
