@@ -6,6 +6,7 @@ import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "../app/Notice";
 import * as SWR from "./ServiceWorkerRegistration";
 import { onSave } from "./InputOutput";
 import { sleep } from "./Util";
+import { Typography } from "@mui/material";
 
 const logger = Logger("Versioning");
 
@@ -118,23 +119,22 @@ async function doPromptUpdate() {
 
   const version = app.latestVersion?.version ?? "?.?.?";
   const isModified = app.history.isModified();
-  const isModifyingFile = app.mountingFile.isNameSet;
 
-  function getDescription(clientsCount: number) {
-    let rtn = "";
-    if (clientsCount <= 1) {
-      rtn += "Restart the app by closing this tab and reopening it. Reload/Hard Reload will not work.";
-    } else {
-      rtn += "Restart the app by closing all " + clientsCount + " tabs. Then, reopen them.";
-    }
-
-    if (isModified) {
-      rtn += " There're unsaved change(s) in the current file, you may save before closing this tab.";
-    } else {
-      rtn += " There's no unsaved change.";
-    }
-
-    return rtn;
+  function getDescription(clientsCount: number): React.ReactNode {
+    return (
+      <>
+        <Typography gutterBottom variant="body1">
+          {clientsCount <= 1
+            ? "Restart the app by closing this tab and reopening it. Reload/Hard Reload will not work."
+            : "Restart the app by closing all " + clientsCount + " tabs. Then, reopen them."}
+        </Typography>
+        <Typography variant="body1">
+          {isModified
+            ? "There're unsaved change(s) in the current file, you may save before closing this tab."
+            : "There's no unsaved change."}
+        </Typography>
+      </>
+    );
   }
 
   const prompt = conf.prompt({
