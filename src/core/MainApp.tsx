@@ -20,6 +20,8 @@ import { getPathSamplePoints, getUniformPointsFromSamples } from "./Calculation"
 import { APP_VERSION_STRING } from "../Version";
 import { Logger } from "./Logger";
 import { onLatestVersionChange } from "./Versioning";
+import { enqueueSuccessSnackbar } from "../app/Notice";
+import * as SWR from "./ServiceWorkerRegistration";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
@@ -132,6 +134,14 @@ export class MainApp {
     reaction(() => this.latestVersion, onLatestVersionChange);
 
     this.newPathFile();
+  }
+
+  onUIReady() {
+    const lastTimeAppVersion = localStorage.getItem("appVersion");
+    if (APP_VERSION_STRING !== lastTimeAppVersion) {
+      localStorage.setItem("appVersion", APP_VERSION_STRING);
+      if (lastTimeAppVersion !== null) enqueueSuccessSnackbar(logger, "Updated to v" + APP_VERSION_STRING);
+    }
   }
 
   @computed get gc(): GeneralConfig {

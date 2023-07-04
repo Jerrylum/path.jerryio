@@ -23,6 +23,7 @@ import { HelpDialog } from "./app/HelpDialog";
 import { PreferencesDialog } from "./app/Preferences";
 import { DragDropBackdrop } from "./app/DragDropBackdrop";
 import { RemovePathsAndEndControls } from "./core/Command";
+import React from "react";
 
 const Root = observer(() => {
   const { app, confirmation, help, appPreferences } = useAppStores();
@@ -103,6 +104,8 @@ const Root = observer(() => {
   );
 
   useUnsavedChangesPrompt();
+
+  React.useEffect(() => app.onUIReady(), [app]);
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
