@@ -97,13 +97,20 @@ export async function onLatestVersionChange(newVer: SemVer | null | undefined, o
   }
 }
 
-const versioningBroadcastChannel = new BroadcastChannel("versioning");
 const PromptUpdateMessage = "PROMPT_UPDATE";
 const CloseUpdatePromptMessage = "CLOSE_UPDATE_PROMPT";
-versioningBroadcastChannel.onmessage = event => {
-  if (event.data === PromptUpdateMessage) promptUpdate(false);
-  else if (event.data === CloseUpdatePromptMessage) closeUpdatePrompt(false);
-};
+const versioningBroadcastChannel: BroadcastChannel | undefined = (function () {
+  if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+    const channel = new BroadcastChannel("versioning");
+    channel.onmessage = event => {
+      if (event.data === PromptUpdateMessage) promptUpdate(false);
+      else if (event.data === CloseUpdatePromptMessage) closeUpdatePrompt(false);
+    };
+    return channel;
+  } else {
+    return undefined;
+  }
+})();
 
 let isPromptingUpdate = false;
 
@@ -115,7 +122,7 @@ export async function promptUpdate(broadcast: boolean = true) {
 
   isPromptingUpdate = true;
 
-  if (broadcast) versioningBroadcastChannel.postMessage(PromptUpdateMessage);
+  if (broadcast) versioningBroadcastChannel?.postMessage(PromptUpdateMessage);
 
   await doPromptUpdate();
 }
@@ -128,7 +135,7 @@ export function closeUpdatePrompt(broadcast: boolean = true) {
   isPromptingUpdate = false;
   conf.close();
 
-  if (broadcast) versioningBroadcastChannel.postMessage(CloseUpdatePromptMessage);
+  if (broadcast) versioningBroadcastChannel?.postMessage(CloseUpdatePromptMessage);
 }
 
 async function doPromptUpdate() {
