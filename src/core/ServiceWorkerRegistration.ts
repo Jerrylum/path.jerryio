@@ -91,10 +91,12 @@ export function register() {
   // serve assets; see https://github.com/facebook/create-react-app/issues/2374
   if (publicUrl.origin !== window.location.origin) return;
 
-  const regOption: RegistrationOptions = { updateViaCache: "none" };
-  wb = new Workbox(`${process.env.PUBLIC_URL}/service-worker.js`, regOption);
+  if (isUsingServiceWorker) return;
 
   isUsingServiceWorker = true;
+
+  const regOption: RegistrationOptions = { updateViaCache: "none" };
+  wb = new Workbox(`${process.env.PUBLIC_URL}/service-worker.js`, regOption);
 
   wb.addEventListener("installing", event => {
     logger.log("Installing service worker");
