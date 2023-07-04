@@ -16,12 +16,12 @@ const MarkdownOverwrittenComponents: MDXComponents = {
   // keep br
   code: (props) => <Typography component="code" variant="body1">{props.children}</Typography>,
   // keep em
-  h1: (props) => <Typography gutterBottom variant="h1" >{props.children}</Typography>,
-  h2: (props) => <Typography gutterBottom variant="h2" >{props.children}</Typography>,
-  h3: (props) => <Typography gutterBottom variant="h3" >{props.children}</Typography>,
-  h4: (props) => <Typography gutterBottom variant="h4" >{props.children}</Typography>,
-  h5: (props) => <Typography gutterBottom variant="h5" >{props.children}</Typography>,
-  h6: (props) => <Typography gutterBottom variant="h6" >{props.children}</Typography>,
+  h1: (props) => <Typography gutterBottom variant="h1">{props.children}</Typography>,
+  h2: (props) => <Typography gutterBottom variant="h2">{props.children}</Typography>,
+  h3: (props) => <Typography gutterBottom variant="h3">{props.children}</Typography>,
+  h4: (props) => <Typography gutterBottom variant="h4">{props.children}</Typography>,
+  h5: (props) => <Typography gutterBottom variant="h5">{props.children}</Typography>,
+  h6: (props) => <Typography gutterBottom variant="h6">{props.children}</Typography>,
   hr: (props) => <Divider sx={{ margin: "1rem 0" }} />,
   img: (props) => <img {...props} className="markdown-style" />, // eslint-disable-line jsx-a11y/alt-text
   li: (props) => <Typography component="li" variant="body1">{props.children}</Typography>,
