@@ -7,6 +7,19 @@ import * as SWR from "./ServiceWorkerRegistration";
 
 const logger = Logger("Versioning");
 
+export async function reportVersions() {
+  const { app } = getAppStores();
+
+  const appVersion = APP_VERSION.version;
+  const appLatestVersion = app.latestVersion?.version;
+  const controllerVersion = await SWR.getCurrentSWVersion();
+  const waitingVersion = await SWR.getWaitingSWVersion();
+
+  logger.log(
+    `Report versions: app ${appVersion}, latest ${appLatestVersion}, controller ${controllerVersion?.version}, waiting ${waitingVersion?.version}`
+  );
+}
+
 export async function fetchLatestVersionViaAPI(): Promise<SemVer | undefined> {
   logger.log("Fetch latest version via API");
   try {
