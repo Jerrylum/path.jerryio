@@ -1,7 +1,7 @@
 import { SemVer } from "semver";
 import { Logger } from "./Logger";
 import { messageSW, Workbox } from "workbox-window";
-import { refreshLatestVersion } from "./Versioning";
+import { refreshLatestVersion, reportVersions } from "./Versioning";
 import {
   ClientsCountResponse,
   GetClientsCountMessage,
@@ -115,7 +115,6 @@ export function register() {
     logger.log(
       "New service worker is waiting to be activated. New version will be used when all tabs for this page are closed (not reload)."
     );
-
     refreshLatestVersion();
   });
 
@@ -125,9 +124,37 @@ export function register() {
 
   wb.register().catch(error => logger.error("Error during service worker registration:", error));
 
-  if (navigator.serviceWorker.controller) {
-    logger.log("Service worker is controlling this page.");
-  }
+  reportVersions();
+
+  /*
+  Note:
+  
+  For example, if there are two tabs open, both of their versions are:
+  Tab1: app 0.2.17, controller 0.2.17, waiting undefined
+  Tab2: app 0.2.17, controller 0.2.17, waiting undefined
+  Now, if you reload tab1 and there is an update available, the versions will be:
+  Tab1: app 0.2.17, controller 0.2.17, waiting 0.2.18
+  Tab2: app 0.2.17, controller 0.2.17, waiting 0.2.18
+  But if you hard reload tab1, the versions will be:
+  Tab1: app 0.2.18, controller undefined, waiting 0.2.18
+  Tab2: app 0.2.17, controller 0.2.17, waiting 0.2.18
+  Note that the controller version is undefined in tab1.
+
+  See: https://stackoverflow.com/questions/51597231/register-service-worker-after-hard-refresh
+
+  It is question about how can we guarantee that the service worker after being 'activated' is also controlling the page?
+  And the answer is no, usually page after hard reload are not controlled by the service worker.
+
+  Therefore, the following code handles the above cases:
+  */
+  navigator.serviceWorker.getRegistration().then(function (reg) {
+    // There's an active SW, but no controller for this tab.
+    if (reg?.active && !navigator.serviceWorker.controller) {
+      // Perform a soft reload to load everything from the SW and get
+      // a consistent set of resources.
+      window.location.reload();
+    }
+  });
 }
 
 export function unregister() {
