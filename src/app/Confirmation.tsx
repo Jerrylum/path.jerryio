@@ -15,7 +15,7 @@ export interface ConfirmationButton {
 
 export interface ConfirmationPromptData {
   title: string;
-  description: string;
+  description: React.ReactNode;
   buttons: ConfirmationButton[];
   onKeyDown?(e: React.KeyboardEvent<HTMLDivElement>, onClick: (index: number) => void): void;
 }
@@ -72,7 +72,7 @@ export class Confirmation {
     return this.data?.description ?? "";
   }
 
-  set description(value: string) {
+  set description(value: React.ReactNode) {
     if (this.data === undefined) return;
     this.data.description = value;
   }
@@ -192,7 +192,7 @@ const ConfirmationDialog = observer((props: {}) => {
         </Typography>
         {/* https://stackoverflow.com/questions/9769587/set-div-to-have-its-siblings-width */}
         <Box className="description-box">
-          <Typography variant="body1" gutterBottom>
+          <Typography component="div" variant="body1" gutterBottom>
             {cfm.description}
           </Typography>
         </Box>
