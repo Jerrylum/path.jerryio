@@ -9,7 +9,7 @@ import { registerRoute } from "workbox-routing";
 import { StaleWhileRevalidate } from "workbox-strategies";
 import LoggerImpl from "./core/LoggerImpl";
 import { APP_VERSION_STRING } from "./Version";
-import { Message, SkipWaitingResponse, VersionResponse, isMessage } from "./core/ServiceWorkerMessages";
+import { ClientsCountResponse, Message, SkipWaitingResponse, VersionResponse, isMessage } from "./core/ServiceWorkerMessages";
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -45,6 +45,10 @@ self.addEventListener("message", event => {
 
   if (msg.type === "GET_VERSION") {
     event.ports[0].postMessage(APP_VERSION_STRING as VersionResponse);
+  } else if (msg.type === "GET_CLIENTS_COUNT") {
+    self.clients.matchAll({ includeUncontrolled: false }).then(clients => {
+      event.ports[0].postMessage(clients.length as ClientsCountResponse);
+    });
   } else if (msg.type === "SKIP_WAITING") {
     self.skipWaiting();
     event.ports[0].postMessage(undefined as SkipWaitingResponse);

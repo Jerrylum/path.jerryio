@@ -1,6 +1,7 @@
-export type MessageAction = "GET_VERSION" | "SKIP_WAITING";
+export type MessageAction = "GET_VERSION" | "GET_CLIENTS_COUNT" | "SKIP_WAITING";
 
 export type SkipWaitingResponse = undefined;
+export type ClientsCountResponse = number;
 export type VersionResponse = string;
 
 export interface Message {
@@ -9,6 +10,10 @@ export interface Message {
 
 export interface GetVersionMessage extends Message {
   type: "GET_VERSION";
+}
+
+export interface GetClientsCountMessage extends Message {
+  type: "GET_CLIENTS_COUNT";
 }
 
 export interface SkipWaitingMessage extends Message {

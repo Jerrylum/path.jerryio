@@ -2,7 +2,12 @@ import { SemVer } from "semver";
 import { Logger } from "./Logger";
 import { messageSW, Workbox } from "workbox-window";
 import { refreshLatestVersion } from "./Versioning";
-import { GetVersionMessage, VersionResponse } from "./ServiceWorkerMessages";
+import {
+  ClientsCountResponse,
+  GetClientsCountMessage,
+  GetVersionMessage,
+  VersionResponse
+} from "./ServiceWorkerMessages";
 
 const logger = Logger("Service Worker Registration");
 
@@ -17,6 +22,19 @@ const isLocalhost = Boolean(
 let wb: Workbox | undefined = undefined;
 
 let isUsingServiceWorker = false;
+
+export async function getControllingClientsCount(): Promise<number> {
+  if (isUsingServiceWorker === false) return 0;
+
+  const current = navigator.serviceWorker.controller;
+  if (!current) return 0;
+
+  const reply = (await messageSW(current, {
+    type: "GET_CLIENTS_COUNT"
+  } as GetClientsCountMessage)) as ClientsCountResponse;
+
+  return reply;
+}
 
 export async function getCurrentSWVersion(): Promise<SemVer | undefined> {
   if (isUsingServiceWorker === false) return undefined;
