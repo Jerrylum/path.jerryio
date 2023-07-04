@@ -184,6 +184,10 @@ export function useDragDropFile(enable: boolean, onDrop: (file: File) => void) {
   };
 }
 
+export async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export function makeId(length: number) {
   let result = "";
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
