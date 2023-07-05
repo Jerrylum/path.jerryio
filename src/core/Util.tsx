@@ -5,6 +5,7 @@ import { HotkeysEvent, HotkeyCallback, Options, RefType, Trigger } from "react-h
 import { useAppStores } from "./MainApp";
 import { TokenParser, NumberWithUnit, CodePointBuffer, Computation } from "../token/Tokens";
 import { Unit } from "./Unit";
+import { Vector } from "./Path";
 
 export function useTimer(ms: number) {
   const [time, setTime] = React.useState(Date.now());
@@ -160,6 +161,29 @@ export function useBackdropDialog(enable: boolean, onClose?: () => void) {
   }, [enable, onClose]);
 }
 
+export function useWindowSize(resizeCallback?: (newSize: Vector, oldSize: Vector) => void): Vector {
+  const [size, setSize] = React.useState<Vector>(new Vector(window.innerWidth, window.innerHeight));
+
+  React.useEffect(() => {
+    const onResize = () => {
+      const newSize = new Vector(window.innerWidth, window.innerHeight);
+
+      setSize(oldSize => {
+        resizeCallback?.(newSize, oldSize);
+        return newSize;
+      });
+    };
+
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+    };
+  }, [resizeCallback]);
+
+  return size;
+}
+
 export function useDragDropFile(enable: boolean, onDrop: (file: File) => void) {
   const [isDraggingFile, setIsDraggingFile] = React.useState(false);
 
@@ -185,7 +209,7 @@ export function useDragDropFile(enable: boolean, onDrop: (file: File) => void) {
 }
 
 export async function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export function makeId(length: number) {
