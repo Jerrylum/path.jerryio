@@ -238,8 +238,8 @@ export class AddSegment implements CancellableCommand, InteractiveEntitiesComman
 
     if (this.path.segments.length === 0) {
       const p0 = new EndPointControl(0, 0, 0);
-      const p1 = new Control(p0.x, p0.y + 24);
-      const p2 = new Control(p3.x, p3.y - 24);
+      const p1 = new Control(p0.x, p3.y);
+      const p2 = new Control(p3.x, p0.y);
       this.segment = new Segment(p0, [p1, p2], p3);
       this._entities.push(p0, p1, p2, p3);
     } else {

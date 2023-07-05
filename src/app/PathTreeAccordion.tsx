@@ -11,14 +11,18 @@ import { PathTreeItem } from "./PathTreeItem";
 import { Segment, EndPointControl, Path } from "../core/Path";
 import { AddPath } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
+import { Quantity, UnitOfLength } from "../core/Unit";
 
 const PathTreeAccordion = observer((props: {}) => {
   const { app } = useAppStores();
 
   function onAddPathClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    const cm60 = new Quantity<UnitOfLength>(60, UnitOfLength.Centimeter);
+    const cm60inUOL = cm60.to(app.gc.uol);
+
     const newPath = new Path(
       app.format.buildPathConfig(),
-      new Segment(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0))
+      new Segment(new EndPointControl(-cm60inUOL, -cm60inUOL, 0), [], new EndPointControl(-cm60inUOL, cm60inUOL, 0))
     );
     app.history.execute(`Add path ${newPath.uid}`, new AddPath(app.paths, newPath));
     app.addExpanded(newPath);
