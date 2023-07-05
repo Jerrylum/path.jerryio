@@ -15,6 +15,7 @@ export interface Logger {
   print(method: Method, ...args: any[]): void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- intentionally naming the function the same as the type
 export const Logger = function (name: string): Logger {
   return new LoggerImpl(name);
 };
