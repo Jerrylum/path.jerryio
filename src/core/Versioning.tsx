@@ -161,7 +161,7 @@ async function doPromptUpdate() {
         <Typography variant="body1">
           {isModified
             ? "There're unsaved change(s) in the current file, you may save before closing this tab."
-            : "There's no unsaved change."}
+            : "There're no unsaved changes."}
         </Typography>
       </>
     );
