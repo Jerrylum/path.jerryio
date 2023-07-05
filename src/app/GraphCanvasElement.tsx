@@ -5,7 +5,7 @@ import Konva from "konva";
 import { Circle, Layer, Line, Rect, Stage, Text } from "react-konva";
 import React from "react";
 import { PathConfig } from "../format/Config";
-import { clamp } from "../core/Util";
+import { clamp, useWindowSize } from "../core/Util";
 import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateProperties } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
 import { KeyframeIndexing } from "../core/Calculation";
@@ -131,6 +131,8 @@ const KeyframeElement = observer((props: { ikf: KeyframeIndexing; gcc: GraphCanv
 const GraphCanvasElement = observer((props: {}) => {
   const { app, appPreferences: preferences } = useAppStores();
 
+  const windowSize = useWindowSize();
+
   const [xOffset, setXOffset] = React.useState(0);
 
   const path = app.interestedPath();
@@ -141,8 +143,8 @@ const GraphCanvasElement = observer((props: {}) => {
 
   if (path === undefined) return null;
 
-  const canvasWidth = window.innerHeight * 0.78;
-  const canvasHeight = window.innerHeight * 0.12;
+  const canvasWidth = windowSize.y * 0.78;
+  const canvasHeight = windowSize.y * 0.12;
   const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, xOffset, path);
 
   const fontSize = canvasHeight / 8;

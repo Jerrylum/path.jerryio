@@ -12,7 +12,7 @@ import { ControlElement } from "./ControlElement";
 import { AreaElement } from "./AreaElement";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { FieldCanvasConverter } from "../core/Canvas";
-import { clamp } from "../core/Util";
+import { clamp, useWindowSize } from "../core/Util";
 import { AddPath, AddSegment } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
 import { RobotElement } from "./RobotElement";
@@ -73,8 +73,13 @@ const PathControls = observer((props: { path: Path; fcc: FieldCanvasConverter; i
 const FieldCanvasElement = observer((props: {}) => {
   const { app } = useAppStores();
 
+  const windowSize = useWindowSize((newSize: Vector, oldSize: Vector) => {
+    const ratio = (newSize.y + oldSize.y) / 2 / oldSize.y;
+    app.fieldOffset = app.fieldOffset.multiply(new Vector(ratio, ratio));
+  });
+
   const uc = new UnitConverter(UnitOfLength.Foot, app.gc.uol);
-  const canvasSizeInPx = window.innerHeight * (app.view.showSpeedCanvas ? 0.78 : 0.94);
+  const canvasSizeInPx = windowSize.y * (app.view.showSpeedCanvas ? 0.78 : 0.94);
   const canvasSizeInUOL = uc.fromAtoB(12);
 
   const paths = app.paths;
