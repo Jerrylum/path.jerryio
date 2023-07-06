@@ -134,6 +134,10 @@ export class Control extends Vector implements InteractiveEntity {
   public lock: boolean = false;
   public visible: boolean = true;
 
+  get name(): string {
+    return "Control";
+  }
+
   constructor(x: number, y: number) {
     super(x, y);
     this.uid = makeId(10);
@@ -163,6 +167,10 @@ export class Control extends Vector implements InteractiveEntity {
 export class EndPointControl extends Control implements Position {
   @Expose({ name: "heading" })
   public heading_: number = 0;
+
+  get name(): string {
+    return "End Control";
+  }
 
   constructor(x: number, y: number, heading: number) {
     super(x, y);

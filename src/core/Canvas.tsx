@@ -8,6 +8,9 @@ export interface CanvasEntity {
 export interface InteractiveEntity extends CanvasEntity {
   lock: boolean;
   visible: boolean;
+  name: string;
+}
+
 }
 
 export class FieldCanvasConverter {
