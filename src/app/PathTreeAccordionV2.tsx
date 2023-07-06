@@ -1,17 +1,179 @@
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import DeleteIcon from "@mui/icons-material/Delete";
+import FiberManualRecordOutlinedIcon from "@mui/icons-material/FiberManualRecordOutlined";
+import LockOpenIcon from "@mui/icons-material/LockOpen";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp";
 import { AccordionDetails, AccordionSummary, Box, Card, IconButton, Tooltip, Typography } from "@mui/material";
 import { action } from "mobx";
-import { observer } from "mobx-react-lite";
-import { TreeView } from "@mui/lab";
-import { PathTreeItem } from "./PathTreeItem";
+import { observer, useLocalObservable } from "mobx-react-lite";
 import { Segment, EndPointControl, Path } from "../core/Path";
-import { AddPath } from "../core/Command";
+import { AddPath, RemovePathsAndEndControls, UpdateInteractiveEntities } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
 import { Quantity, UnitOfLength } from "../core/Unit";
+import { InteractiveEntity, InteractiveEntityParent } from "../core/Canvas";
+import classNames from "classnames";
+import { useIsMacOS } from "../core/Util";
+import React from "react";
+
+interface PathTreeVariables {
+  lastFocused: InteractiveEntity | undefined;
+  rangeEnd: InteractiveEntity | undefined;
+}
+
+const TreeItem = observer(
+  (props: {
+    entity: InteractiveEntity;
+    parent?: InteractiveEntity;
+    isNameEditable?: boolean; // TODO
+    variables: PathTreeVariables;
+  }) => {
+    const { app } = useAppStores();
+
+    const { entity, parent, variables } = props;
+
+    const isMacOS = useIsMacOS();
+
+    const children = "children" in entity ? (entity as InteractiveEntityParent).children : undefined;
+    const canDeleteBool = entity instanceof Path || entity instanceof EndPointControl;
+
+    function onExpandIconClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+      event.stopPropagation();
+      if (app.isExpanded(entity)) {
+        app.removeExpanded(entity);
+      } else {
+        app.addExpanded(entity);
+      }
+    }
+
+    function onLabelClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.shiftKey) {
+        // TODO
+        const entityFlattened = app.paths.flatMap(path => [path, ...path.controls]).map(entity => entity.uid);
+
+        if (variables.lastFocused === undefined) return;
+
+        const helper = function (fromUid: string, toUid: string, cb: (target: string) => void) {
+          const fromIndex = entityFlattened.indexOf(fromUid);
+          const toIndex = entityFlattened.indexOf(toUid);
+
+          if (fromIndex === -1 || toIndex === -1) return;
+
+          const a = Math.min(fromIndex, toIndex);
+          const b = Math.max(fromIndex, toIndex);
+
+          for (let i = a; i <= b; i++) {
+            cb(entityFlattened[i]);
+          }
+        };
+
+        if (variables.rangeEnd !== undefined) {
+          helper(entity.uid, variables.rangeEnd.uid, app.unselect.bind(app));
+        }
+
+        helper(entity.uid, variables.lastFocused.uid, app.select.bind(app));
+
+        variables.rangeEnd = entity;
+      } else if (isMacOS ? event.metaKey : event.ctrlKey) {
+        if (app.isSelected(entity)) {
+          app.unselect(entity);
+        } else {
+          app.select(entity);
+        }
+        variables.lastFocused = entity;
+        variables.rangeEnd = undefined;
+      } else {
+        app.setSelected([entity]);
+        variables.lastFocused = entity;
+        variables.rangeEnd = undefined;
+      }
+    }
+
+    function onVisibleClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
+      const setTo = !entity.visible;
+      const affected = app.isSelected(entity) ? app.selectedEntities : [entity];
+
+      app.history.execute(
+        `Update entities visibility to ${setTo}`,
+        new UpdateInteractiveEntities(affected, { visible: setTo }),
+        0 // Disable merge
+      );
+    }
+
+    function onLockClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
+      const setTo = !entity.lock;
+      const affected = app.isSelected(entity) ? app.selectedEntities : [entity];
+
+      app.history.execute(
+        `Update entities lock to ${setTo}`,
+        new UpdateInteractiveEntities(affected, { lock: setTo }),
+        0 // Disable merge
+      );
+    }
+
+    function onDeleteClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
+      const target = entity.uid; // ALGO: use uid to have better performance
+      const affected = app.isSelected(target) ? app.selectedEntityIds : [target];
+      const command = new RemovePathsAndEndControls(app.paths, affected);
+      app.history.execute(`Remove paths and end controls`, command);
+      for (const id of command.removedEntities) {
+        app.unselect(id);
+        app.removeExpanded(id);
+      }
+    }
+
+    return (
+      <li className="tree-item" onContextMenu={event => event.preventDefault()}>
+        <div className={classNames("tree-item-content", { selected: app.isSelected(entity) })}>
+          <div className="tree-item-icon-container" onClick={action(onExpandIconClick)}>
+            {children !== undefined && (
+              <>
+                {app.isExpanded(entity) ? <ExpandMoreIcon fontSize="medium" /> : <ChevronRightIcon fontSize="medium" />}
+              </>
+            )}
+          </div>
+          <div className="tree-item-label" onClick={action(onLabelClick)}>
+            <div className="tree-item-label-content">
+              {/* TODO */}
+              <span>{entity.name}</span>
+              <span style={{ display: "inline-block", marginRight: "1em" }}></span>
+              {entity.visible === true ? (
+                parent?.visible === false ? (
+                  <FiberManualRecordOutlinedIcon className="tree-func-icon show" onClick={action(onVisibleClick)} />
+                ) : (
+                  <VisibilityIcon className="tree-func-icon" onClick={action(onVisibleClick)} />
+                )
+              ) : (
+                <VisibilityOffOutlinedIcon className="tree-func-icon show" onClick={action(onVisibleClick)} />
+              )}
+              {entity.lock === false ? (
+                parent?.lock === true ? (
+                  <FiberManualRecordOutlinedIcon className="tree-func-icon show" onClick={action(onLockClick)} />
+                ) : (
+                  <LockOpenIcon className="tree-func-icon" onClick={action(onLockClick)} />
+                )
+              ) : (
+                <LockOutlinedIcon className="tree-func-icon show" onClick={action(onLockClick)} />
+              )}
+              {canDeleteBool && <DeleteIcon className="tree-func-icon" onClick={action(onDeleteClick)} />}
+            </div>
+          </div>
+        </div>
+        <ul className="tree-item-children-group">
+          {app.isExpanded(entity) &&
+            children?.map(child => <TreeItem key={child.uid} entity={child} parent={entity} variables={variables} />)}
+        </ul>
+      </li>
+    );
+  }
+);
 
 const PathTreeAccordionV2 = observer((props: {}) => {
   const { app } = useAppStores();
@@ -37,15 +199,10 @@ const PathTreeAccordionV2 = observer((props: {}) => {
     }
   }
 
-  function onTreeViewNodeToggle(event: React.SyntheticEvent, nodeIds: string[]) {
-    event.persist();
-    // UX: Expand/Collapse if: the icon is clicked
-    let iconClicked = (event.target as HTMLElement).closest(".MuiTreeItem-iconContainer");
-    if (iconClicked) {
-      app.clearExpanded();
-      nodeIds.forEach(nodeId => app.addExpanded(nodeId));
-    }
-  }
+  const variables = useLocalObservable<PathTreeVariables>(() => ({
+    lastFocused: undefined,
+    rangeEnd: undefined
+  }));
 
   return (
     <Card id="path-tree">
@@ -75,22 +232,11 @@ const PathTreeAccordionV2 = observer((props: {}) => {
         </Box>
       </AccordionSummary>
       <AccordionDetails>
-        <TreeView
-          defaultCollapseIcon={<ExpandMoreIcon />}
-          defaultExpandIcon={<ChevronRightIcon />}
-          multiSelect
-          expanded={app.expandedEntityIds}
-          selected={app.selectedEntityIds}
-          onNodeSelect={action((event, nodeIds) => app.setSelected(nodeIds))}
-          onNodeToggle={action(onTreeViewNodeToggle)}
-          sx={{ flexGrow: 1, maxWidth: "100%", overflowX: "hidden", overflowY: "auto", margin: "1vh 0 0" }}>
-          {app.paths
-            .slice()
-            .sort((a, b) => (a.name < b.name ? -1 : 1))
-            .map((path, pathIdx) => {
-              return <PathTreeItem key={path.uid} path={path} />;
-            })}
-        </TreeView>
+        <ul className="tree-view">
+          {app.paths.map(path => {
+            return <TreeItem key={path.uid} entity={path} variables={variables} />;
+          })}
+        </ul>
       </AccordionDetails>
     </Card>
   );
