@@ -11,6 +11,8 @@ export interface InteractiveEntity extends CanvasEntity {
   name: string;
 }
 
+export interface InteractiveEntityParent extends InteractiveEntity {
+  children: InteractiveEntity[];
 }
 
 export class FieldCanvasConverter {

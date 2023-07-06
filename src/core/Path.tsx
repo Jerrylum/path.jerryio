@@ -2,7 +2,7 @@ import { Expose, Type } from "class-transformer";
 import { observable, makeAutoObservable, makeObservable, computed } from "mobx";
 import { makeId } from "./Util";
 import { PathConfig } from "../format/Config";
-import { InteractiveEntity, CanvasEntity } from "./Canvas";
+import { InteractiveEntity, CanvasEntity, InteractiveEntityParent } from "./Canvas";
 
 import "reflect-metadata";
 import { PointCalculationResult } from "./Calculation";
@@ -310,7 +310,7 @@ export class Segment implements CanvasEntity {
 }
 
 // observable class
-export class Path implements InteractiveEntity {
+export class Path implements InteractiveEntity, InteractiveEntityParent {
   @Type(() => Segment)
   public segments: Segment[];
   public pc: PathConfig;
@@ -340,5 +340,9 @@ export class Path implements InteractiveEntity {
       }
     }
     return rtn;
+  }
+
+  @computed get children(): InteractiveEntity[] {
+    return this.controls;
   }
 }
