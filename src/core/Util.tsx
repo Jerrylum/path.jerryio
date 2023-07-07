@@ -189,8 +189,12 @@ export function useDragDropFile(enable: boolean, onDrop: (file: File) => void) {
 
   return {
     isDraggingFile,
-    onDragEnter: (e: React.DragEvent<HTMLDivElement>) => setIsDraggingFile(true),
-    onDragLeave: (e: React.DragEvent<HTMLDivElement>) => setIsDraggingFile(false),
+    onDragEnter: (e: React.DragEvent<HTMLDivElement>) => {
+      setIsDraggingFile("Files" in e.dataTransfer.types);
+    },
+    onDragLeave: (e: React.DragEvent<HTMLDivElement>) => {
+      setIsDraggingFile(false);
+    },
     onDragOver: (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
       e.stopPropagation();
