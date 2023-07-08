@@ -212,7 +212,11 @@ export class MainApp {
   }
 
   @computed get allEntities(): InteractiveEntity[] {
-    return [...this.paths, ...this.paths.flatMap(path => path.controls)];
+    return this.paths.flatMap(path => [path, ...path.controls]);
+  }
+
+  @computed get allEntityIds(): string[] {
+    return this.allEntities.map(entity => entity.uid);
   }
 
   @computed get expandedEntityIds(): string[] {
