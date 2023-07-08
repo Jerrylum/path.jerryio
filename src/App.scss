@@ -4,6 +4,8 @@
   --bg-paper-color: #ffffff;
   --text-primary-color: rgba(0, 0, 0, 0.87);
   --link-color: rgba(0, 0, 0, 0.87);
+  --hover-color: rgba(0, 0, 0, 0.08);
+  --focused-color: rgba(0, 0, 0, 0.12);
   background-color: var(--bg-body-color);
 
   code {
@@ -26,6 +28,8 @@
   --bg-paper-color: #353535;
   --text-primary-color: #fff;
   --link-color: rgba(255, 255, 255, 0.87);
+  --hover-color: rgba(255, 255, 255, 0.04);
+  --focused-color: rgba(255, 255, 255, 0.12);
   background-color: var(--bg-body-color);
 
   code {
@@ -491,14 +495,16 @@ th {
     padding: 0;
     outline: 0;
     user-select: none;
+    position: relative;
 
     .tree-item-content {
-      padding: 0 8px;
-      width: 100%;
+      padding: 0 0 0 8px;
+      width: auto;
       display: flex;
       align-items: center;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
+      position: relative;
 
       .tree-item-icon-container {
         margin-right: 4px;
@@ -529,10 +535,6 @@ th {
           visibility: visible;
         }
 
-        .tree-item-label-content {
-          padding-right: 0.4em;
-        }
-
         .tree-func-icon {
           height: calc(1em * 0.7) !important;
           vertical-align: middle;
@@ -548,11 +550,11 @@ th {
     }
 
     .tree-item-content:hover {
-      background-color: rgba(255, 255, 255, 0.08);
+      background-color: var(--hover-color);
     }
 
     .tree-item-content.focused {
-      background-color: rgba(255, 255, 255, 0.12);
+      background-color: var(--focused-color);
     }
 
     .tree-item-content.selected {
@@ -563,15 +565,39 @@ th {
       background-color: rgba(127, 71, 179, 0.24);
     }
 
+    .tree-item-content.deny-drop {
+      opacity: 0.5;
+    }
+
     .tree-item-children-group {
       height: auto;
       overflow: visible;
       margin: 0;
       padding: 0;
-      margin-left: 17px;
+      // margin-left: 17px;
       min-height: 0px;
       transition-duration: 300ms;
       transition: height 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
     }
   }
+}
+
+.dragging-divider-top::after {
+  content: "";
+  border-top: 1px solid #7f47b3;
+  width: 100%;
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.dragging-divider-bottom::after {
+  content: "";
+  border-top: 1px solid #7f47b3;
+  width: 100%;
+  display: block;
+  position: absolute;
+  left: 0;
+  bottom: 0;
 }

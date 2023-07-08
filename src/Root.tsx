@@ -117,10 +117,10 @@ const Root = observer(() => {
       key={app.format.uid + "-" + app.gc.uol}>
       <ThemeProvider theme={appPreferences.theme.theme}>
         <NoticeProvider />
-        <Box id="left-editor-panel">
+        {/* <Box id="left-editor-panel">
           <MenuAccordion />
           <PathTreeAccordion />
-        </Box>
+        </Box> */}
 
         <Box id="left-editor-panel">
           <MenuAccordion />

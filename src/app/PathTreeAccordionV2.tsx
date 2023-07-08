@@ -10,20 +10,87 @@ import AddIcon from "@mui/icons-material/Add";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp";
 import { AccordionDetails, AccordionSummary, Box, Card, IconButton, Tooltip, Typography } from "@mui/material";
-import { action } from "mobx";
+import { action, computed, makeAutoObservable } from "mobx";
 import { observer, useLocalObservable } from "mobx-react-lite";
-import { Segment, EndPointControl, Path } from "../core/Path";
-import { AddPath, RemovePathsAndEndControls, UpdateInteractiveEntities } from "../core/Command";
-import { useAppStores } from "../core/MainApp";
+import { Segment, EndPointControl, Path, Control } from "../core/Path";
+import { AddPath, MoveEndControl, RemovePathsAndEndControls, UpdateInteractiveEntities } from "../core/Command";
+import { getAppStores, useAppStores } from "../core/MainApp";
 import { Quantity, UnitOfLength } from "../core/Unit";
 import { InteractiveEntity, InteractiveEntityParent } from "../core/Canvas";
 import classNames from "classnames";
 import { useIsMacOS } from "../core/Util";
 import React from "react";
 
-interface PathTreeVariables {
-  lastFocused: InteractiveEntity | undefined;
-  rangeEnd: InteractiveEntity | undefined;
+class PathTreeVariables {
+  lastFocused: InteractiveEntity | undefined = undefined;
+  rangeEnd: InteractiveEntity | undefined = undefined;
+
+  dragging:
+    | {
+        entity: Path | EndPointControl;
+        idx: number;
+        dragOverIdx: number;
+      }
+    | undefined = undefined;
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  isDraggable(entity: InteractiveEntity): boolean {
+    return entity instanceof Path || entity instanceof EndPointControl;
+  }
+
+  isAllowDrop(selfEntity: InteractiveEntity): boolean {
+    if (this.dragging === undefined) return true;
+
+    if (this.dragging.entity instanceof Path) {
+      if (selfEntity instanceof Path) {
+        return this.dragging.entity !== selfEntity;
+      } else {
+        return false;
+      }
+    } else {
+      // dragging entity is EndPointControl
+      if (selfEntity instanceof EndPointControl) {
+        return this.dragging.entity !== selfEntity;
+      } else if (selfEntity instanceof Control) {
+        return true;
+      } else {
+        return true;
+      }
+    }
+  }
+}
+
+function countBackwardUntilEndControl(idx: number): number {
+  const { app } = getAppStores();
+
+  const entities = app.allEntities;
+
+  let count = 0;
+  for (let i = idx - 1; i >= 0; i--) {
+    count++;
+    const entity = entities[i];
+    if (entity instanceof EndPointControl) break;
+  }
+
+  return count;
+}
+
+function countForwardUntilEndControl(idx: number): number {
+  const { app } = getAppStores();
+
+  const entities = app.allEntities;
+
+  let count = 0;
+  for (let i = idx + 1; i < entities.length; i++) {
+    count++;
+    const entity = entities[i];
+    if (entity instanceof EndPointControl) break;
+  }
+
+  return count;
 }
 
 const TreeItem = observer(
@@ -39,8 +106,84 @@ const TreeItem = observer(
 
     const isMacOS = useIsMacOS();
 
+    const entityFlattened = app.allEntityIds;
+    const entityIdx = entityFlattened.indexOf(entity.uid);
     const children = "children" in entity ? (entity as InteractiveEntityParent).children : undefined;
-    const canDeleteBool = entity instanceof Path || entity instanceof EndPointControl;
+    const isDraggable = variables.isDraggable(entity);
+    const allowDrop = variables.isAllowDrop(entity);
+    const showDraggingDivider = allowDrop && entityIdx === variables.dragging?.dragOverIdx;
+
+    function onDraggableFalseMouseDown(event: React.MouseEvent<HTMLLIElement, MouseEvent>) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+
+    function onDragStart(event: React.DragEvent<HTMLLIElement>) {
+      const draggingIdx = entityFlattened.indexOf(entity.uid);
+      if (draggingIdx === -1) return false;
+
+      event.stopPropagation();
+
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("application/path-dot-jerryio-entity-uid", entity.uid);
+
+      variables.dragging = {
+        entity: entity as Path | EndPointControl,
+        idx: draggingIdx,
+        dragOverIdx: draggingIdx
+      };
+    }
+
+    function onDragEnter(event: React.DragEvent<HTMLLIElement>) {
+      event.stopPropagation();
+    }
+
+    function onDragLeave(event: React.DragEvent<HTMLLIElement>) {
+      event.stopPropagation();
+    }
+
+    function onDragOver(event: React.DragEvent<HTMLLIElement>) {
+      event.stopPropagation();
+      event.preventDefault();
+      const isEntityDragging = event.dataTransfer.types.includes("application/path-dot-jerryio-entity-uid");
+      if (isEntityDragging === false) return;
+      if (variables.dragging === undefined) return;
+
+      const selfIdx = entityFlattened.indexOf(entity.uid);
+      if (selfIdx === -1) return;
+
+      variables.dragging.dragOverIdx = selfIdx;
+    }
+
+    function onDragEnd(event: React.DragEvent<HTMLLIElement>) {
+      variables.dragging = undefined;
+    }
+
+    function onDrop(event: React.DragEvent<HTMLLIElement>) {
+      event.stopPropagation();
+      event.preventDefault();
+      if (allowDrop === false) return;
+      if (variables.dragging === undefined) return;
+      const isEntityDragging = event.dataTransfer.getData("application/path-dot-jerryio-entity-uid");
+      if (isEntityDragging !== variables.dragging.entity.uid) return;
+
+      if (variables.dragging.entity instanceof Path) {
+        if (entity instanceof Path === false) return;
+
+        const moving = variables.dragging.entity;
+        const targetIdx = variables.dragging.idx + (entityIdx <= variables.dragging.idx ? -1 : 1);
+        variables.dragging = undefined;
+
+        // TODO
+      } else {
+        const moving = variables.dragging.entity;
+        const order = entityIdx <= variables.dragging.idx ? "before" : "after";
+        variables.dragging = undefined;
+
+        const command = new MoveEndControl(app.paths, moving, entity as EndPointControl | Control, order);
+        if (command.isValid) app.history.execute(`Move end control`, command);
+      }
+    }
 
     function onExpandIconClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
       event.stopPropagation();
@@ -55,10 +198,9 @@ const TreeItem = observer(
       event.preventDefault();
       event.stopPropagation();
       if (event.shiftKey) {
-        // TODO
-        const entityFlattened = app.paths.flatMap(path => [path, ...path.controls]).map(entity => entity.uid);
-
         if (variables.lastFocused === undefined) return;
+
+        const entityFlattened = app.allEntityIds;
 
         const helper = function (fromUid: string, toUid: string, cb: (target: string) => void) {
           const fromIndex = entityFlattened.indexOf(fromUid);
@@ -130,8 +272,30 @@ const TreeItem = observer(
     }
 
     return (
-      <li className="tree-item" onContextMenu={event => event.preventDefault()}>
-        <div className={classNames("tree-item-content", { selected: app.isSelected(entity) })}>
+      <li
+        className={classNames("tree-item", {
+          "dragging-divider-bottom":
+            showDraggingDivider && entityIdx > variables.dragging!.idx && variables.dragging!.entity instanceof Path
+        })}
+        onContextMenu={event => event.preventDefault()}
+        draggable
+        onDragStart={action(onDragStart)}
+        onDragEnd={action(onDragEnd)}
+        onDragEnter={action(onDragEnter)}
+        onDragOver={action(onDragOver)}
+        onDragLeave={action(onDragLeave)}
+        onDrop={action(onDrop)}
+        {...(!isDraggable && { onMouseDown: action(onDraggableFalseMouseDown) })}>
+        <div
+          className={classNames("tree-item-content", {
+            selected: app.isSelected(entity),
+            "deny-drop": !allowDrop,
+            "dragging-divider-top": showDraggingDivider && entityIdx <= variables.dragging!.idx,
+            "dragging-divider-bottom":
+              showDraggingDivider &&
+              entityIdx > variables.dragging!.idx &&
+              variables.dragging!.entity instanceof Path === false
+          })}>
           <div className="tree-item-icon-container" onClick={action(onExpandIconClick)}>
             {children !== undefined && (
               <>
@@ -162,7 +326,7 @@ const TreeItem = observer(
               ) : (
                 <LockOutlinedIcon className="tree-func-icon show" onClick={action(onLockClick)} />
               )}
-              {canDeleteBool && <DeleteIcon className="tree-func-icon" onClick={action(onDeleteClick)} />}
+              {isDraggable && <DeleteIcon className="tree-func-icon" onClick={action(onDeleteClick)} />}
             </div>
           </div>
         </div>
@@ -199,10 +363,15 @@ const PathTreeAccordionV2 = observer((props: {}) => {
     }
   }
 
-  const variables = useLocalObservable<PathTreeVariables>(() => ({
-    lastFocused: undefined,
-    rangeEnd: undefined
-  }));
+  function onDragEnter(event: React.DragEvent<HTMLDivElement>) {
+    // console.log("onDragEnter");
+  }
+
+  function onDragLeave(event: React.DragEvent<HTMLDivElement>) {
+    // console.log("onDragLeave");
+  }
+
+  const [variables] = React.useState(() => new PathTreeVariables());
 
   return (
     <Card id="path-tree">
@@ -231,7 +400,7 @@ const PathTreeAccordionV2 = observer((props: {}) => {
           )}
         </Box>
       </AccordionSummary>
-      <AccordionDetails>
+      <AccordionDetails onDragEnter={onDragEnter} onDragLeave={onDragLeave}>
         <ul className="tree-view">
           {app.paths.map(path => {
             return <TreeItem key={path.uid} entity={path} variables={variables} />;

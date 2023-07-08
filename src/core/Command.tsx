@@ -761,3 +761,147 @@ export class RemovePathsAndEndControls implements CancellableCommand, Interactiv
     return this.forward ? [] : this._entities;
   }
 }
+
+export class MoveEndControl implements CancellableCommand, InteractiveEntitiesCommand {
+  protected _entities: InteractiveEntity[] = [];
+
+  protected sourceOriginal: { path: Path; segments: Segment[] } | undefined;
+  protected destOriginal: { path: Path; segments: Segment[] } | undefined;
+
+  constructor(
+    protected paths: Path[],
+    protected moving: EndPointControl,
+    protected destination: Path | EndPointControl | Control,
+    protected order: "before" | "after"
+  ) {
+    if (this.moving === this.destination) return;
+
+    this.sourceOriginal = this.getSegmentListSnapshot(this.moving);
+
+    if (this.destination instanceof Path) {
+      const pathIdx = this.paths.indexOf(this.destination);
+      if (pathIdx === -1) return;
+
+      let path: Path;
+      if (order === "before" && pathIdx > 0) {
+        path = this.paths[pathIdx - 1];
+      } else if (order === "after") {
+        path = this.paths[pathIdx];
+      } else {
+        return;
+      }
+      this.destOriginal = { path, segments: path.segments.slice() };
+    } else {
+      this.destOriginal = this.getSegmentListSnapshot(this.destination);
+    }
+  }
+
+  protected removeEndPoint(list: (EndPointControl | Control)[]): void {
+    list.splice(list.indexOf(this.moving), 1);
+  }
+
+  protected addEndPoint(list: (EndPointControl | Control)[]): void {
+    if (this.destination instanceof Path) {
+      const idx = this.order === "before" ? list.length : 0;
+      list.splice(idx, 0, this.moving);
+    } else {
+      const idx = list.indexOf(this.destination);
+      if (idx === -1) return;
+      if (this.order === "before") {
+        list.splice(idx, 0, this.moving);
+      } else {
+        list.splice(idx + 1, 0, this.moving);
+      }
+    }
+  }
+
+  protected constructSegmentList(list: (EndPointControl | Control)[]): Segment[] {
+    const segments: Segment[] = [];
+
+    let first: EndPointControl | undefined;
+    let middle: Control[] = [];
+    let segment: Segment | undefined;
+    for (let i = 0; i < list.length; i++) {
+      const item = list[i];
+      if (item instanceof EndPointControl) {
+        if (first !== undefined) {
+          if (middle.length < 2) {
+            this._entities.push(...middle);
+            middle = []; // No less than 2 controls
+          }
+          if (middle.length > 2) {
+            this._entities.push(...middle.slice(1, -1));
+            middle = [middle[0], middle[middle.length - 1]]; // No more than 2 controls
+          }
+          segments.push((segment = new Segment(first, middle, item)));
+        }
+
+        first = item;
+        middle = [];
+      } else {
+        middle.push(item);
+      }
+    }
+
+    this._entities.push(...middle);
+    if (first && segment?.last !== first) this._entities.push(first);
+
+    return segments;
+  }
+
+  protected getSegmentListSnapshot(target: EndPointControl | Control): { path: Path; segments: Segment[] } | undefined {
+    for (const path of this.paths) {
+      const controls = path.controls;
+      const idx = controls.indexOf(target);
+      if (idx === -1) continue;
+
+      return { path, segments: path.segments.slice() };
+    }
+
+    return undefined;
+  }
+
+  public execute(): void {
+    if (this.sourceOriginal === undefined || this.destOriginal === undefined) return;
+
+    if (this.sourceOriginal.path === this.destOriginal.path) {
+      const sourceControls = this.sourceOriginal.path.controls;
+      this.removeEndPoint(sourceControls);
+      this.addEndPoint(sourceControls);
+      this.sourceOriginal.path.segments = this.constructSegmentList(sourceControls);
+    } else {
+      const sourceControls = this.sourceOriginal.path.controls;
+      this.removeEndPoint(sourceControls);
+      this.sourceOriginal.path.segments = this.constructSegmentList(sourceControls);
+
+      const destControls = this.destOriginal.path.controls;
+      this.addEndPoint(destControls);
+      this.destOriginal.path.segments = this.constructSegmentList(destControls);
+    }
+
+    this._entities.push(this.moving);
+  }
+
+  public undo() {
+    if (this.sourceOriginal === undefined || this.destOriginal === undefined) return;
+
+    if (this.sourceOriginal.path === this.destOriginal.path) {
+      this.sourceOriginal.path.segments = this.sourceOriginal.segments.slice();
+    } else {
+      this.sourceOriginal.path.segments = this.sourceOriginal.segments.slice();
+      this.destOriginal.path.segments = this.destOriginal.segments.slice();
+    }
+  }
+
+  public redo() {
+    this.execute();
+  }
+
+  get isValid(): boolean {
+    return this.sourceOriginal !== undefined && this.destOriginal !== undefined;
+  }
+
+  get entities(): InteractiveEntity[] {
+    return this._entities;
+  }
+}
