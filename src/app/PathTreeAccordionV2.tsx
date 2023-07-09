@@ -41,6 +41,10 @@ class PathTreeVariables {
     return entity instanceof Path || entity instanceof EndPointControl;
   }
 
+  isParentDragging(entity: InteractiveEntity): boolean {
+    return entity instanceof Control && this.dragging?.entity instanceof Path;
+  }
+
   isAllowDrop(selfEntity: InteractiveEntity): boolean {
     if (this.dragging === undefined) return true;
 
@@ -63,36 +67,6 @@ class PathTreeVariables {
   }
 }
 
-function countBackwardUntilEndControl(idx: number): number {
-  const { app } = getAppStores();
-
-  const entities = app.allEntities;
-
-  let count = 0;
-  for (let i = idx - 1; i >= 0; i--) {
-    count++;
-    const entity = entities[i];
-    if (entity instanceof EndPointControl) break;
-  }
-
-  return count;
-}
-
-function countForwardUntilEndControl(idx: number): number {
-  const { app } = getAppStores();
-
-  const entities = app.allEntities;
-
-  let count = 0;
-  for (let i = idx + 1; i < entities.length; i++) {
-    count++;
-    const entity = entities[i];
-    if (entity instanceof EndPointControl) break;
-  }
-
-  return count;
-}
-
 const TreeItem = observer(
   (props: {
     entity: InteractiveEntity;
@@ -110,6 +84,7 @@ const TreeItem = observer(
     const entityIdx = entityFlattened.indexOf(entity.uid);
     const children = "children" in entity ? (entity as InteractiveEntityParent).children : undefined;
     const isDraggable = variables.isDraggable(entity);
+    const isParentDragging = variables.isParentDragging(entity);
     const allowDrop = variables.isAllowDrop(entity);
     const showDraggingDivider = allowDrop && entityIdx === variables.dragging?.dragOverIdx;
 
@@ -278,13 +253,17 @@ const TreeItem = observer(
             showDraggingDivider && entityIdx > variables.dragging!.idx && variables.dragging!.entity instanceof Path
         })}
         onContextMenu={event => event.preventDefault()}
-        draggable
-        onDragStart={action(onDragStart)}
-        onDragEnd={action(onDragEnd)}
-        onDragEnter={action(onDragEnter)}
-        onDragOver={action(onDragOver)}
-        onDragLeave={action(onDragLeave)}
-        onDrop={action(onDrop)}
+        draggable={isDraggable}
+        {...(!isParentDragging
+          ? {
+              onDragStart: action(onDragStart),
+              onDragEnd: action(onDragEnd),
+              onDragEnter: action(onDragEnter),
+              onDragOver: action(onDragOver),
+              onDragLeave: action(onDragLeave),
+              onDrop: action(onDrop)
+            }
+          : {})}
         {...(!isDraggable && { onMouseDown: action(onDraggableFalseMouseDown) })}>
         <div
           className={classNames("tree-item-content", {
