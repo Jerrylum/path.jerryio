@@ -16,6 +16,7 @@ import { Segment, EndPointControl, Path, Control } from "../core/Path";
 import {
   AddPath,
   MoveEndControl,
+  MoveEndControlV2,
   MovePath,
   RemovePathsAndEndControls,
   UpdateInteractiveEntities
@@ -86,8 +87,7 @@ const TreeItem = observer(
 
     const isMacOS = useIsMacOS();
 
-    const entityFlattened = app.allEntityIds;
-    const entityIdx = entityFlattened.indexOf(entity.uid);
+    const entityIdx = app.allEntityIds.indexOf(entity.uid);
     const children = "children" in entity ? (entity as InteractiveEntityParent).children : undefined;
     const isDraggable = variables.isDraggable(entity);
     const isParentDragging = variables.isParentDragging(entity);
@@ -100,9 +100,6 @@ const TreeItem = observer(
     }
 
     function onDragStart(event: React.DragEvent<HTMLLIElement>) {
-      const draggingIdx = entityFlattened.indexOf(entity.uid);
-      if (draggingIdx === -1) return false;
-
       event.stopPropagation();
 
       event.dataTransfer.effectAllowed = "move";
@@ -110,8 +107,8 @@ const TreeItem = observer(
 
       variables.dragging = {
         entity: entity as Path | EndPointControl,
-        idx: draggingIdx,
-        dragOverIdx: draggingIdx
+        idx: entityIdx,
+        dragOverIdx: entityIdx
       };
     }
 
@@ -130,10 +127,7 @@ const TreeItem = observer(
       if (isEntityDragging === false) return;
       if (variables.dragging === undefined) return;
 
-      const selfIdx = entityFlattened.indexOf(entity.uid);
-      if (selfIdx === -1) return;
-
-      variables.dragging.dragOverIdx = selfIdx;
+      variables.dragging.dragOverIdx = entityIdx;
     }
 
     function onDragEnd(event: React.DragEvent<HTMLLIElement>) {
@@ -154,15 +148,15 @@ const TreeItem = observer(
 
         const fromIdx = app.paths.indexOf(moving);
         const toIdx = app.paths.indexOf(entity as Path); // ALGO: Can be used directly, because the path is removed from the array before inserting it back
-        variables.dragging = undefined;
+        variables.dragging = undefined; // ALGO: import to set to undefined before executing the command, because the command will trigger a re-render
 
-        app.history.execute(`Move path ${entity.uid}`, new MovePath(app.paths, fromIdx, toIdx));
+        app.history.execute(`Move path ${moving.uid}`, new MovePath(app.paths, fromIdx, toIdx));
       } else {
-        const order = entityIdx <= variables.dragging.idx ? "before" : "after";
-        variables.dragging = undefined;
+        const fromIdx = variables.dragging.idx;
+        const toIdx = entityIdx;
+        variables.dragging = undefined; // ALGO: import to set to undefined before executing the command, because the command will trigger a re-render
 
-        const command = new MoveEndControl(app.paths, moving, entity as EndPointControl | Control, order);
-        if (command.isValid) app.history.execute(`Move end control`, command);
+        app.history.execute(`Move end control ${moving.uid}`, new MoveEndControlV2(app.allEntities, fromIdx, toIdx));
       }
     }
 

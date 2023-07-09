@@ -942,3 +942,111 @@ export class MovePath implements CancellableCommand, InteractiveEntitiesCommand 
   }
 }
 
+export class MoveEndControlV2 implements CancellableCommand, InteractiveEntitiesCommand {
+  protected _entities: InteractiveEntity[] = [];
+  protected original: InteractiveEntity[];
+  protected modified: InteractiveEntity[];
+
+  constructor(protected allEntities: InteractiveEntity[], protected fromIdx: number, protected toIdx: number) {
+    this.original = this.allEntities.slice();
+    this.modified = this.allEntities.slice();
+  }
+
+  execute(): boolean {
+    if (!this.isValid) return false;
+
+    const entity = this.modified.splice(this.fromIdx, 1)[0];
+    this.modified.splice(this.toIdx, 0, entity);
+
+    const removed = this.construct(this.modified);
+
+    if (removed === undefined) return false;
+    this._entities = removed;
+    this._entities.push(entity);
+
+    return true;
+  }
+
+  undo(): void {
+    if (this._entities.length === 0) return;
+
+    this.construct(this.original);
+  }
+
+  redo(): void {
+    if (this._entities.length === 0) return;
+
+    this.construct(this.modified);
+  }
+
+  construct(entities: InteractiveEntity[]): InteractiveEntity[] | undefined {
+    const removed: InteractiveEntity[] = [];
+
+    let currentPath: Path | undefined;
+    let segments: Segment[] = [];
+    let first: EndPointControl | undefined;
+    let middle: Control[] = [];
+
+    const push = () => {
+      if (currentPath !== undefined) {
+        currentPath.segments = segments;
+        // ALGO: Add dangling controls to removed
+        removed.push(...middle);
+        if (first && segments.length === 0) removed.push(first);
+
+        segments = [];
+        first = undefined;
+        middle = [];
+      }
+    };
+
+    for (let i = 0; i < entities.length; i++) {
+      const entity = entities[i];
+      if (entity instanceof Path) {
+        push();
+        currentPath = entity;
+      } else if (entity instanceof EndPointControl) {
+        if (currentPath === undefined) return undefined;
+
+        if (first !== undefined) {
+          if (middle.length < 2) {
+            removed.push(...middle);
+            middle = []; // No less than 2 controls
+          }
+          if (middle.length > 2) {
+            removed.push(...middle.slice(1, -1));
+            middle = [middle[0], middle[middle.length - 1]]; // No more than 2 controls
+          }
+          segments.push(new Segment(first, middle, entity));
+        } else {
+          removed.push(...middle);
+        }
+
+        first = entity;
+        middle = [];
+      } else if (entity instanceof Control) {
+        if (currentPath === undefined) return undefined;
+
+        middle.push(entity);
+      }
+    }
+
+    push();
+
+    return removed;
+  }
+
+  get isValid() {
+    return (
+      this.fromIdx >= 0 &&
+      this.fromIdx < this.allEntities.length &&
+      this.toIdx >= 0 &&
+      this.toIdx < this.allEntities.length
+    );
+  }
+
+  get entities(): InteractiveEntity[] {
+    return this._entities;
+  }
+}
+
