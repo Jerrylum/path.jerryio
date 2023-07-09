@@ -907,31 +907,38 @@ export class MoveEndControl implements CancellableCommand, InteractiveEntitiesCo
 }
 
 export class MovePath implements CancellableCommand, InteractiveEntitiesCommand {
-  protected fromIdx: number = -1;
+  protected _entities: InteractiveEntity[] = [];
 
-  constructor(protected paths: Path[], protected moving: Path, protected toIdx: number) {}
+  constructor(protected paths: Path[], protected fromIdx: number, protected toIdx: number) {}
 
-  public execute(): void {
-    this.fromIdx = this.paths.indexOf(this.moving);
-    if (this.fromIdx === -1) return;
+  public execute(): boolean {
+    if (!this.isValid) return false;
 
-    this.paths.splice(this.fromIdx, 1);
-    this.paths.splice(this.toIdx - (this.fromIdx < this.toIdx ? 1 : 0), 0, this.moving);
+    const path = this.paths.splice(this.fromIdx, 1)[0];
+    this.paths.splice(this.toIdx, 0, path);
+
+    this._entities = [path];
+
+    return true;
   }
 
   public undo(): void {
-    if (this.fromIdx === -1) return;
+    if (!this.isValid) return;
 
-    this.paths.splice(this.toIdx - (this.fromIdx < this.toIdx ? 1 : 0), 1);
-    this.paths.splice(this.fromIdx, 0, this.moving);
+    const path = this.paths.splice(this.toIdx, 1)[0];
+    this.paths.splice(this.fromIdx, 0, path);
   }
 
   public redo(): void {
     this.execute();
   }
 
+  get isValid() {
+    return this.fromIdx >= 0 && this.fromIdx < this.paths.length && this.toIdx >= 0 && this.toIdx < this.paths.length;
+  }
+
   get entities(): InteractiveEntity[] {
-    return [this.moving];
+    return this._entities;
   }
 }
 

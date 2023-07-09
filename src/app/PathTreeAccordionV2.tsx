@@ -148,17 +148,16 @@ const TreeItem = observer(
       const isEntityDragging = event.dataTransfer.getData("application/path-dot-jerryio-entity-uid");
       if (isEntityDragging !== variables.dragging.entity.uid) return;
 
-      if (variables.dragging.entity instanceof Path) {
+      const moving = variables.dragging.entity;
+      if (moving instanceof Path) {
         if (entity instanceof Path === false) return;
 
-        const moving = variables.dragging.entity;
-        const pathIdx = app.paths.indexOf(entity as Path);
-        const toIdx = pathIdx + (entityIdx <= variables.dragging.idx ? 0 : 1);
+        const fromIdx = app.paths.indexOf(moving);
+        const toIdx = app.paths.indexOf(entity as Path); // ALGO: Can be used directly, because the path is removed from the array before inserting it back
         variables.dragging = undefined;
 
-        app.history.execute(`Move path ${entity.uid}`, new MovePath(app.paths, moving, toIdx));
+        app.history.execute(`Move path ${entity.uid}`, new MovePath(app.paths, fromIdx, toIdx));
       } else {
-        const moving = variables.dragging.entity;
         const order = entityIdx <= variables.dragging.idx ? "before" : "after";
         variables.dragging = undefined;
 
