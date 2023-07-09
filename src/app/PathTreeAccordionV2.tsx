@@ -10,11 +10,17 @@ import AddIcon from "@mui/icons-material/Add";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp";
 import { AccordionDetails, AccordionSummary, Box, Card, IconButton, Tooltip, Typography } from "@mui/material";
-import { action, computed, makeAutoObservable } from "mobx";
-import { observer, useLocalObservable } from "mobx-react-lite";
+import { action, makeAutoObservable } from "mobx";
+import { observer } from "mobx-react-lite";
 import { Segment, EndPointControl, Path, Control } from "../core/Path";
-import { AddPath, MoveEndControl, RemovePathsAndEndControls, UpdateInteractiveEntities } from "../core/Command";
-import { getAppStores, useAppStores } from "../core/MainApp";
+import {
+  AddPath,
+  MoveEndControl,
+  MovePath,
+  RemovePathsAndEndControls,
+  UpdateInteractiveEntities
+} from "../core/Command";
+import { useAppStores } from "../core/MainApp";
 import { Quantity, UnitOfLength } from "../core/Unit";
 import { InteractiveEntity, InteractiveEntityParent } from "../core/Canvas";
 import classNames from "classnames";
@@ -146,10 +152,11 @@ const TreeItem = observer(
         if (entity instanceof Path === false) return;
 
         const moving = variables.dragging.entity;
-        const targetIdx = variables.dragging.idx + (entityIdx <= variables.dragging.idx ? -1 : 1);
+        const pathIdx = app.paths.indexOf(entity as Path);
+        const toIdx = pathIdx + (entityIdx <= variables.dragging.idx ? 0 : 1);
         variables.dragging = undefined;
 
-        // TODO
+        app.history.execute(`Move path ${entity.uid}`, new MovePath(app.paths, moving, toIdx));
       } else {
         const moving = variables.dragging.entity;
         const order = entityIdx <= variables.dragging.idx ? "before" : "after";
@@ -391,3 +398,4 @@ const PathTreeAccordionV2 = observer((props: {}) => {
 });
 
 export { PathTreeAccordionV2 };
+

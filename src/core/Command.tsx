@@ -905,3 +905,33 @@ export class MoveEndControl implements CancellableCommand, InteractiveEntitiesCo
     return this._entities;
   }
 }
+
+export class MovePath implements CancellableCommand, InteractiveEntitiesCommand {
+  protected fromIdx: number = -1;
+
+  constructor(protected paths: Path[], protected moving: Path, protected toIdx: number) {}
+
+  public execute(): void {
+    this.fromIdx = this.paths.indexOf(this.moving);
+    if (this.fromIdx === -1) return;
+
+    this.paths.splice(this.fromIdx, 1);
+    this.paths.splice(this.toIdx - (this.fromIdx < this.toIdx ? 1 : 0), 0, this.moving);
+  }
+
+  public undo(): void {
+    if (this.fromIdx === -1) return;
+
+    this.paths.splice(this.toIdx - (this.fromIdx < this.toIdx ? 1 : 0), 1);
+    this.paths.splice(this.fromIdx, 0, this.moving);
+  }
+
+  public redo(): void {
+    this.execute();
+  }
+
+  get entities(): InteractiveEntity[] {
+    return [this.moving];
+  }
+}
+
