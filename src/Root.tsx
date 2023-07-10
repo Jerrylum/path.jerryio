@@ -94,7 +94,6 @@ const Root = observer(() => {
     "Backspace,Delete",
     () => {
       const command = new RemovePathsAndEndControls(app.paths, app.selectedEntityIds);
-      if (command.hasTargets === false) return;
       app.history.execute(`Remove paths and end controls`, command);
     },
     { ...optionsToEnableHotkeys, preventDefaultOnlyIfEnabled: true }

@@ -758,9 +758,11 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
     return false;
   }
 
-  execute(): void {
+  execute(): boolean {
+    if (this.hasTargets === false) return false;
     this.removalPaths.forEach(this.removePath.bind(this));
     this.removalEndControls.forEach(this.removeControl.bind(this));
+    return true;
   }
 
   undo(): void {

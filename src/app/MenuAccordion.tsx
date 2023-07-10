@@ -165,7 +165,6 @@ const MenuAccordion = observer((props: {}) => {
           hotkey={useKeyName("Del")}
           onClick={onMenuClick(() => {
             const command = new RemovePathsAndEndControls(app.paths, app.selectedEntityIds);
-            if (command.hasTargets === false) return;
             app.history.execute(`Remove paths and end controls`, command);
           })}
         />
