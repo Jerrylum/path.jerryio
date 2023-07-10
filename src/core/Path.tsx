@@ -74,6 +74,10 @@ export class Vector {
   clone(): Vector {
     return new Vector(this.x, this.y);
   }
+
+  toVector(): Vector {
+    return new Vector(this.x, this.y);
+  }
 }
 
 // Not observable
@@ -156,10 +160,6 @@ export class Control extends Vector implements InteractiveEntity {
 
   clone(): Control {
     return new Control(this.x, this.y);
-  }
-
-  toVector(): Vector {
-    return new Vector(this.x, this.y);
   }
 }
 
