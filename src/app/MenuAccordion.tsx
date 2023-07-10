@@ -169,7 +169,7 @@ const MenuAccordion = observer((props: {}) => {
             app.history.execute(`Remove paths and end controls`, command);
             for (const id of command.removedEntities) {
               app.unselect(id);
-              app.removeExpanded(id);
+              app.removeExpanded(id.uid);
             }
           })}
         />

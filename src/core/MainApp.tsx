@@ -171,15 +171,15 @@ export class MainApp {
     this.selected = [];
   }
 
-  isExpanded(x: PathTreeItem | string): boolean {
+  isExpanded(x: Path | string): boolean {
     return typeof x === "string" ? this.expanded.includes(x) : this.expanded.includes(x.uid);
   }
 
-  addExpanded(x: PathTreeItem | string): boolean {
+  addExpanded(x: Path | string): boolean {
     return addToArray(this.expanded, typeof x === "string" ? x : x.uid);
   }
 
-  removeExpanded(x: PathTreeItem | string): boolean {
+  removeExpanded(x: Path | string): boolean {
     return removeFromArray(this.expanded, typeof x === "string" ? x : x.uid);
   }
 

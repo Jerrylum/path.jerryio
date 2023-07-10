@@ -154,10 +154,12 @@ const TreeItem = observer(
 
     function onExpandIconClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
       event.stopPropagation();
-      if (app.isExpanded(entity)) {
-        app.removeExpanded(entity);
-      } else {
-        app.addExpanded(entity);
+      if (entity instanceof Path) {
+        if (app.isExpanded(entity)) {
+          app.removeExpanded(entity);
+        } else {
+          app.addExpanded(entity);
+        }
       }
     }
 
@@ -234,7 +236,7 @@ const TreeItem = observer(
       app.history.execute(`Remove paths and end controls`, command);
       for (const id of command.removedEntities) {
         app.unselect(id);
-        app.removeExpanded(id);
+        app.removeExpanded(id.uid);
       }
     }
 
@@ -270,7 +272,11 @@ const TreeItem = observer(
           <div className="tree-item-icon-container" onClick={action(onExpandIconClick)}>
             {children !== undefined && (
               <>
-                {app.isExpanded(entity) ? <ExpandMoreIcon fontSize="medium" /> : <ChevronRightIcon fontSize="medium" />}
+                {app.isExpanded(entity as Path) ? (
+                  <ExpandMoreIcon fontSize="medium" />
+                ) : (
+                  <ChevronRightIcon fontSize="medium" />
+                )}
               </>
             )}
           </div>
@@ -302,9 +308,11 @@ const TreeItem = observer(
           </div>
         </div>
         <ul className="tree-item-children-group">
-          {app.isExpanded(entity) &&
-            entity instanceof Path &&
-            children?.map(child => <TreeItem key={child.uid} entity={child} parent={entity} variables={variables} />)}
+          {children !== undefined &&
+            app.isExpanded(entity as Path) &&
+            children.map(child => (
+              <TreeItem key={child.uid} entity={child} parent={entity as Path} variables={variables} />
+            ))}
         </ul>
       </li>
     );
