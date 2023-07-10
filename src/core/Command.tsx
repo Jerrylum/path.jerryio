@@ -34,6 +34,14 @@ export class CommandHistory {
     const result = command.execute();
     if (result === false) return;
 
+    // UX: Unselect and collapse removed items
+    if (isRemovePathTreeItemsCommand(command)) {
+      for (const item of command.removedItems) {
+        this.app.unselect(item);
+        if (item instanceof Path) this.app.removeExpanded(item);
+      }
+    }
+
     const exe = { title, command, time: Date.now(), mergeTimeout };
 
     if (
@@ -74,7 +82,22 @@ export class CommandHistory {
       this.redoHistory.push(command);
       this.saveStepCounter--;
 
-      if (isPathTreeItemsCommand(command)) this.app.setSelected(command.entities);
+      const a = isAddPathTreeItemsCommand(command);
+      const u = isUpdatePathTreeItemsCommand(command);
+      const r = isRemovePathTreeItemsCommand(command);
+
+      // UX: Set select removed or updated items
+      if (r || u) {
+        const selected: PathTreeItem[] = [];
+        if (r) selected.push(...command.removedItems);
+        if (u) selected.push(...command.updatedItems);
+        this.app.setSelected(Array.from(new Set(selected)));
+      }
+
+      // UX: Collapse added items
+      if (a) {
+        command.addedItems.forEach(item => item instanceof Path && this.app.removeExpanded(item));
+      }
     }
     logger.log("UNDO", this.history.length, "->", this.redoHistory.length);
   }
@@ -86,7 +109,22 @@ export class CommandHistory {
       this.history.push(command);
       this.saveStepCounter++;
 
-      if (isPathTreeItemsCommand(command)) this.app.setSelected(command.entities);
+      const a = isAddPathTreeItemsCommand(command);
+      const u = isUpdatePathTreeItemsCommand(command);
+      const r = isRemovePathTreeItemsCommand(command);
+
+      // UX: Set select added or updated items
+      if (a || u) {
+        const selected: PathTreeItem[] = [];
+        if (a) selected.push(...command.addedItems);
+        if (u) selected.push(...command.updatedItems);
+        this.app.setSelected(Array.from(new Set(selected)));
+      }
+
+      // UX: Collapse removed items
+      if (r) {
+        command.removedItems.forEach(item => item instanceof Path && this.app.removeExpanded(item));
+      }
     }
     logger.log("REDO", this.history.length, "<-", this.redoHistory.length);
   }
@@ -131,17 +169,32 @@ export interface CancellableCommand extends Command {
   redo(): void;
 }
 
-export interface PathTreeItemsCommand extends Command {
-  // The entities that are affected by this command, highlighted in the canvas when undo/redo
-  entities: PathTreeItem[];
+export interface AddPathTreeItemsCommand extends Command {
+  addedItems: readonly PathTreeItem[];
+}
+
+export interface UpdatePathTreeItemsCommand extends Command {
+  updatedItems: readonly PathTreeItem[];
+}
+
+export interface RemovePathTreeItemsCommand extends Command {
+  removedItems: readonly PathTreeItem[];
 }
 
 export function isMergeable(object: Command): object is MergeableCommand {
   return "merge" in object;
 }
 
-export function isPathTreeItemsCommand(object: Command): object is PathTreeItemsCommand {
-  return "entities" in object;
+export function isAddPathTreeItemsCommand(object: Command): object is AddPathTreeItemsCommand {
+  return "addedItems" in object;
+}
+
+export function isUpdatePathTreeItemsCommand(object: Command): object is UpdatePathTreeItemsCommand {
+  return "updatedItems" in object;
+}
+
+export function isRemovePathTreeItemsCommand(object: Command): object is RemovePathTreeItemsCommand {
+  return "removedItems" in object;
 }
 
 /**
@@ -212,21 +265,20 @@ export class UpdateProperties<TTarget> extends UpdateInstancesProperties<TTarget
 
 export class UpdatePathTreeItems<TTarget extends PathTreeItem>
   extends UpdateInstancesProperties<TTarget>
-  implements PathTreeItemsCommand
+  implements UpdatePathTreeItemsCommand
 {
   constructor(protected targets: TTarget[], protected newValues: Partial<TTarget>) {
     super(targets, newValues);
   }
 
-  get entities(): TTarget[] {
+  get updatedItems(): readonly TTarget[] {
     return this.targets.slice();
   }
 }
 
-export class AddSegment implements CancellableCommand, PathTreeItemsCommand {
+export class AddSegment implements CancellableCommand, AddPathTreeItemsCommand {
   protected _entities: PathTreeItem[] = [];
 
-  protected forward: boolean = true;
   protected segment?: Segment;
 
   constructor(protected path: Path, protected end: EndPointControl, protected variant: SegmentVariant) {}
@@ -271,12 +323,10 @@ export class AddSegment implements CancellableCommand, PathTreeItemsCommand {
     } else if (this.variant === SegmentVariant.CUBIC) {
       this.addCurve();
     }
-    this.forward = true;
   }
 
   undo(): void {
     this.path.segments.pop();
-    this.forward = false;
   }
 
   redo(): void {
@@ -284,15 +334,14 @@ export class AddSegment implements CancellableCommand, PathTreeItemsCommand {
     // ALGO: Instead of executing, we just add the segment back
     // ALGO: Assume that the command is executed
     this.path.segments.push(this.segment!);
-    this.forward = true;
   }
 
-  get entities(): PathTreeItem[] {
-    return this.forward ? this._entities : [];
+  get addedItems(): readonly PathTreeItem[] {
+    return this._entities;
   }
 }
 
-export class ConvertSegment implements CancellableCommand, PathTreeItemsCommand {
+export class ConvertSegment implements CancellableCommand, AddPathTreeItemsCommand, RemovePathTreeItemsCommand {
   protected previousControls: Control[] = [];
   protected newControls: Control[] = [];
 
@@ -359,15 +408,17 @@ export class ConvertSegment implements CancellableCommand, PathTreeItemsCommand 
     this.segment.controls = this.newControls.slice();
   }
 
-  get entities(): PathTreeItem[] {
-    return this.segment.controls.slice(1, -1); // exclude first and last
+  get addedItems(): readonly PathTreeItem[] {
+    return this.variant === SegmentVariant.LINEAR ? [] : this.segment.controls.slice(1, -1);
+  }
+
+  get removedItems(): readonly PathTreeItem[] {
+    return this.variant === SegmentVariant.LINEAR ? this.segment.controls.slice(1, -1) : [];
   }
 }
 
-export class SplitSegment implements CancellableCommand, PathTreeItemsCommand {
+export class SplitSegment implements CancellableCommand, AddPathTreeItemsCommand {
   protected _entities: PathTreeItem[] = [];
-
-  protected forward: boolean = true;
 
   protected previousOriginalSegmentControls: Control[] = [];
   protected newOriginalSegmentControls: Control[] = [];
@@ -407,15 +458,12 @@ export class SplitSegment implements CancellableCommand, PathTreeItemsCommand {
     }
 
     this.newOriginalSegmentControls = this.originalSegment.controls.slice();
-    this.forward = true;
   }
 
   undo(): void {
     this.originalSegment.controls = this.previousOriginalSegmentControls;
     const index = this.path.segments.indexOf(this.newSegment!);
     this.path.segments.splice(index, 1);
-
-    this.forward = false;
   }
 
   redo(): void {
@@ -425,16 +473,14 @@ export class SplitSegment implements CancellableCommand, PathTreeItemsCommand {
     const index = this.path.segments.indexOf(this.originalSegment);
     this.originalSegment.controls = this.newOriginalSegmentControls.slice();
     this.path.segments.splice(index + 1, 0, this.newSegment!);
-
-    this.forward = true;
   }
 
-  get entities(): PathTreeItem[] {
-    return this.forward ? this._entities : [];
+  get addedItems(): readonly PathTreeItem[] {
+    return this._entities;
   }
 }
 
-export class DragControls implements CancellableCommand, MergeableCommand, PathTreeItemsCommand {
+export class DragControls implements CancellableCommand, MergeableCommand, UpdatePathTreeItemsCommand {
   constructor(protected main: Control, protected from: Vector, protected to: Vector, protected followers: Control[]) {}
 
   execute(): void {
@@ -479,7 +525,7 @@ export class DragControls implements CancellableCommand, MergeableCommand, PathT
     return true;
   }
 
-  get entities(): PathTreeItem[] {
+  get updatedItems(): readonly PathTreeItem[] {
     return [this.main, ...this.followers];
   }
 }
@@ -605,35 +651,29 @@ export class RemoveKeyframe implements CancellableCommand {
   }
 }
 
-export class AddPath implements CancellableCommand, PathTreeItemsCommand {
-  protected forward: boolean = false;
-
+export class AddPath implements CancellableCommand, AddPathTreeItemsCommand {
   constructor(protected paths: Path[], protected path: Path) {}
 
   execute(): void {
     this.paths.push(this.path);
-    this.forward = true;
   }
 
   undo(): void {
     this.paths.splice(this.paths.indexOf(this.path), 1);
-    this.forward = false;
   }
 
   redo(): void {
     this.paths.push(this.path);
-    this.forward = true;
   }
 
-  get entities(): PathTreeItem[] {
-    return this.forward ? [this.path, ...this.path.controls] : [];
+  get addedItems(): readonly PathTreeItem[] {
+    return [this.path, ...this.path.controls];
   }
 }
 
-export class RemovePathsAndEndControls implements CancellableCommand, PathTreeItemsCommand {
+export class RemovePathsAndEndControls implements CancellableCommand, RemovePathTreeItemsCommand {
   protected _entities: PathTreeItem[] = [];
 
-  protected forward: boolean = true;
   protected removalPaths: Path[] = [];
   protected removalEndControls: { path: Path; control: EndPointControl }[] = [];
   protected affectedPaths: { index: number; path: Path }[] = [];
@@ -724,8 +764,6 @@ export class RemovePathsAndEndControls implements CancellableCommand, PathTreeIt
   }
 
   undo(): void {
-    this.forward = false;
-
     for (let i = this.affectedPaths.length - 1; i >= 0; i--) {
       const { index, path } = this.affectedPaths[i];
       this.paths.splice(index, 0, path);
@@ -743,8 +781,6 @@ export class RemovePathsAndEndControls implements CancellableCommand, PathTreeIt
   }
 
   redo(): void {
-    this.forward = true;
-
     for (const { index } of this.affectedPaths) {
       this.paths.splice(index, 1);
     }
@@ -763,16 +799,12 @@ export class RemovePathsAndEndControls implements CancellableCommand, PathTreeIt
     return this.removalPaths.length > 0 || this.removalEndControls.length > 0;
   }
 
-  get removedEntities(): PathTreeItem[] {
+  get removedItems(): readonly PathTreeItem[] {
     return this._entities;
-  }
-
-  get entities(): PathTreeItem[] {
-    return this.forward ? [] : this._entities;
   }
 }
 
-export class MovePath implements CancellableCommand, PathTreeItemsCommand {
+export class MovePath implements CancellableCommand, UpdatePathTreeItemsCommand {
   protected _entities: PathTreeItem[] = [];
 
   constructor(protected paths: Path[], protected fromIdx: number, protected toIdx: number) {}
@@ -803,13 +835,14 @@ export class MovePath implements CancellableCommand, PathTreeItemsCommand {
     return this.fromIdx >= 0 && this.fromIdx < this.paths.length && this.toIdx >= 0 && this.toIdx < this.paths.length;
   }
 
-  get entities(): PathTreeItem[] {
+  get updatedItems(): readonly PathTreeItem[] {
     return this._entities;
   }
 }
 
-export class MoveEndControl implements CancellableCommand, PathTreeItemsCommand {
+export class MoveEndControl implements CancellableCommand, UpdatePathTreeItemsCommand, RemovePathTreeItemsCommand {
   protected _entities: PathTreeItem[] = [];
+  protected moving: PathTreeItem | undefined;
   protected original: PathTreeItem[];
   protected modified: PathTreeItem[];
 
@@ -821,27 +854,22 @@ export class MoveEndControl implements CancellableCommand, PathTreeItemsCommand 
   execute(): boolean {
     if (!this.isValid) return false;
 
-    const entity = this.modified.splice(this.fromIdx, 1)[0];
-    this.modified.splice(this.toIdx, 0, entity);
+    this.moving = this.modified.splice(this.fromIdx, 1)[0];
+    this.modified.splice(this.toIdx, 0, this.moving);
 
     const removed = construct(this.modified);
     if (removed === undefined) return false;
 
     this._entities = removed;
-    this._entities.push(entity);
 
     return true;
   }
 
   undo(): void {
-    if (this._entities.length === 0) return;
-
     construct(this.original);
   }
 
   redo(): void {
-    if (this._entities.length === 0) return;
-
     construct(this.modified);
   }
 
@@ -854,7 +882,11 @@ export class MoveEndControl implements CancellableCommand, PathTreeItemsCommand 
     );
   }
 
-  get entities(): PathTreeItem[] {
+  get updatedItems(): readonly PathTreeItem[] {
+    return this.moving ? [this.moving] : [];
+  }
+
+  get removedItems(): readonly PathTreeItem[] {
     return this._entities;
   }
 }

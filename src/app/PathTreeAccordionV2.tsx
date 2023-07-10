@@ -234,10 +234,6 @@ const TreeItem = observer(
       const affected = app.isSelected(target) ? app.selectedEntityIds : [target];
       const command = new RemovePathsAndEndControls(app.paths, affected);
       app.history.execute(`Remove paths and end controls`, command);
-      for (const id of command.removedEntities) {
-        app.unselect(id);
-        app.removeExpanded(id.uid);
-      }
     }
 
     return (

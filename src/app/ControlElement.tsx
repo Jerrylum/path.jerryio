@@ -221,10 +221,6 @@ const ControlElement = observer((props: ControlElementProps) => {
     if (evt.button === 2) {
       const command = new RemovePathsAndEndControls(app.paths, [props.cp as EndPointControl]);
       app.history.execute(`Remove paths and end controls`, command);
-      for (const id of command.removedEntities) {
-        app.unselect(id);
-        app.removeExpanded(id.uid);
-      }
     }
   }
 
