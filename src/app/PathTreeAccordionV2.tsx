@@ -87,7 +87,7 @@ const TreeItem = observer(
     const isMacOS = useIsMacOS();
 
     const entityIdx = app.allEntityIds.indexOf(entity.uid);
-    const children = "control" in entity ? (entity as Path).controls : undefined;
+    const children = entity instanceof Path ? entity.controls : undefined;
     const isDraggable = variables.isDraggable(entity);
     const isParentDragging = variables.isParentDragging(entity);
     const allowDrop = variables.isAllowDrop(entity);
