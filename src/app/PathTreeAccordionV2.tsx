@@ -13,7 +13,7 @@ import { AccordionDetails, AccordionSummary, Box, Card, IconButton, Tooltip, Typ
 import { action, makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Segment, EndPointControl, Path, Control, PathTreeItem } from "../core/Path";
-import { AddPath, MoveEndControlV2, MovePath, RemovePathsAndEndControls, UpdatePathTreeItems } from "../core/Command";
+import { AddPath, MoveEndControl, MovePath, RemovePathsAndEndControls, UpdatePathTreeItems } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
 import { Quantity, UnitOfLength } from "../core/Unit";
 import classNames from "classnames";
@@ -148,7 +148,7 @@ const TreeItem = observer(
         const toIdx = entityIdx;
         variables.dragging = undefined; // ALGO: import to set to undefined before executing the command, because the command will trigger a re-render
 
-        app.history.execute(`Move end control ${moving.uid}`, new MoveEndControlV2(app.allEntities, fromIdx, toIdx));
+        app.history.execute(`Move end control ${moving.uid}`, new MoveEndControl(app.allEntities, fromIdx, toIdx));
       }
     }
 
