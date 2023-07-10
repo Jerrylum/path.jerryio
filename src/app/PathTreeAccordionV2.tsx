@@ -13,14 +13,7 @@ import { AccordionDetails, AccordionSummary, Box, Card, IconButton, Tooltip, Typ
 import { action, makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Segment, EndPointControl, Path, Control, PathTreeItem } from "../core/Path";
-import {
-  AddPath,
-  MoveEndControl,
-  MoveEndControlV2,
-  MovePath,
-  RemovePathsAndEndControls,
-  UpdatePathTreeItems
-} from "../core/Command";
+import { AddPath, MoveEndControlV2, MovePath, RemovePathsAndEndControls, UpdatePathTreeItems } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
 import { Quantity, UnitOfLength } from "../core/Unit";
 import classNames from "classnames";
@@ -309,7 +302,8 @@ const TreeItem = observer(
           </div>
         </div>
         <ul className="tree-item-children-group">
-          {app.isExpanded(entity) && entity instanceof Path &&
+          {app.isExpanded(entity) &&
+            entity instanceof Path &&
             children?.map(child => <TreeItem key={child.uid} entity={child} parent={entity} variables={variables} />)}
         </ul>
       </li>

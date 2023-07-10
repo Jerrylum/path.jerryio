@@ -211,7 +211,7 @@ export class MainApp {
   }
 
   @computed get allEntities(): PathTreeItem[] {
-    return this.paths.flatMap(path => [path, ...path.controls]);
+    return traversal(this.paths);
   }
 
   @computed get allEntityIds(): string[] {
