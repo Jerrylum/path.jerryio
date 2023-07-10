@@ -12,25 +12,24 @@ import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp
 import { AccordionDetails, AccordionSummary, Box, Card, IconButton, Tooltip, Typography } from "@mui/material";
 import { action, makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Segment, EndPointControl, Path, Control } from "../core/Path";
+import { Segment, EndPointControl, Path, Control, PathTreeItem } from "../core/Path";
 import {
   AddPath,
   MoveEndControl,
   MoveEndControlV2,
   MovePath,
   RemovePathsAndEndControls,
-  UpdateInteractiveEntities
+  UpdatePathTreeItems
 } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
 import { Quantity, UnitOfLength } from "../core/Unit";
-import { InteractiveEntity, InteractiveEntityParent } from "../core/Canvas";
 import classNames from "classnames";
 import { useIsMacOS } from "../core/Util";
 import React from "react";
 
 class PathTreeVariables {
-  lastFocused: InteractiveEntity | undefined = undefined;
-  rangeEnd: InteractiveEntity | undefined = undefined;
+  lastFocused: PathTreeItem | undefined = undefined;
+  rangeEnd: PathTreeItem | undefined = undefined;
 
   dragging:
     | {
@@ -44,15 +43,15 @@ class PathTreeVariables {
     makeAutoObservable(this);
   }
 
-  isDraggable(entity: InteractiveEntity): boolean {
+  isDraggable(entity: PathTreeItem): boolean {
     return entity instanceof Path || entity instanceof EndPointControl;
   }
 
-  isParentDragging(entity: InteractiveEntity): boolean {
+  isParentDragging(entity: PathTreeItem): boolean {
     return entity instanceof Control && this.dragging?.entity instanceof Path;
   }
 
-  isAllowDrop(selfEntity: InteractiveEntity): boolean {
+  isAllowDrop(selfEntity: PathTreeItem): boolean {
     if (this.dragging === undefined) return true;
 
     if (this.dragging.entity instanceof Path) {
@@ -76,8 +75,8 @@ class PathTreeVariables {
 
 const TreeItem = observer(
   (props: {
-    entity: InteractiveEntity;
-    parent?: InteractiveEntity;
+    entity: PathTreeItem;
+    parent?: Path;
     isNameEditable?: boolean; // TODO
     variables: PathTreeVariables;
   }) => {
@@ -88,7 +87,7 @@ const TreeItem = observer(
     const isMacOS = useIsMacOS();
 
     const entityIdx = app.allEntityIds.indexOf(entity.uid);
-    const children = "children" in entity ? (entity as InteractiveEntityParent).children : undefined;
+    const children = "control" in entity ? (entity as Path).controls : undefined;
     const isDraggable = variables.isDraggable(entity);
     const isParentDragging = variables.isParentDragging(entity);
     const allowDrop = variables.isAllowDrop(entity);
@@ -219,7 +218,7 @@ const TreeItem = observer(
 
       app.history.execute(
         `Update entities visibility to ${setTo}`,
-        new UpdateInteractiveEntities(affected, { visible: setTo }),
+        new UpdatePathTreeItems(affected, { visible: setTo }),
         0 // Disable merge
       );
     }
@@ -230,7 +229,7 @@ const TreeItem = observer(
 
       app.history.execute(
         `Update entities lock to ${setTo}`,
-        new UpdateInteractiveEntities(affected, { lock: setTo }),
+        new UpdatePathTreeItems(affected, { lock: setTo }),
         0 // Disable merge
       );
     }
@@ -310,7 +309,7 @@ const TreeItem = observer(
           </div>
         </div>
         <ul className="tree-item-children-group">
-          {app.isExpanded(entity) &&
+          {app.isExpanded(entity) && entity instanceof Path &&
             children?.map(child => <TreeItem key={child.uid} entity={child} parent={entity} variables={variables} />)}
         </ul>
       </li>

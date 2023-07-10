@@ -1,8 +1,7 @@
 import { makeAutoObservable, computed, runInAction, reaction, action } from "mobx";
 import DOMPurify from "dompurify"; // cspell:disable-line
 import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "../format/Config";
-import { InteractiveEntity } from "./Canvas";
-import { Control, EndPointControl, Path, Vector } from "./Path";
+import { Control, EndPointControl, Path, PathTreeItem, Vector, traversal } from "./Path";
 import { addToArray, clamp, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats, convertPathFileData } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
@@ -152,35 +151,35 @@ export class MainApp {
     return this._history;
   }
 
-  isSelected(x: InteractiveEntity | string): boolean {
+  isSelected(x: PathTreeItem | string): boolean {
     return typeof x === "string" ? this.selected.includes(x) : this.selected.includes(x.uid);
   }
 
-  select(x: InteractiveEntity | string): boolean {
+  select(x: PathTreeItem | string): boolean {
     return addToArray(this.selected, typeof x === "string" ? x : x.uid);
   }
 
-  unselect(x: InteractiveEntity | string): boolean {
+  unselect(x: PathTreeItem | string): boolean {
     return removeFromArray(this.selected, typeof x === "string" ? x : x.uid);
   }
 
-  setSelected(x: InteractiveEntity[] | string[]): void {
-    this.selected = typeof x[0] === "string" ? (x as string[]).slice() : x.map(cp => (cp as InteractiveEntity).uid);
+  setSelected(x: PathTreeItem[] | string[]): void {
+    this.selected = typeof x[0] === "string" ? (x as string[]).slice() : x.map(cp => (cp as PathTreeItem).uid);
   }
 
   clearSelected(): void {
     this.selected = [];
   }
 
-  isExpanded(x: InteractiveEntity | string): boolean {
+  isExpanded(x: PathTreeItem | string): boolean {
     return typeof x === "string" ? this.expanded.includes(x) : this.expanded.includes(x.uid);
   }
 
-  addExpanded(x: InteractiveEntity | string): boolean {
+  addExpanded(x: PathTreeItem | string): boolean {
     return addToArray(this.expanded, typeof x === "string" ? x : x.uid);
   }
 
-  removeExpanded(x: InteractiveEntity | string): boolean {
+  removeExpanded(x: PathTreeItem | string): boolean {
     return removeFromArray(this.expanded, typeof x === "string" ? x : x.uid);
   }
 
@@ -211,7 +210,7 @@ export class MainApp {
     this.selected = Array.from(new Set(selected));
   }
 
-  @computed get allEntities(): InteractiveEntity[] {
+  @computed get allEntities(): PathTreeItem[] {
     return this.paths.flatMap(path => [path, ...path.controls]);
   }
 
@@ -252,8 +251,8 @@ export class MainApp {
     return rtn;
   }
 
-  @computed get selectedEntities(): InteractiveEntity[] {
-    const rtn: InteractiveEntity[] = [];
+  @computed get selectedEntities(): PathTreeItem[] {
+    const rtn: PathTreeItem[] = [];
     for (const path of this.paths) {
       if (this.isSelected(path)) rtn.push(path);
       for (const control of path.controls) {
@@ -457,3 +456,4 @@ export { useAppStores };
 window.unregisterSW = action(() => {
   SWR.unregister();
 });
+

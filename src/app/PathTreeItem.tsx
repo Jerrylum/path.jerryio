@@ -8,10 +8,9 @@ import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined
 import { action, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import { TreeItem } from "@mui/lab";
-import { EndPointControl, Path } from "../core/Path";
+import { EndPointControl, Path, PathTreeItem as PathTreeItemType } from "../core/Path";
 import { useRef } from "react";
-import { InteractiveEntity } from "../core/Canvas";
-import { RemovePathsAndEndControls, UpdateInteractiveEntities, UpdateProperties } from "../core/Command";
+import { RemovePathsAndEndControls, UpdatePathTreeItems, UpdateProperties } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
 
 export interface PathTreeProps {
@@ -19,8 +18,8 @@ export interface PathTreeProps {
 }
 
 export interface PathTreeItemLabelProps extends PathTreeProps {
-  entity: InteractiveEntity;
-  parent?: InteractiveEntity;
+  entity: PathTreeItemType;
+  parent?: PathTreeItemType;
   canDelete?: boolean;
   children?: React.ReactNode;
 }
@@ -41,7 +40,7 @@ const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
 
     app.history.execute(
       `Update entities visibility to ${setTo}`,
-      new UpdateInteractiveEntities(affected, { visible: setTo }),
+      new UpdatePathTreeItems(affected, { visible: setTo }),
       0 // Disable merge
     );
   }
@@ -52,7 +51,7 @@ const PathTreeItemLabel = observer((props: PathTreeItemLabelProps) => {
 
     app.history.execute(
       `Update entities lock to ${setTo}`,
-      new UpdateInteractiveEntities(affected, { lock: setTo }),
+      new UpdatePathTreeItems(affected, { lock: setTo }),
       0 // Disable merge
     );
   }

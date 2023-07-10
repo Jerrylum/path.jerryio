@@ -1,7 +1,6 @@
 import { MainApp, getAppStores } from "./MainApp";
-import { InteractiveEntity } from "./Canvas";
 import { Logger } from "./Logger";
-import { Control, EndPointControl, Keyframe, KeyframePos, Path, Segment, SegmentVariant, Vector } from "./Path";
+import { Control, EndPointControl, Keyframe, KeyframePos, Path, PathTreeItem, Segment, SegmentVariant, Vector } from "./Path";
 
 const logger = Logger("History");
 
@@ -64,7 +63,7 @@ export class CommandHistory {
       this.redoHistory.push(command);
       this.saveStepCounter--;
 
-      if (isInteractiveEntitiesCommand(command)) this.app.setSelected(command.entities);
+      if (isPathTreeItemsCommand(command)) this.app.setSelected(command.entities);
     }
     logger.log("UNDO", this.history.length, "->", this.redoHistory.length);
   }
@@ -76,7 +75,7 @@ export class CommandHistory {
       this.history.push(command);
       this.saveStepCounter++;
 
-      if (isInteractiveEntitiesCommand(command)) this.app.setSelected(command.entities);
+      if (isPathTreeItemsCommand(command)) this.app.setSelected(command.entities);
     }
     logger.log("REDO", this.history.length, "<-", this.redoHistory.length);
   }
@@ -121,16 +120,16 @@ export interface CancellableCommand extends Command {
   redo(): void;
 }
 
-export interface InteractiveEntitiesCommand extends Command {
+export interface PathTreeItemsCommand extends Command {
   // The entities that are affected by this command, highlighted in the canvas when undo/redo
-  entities: InteractiveEntity[];
+  entities: PathTreeItem[];
 }
 
 export function isMergeable(object: Command): object is MergeableCommand {
   return "merge" in object;
 }
 
-export function isInteractiveEntitiesCommand(object: Command): object is InteractiveEntitiesCommand {
+export function isPathTreeItemsCommand(object: Command): object is PathTreeItemsCommand {
   return "entities" in object;
 }
 
@@ -200,9 +199,9 @@ export class UpdateProperties<TTarget> extends UpdateInstancesProperties<TTarget
   }
 }
 
-export class UpdateInteractiveEntities<TTarget extends InteractiveEntity>
+export class UpdatePathTreeItems<TTarget extends PathTreeItem>
   extends UpdateInstancesProperties<TTarget>
-  implements InteractiveEntitiesCommand
+  implements PathTreeItemsCommand
 {
   constructor(protected targets: TTarget[], protected newValues: Partial<TTarget>) {
     super(targets, newValues);
@@ -213,8 +212,8 @@ export class UpdateInteractiveEntities<TTarget extends InteractiveEntity>
   }
 }
 
-export class AddSegment implements CancellableCommand, InteractiveEntitiesCommand {
-  protected _entities: InteractiveEntity[] = [];
+export class AddSegment implements CancellableCommand, PathTreeItemsCommand {
+  protected _entities: PathTreeItem[] = [];
 
   protected forward: boolean = true;
   protected segment?: Segment;
@@ -277,12 +276,12 @@ export class AddSegment implements CancellableCommand, InteractiveEntitiesComman
     this.forward = true;
   }
 
-  get entities(): InteractiveEntity[] {
+  get entities(): PathTreeItem[] {
     return this.forward ? this._entities : [];
   }
 }
 
-export class ConvertSegment implements CancellableCommand, InteractiveEntitiesCommand {
+export class ConvertSegment implements CancellableCommand, PathTreeItemsCommand {
   protected previousControls: Control[] = [];
   protected newControls: Control[] = [];
 
@@ -349,13 +348,13 @@ export class ConvertSegment implements CancellableCommand, InteractiveEntitiesCo
     this.segment.controls = this.newControls.slice();
   }
 
-  get entities(): InteractiveEntity[] {
+  get entities(): PathTreeItem[] {
     return this.segment.controls.slice(1, -1); // exclude first and last
   }
 }
 
-export class SplitSegment implements CancellableCommand, InteractiveEntitiesCommand {
-  protected _entities: InteractiveEntity[] = [];
+export class SplitSegment implements CancellableCommand, PathTreeItemsCommand {
+  protected _entities: PathTreeItem[] = [];
 
   protected forward: boolean = true;
 
@@ -419,12 +418,12 @@ export class SplitSegment implements CancellableCommand, InteractiveEntitiesComm
     this.forward = true;
   }
 
-  get entities(): InteractiveEntity[] {
+  get entities(): PathTreeItem[] {
     return this.forward ? this._entities : [];
   }
 }
 
-export class DragControls implements CancellableCommand, MergeableCommand, InteractiveEntitiesCommand {
+export class DragControls implements CancellableCommand, MergeableCommand, PathTreeItemsCommand {
   constructor(protected main: Control, protected from: Vector, protected to: Vector, protected followers: Control[]) {}
 
   execute(): void {
@@ -469,7 +468,7 @@ export class DragControls implements CancellableCommand, MergeableCommand, Inter
     return true;
   }
 
-  get entities(): InteractiveEntity[] {
+  get entities(): PathTreeItem[] {
     return [this.main, ...this.followers];
   }
 }
@@ -595,7 +594,7 @@ export class RemoveKeyframe implements CancellableCommand {
   }
 }
 
-export class AddPath implements CancellableCommand, InteractiveEntitiesCommand {
+export class AddPath implements CancellableCommand, PathTreeItemsCommand {
   protected forward: boolean = false;
 
   constructor(protected paths: Path[], protected path: Path) {}
@@ -615,13 +614,13 @@ export class AddPath implements CancellableCommand, InteractiveEntitiesCommand {
     this.forward = true;
   }
 
-  get entities(): InteractiveEntity[] {
+  get entities(): PathTreeItem[] {
     return this.forward ? [this.path, ...this.path.controls] : [];
   }
 }
 
-export class RemovePathsAndEndControls implements CancellableCommand, InteractiveEntitiesCommand {
-  protected _entities: InteractiveEntity[] = [];
+export class RemovePathsAndEndControls implements CancellableCommand, PathTreeItemsCommand {
+  protected _entities: PathTreeItem[] = [];
 
   protected forward: boolean = true;
   protected removalPaths: Path[] = [];
@@ -639,7 +638,7 @@ export class RemovePathsAndEndControls implements CancellableCommand, Interactiv
    * @param paths all paths in the editor
    * @param entities entities to remove
    */
-  constructor(protected paths: Path[], entities: (string | InteractiveEntity)[]) {
+  constructor(protected paths: Path[], entities: (string | PathTreeItem)[]) {
     // ALGO: Create a set of all entity uids
     const allEntities = new Set(entities.map(e => (typeof e === "string" ? e : e.uid)));
 
@@ -753,17 +752,17 @@ export class RemovePathsAndEndControls implements CancellableCommand, Interactiv
     return this.removalPaths.length > 0 || this.removalEndControls.length > 0;
   }
 
-  get removedEntities(): InteractiveEntity[] {
+  get removedEntities(): PathTreeItem[] {
     return this._entities;
   }
 
-  get entities(): InteractiveEntity[] {
+  get entities(): PathTreeItem[] {
     return this.forward ? [] : this._entities;
   }
 }
 
-export class MoveEndControl implements CancellableCommand, InteractiveEntitiesCommand {
-  protected _entities: InteractiveEntity[] = [];
+export class MoveEndControl implements CancellableCommand, PathTreeItemsCommand {
+  protected _entities: PathTreeItem[] = [];
 
   protected sourceOriginal: { path: Path; segments: Segment[] } | undefined;
   protected destOriginal: { path: Path; segments: Segment[] } | undefined;
@@ -901,13 +900,13 @@ export class MoveEndControl implements CancellableCommand, InteractiveEntitiesCo
     return this.sourceOriginal !== undefined && this.destOriginal !== undefined;
   }
 
-  get entities(): InteractiveEntity[] {
+  get entities(): PathTreeItem[] {
     return this._entities;
   }
 }
 
-export class MovePath implements CancellableCommand, InteractiveEntitiesCommand {
-  protected _entities: InteractiveEntity[] = [];
+export class MovePath implements CancellableCommand, PathTreeItemsCommand {
+  protected _entities: PathTreeItem[] = [];
 
   constructor(protected paths: Path[], protected fromIdx: number, protected toIdx: number) {}
 
@@ -937,17 +936,17 @@ export class MovePath implements CancellableCommand, InteractiveEntitiesCommand 
     return this.fromIdx >= 0 && this.fromIdx < this.paths.length && this.toIdx >= 0 && this.toIdx < this.paths.length;
   }
 
-  get entities(): InteractiveEntity[] {
+  get entities(): PathTreeItem[] {
     return this._entities;
   }
 }
 
-export class MoveEndControlV2 implements CancellableCommand, InteractiveEntitiesCommand {
-  protected _entities: InteractiveEntity[] = [];
-  protected original: InteractiveEntity[];
-  protected modified: InteractiveEntity[];
+export class MoveEndControlV2 implements CancellableCommand, PathTreeItemsCommand {
+  protected _entities: PathTreeItem[] = [];
+  protected original: PathTreeItem[];
+  protected modified: PathTreeItem[];
 
-  constructor(protected allEntities: InteractiveEntity[], protected fromIdx: number, protected toIdx: number) {
+  constructor(protected allEntities: PathTreeItem[], protected fromIdx: number, protected toIdx: number) {
     this.original = this.allEntities.slice();
     this.modified = this.allEntities.slice();
   }
@@ -979,8 +978,8 @@ export class MoveEndControlV2 implements CancellableCommand, InteractiveEntities
     this.construct(this.modified);
   }
 
-  construct(entities: InteractiveEntity[]): InteractiveEntity[] | undefined {
-    const removed: InteractiveEntity[] = [];
+  construct(entities: PathTreeItem[]): PathTreeItem[] | undefined {
+    const removed: PathTreeItem[] = [];
 
     let currentPath: Path | undefined;
     let segments: Segment[] = [];
@@ -1045,7 +1044,7 @@ export class MoveEndControlV2 implements CancellableCommand, InteractiveEntities
     );
   }
 
-  get entities(): InteractiveEntity[] {
+  get entities(): PathTreeItem[] {
     return this._entities;
   }
 }

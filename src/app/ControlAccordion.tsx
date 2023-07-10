@@ -4,7 +4,7 @@ import { observer } from "mobx-react-lite";
 import { EndPointControl } from "../core/Path";
 import { ObserverInput, clampQuantity } from "../component/ObserverInput";
 import { Quantity, UnitOfAngle, UnitOfLength } from "../core/Unit";
-import { UpdateInteractiveEntities } from "../core/Command";
+import { UpdatePathTreeItems } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
 import { NumberUOA, NumberUOL } from "../token/Tokens";
 import { parseFormula } from "../core/Util";
@@ -44,7 +44,7 @@ const ControlAccordion = observer((props: {}) => {
 
                 app.history.execute(
                   `Update control ${controlUid} x value`,
-                  new UpdateInteractiveEntities([control], { x: finalVal })
+                  new UpdatePathTreeItems([control], { x: finalVal })
                 );
               }}
               isValidIntermediate={() => true}
@@ -76,7 +76,7 @@ const ControlAccordion = observer((props: {}) => {
 
                 app.history.execute(
                   `Update control ${controlUid} y value`,
-                  new UpdateInteractiveEntities([control], { y: finalVal })
+                  new UpdatePathTreeItems([control], { y: finalVal })
                 );
               }}
               isValidIntermediate={() => true}
@@ -103,7 +103,7 @@ const ControlAccordion = observer((props: {}) => {
 
                 app.history.execute(
                   `Update control ${controlUid} heading value`,
-                  new UpdateInteractiveEntities([control], { heading: finalVal })
+                  new UpdatePathTreeItems([control], { heading: finalVal })
                 );
               }}
               isValidIntermediate={() => true}
