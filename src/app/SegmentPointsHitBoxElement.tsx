@@ -20,8 +20,10 @@ const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
       return;
     }
 
-    let cpInPx = new EndPointControl(evt.offsetX, evt.offsetY, 0);
-    let cpInUOL = props.fcc.toUOL(cpInPx);
+    const posInPx = props.fcc.getUnboundedPxFromEvent(event);
+    if (posInPx === undefined) return;
+
+    const cpInUOL = props.fcc.toUOL(new EndPointControl(posInPx.x, posInPx.y, 0));
 
     if (evt.button === 2) {
       // right click
@@ -45,10 +47,10 @@ const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
     }
   }
 
-  let points: number[] = [];
+  const points: number[] = [];
 
   for (let cp of props.segment.controls) {
-    let cpInPx = props.fcc.toPx(cp.toVector()); // ALGO: Use toVector for better performance
+    const cpInPx = props.fcc.toPx(cp.toVector()); // ALGO: Use toVector for better performance
     points.push(cpInPx.x);
     points.push(cpInPx.y);
   }
