@@ -71,6 +71,10 @@ export class Vector {
     this.y = other.y;
   }
 
+  isWithinArea(from: Vector, to: Vector) {
+    return this.x >= from.x && this.x <= to.x && this.y >= from.y && this.y <= to.y;
+  }
+
   clone(): Vector {
     return new Vector(this.x, this.y);
   }
@@ -152,10 +156,6 @@ export class Control extends Vector implements InteractiveEntity {
       lock: observable,
       visible: observable
     });
-  }
-
-  isWithinArea(from: Vector, to: Vector) {
-    return this.x >= from.x && this.x <= to.x && this.y >= from.y && this.y <= to.y;
   }
 
   clone(): Control {
