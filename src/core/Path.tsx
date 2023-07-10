@@ -346,3 +346,71 @@ export class Path implements InteractiveEntity, InteractiveEntityParent {
     return this.controls;
   }
 }
+
+export type PathTreeItem = Path | EndPointControl | Control;
+export type Primary = Path | EndPointControl;
+export type Follower = Control;
+
+export function traversal(paths: Path[]): PathTreeItem[] {
+  return paths.reduce((acc, path) => {
+    return [...acc, path, ...path.controls];
+  }, [] as PathTreeItem[]);
+}
+
+export function construct(entities: PathTreeItem[]): PathTreeItem[] | undefined {
+  const removed: PathTreeItem[] = [];
+
+  let currentPath: Path | undefined;
+  let segments: Segment[] = [];
+  let first: EndPointControl | undefined;
+  let middle: Control[] = [];
+
+  const push = () => {
+    if (currentPath !== undefined) {
+      currentPath.segments = segments;
+      // ALGO: Add dangling controls to removed
+      removed.push(...middle);
+      if (first && segments.length === 0) removed.push(first);
+
+      segments = [];
+      first = undefined;
+      middle = [];
+    }
+  };
+
+  for (let i = 0; i < entities.length; i++) {
+    const entity = entities[i];
+    if (entity instanceof Path) {
+      push();
+      currentPath = entity;
+    } else if (entity instanceof EndPointControl) {
+      if (currentPath === undefined) return undefined;
+
+      if (first !== undefined) {
+        if (middle.length < 2) {
+          removed.push(...middle);
+          middle = []; // No less than 2 controls
+        }
+        if (middle.length > 2) {
+          removed.push(...middle.slice(1, -1));
+          middle = [middle[0], middle[middle.length - 1]]; // No more than 2 controls
+        }
+        segments.push(new Segment(first, middle, entity));
+      } else {
+        removed.push(...middle);
+      }
+
+      first = entity;
+      middle = [];
+    } else if (entity instanceof Control) {
+      if (currentPath === undefined) return undefined;
+
+      middle.push(entity);
+    }
+  }
+
+  push();
+
+  return removed;
+}
+
