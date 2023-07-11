@@ -299,7 +299,7 @@ const TreeItem = observer((props: { entity: PathTreeItem; parent?: Path; variabl
           showDraggingDivider && entityIdx > variables.dragging!.idx && variables.dragging!.entity instanceof Path
       })}
       onContextMenu={event => event.preventDefault()}
-      draggable={isDraggable}
+      draggable={isDraggable && !isEditingName} /* UX: No dragging path name */
       {...(!isParentDragging
         ? {
             onDragStart: action(onDragStart),
