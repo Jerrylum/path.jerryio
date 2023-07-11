@@ -113,6 +113,14 @@ const TreeItem = observer((props: { entity: PathTreeItem; parent?: Path; variabl
       event.preventDefault();
       event.currentTarget.blur();
 
+      // UX: Press enter to confirm name change
+      onItemNameConfirm(event);
+    } else if (event.code === "Escape") {
+      event.preventDefault();
+      event.currentTarget.innerText = initialValue.current;
+      event.currentTarget.blur();
+
+      // UX: Press escape to cancel name change
       onItemNameConfirm(event);
     }
   }
