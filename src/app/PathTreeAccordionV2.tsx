@@ -348,33 +348,36 @@ const TreeItem = observer((props: { entity: PathTreeItem; parent?: Path; variabl
                     dangerouslySetInnerHTML: { __html: initialValue.current } // SECURITY: Beware of XSS attack from the path file
                   }
                 : {
-                    children: entity.name
+                    children: entity.name,
+                    title: entity.name
                   })}
               onClick={e => e.preventDefault()}
             />
           ) : (
             <span className="tree-item-name preview">{entity.name}</span>
           )}
-
-          <span style={{ display: "inline-block", marginRight: "1em" }}></span>
-          {isDraggable && <DeleteIcon className="tree-func-icon" onClick={action(onDeleteClick)} />}
-          {entity.lock === false ? (
-            parent?.lock === true ? (
-              <FiberManualRecordOutlinedIcon className="tree-func-icon show" onClick={action(onLockClick)} />
-            ) : (
-              <LockOpenIcon className="tree-func-icon" onClick={action(onLockClick)} />
-            )
-          ) : (
-            <LockOutlinedIcon className="tree-func-icon show" onClick={action(onLockClick)} />
-          )}
-          {entity.visible === true ? (
-            parent?.visible === false ? (
-              <FiberManualRecordOutlinedIcon className="tree-func-icon show" onClick={action(onVisibleClick)} />
-            ) : (
-              <VisibilityIcon className="tree-func-icon" onClick={action(onVisibleClick)} />
-            )
-          ) : (
-            <VisibilityOffOutlinedIcon className="tree-func-icon show" onClick={action(onVisibleClick)} />
+          {isEditingName === false && (
+            <>
+              {isDraggable && <DeleteIcon className="tree-func-icon" onClick={action(onDeleteClick)} />}
+              {entity.lock === false ? (
+                parent?.lock === true ? (
+                  <FiberManualRecordOutlinedIcon className="tree-func-icon show" onClick={action(onLockClick)} />
+                ) : (
+                  <LockOpenIcon className="tree-func-icon" onClick={action(onLockClick)} />
+                )
+              ) : (
+                <LockOutlinedIcon className="tree-func-icon show" onClick={action(onLockClick)} />
+              )}
+              {entity.visible === true ? (
+                parent?.visible === false ? (
+                  <FiberManualRecordOutlinedIcon className="tree-func-icon show" onClick={action(onVisibleClick)} />
+                ) : (
+                  <VisibilityIcon className="tree-func-icon" onClick={action(onVisibleClick)} />
+                )
+              ) : (
+                <VisibilityOffOutlinedIcon className="tree-func-icon show" onClick={action(onVisibleClick)} />
+              )}
+            </>
           )}
         </div>
       </div>
