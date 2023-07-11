@@ -84,6 +84,7 @@ const TreeItem = observer((props: { entity: PathTreeItem; parent?: Path; variabl
 
   const isMacOS = useIsMacOS();
 
+  const nameRef = React.useRef<HTMLSpanElement>(null);
   const initialValue = React.useRef(entity.name);
   const lastValidName = React.useRef(entity.name);
   const [isEditingName, setIsEditingName] = React.useState(false);
@@ -116,9 +117,22 @@ const TreeItem = observer((props: { entity: PathTreeItem; parent?: Path; variabl
     }
   }
 
-  function onItemNameFocus(event: React.FocusEvent<HTMLSpanElement>) {
+  function onItemNameDoubleClick(event: React.MouseEvent<HTMLSpanElement, MouseEvent>) {
     setIsEditingName(true);
   }
+
+  React.useEffect(() => {
+    if (isEditingName && nameRef.current) {
+      // UX: Highlight all text when editing name
+      // ALGO: This should be called after contenteditable is true
+      // See: https://stackoverflow.com/a/4238971/11571888
+      const range = document.createRange();
+      range.selectNodeContents(nameRef.current);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+    }
+  }, [isEditingName]);
 
   function onItemNameConfirm(event: React.SyntheticEvent<HTMLSpanElement, Event>) {
     if (event.currentTarget.innerText === "") event.currentTarget.innerText = initialValue.current;
@@ -321,18 +335,25 @@ const TreeItem = observer((props: { entity: PathTreeItem; parent?: Path; variabl
         <div className="tree-item-label" onClick={action(onLabelClick)}>
           {isNameEditable ? (
             <span
-              contentEditable
               className={classNames("tree-item-name", { preview: !isEditingName, edit: isEditingName })}
               onInput={e => onItemNameChange(e)}
               onKeyDown={action(onItemNameKeyDown)}
-              onFocus={action(onItemNameFocus)}
+              onDoubleClick={action(onItemNameDoubleClick)}
               onBlur={action(onItemNameConfirm)}
-              suppressContentEditableWarning={true}
-              dangerouslySetInnerHTML={{ __html: initialValue.current }} // SECURITY: Beware of XSS attack from the path file
+              ref={nameRef}
+              {...(isEditingName
+                ? {
+                    contentEditable: true,
+                    suppressContentEditableWarning: true,
+                    dangerouslySetInnerHTML: { __html: initialValue.current } // SECURITY: Beware of XSS attack from the path file
+                  }
+                : {
+                    children: entity.name
+                  })}
               onClick={e => e.preventDefault()}
             />
           ) : (
-            <span className="tree-item-name">{entity.name}</span>
+            <span className="tree-item-name preview">{entity.name}</span>
           )}
 
           <span style={{ display: "inline-block", marginRight: "1em" }}></span>
