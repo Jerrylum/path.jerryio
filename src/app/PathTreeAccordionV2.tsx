@@ -416,14 +416,6 @@ const PathTreeAccordionV2 = observer((props: {}) => {
     }
   }
 
-  function onDragEnter(event: React.DragEvent<HTMLDivElement>) {
-    // console.log("onDragEnter");
-  }
-
-  function onDragLeave(event: React.DragEvent<HTMLDivElement>) {
-    // console.log("onDragLeave");
-  }
-
   const [variables] = React.useState(() => new PathTreeVariables());
 
   return (
@@ -453,7 +445,7 @@ const PathTreeAccordionV2 = observer((props: {}) => {
           )}
         </Box>
       </AccordionSummary>
-      <AccordionDetails onDragEnter={onDragEnter} onDragLeave={onDragLeave}>
+      <AccordionDetails>
         <ul className="tree-view">
           {app.paths.map(path => {
             return <TreeItem key={path.uid} entity={path} variables={variables} />;
