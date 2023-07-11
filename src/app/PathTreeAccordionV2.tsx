@@ -86,6 +86,7 @@ const TreeItem = observer((props: { entity: PathTreeItem; parent?: Path; variabl
 
   const initialValue = React.useRef(entity.name);
   const lastValidName = React.useRef(entity.name);
+  const [isEditingName, setIsEditingName] = React.useState(false);
 
   const entityIdx = app.allEntityIds.indexOf(entity.uid);
   const isNameEditable = entity instanceof Path;
@@ -115,11 +116,16 @@ const TreeItem = observer((props: { entity: PathTreeItem; parent?: Path; variabl
     }
   }
 
+  function onItemNameFocus(event: React.FocusEvent<HTMLSpanElement>) {
+    setIsEditingName(true);
+  }
+
   function onItemNameConfirm(event: React.SyntheticEvent<HTMLSpanElement, Event>) {
     if (event.currentTarget.innerText === "") event.currentTarget.innerText = initialValue.current;
     const pathName = (initialValue.current = lastValidName.current = event.currentTarget.innerText);
 
     app.history.execute(`Update path tree item name to ${pathName}`, new UpdateProperties(entity, { name: pathName }));
+    setIsEditingName(false);
   }
 
   function onDraggableFalseMouseDown(event: React.MouseEvent<HTMLLIElement, MouseEvent>) {
@@ -313,43 +319,42 @@ const TreeItem = observer((props: { entity: PathTreeItem; parent?: Path; variabl
           )}
         </div>
         <div className="tree-item-label" onClick={action(onLabelClick)}>
-          <div className="tree-item-label-content">
-            {isNameEditable ? (
-              <span
-                contentEditable
-                style={{ display: "inline-block" }}
-                onInput={e => onItemNameChange(e)}
-                onKeyDown={action(onItemNameKeyDown)}
-                onBlur={action(onItemNameConfirm)}
-                suppressContentEditableWarning={true}
-                dangerouslySetInnerHTML={{ __html: initialValue.current }} // SECURITY: Beware of XSS attack from the path file
-                onClick={e => e.preventDefault()}
-              />
-            ) : (
-              <span>{entity.name}</span>
-            )}
+          {isNameEditable ? (
+            <span
+              contentEditable
+              className={classNames("tree-item-name", { preview: !isEditingName, edit: isEditingName })}
+              onInput={e => onItemNameChange(e)}
+              onKeyDown={action(onItemNameKeyDown)}
+              onFocus={action(onItemNameFocus)}
+              onBlur={action(onItemNameConfirm)}
+              suppressContentEditableWarning={true}
+              dangerouslySetInnerHTML={{ __html: initialValue.current }} // SECURITY: Beware of XSS attack from the path file
+              onClick={e => e.preventDefault()}
+            />
+          ) : (
+            <span className="tree-item-name">{entity.name}</span>
+          )}
 
-            <span style={{ display: "inline-block", marginRight: "1em" }}></span>
-            {entity.visible === true ? (
-              parent?.visible === false ? (
-                <FiberManualRecordOutlinedIcon className="tree-func-icon show" onClick={action(onVisibleClick)} />
-              ) : (
-                <VisibilityIcon className="tree-func-icon" onClick={action(onVisibleClick)} />
-              )
+          <span style={{ display: "inline-block", marginRight: "1em" }}></span>
+          {isDraggable && <DeleteIcon className="tree-func-icon" onClick={action(onDeleteClick)} />}
+          {entity.lock === false ? (
+            parent?.lock === true ? (
+              <FiberManualRecordOutlinedIcon className="tree-func-icon show" onClick={action(onLockClick)} />
             ) : (
-              <VisibilityOffOutlinedIcon className="tree-func-icon show" onClick={action(onVisibleClick)} />
-            )}
-            {entity.lock === false ? (
-              parent?.lock === true ? (
-                <FiberManualRecordOutlinedIcon className="tree-func-icon show" onClick={action(onLockClick)} />
-              ) : (
-                <LockOpenIcon className="tree-func-icon" onClick={action(onLockClick)} />
-              )
+              <LockOpenIcon className="tree-func-icon" onClick={action(onLockClick)} />
+            )
+          ) : (
+            <LockOutlinedIcon className="tree-func-icon show" onClick={action(onLockClick)} />
+          )}
+          {entity.visible === true ? (
+            parent?.visible === false ? (
+              <FiberManualRecordOutlinedIcon className="tree-func-icon show" onClick={action(onVisibleClick)} />
             ) : (
-              <LockOutlinedIcon className="tree-func-icon show" onClick={action(onLockClick)} />
-            )}
-            {isDraggable && <DeleteIcon className="tree-func-icon" onClick={action(onDeleteClick)} />}
-          </div>
+              <VisibilityIcon className="tree-func-icon" onClick={action(onVisibleClick)} />
+            )
+          ) : (
+            <VisibilityOffOutlinedIcon className="tree-func-icon show" onClick={action(onVisibleClick)} />
+          )}
         </div>
       </div>
       <ul className="tree-item-children-group">

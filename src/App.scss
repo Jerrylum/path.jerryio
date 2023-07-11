@@ -529,23 +529,39 @@ th {
         font-weight: 400;
         font-size: 1rem;
         line-height: 1.5;
+        height: 1.5em;
         letter-spacing: 0.00938em;
+        display: flex;
+        align-items: center;
 
-        .tree-item-label-content:hover > .tree-func-icon {
-          visibility: visible;
+        .tree-item-name {
+          flex-grow: 1;
+          overflow: hidden;
+          height: calc(1.5em - 2px);
+        }
+
+        .tree-item-name.edit {
+          outline: 1px #7f47b3 solid;
+        }
+
+        .tree-item-name.preview {
+          white-space: nowrap;
+          text-overflow: ellipsis;
         }
 
         .tree-func-icon {
           height: calc(1em * 0.7) !important;
           vertical-align: middle;
-          float: right;
-          margin-top: calc(1em * 0.15);
           visibility: hidden;
         }
 
         .tree-func-icon.show {
           visibility: visible;
         }
+      }
+
+      .tree-item-label:hover > .tree-func-icon {
+        visibility: visible;
       }
     }
 
