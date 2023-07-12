@@ -582,6 +582,10 @@ th {
       background-color: rgba(127, 71, 179, 0.24);
     }
 
+    .tree-item-content.selected.focused {
+      background-color: rgba(127, 71, 179, 0.28);
+    }
+
     .tree-item-content.deny-drop {
       opacity: 0.5;
     }

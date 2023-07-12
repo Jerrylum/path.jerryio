@@ -21,7 +21,7 @@ import {
   UpdatePathTreeItems,
   UpdateProperties
 } from "../core/Command";
-import { useAppStores } from "../core/MainApp";
+import { getAppStores, useAppStores } from "../core/MainApp";
 import { Quantity, UnitOfLength } from "../core/Unit";
 import classNames from "classnames";
 import { useIsMacOS } from "../core/Util";
@@ -31,8 +31,66 @@ function getItemNameRegex() {
   return new RegExp(/^[^<>\r\n]+$/g); /* eslint-disable-line */
 }
 
+function touchItem(
+  variables: PathTreeVariables,
+  entity: PathTreeItem,
+  isRangeSelect: boolean,
+  isMultiSelect: boolean,
+  isSelectSingleItem: boolean
+) {
+  const { app } = getAppStores();
+
+  if (isRangeSelect) {
+    if (variables.rangeStart === undefined) return;
+
+    const entityFlattened = app.allEntityIds;
+
+    const helper = function (fromUid: string, toUid: string, cb: (target: string) => void) {
+      const fromIndex = entityFlattened.indexOf(fromUid);
+      const toIndex = entityFlattened.indexOf(toUid);
+
+      if (fromIndex === -1 || toIndex === -1) return;
+
+      const a = Math.min(fromIndex, toIndex);
+      const b = Math.max(fromIndex, toIndex);
+
+      for (let i = a; i <= b; i++) {
+        cb(entityFlattened[i]);
+      }
+    };
+
+    if (variables.rangeEnd !== undefined) {
+      helper(entity.uid, variables.rangeEnd.uid, app.unselect.bind(app));
+    }
+
+    helper(entity.uid, variables.rangeStart.uid, app.select.bind(app));
+
+    variables.rangeEnd = entity;
+  } else if (isMultiSelect) {
+    if (app.isSelected(entity)) {
+      app.unselect(entity);
+    } else {
+      app.select(entity);
+    }
+    variables.rangeStart = entity;
+    variables.rangeEnd = undefined;
+  } else if (isSelectSingleItem) {
+    app.setSelected([entity]);
+    variables.rangeStart = entity;
+    variables.rangeEnd = undefined;
+  } else {
+    variables.rangeStart = entity;
+    variables.rangeEnd = undefined;
+  }
+  variables.focused = entity;
+}
+
 class PathTreeVariables {
-  lastFocused: PathTreeItem | undefined = undefined;
+  // UX: Arrow keys
+  focused: PathTreeItem | undefined = undefined;
+  // UX: Left click or Arrow keys
+  rangeStart: PathTreeItem | undefined = undefined;
+  // UX: Shift + Left click or Shift + Arrow keys
   rangeEnd: PathTreeItem | undefined = undefined;
 
   dragging:
@@ -55,20 +113,20 @@ class PathTreeVariables {
     return entity instanceof Control && this.dragging?.entity instanceof Path;
   }
 
-  isAllowDrop(selfEntity: PathTreeItem): boolean {
+  isAllowDrop(destEntity: PathTreeItem): boolean {
     if (this.dragging === undefined) return true;
 
     if (this.dragging.entity instanceof Path) {
-      if (selfEntity instanceof Path) {
-        return this.dragging.entity !== selfEntity;
+      if (destEntity instanceof Path) {
+        return this.dragging.entity !== destEntity;
       } else {
         return false;
       }
     } else {
       // dragging entity is EndPointControl
-      if (selfEntity instanceof EndPointControl) {
-        return this.dragging.entity !== selfEntity;
-      } else if (selfEntity instanceof Control) {
+      if (destEntity instanceof EndPointControl) {
+        return this.dragging.entity !== destEntity;
+      } else if (destEntity instanceof Control) {
         return true;
       } else {
         return true;
@@ -77,10 +135,17 @@ class PathTreeVariables {
   }
 }
 
-const TreeItem = observer((props: { entity: PathTreeItem; parent?: Path; variables: PathTreeVariables }) => {
+interface TreeItemProps {
+  entity: PathTreeItem;
+  parent?: Path;
+  variables: PathTreeVariables;
+  treeViewRef: React.RefObject<HTMLUListElement>;
+}
+
+const TreeItem = observer((props: TreeItemProps) => {
   const { app } = useAppStores();
 
-  const { entity, parent, variables } = props;
+  const { entity, parent, variables, treeViewRef } = props;
 
   const isMacOS = useIsMacOS();
 
@@ -90,10 +155,11 @@ const TreeItem = observer((props: { entity: PathTreeItem; parent?: Path; variabl
   const [isEditingName, setIsEditingName] = React.useState(false);
 
   const entityIdx = app.allEntityIds.indexOf(entity.uid);
-  const isNameEditable = entity instanceof Path;
   const children = entity instanceof Path ? entity.controls : undefined;
+  const isNameEditable = entity instanceof Path;
   const isDraggable = variables.isDraggable(entity);
   const isParentDragging = variables.isParentDragging(entity);
+  const isFocused = variables.focused === entity;
   const allowDrop = variables.isAllowDrop(entity);
   const showDraggingDivider = allowDrop && entityIdx === variables.dragging?.dragOverIdx;
 
@@ -153,6 +219,8 @@ const TreeItem = observer((props: { entity: PathTreeItem; parent?: Path; variabl
   function onDraggableFalseMouseDown(event: React.MouseEvent<HTMLLIElement, MouseEvent>) {
     event.stopPropagation();
     event.preventDefault();
+    // UX: Make it possible to click control to focus on the tree view and use keyboard navigation
+    treeViewRef.current?.focus();
   }
 
   function onDragStart(event: React.DragEvent<HTMLLIElement>) {
@@ -230,45 +298,7 @@ const TreeItem = observer((props: { entity: PathTreeItem; parent?: Path; variabl
   function onLabelClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     event.preventDefault();
     event.stopPropagation();
-    if (event.shiftKey) {
-      if (variables.lastFocused === undefined) return;
-
-      const entityFlattened = app.allEntityIds;
-
-      const helper = function (fromUid: string, toUid: string, cb: (target: string) => void) {
-        const fromIndex = entityFlattened.indexOf(fromUid);
-        const toIndex = entityFlattened.indexOf(toUid);
-
-        if (fromIndex === -1 || toIndex === -1) return;
-
-        const a = Math.min(fromIndex, toIndex);
-        const b = Math.max(fromIndex, toIndex);
-
-        for (let i = a; i <= b; i++) {
-          cb(entityFlattened[i]);
-        }
-      };
-
-      if (variables.rangeEnd !== undefined) {
-        helper(entity.uid, variables.rangeEnd.uid, app.unselect.bind(app));
-      }
-
-      helper(entity.uid, variables.lastFocused.uid, app.select.bind(app));
-
-      variables.rangeEnd = entity;
-    } else if (isMacOS ? event.metaKey : event.ctrlKey) {
-      if (app.isSelected(entity)) {
-        app.unselect(entity);
-      } else {
-        app.select(entity);
-      }
-      variables.lastFocused = entity;
-      variables.rangeEnd = undefined;
-    } else {
-      app.setSelected([entity]);
-      variables.lastFocused = entity;
-      variables.rangeEnd = undefined;
-    }
+    touchItem(variables, entity, event.shiftKey, isMacOS ? event.metaKey : event.ctrlKey, true);
   }
 
   function onVisibleClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
@@ -321,6 +351,7 @@ const TreeItem = observer((props: { entity: PathTreeItem; parent?: Path; variabl
       {...(!isDraggable && { onMouseDown: action(onDraggableFalseMouseDown) })}>
       <div
         className={classNames("tree-item-content", {
+          focused: isFocused,
           selected: app.isSelected(entity),
           "deny-drop": !allowDrop,
           "dragging-divider-top": showDraggingDivider && entityIdx <= variables.dragging!.idx,
@@ -393,10 +424,164 @@ const TreeItem = observer((props: { entity: PathTreeItem; parent?: Path; variabl
         {children !== undefined &&
           app.isExpanded(entity as Path) &&
           children.map(child => (
-            <TreeItem key={child.uid} entity={child} parent={entity as Path} variables={variables} />
+            <TreeItem
+              key={child.uid}
+              entity={child}
+              parent={entity as Path}
+              variables={variables}
+              treeViewRef={treeViewRef}
+            />
           ))}
       </ul>
     </li>
+  );
+});
+
+const TreeView = observer((props: { variables: PathTreeVariables }) => {
+  const { app } = useAppStores();
+
+  const { variables } = props;
+
+  // TODO: Left click to focus on the tree view
+
+  function pressSpaceToToggleSelection(e: React.KeyboardEvent<HTMLUListElement>): boolean {
+    const current = variables.focused;
+    if (current === undefined) return false;
+
+    touchItem(variables, current, false, true, false);
+
+    return true;
+  }
+
+  function pressEnterToToggleExpansionOrSelection(e: React.KeyboardEvent<HTMLUListElement>): boolean {
+    const current = variables.focused;
+    if (current === undefined) return false;
+
+    if (current instanceof Path) {
+      if (app.isExpanded(current)) app.removeExpanded(current);
+      else app.addExpanded(current);
+    } else {
+      touchItem(variables, current, false, true, false);
+    }
+
+    return true;
+  }
+
+  function focusPrevious(e: React.KeyboardEvent<HTMLUListElement>): boolean {
+    const entities = app.allNavigableEntities;
+
+    let idx: number;
+
+    if (variables.focused === undefined) {
+      // if the list is empty, idx = -1
+      idx = entities.length - 1;
+    } else {
+      const current = entities.indexOf(variables.focused);
+      if (current === -1) {
+        idx = entities.length - 1;
+      } else {
+        idx = Math.max(0, current - 1);
+      }
+    }
+
+    if (idx >= 0 && idx < entities.length) {
+      touchItem(variables, entities[idx], e.shiftKey, false, false);
+    } else {
+      variables.focused = undefined;
+    }
+
+    return variables.focused !== undefined;
+  }
+
+  function focusNext(e: React.KeyboardEvent<HTMLUListElement>): boolean {
+    const entities = app.allNavigableEntities;
+
+    let idx: number;
+
+    if (variables.focused === undefined) {
+      // if the list is empty, idx = 0 and target = undefined
+      idx = 0;
+    } else {
+      const current = entities.indexOf(variables.focused);
+      if (current === -1) {
+        idx = 0;
+      } else {
+        idx = Math.min(entities.length - 1, current + 1);
+      }
+    }
+
+    if (idx >= 0 && idx < entities.length) {
+      touchItem(variables, entities[idx], e.shiftKey, false, false);
+    } else {
+      variables.focused = undefined;
+    }
+
+    return variables.focused !== undefined;
+  }
+
+  function focusParent(e: React.KeyboardEvent<HTMLUListElement>): boolean {
+    const current = variables.focused;
+    if (current === undefined || current instanceof Path) return false;
+
+    const path = app.paths.find(path => path.controls.includes(current));
+    if (path === undefined) return false;
+
+    touchItem(variables, path, false, false, false);
+
+    return true;
+  }
+
+  function focusFirstChild(e: React.KeyboardEvent<HTMLUListElement>): boolean {
+    const current = variables.focused;
+    if (current === undefined || current instanceof Control) return false;
+
+    const control = current.controls[0];
+    if (control === undefined || app.allNavigableEntities.includes(control) === false) return false;
+
+    touchItem(variables, control, false, false, false);
+
+    return true;
+  }
+
+  function onKeyDown(e: React.KeyboardEvent<HTMLUListElement>) {
+    let flag: boolean;
+
+    const key = e.key;
+
+    if (key === " ") {
+      flag = pressSpaceToToggleSelection(e);
+    } else if (key === "Enter") {
+      flag = pressEnterToToggleExpansionOrSelection(e);
+    } else if (key === "ArrowUp") {
+      flag = focusPrevious(e);
+    } else if (key === "ArrowDown") {
+      flag = focusNext(e);
+    } else if (key === "ArrowLeft") {
+      flag = focusParent(e);
+    } else if (key === "ArrowRight") {
+      flag = focusFirstChild(e);
+    } else {
+      flag = false;
+    }
+
+    if (flag === true) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }
+
+  function onBlur() {
+    variables.focused = undefined;
+  }
+
+  const ref = React.useRef<HTMLUListElement>(null);
+
+  return (
+    <ul className="tree-view" ref={ref} tabIndex={0} onKeyDown={action(onKeyDown)} onBlur={action(onBlur)}>
+      {app.paths.map(path => {
+        return <TreeItem key={path.uid} entity={path} variables={props.variables} treeViewRef={ref} />;
+      })}
+    </ul>
   );
 });
 
@@ -454,11 +639,7 @@ const PathTreeAccordionV2 = observer((props: {}) => {
         </Box>
       </AccordionSummary>
       <AccordionDetails>
-        <ul className="tree-view">
-          {app.paths.map(path => {
-            return <TreeItem key={path.uid} entity={path} variables={variables} />;
-          })}
-        </ul>
+        <TreeView variables={variables} />
       </AccordionDetails>
     </Card>
   );
