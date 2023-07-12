@@ -218,6 +218,20 @@ export class MainApp {
     return this.allEntities.map(entity => entity.uid);
   }
 
+  @computed get allNavigableEntities(): PathTreeItem[] {
+    const rtn: PathTreeItem[] = [];
+    for (const path of this.paths) {
+      if (this.isExpanded(path)) rtn.push(...traversal([path]));
+      else rtn.push(path);
+    }
+
+    return rtn;
+  }
+
+  @computed get allNavigableEntityIds() {
+    return this.allNavigableEntities.map(entity => entity.uid);
+  }
+
   @computed get expandedEntityIds(): string[] {
     return this.expanded.slice(); // ALGO: Return a copy
   }
