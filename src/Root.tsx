@@ -7,7 +7,6 @@ import { ThemeProvider } from "@mui/material/styles";
 import { Box, Card } from "@mui/material";
 import { useCustomHotkeys, useDragDropFile, useUnsavedChangesPrompt } from "./core/Util";
 import { MenuAccordion } from "./app/MenuAccordion";
-import { PathTreeAccordion } from "./app/PathTreeAccordion";
 import { GeneralConfigAccordion } from "./app/GeneralConfigAccordion";
 import { PathConfigAccordion } from "./app/PathAccordion";
 import { ControlAccordion } from "./app/ControlAccordion";
@@ -112,11 +111,6 @@ const Root = observer(() => {
       key={app.format.uid + "-" + app.gc.uol}>
       <ThemeProvider theme={appPreferences.theme.theme}>
         <NoticeProvider />
-        {/* <Box id="left-editor-panel">
-          <MenuAccordion />
-          <PathTreeAccordion />
-        </Box> */}
-
         <Box id="left-editor-panel">
           <MenuAccordion />
           <PathTreeAccordionV2 />
