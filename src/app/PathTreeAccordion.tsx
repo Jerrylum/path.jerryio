@@ -85,6 +85,34 @@ function touchItem(
   variables.focused = entity;
 }
 
+function moveItem(variables: PathTreeVariables, dropTo: PathTreeItem, draggingEntityId: string) {
+  const { app } = getAppStores();
+
+  const dropToIdx = app.allEntities.indexOf(dropTo);
+  const allowDrop = variables.isAllowDrop(dropTo);
+
+  if (allowDrop === false) return;
+  if (variables.dragging === undefined) return;
+  if (draggingEntityId !== variables.dragging.entity.uid) return;
+
+  const moving = variables.dragging.entity;
+  if (moving instanceof Path) {
+    if (dropTo instanceof Path === false) return;
+
+    const fromIdx = app.paths.indexOf(moving);
+    const toIdx = app.paths.indexOf(dropTo as Path); // ALGO: Can be used directly, because the path is removed from the array before inserting it back
+    variables.dragging = undefined; // ALGO: import to set to undefined before executing the command, because the command will trigger a re-render
+
+    app.history.execute(`Move path ${moving.uid}`, new MovePath(app.paths, fromIdx, toIdx));
+  } else {
+    const fromIdx = variables.dragging.idx;
+    const toIdx = dropToIdx;
+    variables.dragging = undefined; // ALGO: import to set to undefined before executing the command, because the command will trigger a re-render
+
+    app.history.execute(`Move end control ${moving.uid}`, new MoveEndControl(app.allEntities, fromIdx, toIdx));
+  }
+}
+
 class PathTreeVariables {
   // UX: Arrow keys
   focused: PathTreeItem | undefined = undefined;
@@ -261,27 +289,7 @@ const TreeItem = observer((props: TreeItemProps) => {
   function onDrop(event: React.DragEvent<HTMLLIElement>) {
     event.stopPropagation();
     event.preventDefault();
-    if (allowDrop === false) return;
-    if (variables.dragging === undefined) return;
-    const isEntityDragging = event.dataTransfer.getData("application/path-dot-jerryio-entity-uid");
-    if (isEntityDragging !== variables.dragging.entity.uid) return;
-
-    const moving = variables.dragging.entity;
-    if (moving instanceof Path) {
-      if (entity instanceof Path === false) return;
-
-      const fromIdx = app.paths.indexOf(moving);
-      const toIdx = app.paths.indexOf(entity as Path); // ALGO: Can be used directly, because the path is removed from the array before inserting it back
-      variables.dragging = undefined; // ALGO: import to set to undefined before executing the command, because the command will trigger a re-render
-
-      app.history.execute(`Move path ${moving.uid}`, new MovePath(app.paths, fromIdx, toIdx));
-    } else {
-      const fromIdx = variables.dragging.idx;
-      const toIdx = entityIdx;
-      variables.dragging = undefined; // ALGO: import to set to undefined before executing the command, because the command will trigger a re-render
-
-      app.history.execute(`Move end control ${moving.uid}`, new MoveEndControl(app.allEntities, fromIdx, toIdx));
-    }
+    moveItem(variables, entity, event.dataTransfer.getData("application/path-dot-jerryio-entity-uid"));
   }
 
   function onExpandIconClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -574,10 +582,36 @@ const TreeView = observer((props: { variables: PathTreeVariables }) => {
     variables.focused = undefined;
   }
 
+  function onDrop(event: React.DragEvent<HTMLUListElement>) {
+    event.stopPropagation();
+    event.preventDefault();
+    const entities = app.allEntities; // UX: It is acceptable to drop an entity to the end of the last path
+    if (entities.length === 0) return;
+
+    // ALGO: Find the last entity that is allowed to drop
+    let entity: PathTreeItem | undefined;
+    for (let i = entities.length - 1; i >= 0; i--) {
+      const e = entities[i];
+      if (variables.isAllowDrop(e)) {
+        entity = e;
+        break;
+      }
+    }
+
+    if (entity === undefined) return;
+    moveItem(variables, entity, event.dataTransfer.getData("application/path-dot-jerryio-entity-uid"));
+  }
+
   const ref = React.useRef<HTMLUListElement>(null);
 
   return (
-    <ul className="tree-view" ref={ref} tabIndex={0} onKeyDown={action(onKeyDown)} onBlur={action(onBlur)}>
+    <ul
+      className="tree-view"
+      ref={ref}
+      tabIndex={0}
+      onKeyDown={action(onKeyDown)}
+      onBlur={action(onBlur)}
+      onDrop={action(onDrop)}>
       {app.paths.map(path => {
         return <TreeItem key={path.uid} entity={path} variables={props.variables} treeViewRef={ref} />;
       })}
