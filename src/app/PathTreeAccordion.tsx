@@ -585,7 +585,7 @@ const TreeView = observer((props: { variables: PathTreeVariables }) => {
   );
 });
 
-const PathTreeAccordionV2 = observer((props: {}) => {
+const PathTreeAccordion = observer((props: {}) => {
   const { app } = useAppStores();
 
   function onAddPathClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
@@ -645,5 +645,5 @@ const PathTreeAccordionV2 = observer((props: {}) => {
   );
 });
 
-export { PathTreeAccordionV2 };
+export { PathTreeAccordion };
 

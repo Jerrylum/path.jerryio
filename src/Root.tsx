@@ -23,7 +23,7 @@ import { PreferencesDialog } from "./app/Preferences";
 import { DragDropBackdrop } from "./app/DragDropBackdrop";
 import { RemovePathsAndEndControls } from "./core/Command";
 import React from "react";
-import { PathTreeAccordionV2 } from "./app/PathTreeAccordionV2";
+import { PathTreeAccordion } from "./app/PathTreeAccordion";
 
 const Root = observer(() => {
   const { app, confirmation, help, appPreferences } = useAppStores();
@@ -113,7 +113,7 @@ const Root = observer(() => {
         <NoticeProvider />
         <Box id="left-editor-panel">
           <MenuAccordion />
-          <PathTreeAccordionV2 />
+          <PathTreeAccordion />
         </Box>
 
         <Box id="middle-panel" className={app.view.showSpeedCanvas ? "" : "full-height"}>
