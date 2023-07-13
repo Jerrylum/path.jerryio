@@ -101,13 +101,13 @@ function moveItem(variables: PathTreeVariables, dropTo: PathTreeItem, draggingEn
 
     const fromIdx = app.paths.indexOf(moving);
     const toIdx = app.paths.indexOf(dropTo as Path); // ALGO: Can be used directly, because the path is removed from the array before inserting it back
-    variables.dragging = undefined; // ALGO: import to set to undefined before executing the command, because the command will trigger a re-render
+    variables.dragging = undefined; // IMPORTANT: Set to undefined before executing the command, because the command will trigger a re-render
 
     app.history.execute(`Move path ${moving.uid}`, new MovePath(app.paths, fromIdx, toIdx));
   } else {
     const fromIdx = variables.dragging.idx;
     const toIdx = dropToIdx;
-    variables.dragging = undefined; // ALGO: import to set to undefined before executing the command, because the command will trigger a re-render
+    variables.dragging = undefined; // IMPORTANT: Set to undefined before executing the command, because the command will trigger a re-render
 
     app.history.execute(`Move end control ${moving.uid}`, new MoveEndControl(app.allEntities, fromIdx, toIdx));
   }
