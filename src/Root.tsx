@@ -26,7 +26,7 @@ import React from "react";
 import { PathTreeAccordion } from "./app/PathTreeAccordion";
 
 const Root = observer(() => {
-  const { app, confirmation, help, appPreferences } = useAppStores();
+  const { app, confirmation, help, appPreferences, clipboard } = useAppStores();
 
   const isUsingEditor = !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen;
   const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(
@@ -49,6 +49,8 @@ const Root = observer(() => {
   useCustomHotkeys("Ctrl+D", onDownload.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+Shift+D", onDownloadAs.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+Comma", () => appPreferences.open(), optionsToEnableHotkeys);
+  useCustomHotkeys("Ctrl+C", () => clipboard.copy(), optionsToEnableHotkeys);
+  useCustomHotkeys("Ctrl+V", () => clipboard.paste(), optionsToEnableHotkeys);
 
   useCustomHotkeys("Ctrl+Z", () => app.history.undo(), optionsToEnableHotkeys);
   useCustomHotkeys("Ctrl+Y,Ctrl+Shift+Z", () => app.history.redo(), optionsToEnableHotkeys);

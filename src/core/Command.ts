@@ -263,15 +263,15 @@ export class UpdateProperties<TTarget> extends UpdateInstancesProperties<TTarget
   }
 }
 
-export class UpdatePathTreeItems<TTarget extends PathTreeItem>
-  extends UpdateInstancesProperties<TTarget>
+export class UpdatePathTreeItems
+  extends UpdateInstancesProperties<PathTreeItem>
   implements UpdatePathTreeItemsCommand
 {
-  constructor(protected targets: TTarget[], protected newValues: Partial<TTarget>) {
+  constructor(protected targets: PathTreeItem[], protected newValues: Partial<PathTreeItem>) {
     super(targets, newValues);
   }
 
-  get updatedItems(): readonly TTarget[] {
+  get updatedItems(): readonly PathTreeItem[] {
     return this.targets.slice();
   }
 }
