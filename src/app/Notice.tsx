@@ -16,6 +16,11 @@ export function enqueueSuccessSnackbar(logger: Logger, message: string, autoHide
   return enqueueSnackbar(message, { variant: "success", autoHideDuration });
 }
 
+export function enqueueInfoSnackbar(logger: Logger, message: string, autoHideDuration: number | null = 2000) {
+  logger.log(message);
+  return enqueueSnackbar(message, { variant: "info", autoHideDuration });
+}
+
 export function enqueueErrorSnackbar(logger: Logger, err: unknown, autoHideDuration: number | null = 2000) {
   const errMsg = err instanceof Error ? err.message : err + "";
   logger.error(errMsg);
@@ -33,3 +38,4 @@ export function NoticeProvider() {
     />
   );
 }
+
