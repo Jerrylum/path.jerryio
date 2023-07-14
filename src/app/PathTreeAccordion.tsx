@@ -15,7 +15,7 @@ import { observer } from "mobx-react-lite";
 import { Segment, EndPointControl, Path, Control, PathTreeItem } from "../core/Path";
 import {
   AddPath,
-  MoveEndControl,
+  MovePathTreeItem,
   MovePath,
   RemovePathsAndEndControls,
   UpdatePathTreeItems,
@@ -109,7 +109,7 @@ function moveItem(variables: PathTreeVariables, dropTo: PathTreeItem, draggingEn
     const toIdx = dropToIdx;
     variables.dragging = undefined; // IMPORTANT: Set to undefined before executing the command, because the command will trigger a re-render
 
-    app.history.execute(`Move end control ${moving.uid}`, new MoveEndControl(app.allEntities, fromIdx, toIdx));
+    app.history.execute(`Move path tree item ${moving.uid}`, new MovePathTreeItem(app.allEntities, fromIdx, toIdx));
   }
 }
 

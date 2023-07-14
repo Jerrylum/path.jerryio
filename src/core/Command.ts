@@ -820,7 +820,7 @@ export class MovePath implements CancellableCommand, UpdatePathTreeItemsCommand 
   }
 }
 
-export class MoveEndControl implements CancellableCommand, UpdatePathTreeItemsCommand, RemovePathTreeItemsCommand {
+export class MovePathTreeItem implements CancellableCommand, UpdatePathTreeItemsCommand, RemovePathTreeItemsCommand {
   protected _entities: PathTreeItem[] = [];
   protected moving: PathTreeItem | undefined;
   protected original: PathTreeItem[];
