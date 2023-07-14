@@ -664,6 +664,9 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
 
   /**
    * Remove paths and end controls in the entities list
+   *
+   * Compared to RemovePathTreeItems, it usually remove all related segments
+   *
    * @param paths all paths in the editor
    * @param entities entities to remove
    */
