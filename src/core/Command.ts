@@ -264,10 +264,7 @@ export class UpdateProperties<TTarget> extends UpdateInstancesProperties<TTarget
   }
 }
 
-export class UpdatePathTreeItems
-  extends UpdateInstancesProperties<PathTreeItem>
-  implements UpdatePathTreeItemsCommand
-{
+export class UpdatePathTreeItems extends UpdateInstancesProperties<PathTreeItem> implements UpdatePathTreeItemsCommand {
   constructor(protected targets: PathTreeItem[], protected newValues: Partial<PathTreeItem>) {
     super(targets, newValues);
   }
@@ -876,14 +873,14 @@ export class MoveEndControl implements CancellableCommand, UpdatePathTreeItemsCo
 
 export class InsertPaths implements CancellableCommand, AddPathTreeItemsCommand {
   protected _entities: PathTreeItem[];
-  
+
   constructor(protected paths: Path[], protected idx: number, protected inserting: Path[]) {
     this._entities = traversal(inserting);
   }
 
   execute(): boolean | void {
     if (!this.isValid) return false;
-    
+
     this.paths.splice(this.idx, 0, ...this.inserting);
   }
 
@@ -896,10 +893,8 @@ export class InsertPaths implements CancellableCommand, AddPathTreeItemsCommand 
   }
 
   get isValid() {
-    return (
-      this.idx >= 0 &&
-      this.idx < this.paths.length + 1 // ALGO: + 1 to index at the end
-    );
+    // ALGO: + 1 to index at the end
+    return this.idx >= 0 && this.idx < this.paths.length + 1;
   }
 
   get addedItems() {
@@ -912,7 +907,11 @@ export class InsertControls implements CancellableCommand, AddPathTreeItemsComma
   protected original: PathTreeItem[];
   protected modified: PathTreeItem[];
 
-  constructor(protected allEntities: PathTreeItem[], protected idx: number, protected inserting: (Control | EndPointControl)[]) {
+  constructor(
+    protected allEntities: PathTreeItem[],
+    protected idx: number,
+    protected inserting: (Control | EndPointControl)[]
+  ) {
     this.original = this.allEntities.slice();
     this.modified = this.allEntities.slice();
   }
@@ -1001,3 +1000,4 @@ export class RemovePathTreeItems implements CancellableCommand, RemovePathTreeIt
     return this._entities;
   }
 }
+
