@@ -973,3 +973,45 @@ export class InsertControls implements CancellableCommand, AddPathTreeItemsComma
     return this._entities;
   }
 }
+
+export class RemovePathTreeItems implements CancellableCommand, RemovePathTreeItemsCommand {
+  protected _entities: PathTreeItem[] = [];
+
+  protected original: PathTreeItem[];
+  protected modified: PathTreeItem[];
+
+  constructor(protected paths: Path[], protected removal: PathTreeItem[]) {
+    this.original = traversal(this.paths);
+
+    const existingPaths = this.paths.filter(p => removal.includes(p) === false);
+
+    this.modified = traversal(existingPaths).filter(i => removal.includes(i) === false);
+  }
+
+  execute(): boolean {
+    if (!this.isValid) return false;
+
+    const removed = construct(this.modified);
+    if (removed === undefined) return false;
+
+    this._entities = [...removed, ...this.removal];
+
+    return true;
+  }
+
+  undo(): void {
+    construct(this.original);
+  }
+
+  redo(): void {
+    construct(this.modified);
+  }
+
+  get isValid() {
+    return this.original.length !== this.modified.length;
+  }
+
+  get removedItems(): readonly PathTreeItem[] {
+    return this._entities;
+  }
+}
