@@ -36,7 +36,7 @@ const CustomMenuItem = observer(
 );
 
 const MenuAccordion = observer((props: {}) => {
-  const { app, confirmation, help, appPreferences } = useAppStores();
+  const { app, confirmation, help, appPreferences, clipboard } = useAppStores();
 
   const [isOpenFileMenu, setIsOpenFileMenu] = React.useState(false);
   const [isOpenEditMenu, setIsOpenEditMenu] = React.useState(false);
@@ -159,6 +159,24 @@ const MenuAccordion = observer((props: {}) => {
           onClick={onMenuClick(() => app.history.redo())}
         />
         <Divider />
+        <CustomMenuItem
+          done={false}
+          text="Cut"
+          hotkey={useKeyName("Ctrl+X")}
+          onClick={onMenuClick(() => clipboard.cut())}
+        />
+        <CustomMenuItem
+          done={false}
+          text="Copy"
+          hotkey={useKeyName("Ctrl+C")}
+          onClick={onMenuClick(() => clipboard.copy())}
+        />
+        <CustomMenuItem
+          done={false}
+          text="Paste"
+          hotkey={useKeyName("Ctrl+V")}
+          onClick={onMenuClick(() => clipboard.paste())}
+        />
         <CustomMenuItem
           done={false}
           text="Delete"

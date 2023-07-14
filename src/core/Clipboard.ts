@@ -7,7 +7,7 @@ import { UnitConverter, UnitOfLength } from "./Unit";
 import { instanceToPlain, plainToClassFromExist, plainToInstance } from "class-transformer";
 import { makeId } from "./Util";
 import DOMPurify from "dompurify";
-import { AddPath, InsertControls, InsertPaths } from "./Command";
+import { AddPath, InsertControls, InsertPaths, RemovePathTreeItems } from "./Command";
 
 const logger = Logger("Clipboard");
 
@@ -43,58 +43,69 @@ export class AppClipboard {
   private message: CopyPathsMessage | CopyControlsMessage | undefined;
   private items: Path[] | (Control | EndPointControl)[] | undefined;
 
-  public copy() {
+  public cut(): boolean {
+    const { app } = getAppStores();
+
+    if (this.copy() === false || this.items === undefined) return false;
+
+    app.history.execute(`Cut ${this.items.length} path tree items`, new RemovePathTreeItems(app.paths, this.items));
+
+    return true;
+  }
+
+  public copy(): boolean {
     const { app } = getAppStores();
 
     const selected = app.selectedEntities;
-    if (selected.length === 0) return;
+    if (selected.length === 0) return false;
 
     let message: CopyPathsMessage | CopyControlsMessage;
 
     if (selected[0] instanceof Path) {
       if (selected.find(e => e instanceof Path === false)) {
         enqueueInfoSnackbar(logger, "Copying controls and paths together is not supported");
-        return;
+        return false;
       }
 
       this.items = selected as Path[];
-      message = {
+      this.message = message = {
         type: "COPY_PATHS",
         format: app.format.getName(),
         uol: app.gc.uol,
         paths: instanceToPlain(this.items)
       } as CopyPathsMessage;
-      this.message = message;
     } else {
       if (selected.find(e => e instanceof Path)) {
         enqueueInfoSnackbar(logger, "Copying controls and paths together is not supported");
-        return;
+        return false;
       }
 
       this.items = selected as (Control | EndPointControl)[];
-      message = {
+      this.message = message = {
         type: "COPY_CONTROLS",
         format: app.format.getName(),
         uol: app.gc.uol,
         controls: instanceToPlain(this.items)
       } as CopyControlsMessage;
-      this.message = message;
     }
     this.broadcastChannel?.postMessage(message);
+
+    return true;
   }
 
-  public paste() {
+  public paste(): boolean {
     const { app } = getAppStores();
     const purify = DOMPurify();
 
-    if (this.message === undefined) return;
-    if (this.message.format !== app.format.getName()) return;
+    if (this.message === undefined) return false;
 
     const oldUOL = this.message.uol;
     const newUOL = app.gc.uol;
     const uc = new UnitConverter(oldUOL, newUOL);
 
     if (isCopyPathMessage(this.message)) {
+      if (this.message.format !== app.format.getName()) return false;
+
       const paths = plainToInstance(Path, this.message.paths);
       for (const path of paths) {
         path.uid = makeId(10);
@@ -150,6 +161,8 @@ export class AppClipboard {
       app.history.execute(`Paste ${controls.length} controls`, new InsertControls(entities, idx, controls));
       app.setSelected(controls.slice());
     }
+
+    return true;
   }
 
   private createBroadcastChannel() {

@@ -49,6 +49,7 @@ const Root = observer(() => {
   useCustomHotkeys("Ctrl+D", onDownload.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+Shift+D", onDownloadAs.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Ctrl+Comma", () => appPreferences.open(), optionsToEnableHotkeys);
+  useCustomHotkeys("Ctrl+X", () => clipboard.cut(), optionsToEnableHotkeys);
   useCustomHotkeys("Ctrl+C", () => clipboard.copy(), optionsToEnableHotkeys);
   useCustomHotkeys("Ctrl+V", () => clipboard.paste(), optionsToEnableHotkeys);
 
