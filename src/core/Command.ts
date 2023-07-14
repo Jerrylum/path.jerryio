@@ -965,15 +965,19 @@ export class AddPath extends InsertPaths {
 export class RemovePathTreeItems implements CancellableCommand, RemovePathTreeItemsCommand {
   protected _entities: PathTreeItem[] = [];
 
+  protected originalPaths: Path[];
   protected original: PathTreeItem[];
+  protected existingPaths: Path[];
   protected modified: PathTreeItem[];
 
   constructor(protected paths: Path[], protected removal: PathTreeItem[]) {
+    this.originalPaths = this.paths.slice();
+
     this.original = traversal(this.paths);
 
-    const existingPaths = this.paths.filter(p => removal.includes(p) === false);
+    this.existingPaths = this.paths.filter(p => removal.includes(p) === false);
 
-    this.modified = traversal(existingPaths).filter(i => removal.includes(i) === false);
+    this.modified = traversal(this.existingPaths).filter(i => removal.includes(i) === false);
   }
 
   execute(): boolean {
@@ -982,6 +986,7 @@ export class RemovePathTreeItems implements CancellableCommand, RemovePathTreeIt
     const removed = construct(this.modified);
     if (removed === undefined) return false;
 
+    this.paths.splice(0, this.paths.length, ...this.existingPaths);
     this._entities = [...removed, ...this.removal];
 
     return true;
@@ -989,10 +994,12 @@ export class RemovePathTreeItems implements CancellableCommand, RemovePathTreeIt
 
   undo(): void {
     construct(this.original);
+    this.paths.splice(0, this.paths.length, ...this.originalPaths);
   }
 
   redo(): void {
     construct(this.modified);
+    this.paths.splice(0, this.paths.length, ...this.existingPaths);
   }
 
   get isValid() {
