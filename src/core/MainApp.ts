@@ -21,6 +21,7 @@ import { Logger } from "./Logger";
 import { onLatestVersionChange } from "./Versioning";
 import { enqueueSuccessSnackbar } from "../app/Notice";
 import * as SWR from "./ServiceWorkerRegistration";
+import { AppClipboard } from "./Clipboard";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
@@ -259,7 +260,7 @@ export class MainApp {
 
     // ALGO: Return the first selected path if: some paths are selected
     let rtn = this.paths.find(path => this.isSelected(path));
-    // ALGO: Return the first selected control point's path if: some control point is selected, the path visible and not locked
+    // ALGO: Return the first selected control point's path
     if (rtn === undefined) rtn = this.paths.find(path => path.controls.some(control => this.isSelected(control)));
 
     return rtn;
@@ -429,6 +430,7 @@ export interface AppStores {
   help: Help;
   appPreferences: Preferences;
   ga: GoogleAnalytics;
+  clipboard: AppClipboard;
 }
 
 const appStores: AppStores = {
@@ -436,7 +438,8 @@ const appStores: AppStores = {
   confirmation: new Confirmation(),
   help: new Help(),
   appPreferences: new Preferences(),
-  ga: new GoogleAnalytics()
+  ga: new GoogleAnalytics(),
+  clipboard: new AppClipboard()
 };
 
 export function getAppStores(): AppStores {
