@@ -323,8 +323,8 @@ export class Path implements InteractiveEntity, InteractiveEntityParent {
     return this.pc.format.getPathPoints(this);
   }
 
-  constructor(pc: PathConfig, firstSegment: Segment) {
-    this.segments = [firstSegment];
+  constructor(pc: PathConfig, ...segments: Segment[]) {
+    this.segments = segments;
     this.pc = pc;
     this.uid = makeId(10);
     makeAutoObservable(this);
