@@ -652,26 +652,6 @@ export class RemoveKeyframe implements CancellableCommand {
   }
 }
 
-export class AddPath implements CancellableCommand, AddPathTreeItemsCommand {
-  constructor(protected paths: Path[], protected path: Path) {}
-
-  execute(): void {
-    this.paths.push(this.path);
-  }
-
-  undo(): void {
-    this.paths.splice(this.paths.indexOf(this.path), 1);
-  }
-
-  redo(): void {
-    this.paths.push(this.path);
-  }
-
-  get addedItems(): readonly PathTreeItem[] {
-    return [this.path, ...this.path.controls];
-  }
-}
-
 export class RemovePathsAndEndControls implements CancellableCommand, RemovePathTreeItemsCommand {
   protected _entities: PathTreeItem[] = [];
 
@@ -971,6 +951,12 @@ export class InsertControls implements CancellableCommand, AddPathTreeItemsComma
 
   get removedItems() {
     return this._entities;
+  }
+}
+
+export class AddPath extends InsertPaths {
+  constructor(protected paths: Path[], protected path: Path) {
+    super(paths, paths.length, [path]);
   }
 }
 
