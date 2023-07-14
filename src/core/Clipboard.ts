@@ -61,12 +61,13 @@ export class AppClipboard {
 
     let message: CopyPathsMessage | CopyControlsMessage;
 
-    if (selected[0] instanceof Path) {
-      if (selected.find(e => e instanceof Path === false)) {
-        enqueueInfoSnackbar(logger, "Copying controls and paths together is not supported");
-        return false;
-      }
+    const isCopyPaths = selected[0] instanceof Path;
+    if (selected.some(e => e instanceof Path !== isCopyPaths)) {
+      enqueueInfoSnackbar(logger, "Copying controls and paths together is not supported");
+      return false;
+    }
 
+    if (isCopyPaths) {
       this.items = selected as Path[];
       this.message = message = {
         type: "COPY_PATHS",
@@ -75,11 +76,6 @@ export class AppClipboard {
         paths: instanceToPlain(this.items)
       } as CopyPathsMessage;
     } else {
-      if (selected.find(e => e instanceof Path)) {
-        enqueueInfoSnackbar(logger, "Copying controls and paths together is not supported");
-        return false;
-      }
-
       this.items = selected as (Control | EndPointControl)[];
       this.message = message = {
         type: "COPY_CONTROLS",
