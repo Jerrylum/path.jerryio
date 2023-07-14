@@ -893,3 +893,78 @@ export class MoveEndControl implements CancellableCommand, UpdatePathTreeItemsCo
   }
 }
 
+export class InsertPaths implements CancellableCommand, AddPathTreeItemsCommand {
+  constructor(protected paths: Path[], protected idx: number, protected inserting: Path[]) {}
+
+  execute(): boolean | void {
+    if (!this.isValid) return false;
+    
+    this.paths.splice(this.idx, 0, ...this.inserting);
+  }
+
+  undo(): void {
+    this.paths.splice(this.idx, this.inserting.length);
+  }
+
+  redo(): void {
+    this.execute();
+  }
+
+  get isValid() {
+    return (
+      this.idx >= 0 &&
+      this.idx < this.paths.length + 1 // ALGO: + 1 to index at the end
+    );
+  }
+
+  get addedItems() {
+    return this.inserting;
+  }
+}
+
+export class InsertControls implements CancellableCommand, AddPathTreeItemsCommand, RemovePathTreeItemsCommand {
+  protected _entities: PathTreeItem[] = [];
+  protected original: PathTreeItem[];
+  protected modified: PathTreeItem[];
+
+  constructor(protected allEntities: PathTreeItem[], protected idx: number, protected inserting: (Control | EndPointControl)[]) {
+    this.original = this.allEntities.slice();
+    this.modified = this.allEntities.slice();
+  }
+
+  execute(): boolean {
+    if (!this.isValid) return false;
+
+    this.modified.splice(this.idx, 0, ...this.inserting);
+
+    const removed = construct(this.modified);
+    if (removed === undefined) return false;
+
+    this._entities = removed;
+
+    return true;
+  }
+
+  undo(): void {
+    construct(this.original);
+  }
+
+  redo(): void {
+    construct(this.modified);
+  }
+
+  get isValid() {
+    return (
+      this.idx >= 1 && // ALGO: Index 0 is likely to be invalid
+      this.idx < this.allEntities.length + 1 // ALGO: + 1 to index at the end
+    );
+  }
+
+  get addedItems() {
+    return this.inserting;
+  }
+
+  get removedItems() {
+    return this._entities;
+  }
+}
