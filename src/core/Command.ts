@@ -10,7 +10,8 @@ import {
   Segment,
   SegmentVariant,
   Vector,
-  construct
+  construct,
+  traversal
 } from "./Path";
 
 const logger = Logger("History");
@@ -894,7 +895,11 @@ export class MoveEndControl implements CancellableCommand, UpdatePathTreeItemsCo
 }
 
 export class InsertPaths implements CancellableCommand, AddPathTreeItemsCommand {
-  constructor(protected paths: Path[], protected idx: number, protected inserting: Path[]) {}
+  protected _entities: PathTreeItem[];
+  
+  constructor(protected paths: Path[], protected idx: number, protected inserting: Path[]) {
+    this._entities = traversal(inserting);
+  }
 
   execute(): boolean | void {
     if (!this.isValid) return false;
@@ -918,7 +923,7 @@ export class InsertPaths implements CancellableCommand, AddPathTreeItemsCommand 
   }
 
   get addedItems() {
-    return this.inserting;
+    return this._entities;
   }
 }
 
