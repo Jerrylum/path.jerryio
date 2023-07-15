@@ -488,7 +488,7 @@ th {
   overflow-x: hidden;
   overflow-y: auto;
   margin: 1vh 0 0;
-  height: calc(100% - 1vh);
+  min-height: calc(100% - 1vh);
 
   .tree-item {
     list-style: none;
