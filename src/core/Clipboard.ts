@@ -110,7 +110,10 @@ export class AppClipboard {
     const uc = new UnitConverter(oldUOL, newUOL);
 
     if (isCopyPathMessage(this.message)) {
-      if (this.message.format !== app.format.getName()) return false; // TODO notice bar
+      if (this.message.format !== app.format.getName()) {
+        enqueueInfoSnackbar(logger, "Pasting data in other format is not supported");
+        return false;
+      }
 
       const paths = plainToInstance(Path, this.message.paths);
       for (const path of paths) {
