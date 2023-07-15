@@ -1,4 +1,4 @@
-import { makeAutoObservable, reaction } from "mobx";
+import { makeAutoObservable, makeObservable, action, observable, reaction } from "mobx";
 import { getAppStores } from "./MainApp";
 import { Control, EndPointControl, Path } from "./Path";
 import { Logger } from "./Logger";
@@ -15,18 +15,28 @@ type ClipboardMessageType = "COPY_PATHS" | "COPY_CONTROLS";
 
 interface ClipboardMessage {
   type: ClipboardMessageType;
-  format: string;
-  uol: UnitOfLength;
+}
+
+interface SyncDataMessage {
+  type: "SYNC_DATA";
 }
 
 interface CopyPathsMessage extends ClipboardMessage {
   type: "COPY_PATHS";
+  format: string;
+  uol: UnitOfLength;
   paths: Record<string, any>[];
 }
 
 interface CopyControlsMessage extends ClipboardMessage {
   type: "COPY_CONTROLS";
+  format: string;
+  uol: UnitOfLength;
   controls: Record<string, any>[];
+}
+
+function isSyncDataMessage(data: any): data is SyncDataMessage {
+  return typeof data === "object" && data !== null && data.type === "SYNC_DATA";
 }
 
 function isCopyPathMessage(data: any): data is CopyPathsMessage {
@@ -100,7 +110,7 @@ export class AppClipboard {
     const uc = new UnitConverter(oldUOL, newUOL);
 
     if (isCopyPathMessage(this.message)) {
-      if (this.message.format !== app.format.getName()) return false;
+      if (this.message.format !== app.format.getName()) return false; // TODO notice bar
 
       const paths = plainToInstance(Path, this.message.paths);
       for (const path of paths) {
@@ -167,8 +177,15 @@ export class AppClipboard {
     if (typeof window !== "undefined" && "BroadcastChannel" in window) {
       const channel = new BroadcastChannel("versioning");
       channel.onmessage = event => {
-        if (isCopyPathMessage(event.data)) this.message = event.data;
-        else if (isCopyControlsMessage(event.data)) this.message = event.data;
+        if (isSyncDataMessage(event.data)) {
+          if (this.message !== undefined) {
+            channel.postMessage(this.message);
+          }
+        } else if (isCopyPathMessage(event.data)) {
+          this.message = event.data;
+        } else if (isCopyControlsMessage(event.data)) {
+          this.message = event.data;
+        }
       };
       return channel;
     } else {
@@ -177,9 +194,26 @@ export class AppClipboard {
   }
 
   constructor() {
-    makeAutoObservable(this);
+    makeObservable(this, { cut: action, copy: action, paste: action });
 
+    // Read and write clipboard data to session storage, so that it is preserved when the page is refreshed
+    const clipboardDataInSessionStorage = window.sessionStorage.getItem("clipboard");
+    if (clipboardDataInSessionStorage !== null) {
+      const clipboardData = JSON.parse(clipboardDataInSessionStorage);
+      if (isCopyPathMessage(clipboardData) || isCopyControlsMessage(clipboardData)) {
+        this.message = clipboardData;
+      }
+    }
+
+    window.addEventListener("beforeunload", () => {
+      if (this.message !== undefined) {
+        window.sessionStorage.setItem("clipboard", JSON.stringify(this.message));
+      }
+    });
+
+    // Create broadcast channel to sync clipboard data between tabs
     this.broadcastChannel = this.createBroadcastChannel();
+    this.broadcastChannel?.postMessage({ type: "SYNC_DATA" } as SyncDataMessage);
   }
 }
 
