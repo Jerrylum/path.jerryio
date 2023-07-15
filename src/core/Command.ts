@@ -71,7 +71,7 @@ export class CommandHistory {
       this.lastExecution = undefined;
 
       const { appPreferences } = getAppStores();
-      if (this.history.length > appPreferences.maxHistory) this.history.shift();
+      while (this.history.length > appPreferences.maxHistory) this.history.shift();
     }
   }
 
