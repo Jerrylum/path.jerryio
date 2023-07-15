@@ -19,10 +19,18 @@ export class Preferences {
   constructor() {
     makeAutoObservable(this);
 
+    this.pullFromLocalStorage();
+    window.addEventListener("storage", () => this.pullFromLocalStorage());
+  }
+
+  pullFromLocalStorage() {
+    // Max history
     this.maxHistoryState = parseInt(localStorage.getItem("maxHistory") ?? "50");
 
+    // Is Google Analytics enabled
     this.isGoogleAnalyticsEnabledState = localStorage.getItem("googleAnalyticsEnabled") === "true";
 
+    // Theme
     const themeInStr = localStorage.getItem("theme");
     if (themeInStr === "light") this.themeTypeState = AppTheme.Light;
     else this.themeTypeState = AppTheme.Dark;
