@@ -47,7 +47,7 @@
 }
 
 *::-webkit-scrollbar {
-  width: 0.4rem;
+  width: 6.4px;
 }
 
 *::-webkit-scrollbar-track {
@@ -56,7 +56,7 @@
 
 *:hover::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 0.2rem;
+  border-radius: 3.2px;
 }
 
 body {
@@ -80,17 +80,17 @@ a {
 
 code {
   display: inline-block;
-  padding: 0rem 0.4rem;
-  border-radius: 0.2rem;
+  padding: 0px 6.4px;
+  border-radius: 3.2px;
   font-family: "Roboto Mono", monospace !important;
-  font-size: 0.9rem !important;
+  font-size: 14.4px !important;
 }
 
 blockquote {
   background-color: var(--bg-paper-color);
-  border-left: 0.2rem solid var(--bg-default-color);
-  padding: 0.2rem 0.4rem;
-  margin: 0.2rem 0;
+  border-left: 3.2px solid var(--bg-default-color);
+  padding: 3.2px 6.4px;
+  margin: 3.2px 0;
   font-style: italic;
 }
 
@@ -185,8 +185,8 @@ th {
 #right-editor-panel {
   float: left;
   flex-grow: 1;
-  min-width: 22rem;
-  max-width: 22rem;
+  min-width: 352px;
+  max-width: 352px;
   margin: calc(1vh - 4px);
   margin-bottom: 0;
   border-top: 4px solid var(--bg-body-color);
@@ -200,8 +200,8 @@ th {
 #left-editor-panel {
   float: left;
   flex-grow: 1;
-  min-width: 18rem;
-  max-width: 18rem;
+  min-width: 288px;
+  max-width: 288px;
   margin: calc(1vh - 4px) !important;
   padding-top: 4px;
   font-size: 1.5vh;
@@ -252,7 +252,7 @@ th {
 #main-menu {
   margin-bottom: 2vh !important;
   padding: 1vh;
-  height: calc(10px + 0.8125rem);
+  height: calc(10px + 13px);
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
@@ -262,13 +262,13 @@ th {
     text-transform: none;
     min-width: 32px;
     font-weight: 400;
-    padding: 0.2rem 0.4rem;
+    padding: 3.2px 6.4px;
     line-height: 1;
   }
 }
 
 #path-tree {
-  height: calc(92vh - (10px + 0.8125rem));
+  height: calc(92vh - (10px + 13px));
   position: relative;
 
   .MuiAccordionSummary-root {
@@ -281,7 +281,7 @@ th {
     .icon {
       cursor: pointer;
       padding: 0;
-      margin-left: 0.2rem;
+      margin-left: 3.2px;
     }
   }
 
@@ -289,11 +289,11 @@ th {
     overflow-y: auto;
     position: absolute;
     top: 48px;
-    bottom: 0.1rem;
-    right: 0.1rem;
+    bottom: 1.6px;
+    right: 1.6px;
     left: 0;
     scrollbar-gutter: stable;
-    padding-right: calc(16px - 0.4rem);
+    padding-right: calc(16px - 6.4px);
   }
 
   .tree-node-label:hover > .tree-node-func-icon {
@@ -321,7 +321,7 @@ th {
   padding-left: 4px !important;
 
   svg {
-    height: 1rem;
+    height: 16px;
     margin-right: 4px;
     position: relative;
     top: -1px;
@@ -365,10 +365,10 @@ th {
   outline: none !important;
 
   .confirmation-card {
-    padding: 1rem;
-    min-width: 20rem;
-    max-width: calc(90vw - 4rem);
-    min-height: 6rem;
+    padding: 16px;
+    min-width: 320px;
+    max-width: calc(90vw - 64px);
+    min-height: 96px;
     outline: none !important;
 
     .description-box {
@@ -390,7 +390,7 @@ th {
 
     .button-box {
       display: flex;
-      margin-top: 1rem;
+      margin-top: 16px;
       justify-content: flex-end;
       align-items: flex-end;
       gap: 1vh;
@@ -409,37 +409,37 @@ th {
   outline: none !important;
 
   .help-welcome-page {
-    padding: 1rem;
-    width: 48rem;
-    max-width: calc(90vw - 4rem);
-    min-height: 6rem;
+    padding: 16px;
+    width: 768px;
+    max-width: calc(90vw - 64px);
+    min-height: 96px;
     outline: none !important;
     height: 80vh;
     overflow-y: auto;
 
     .logo {
       margin: auto;
-      width: 8rem;
+      width: 128px;
       display: block;
     }
   }
 
   .help-about-page {
-    padding: 2rem;
-    width: 32rem;
-    max-width: calc(90vw - 4rem);
-    min-height: 6rem;
+    padding: 32px;
+    width: 512px;
+    max-width: calc(90vw - 64px);
+    min-height: 96px;
     outline: none !important;
 
     > img {
       margin: auto;
-      width: 8rem;
+      width: 128px;
       display: block;
     }
 
     a {
       display: inline-block;
-      margin: 0 0.5rem;
+      margin: 0 8px;
     }
   }
 }
@@ -451,10 +451,10 @@ th {
   outline: none !important;
 
   .preferences-card {
-    padding: 1rem;
-    width: 32rem;
-    max-width: calc(90vw - 4rem);
-    min-height: 6rem;
+    padding: 16px;
+    width: 512px;
+    max-width: calc(90vw - 64px);
+    min-height: 96px;
     outline: none !important;
 
     hr {
@@ -528,7 +528,7 @@ th {
         position: relative;
         font-family: "Roboto", "Helvetica", "Arial", sans-serif;
         font-weight: 400;
-        font-size: 1rem;
+        font-size: 16px;
         line-height: 1.5;
         height: 1.5em;
         letter-spacing: 0.00938em;
