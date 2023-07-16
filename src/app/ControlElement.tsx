@@ -1,6 +1,6 @@
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Control, EndPointControl, Vector } from "../core/Path";
+import { Control, EndPointControl, Path, Vector } from "../core/Path";
 import Konva from "konva";
 import { Circle, Line } from "react-konva";
 import { useState } from "react";
@@ -11,6 +11,49 @@ import { useAppStores } from "../core/MainApp";
 export interface ControlElementProps extends SegmentElementProps {
   cp: EndPointControl | Control;
   isGrabAndMove: boolean;
+}
+
+function getFollowersAndReferences(
+  paths: Path[],
+  target: EndPointControl | Control,
+  selected: string[],
+  includeControl: boolean
+): [Control[], Control[]] {
+  const followers: Control[] = [];
+  const references: Control[] = [];
+  for (let path of paths) {
+    for (let control of path.controls) {
+      if (control === target) continue;
+      if (control.visible === false || path.visible === false) continue;
+      if (
+        (!(control instanceof EndPointControl) && !includeControl) ||
+        !selected.includes(control.uid) ||
+        control.lock ||
+        path.lock
+      ) {
+        references.push(control);
+      } else {
+        followers.push(control);
+      }
+    }
+  }
+
+  return [followers, references];
+}
+
+function getSiblingControls(path: Path, target: EndPointControl): Control[] {
+  const controls = path.controls;
+  const idx = controls.indexOf(target);
+  if (idx === -1) return [];
+  
+  const prev: EndPointControl | Control | undefined = controls[idx - 1];
+  const next: EndPointControl | Control | undefined = controls[idx + 1];
+  
+  const siblingControls: Control[] = [];
+  if (prev instanceof Control && prev instanceof EndPointControl === false) siblingControls.push(prev);
+  if (next instanceof Control && next instanceof EndPointControl === false) siblingControls.push(next);
+
+  return siblingControls;
 }
 
 const ControlElement = observer((props: ControlElementProps) => {
@@ -78,7 +121,7 @@ const ControlElement = observer((props: ControlElementProps) => {
     if (props.cp.lock || props.path.lock) {
       evt.preventDefault();
 
-      const cpInUOL = props.cp.toVector() // ALGO: Use toVector for better performance
+      const cpInUOL = props.cp.toVector(); // ALGO: Use toVector for better performance
       const cpInPx = props.fcc.toPx(cpInUOL);
 
       // UX: Set the position of the control point back to the original position
@@ -96,50 +139,22 @@ const ControlElement = observer((props: ControlElementProps) => {
     // first set the position of the control point so we can calculate the position of the follower control points
     props.cp.setXY(cpInUOL);
 
-    // UX: CP 1 should follow CP 0, CP 2 should follow CP 3
-    const isMainControl = props.cp instanceof EndPointControl;
-    const shouldControlFollow = !evt.ctrlKey;
-    const index = props.path.segments.indexOf(props.segment);
-    const isLastOne = index + 1 === props.path.segments.length;
-    const isCurve = props.segment.controls.length === 4;
-    const isFirstCp = props.segment.first === props.cp;
+    const isControlFollow = !evt.ctrlKey;
 
-    const followers: Control[] = [];
-    const others: Control[] = [];
-    for (let path of app.paths) {
-      for (let control of path.controls) {
-        if (control === props.cp) continue;
-        if (control.visible === false || path.visible === false) continue;
-        if (
-          (!(control instanceof EndPointControl) && !shouldControlFollow) ||
-          !app.isSelected(control) ||
-          control.lock ||
-          path.lock
-        ) {
-          others.push(control);
-        } else {
-          followers.push(control);
-        }
-      }
-    }
+    const [followers, references] = getFollowersAndReferences(
+      app.paths,
+      props.cp,
+      app.selectedEntityIds,
+      isControlFollow
+    );
 
-    if (isMainControl && shouldControlFollow) {
-      if (isCurve) {
-        const control = isFirstCp ? props.segment.controls[1] : props.segment.controls[2];
-        if (control.visible && !control.lock) {
-          app.select(control);
-          if (!followers.includes(control)) followers.push(control);
-        }
-      }
-
-      const nextSegment = props.path.segments[index + 1];
-      if (!isLastOne && !isFirstCp && nextSegment !== undefined && nextSegment.controls.length === 4) {
-        const control = nextSegment.controls[1];
-        if (control.visible && !control.lock) {
-          app.select(control);
-          if (!followers.includes(control)) followers.push(control);
-        }
-      }
+    if (props.cp instanceof EndPointControl && isControlFollow) {
+      getSiblingControls(props.path, props.cp)
+        .filter(cp => cp.visible && !cp.lock)
+        .forEach(cp => {
+          app.select(cp);
+          if (!followers.includes(cp)) followers.push(cp);
+        });
     }
 
     if (evt.shiftKey) {
@@ -149,10 +164,10 @@ const ControlElement = observer((props: ControlElementProps) => {
       let magnetYDistance = Infinity;
 
       // align to old control points
-      others.push(posBeforeDrag.add(new Control(1000, 0)));
-      others.push(posBeforeDrag.add(new Control(0, 1000)));
+      references.push(posBeforeDrag.add(new Control(1000, 0)));
+      references.push(posBeforeDrag.add(new Control(0, 1000)));
 
-      for (let cp of others) {
+      for (let cp of references) {
         let distance = cp.distance(cpInUOL);
         if (Math.abs(cp.x - cpInUOL.x) < app.gc.controlMagnetDistance && distance < magnetXDistance) {
           magnetX = cp.x;
