@@ -504,3 +504,65 @@ export function toDerivativeHeading(original: number, target: number) {
 
   return delta > half ? high - delta : -delta;
 }
+
+export function fromDegreeToRadian(degree: number) {
+  return (degree * Math.PI) / 180;
+}
+
+export function fromRadiansToDegree(radians: number) {
+  return (radians * 180) / Math.PI;
+}
+
+export function fromHeadingInDegreeToAngleInRadian(heading: number) {
+  // heading starts from north (y+axis) and increases clockwise in [0, 360)
+  // angle starts from east (x+axis) and increases counter-clockwise in (-180, 180]
+  const intermediate = 90 - heading;
+  const angle = intermediate <= -180 ? intermediate + 360 : intermediate;
+  return fromDegreeToRadian(angle);
+}
+
+/**
+ * In a 2D coordinate system, y axis increases by north, x axis increases by east, heading in degree starting from 
+ * north (y+axis) and increasing clockwise:
+ * 
+ * Given a point A, a direction B in degree, a point C.
+ * Define line D in direction B through point A and point E.
+ * Find point E, which is the closet point to point C.
+ * 
+ * @param a The vector A
+ * @param directionB The heading in degree
+ * @param c The vector C
+ * @returns point E
+ */
+export function findClosestPointOnLine(a: Vector, directionB: number, c: Vector): Vector {
+  // Convert direction B from degrees to radians
+  const radiansB = fromHeadingInDegreeToAngleInRadian(directionB);
+
+  // Calculate the slope of the line D
+  const slopeD = Math.tan(radiansB);
+
+  // Calculate the y-intercept of the line D
+  const yInterceptD = a.y - slopeD * a.x;
+
+  // Calculate the x-coordinate of the closest point E on the line D
+  let x: number;
+  if (Math.abs(slopeD) > 1000) {
+    x = a.x;
+  } else {
+    // Calculate the y-intercept of the line D
+    const yInterceptD = a.y - slopeD * a.x;
+    x = (c.x + slopeD * (c.y - yInterceptD)) / (1 + slopeD ** 2);
+  }
+
+  // Calculate the y-coordinate of the closest point E on the line D
+  let y: number;
+  if (Math.abs(slopeD) > 1000) {
+    y = c.y;
+  } else {
+    y = slopeD * x + yInterceptD;
+  }
+
+  // Return the coordinates of point E
+  return new Vector(x, y);
+}
+
