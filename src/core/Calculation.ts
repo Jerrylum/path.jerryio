@@ -525,51 +525,6 @@ export function fromHeadingInDegreeToAngleInRadian(heading: number) {
  * In a 2D coordinate system, y axis increases by north, x axis increases by east, heading in degree starting from
  * north (y+axis) and increasing clockwise:
  *
- * Given a point A, a direction B in degree, a point C.
- * Define line D in direction B through point A and point E.
- * Find point E, which is the closet point to point C.
- *
- * @param a The vector A
- * @param directionB The heading in degree
- * @param c The vector C
- * @returns point E
- */
-export function findClosestPointOnLine(a: Vector, directionB: number, c: Vector): Vector {
-  // Convert direction B from degrees to radians
-  const radiansB = fromHeadingInDegreeToAngleInRadian(directionB);
-
-  // Calculate the slope of the line D
-  const slopeD = Math.tan(radiansB);
-
-  // Calculate the y-intercept of the line D
-  const yInterceptD = a.y - slopeD * a.x;
-
-  // Calculate the x-coordinate of the closest point E on the line D
-  let x: number;
-  if (Math.abs(slopeD) > 1000) {
-    x = a.x;
-  } else {
-    // Calculate the y-intercept of the line D
-    const yInterceptD = a.y - slopeD * a.x;
-    x = (c.x + slopeD * (c.y - yInterceptD)) / (1 + slopeD ** 2);
-  }
-
-  // Calculate the y-coordinate of the closest point E on the line D
-  let y: number;
-  if (Math.abs(slopeD) > 1000) {
-    y = c.y;
-  } else {
-    y = slopeD * x + yInterceptD;
-  }
-
-  // Return the coordinates of point E
-  return new Vector(x, y);
-}
-
-/**
- * In a 2D coordinate system, y axis increases by north, x axis increases by east, heading in degree starting from
- * north (y+axis) and increasing clockwise:
- *
  * Given the coordinates of point A and C, and the direction in degree from point A to point B.
  * Define line D is the line passing through point A and point B.
  * Suppose point E is a point on line D such that it is a point closet to point C, find the coordinates of E.
@@ -586,7 +541,7 @@ export function findClosestPointOnLine(a: Vector, directionB: number, c: Vector)
  * @param c The vector C
  * @returns point E
  */
-export function findClosestPointOnLineV2(a: Vector, directionB: number, c: Vector): Vector {
+export function findClosestPointOnLine(a: Vector, directionB: number, c: Vector): Vector {
   // Convert direction B from degrees to radians
   const theta = fromHeadingInDegreeToAngleInRadian(directionB);
   const tan = Math.tan(theta);
