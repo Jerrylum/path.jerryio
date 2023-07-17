@@ -16,7 +16,7 @@ import { clamp, useWindowSize } from "../core/Util";
 import { AddPath, AddSegment } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
 import { RobotElement } from "./RobotElement";
-import { firstDerivative, toDerivativeHeading, toHeading } from "../core/Calculation";
+import { MagnetReference, firstDerivative, fromHeadingInDegreeToAngleInRadian, toDerivativeHeading, toHeading } from "../core/Calculation";
 import ReactDOM from "react-dom";
 
 const PathPoints = observer((props: { path: Path; fcc: FieldCanvasConverter }) => {
@@ -337,8 +337,24 @@ const FieldCanvasElement = observer((props: {}) => {
   }
 
   const lineWidth = 1;
-  const magnetInPx = fcc.toPx(app.magnet);
+  // const magnetInPx = fcc.toPx(app.magnet);
   const visiblePaths = paths.filter(path => path.visible);
+
+  function MagnetReferenceLine(props: {magnetRef: MagnetReference | undefined}) {
+    const { magnetRef } = props;
+    if (magnetRef === undefined) return null;
+
+    const { source, heading } = magnetRef;
+
+    const theta = fromHeadingInDegreeToAngleInRadian(heading);
+    
+    const center = fcc.toPx(source);
+    const distance = Math.sqrt(fcc.pixelWidth ** 2 + fcc.pixelHeight ** 2) + source.distance(new Vector(0, 0)) * fcc.uol2pixel;
+    const start: Vector = center.add(new Vector(-distance * Math.cos(theta), distance * Math.sin(theta)));
+    const end: Vector = center.add(new Vector(distance * Math.cos(theta), -distance * Math.sin(theta)));
+
+    return <Line points={[start.x, start.y, end.x, end.y]} stroke="red" strokeWidth={lineWidth} />
+  }
 
   return (
     <Stage
@@ -358,12 +374,8 @@ const FieldCanvasElement = observer((props: {}) => {
       onDragEnd={action(onDragEndStage)}>
       <Layer>
         <Image image={fieldImage} width={fcc.pixelWidth} height={fcc.pixelHeight} onClick={action(onClickFieldImage)} />
-        {app.magnet.x !== Infinity ? (
-          <Line points={[magnetInPx.x, 0, magnetInPx.x, fcc.pixelHeight]} stroke="red" strokeWidth={lineWidth} />
-        ) : null}
-        {app.magnet.y !== Infinity ? (
-          <Line points={[0, magnetInPx.y, fcc.pixelHeight, magnetInPx.y]} stroke="red" strokeWidth={lineWidth} />
-        ) : null}
+        <MagnetReferenceLine magnetRef={app.magnet[0]} />
+        <MagnetReferenceLine magnetRef={app.magnet[1]} />
         {visiblePaths.map(path => (
           <PathPoints key={path.uid} path={path} fcc={fcc} />
         ))}

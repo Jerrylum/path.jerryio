@@ -15,7 +15,7 @@ import { Help } from "../app/HelpDialog";
 import { Preferences } from "../app/Preferences";
 import { GoogleAnalytics } from "./GoogleAnalytics";
 import { IOFileHandle } from "./InputOutput";
-import { getPathSamplePoints, getUniformPointsFromSamples } from "./Calculation";
+import { MagnetReference, getPathSamplePoints, getUniformPointsFromSamples } from "./Calculation";
 import { APP_VERSION_STRING } from "../Version";
 import { Logger } from "./Logger";
 import { onLatestVersionChange } from "./Versioning";
@@ -38,7 +38,7 @@ export class MainApp {
   private selectedBefore: string[] = []; // ALGO: For area selection
   private lastInterestedPath: Path | undefined = undefined; // ALGO: For adding controls
   private expanded: string[] = []; // ALGO: Order doesn't matter but anyway
-  public magnet: Vector = new Vector(Infinity, Infinity);
+  public magnet: [MagnetReference | undefined, MagnetReference | undefined] = [undefined, undefined];
 
   private _history: CommandHistory = new CommandHistory(this);
 
@@ -315,7 +315,7 @@ export class MainApp {
     this.selected = [];
     this.expanded = [];
     this.lastInterestedPath = undefined;
-    this.magnet = new Vector(Infinity, Infinity);
+    this.magnet = [undefined, undefined];
     this.robot.position.visible = false;
   }
 
