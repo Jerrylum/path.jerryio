@@ -12,7 +12,7 @@ import { Format, PathFileData } from './format/Format';
 import { Quantity, UnitOfLength } from "./core/Unit";
 import DOMPurify from "dompurify";
 import { NumberRange } from "./component/RangeSlider";
-import { PointCalculationResult, findClosestPointOnLine, fromDegreeToRadian, fromHeadingInDegreeToAngleInRadian, getBezierCurveArcLength, getBezierCurvePoints, getPathSamplePoints, getSegmentSamplePoints, getUniformPointsFromSamples, toDerivativeHeading } from "./core/Calculation";
+import { PointCalculationResult, findClosestPointOnLine, findClosestPointOnLineV2, fromDegreeToRadian, fromHeadingInDegreeToAngleInRadian, getBezierCurveArcLength, getBezierCurvePoints, getPathSamplePoints, getSegmentSamplePoints, getUniformPointsFromSamples, toDerivativeHeading } from "./core/Calculation";
 
 class CustomFormat implements Format {
   isInit: boolean;
@@ -521,10 +521,9 @@ test('fromHeadingInDegreeToAngleInRadian', () => {
   expect(fromHeadingInDegreeToAngleInRadian(91)).toBeCloseTo(fromDegreeToRadian(-1));
 });
 
-
 test('findClosestPointOnLine', () => {
   let ans: Vector;
-  
+
   ans = findClosestPointOnLine(new Vector(0, 0), 0, new Vector(2, 0));
   expect(ans.x).toBeCloseTo(0);
   expect(ans.y).toBeCloseTo(0);
@@ -582,6 +581,70 @@ test('findClosestPointOnLine', () => {
   expect(ans.y).toBeCloseTo(0);
 
   ans = findClosestPointOnLine(new Vector(0, 0), 270, new Vector(0, 0));
+  expect(ans.x).toBeCloseTo(0);
+  expect(ans.y).toBeCloseTo(0);
+});
+
+test('findClosestPointOnLineV2', () => {
+  let ans: Vector;
+  
+  ans = findClosestPointOnLineV2(new Vector(0, 0), 0, new Vector(2, 0));
+  expect(ans.x).toBeCloseTo(0);
+  expect(ans.y).toBeCloseTo(0);
+
+  ans = findClosestPointOnLineV2(new Vector(0, 0), 45, new Vector(2, 0));
+  expect(ans.x).toBeCloseTo(1);
+  expect(ans.y).toBeCloseTo(1);
+
+  ans = findClosestPointOnLineV2(new Vector(0, 0), 90, new Vector(2, 0));
+  expect(ans.x).toBeCloseTo(2);
+  expect(ans.y).toBeCloseTo(0);
+
+  ans = findClosestPointOnLineV2(new Vector(0, 0), 135, new Vector(2, 0));
+  expect(ans.x).toBeCloseTo(1);
+  expect(ans.y).toBeCloseTo(-1);
+
+  ans = findClosestPointOnLineV2(new Vector(0, 0), 180, new Vector(2, 0));
+  expect(ans.x).toBeCloseTo(0);
+  expect(ans.y).toBeCloseTo(0);
+
+  ans = findClosestPointOnLineV2(new Vector(0, 0), 225, new Vector(2, 0));
+  expect(ans.x).toBeCloseTo(1);
+  expect(ans.y).toBeCloseTo(1);
+
+  ans = findClosestPointOnLineV2(new Vector(0, 0), 270, new Vector(2, 0));
+  expect(ans.x).toBeCloseTo(2);
+  expect(ans.y).toBeCloseTo(0);
+
+  ans = findClosestPointOnLineV2(new Vector(0, 0), 315, new Vector(2, 0));
+  expect(ans.x).toBeCloseTo(1);
+  expect(ans.y).toBeCloseTo(-1);
+
+  ans = findClosestPointOnLineV2(new Vector(0, 0), 360, new Vector(2, 0)); // 360 is not acceptable btw
+  expect(ans.x).toBeCloseTo(0);
+  expect(ans.y).toBeCloseTo(0);
+
+  ans = findClosestPointOnLineV2(new Vector(0, 0), 135, new Vector(3, 0));
+  expect(ans.x).toBeCloseTo(1.5);
+  expect(ans.y).toBeCloseTo(-1.5);
+
+  ans = findClosestPointOnLineV2(new Vector(30, 30), 135, new Vector(3, 0));
+  expect(ans.x).toBeCloseTo(31.5);
+  expect(ans.y).toBeCloseTo(28.5);
+
+  ans = findClosestPointOnLineV2(new Vector(0, 0), 0, new Vector(0, 0));
+  expect(ans.x).toBeCloseTo(0);
+  expect(ans.y).toBeCloseTo(0);
+
+  ans = findClosestPointOnLineV2(new Vector(0, 0), 90, new Vector(0, 0));
+  expect(ans.x).toBeCloseTo(0);
+  expect(ans.y).toBeCloseTo(0);
+
+  ans = findClosestPointOnLineV2(new Vector(0, 0), 180, new Vector(0, 0));
+  expect(ans.x).toBeCloseTo(0);
+  expect(ans.y).toBeCloseTo(0);
+
+  ans = findClosestPointOnLineV2(new Vector(0, 0), 270, new Vector(0, 0));
   expect(ans.x).toBeCloseTo(0);
   expect(ans.y).toBeCloseTo(0);
 });

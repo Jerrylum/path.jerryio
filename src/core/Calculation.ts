@@ -522,13 +522,13 @@ export function fromHeadingInDegreeToAngleInRadian(heading: number) {
 }
 
 /**
- * In a 2D coordinate system, y axis increases by north, x axis increases by east, heading in degree starting from 
+ * In a 2D coordinate system, y axis increases by north, x axis increases by east, heading in degree starting from
  * north (y+axis) and increasing clockwise:
- * 
+ *
  * Given a point A, a direction B in degree, a point C.
  * Define line D in direction B through point A and point E.
  * Find point E, which is the closet point to point C.
- * 
+ *
  * @param a The vector A
  * @param directionB The heading in degree
  * @param c The vector C
@@ -566,3 +566,39 @@ export function findClosestPointOnLine(a: Vector, directionB: number, c: Vector)
   return new Vector(x, y);
 }
 
+/**
+ * In a 2D coordinate system, y axis increases by north, x axis increases by east, heading in degree starting from
+ * north (y+axis) and increasing clockwise:
+ *
+ * Given the coordinates of point A and C, and the direction in degree from point A to point B.
+ * Define line D is the line passing through point A and point B.
+ * Suppose point E is a point on line D such that it is a point closet to point C, find the coordinates of E.
+ * 
+ * Equation of line D = (y - a.y) / (x - a.x) = tan(theta)
+ *                  y = tan(theta).x + (a.y - tan(theta) * a.x)
+ * Slope of CE        = -1 / tan(theta)
+ * Equation of CE     = (y - c.y) / (x - c.y) = -1 / tan(theta)
+ *                  y = -1 / tan(theta) * x + (1 / tan(theta) * c.x + c.y) 
+ * 
+ *
+ * @param a The vector A
+ * @param directionB The heading in degree
+ * @param c The vector C
+ * @returns point E
+ */
+export function findClosestPointOnLineV2(a: Vector, directionB: number, c: Vector): Vector {
+  // Convert direction B from degrees to radians
+  const theta = fromHeadingInDegreeToAngleInRadian(directionB);
+  const tan = Math.tan(theta);
+  const tanPow2 = tan ** 2;
+
+  const eX = (tanPow2 * a.x - tan * a.y + c.x + tan * c.y) / (tanPow2 + 1);
+  const eY = (-tan * a.x + a.y + tan * c.x + tanPow2 * c.y) / (tanPow2 + 1);
+
+  return new Vector(eX, eY);
+}
+
+export interface MagnetReference {
+  source: Vector;
+  heading: number;
+}
