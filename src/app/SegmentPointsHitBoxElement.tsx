@@ -47,19 +47,14 @@ const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
     }
   }
 
-  const points: number[] = [];
-
-  for (let cp of props.segment.controls) {
-    const cpInPx = props.fcc.toPx(cp.toVector()); // ALGO: Use toVector for better performance
-    points.push(cpInPx.x);
-    points.push(cpInPx.y);
-  }
-
   const pointWidth = (props.fcc.pixelWidth / 320) * 8;
 
   return (
     <Line
-      points={points}
+      points={props.segment.controls.flatMap(cp => {
+        const cpInPx = props.fcc.toPx(cp.toVector());
+        return [cpInPx.x, cpInPx.y];
+      })}
       strokeWidth={pointWidth}
       stroke={"red"}
       opacity={0}
