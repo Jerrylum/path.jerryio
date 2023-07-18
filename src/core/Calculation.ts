@@ -483,9 +483,15 @@ export function firstDerivative(segment: Segment, t: number): Vector {
   }
 }
 
+export function boundHeading(num: number): number {
+  num = num % 360;
+  if (num < 0) num += 360;
+  return num;
+}
+
 export function toHeading(vec: Vector) {
   const canvasDegree = 90 - (Math.atan2(vec.y, vec.x) * 180) / Math.PI;
-  return canvasDegree < 0 ? canvasDegree + 360 : canvasDegree;
+  return boundHeading(canvasDegree);
 }
 
 /**
