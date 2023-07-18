@@ -22,7 +22,6 @@ function findClosetReference(target: Vector, refs: MagnetReference[]): [Vector, 
 export function magnet(target: Vector, refs: MagnetReference[], threshold: number): [Vector, MagnetReference[]] {
   const [result1, result1Ref] = findClosetReference(target, refs);
 
-  console.log(refs);
   if (result1Ref === undefined || result1.distance(target) > threshold) {
     return [target, []];
   }
