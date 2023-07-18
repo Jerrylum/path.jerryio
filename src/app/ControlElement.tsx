@@ -87,17 +87,6 @@ function getSiblingEndControlsAndControls(
   return sibling;
 }
 
-function getExtraReferences(path: Path, target: EndPointControl | Control): MagnetReference[] {
-  const controls = path.controls;
-  const idx = controls.indexOf(target);
-  if (idx < 2) return [];
-
-  const prev = controls[idx - 1];
-  const prevPrev = controls[idx - 2];
-
-  return [{ source: prev, heading: toHeading(prevPrev.subtract(prev.toVector())) }];
-}
-
 function findClosetReference(target: Vector, refs: MagnetReference[]): [Vector, MagnetReference | undefined] {
   let closetPos: Vector | undefined;
   let closetDistance: number = Infinity;
@@ -245,27 +234,34 @@ const ControlElement = observer((props: ControlElementProps) => {
         });
     }
 
+    function getSiblingReference(c1: Control, c2: Control): MagnetReference[] {
+      if (c1.visible && !followers.includes(c1) && c2.visible && !followers.includes(c2)) {
+        return [{ source: c1, heading: toHeading(c2.subtract(c1.toVector())) }];
+      } else {
+        return [];
+      }
+    }
+
     if (evt.shiftKey) {
       const references: MagnetReference[] = [posBeforeDrag, ...remains].flatMap(source => {
         return [{ source, heading: 0 } as MagnetReference, { source, heading: 90 } as MagnetReference];
       });
 
-      // references.push(
-      //   ...getSiblingEndControlsAndControls(props.path, props.cp)
-      //     .filter(cp => cp.visible && !followers.includes(cp))
-      //     .flatMap(source => {
-      //       return [{ source, heading: 45 } as MagnetReference, { source, heading: 135 } as MagnetReference];
-      //     })
-      // );
+      references.push(
+        ...getSiblingEndControlsAndControls(props.path, props.cp)
+          .filter(cp => cp.visible && !followers.includes(cp))
+          .flatMap(source => {
+            return [{ source, heading: 45 } as MagnetReference, { source, heading: 135 } as MagnetReference];
+          })
+      );
 
       const controls = props.path.controls;
       const idx = controls.indexOf(props.cp);
       if (idx >= 2) {
-        const prev = controls[idx - 1];
-        const prevPrev = controls[idx - 2];
-        if (!followers.includes(prev) && prev.visible && prevPrev.visible) {
-          references.push({ source: prev, heading: toHeading(prevPrev.subtract(prev.toVector())) });
-        }
+        references.push(...getSiblingReference(controls[idx - 1], controls[idx - 2]));
+      }
+      if (idx < controls.length - 2) {
+        references.push(...getSiblingReference(controls[idx + 1], controls[idx + 2]));
       }
 
       const [result, magnetRefs] = magnet(cpInUOL, references, app.gc.controlMagnetDistance);
