@@ -5,7 +5,7 @@ import Konva from "konva";
 import { Circle, Line } from "react-konva";
 import { useState } from "react";
 import { SegmentElementProps } from "./SegmentElement";
-import { DragControls, RemovePathsAndEndControls } from "../core/Command";
+import { DragControls, RemovePathsAndEndControls, UpdatePathTreeItems } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
 import { boundHeading, toHeading } from "../core/Calculation";
 import { MagnetReference, magnet } from "../core/Magnet";
@@ -215,9 +215,10 @@ const ControlElement = observer((props: ControlElementProps) => {
     if (!shouldInteract(event) || evt.ctrlKey) return;
 
     const epc = props.cp as EndPointControl;
-    epc.heading += evt.deltaY / 10;
-    epc.heading %= 360;
-    if (epc.heading < 0) epc.heading += 360;
+    app.history.execute(
+      `Update control ${epc.uid} heading value`,
+      new UpdatePathTreeItems([epc], { heading: epc.heading + evt.deltaY / 10 })
+    );
   }
 
   const lineWidth = props.fcc.pixelWidth / 600;
