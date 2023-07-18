@@ -12,7 +12,7 @@ import { Format, PathFileData } from './format/Format';
 import { Quantity, UnitOfLength } from "./core/Unit";
 import DOMPurify from "dompurify";
 import { NumberRange } from "./component/RangeSlider";
-import { PointCalculationResult, findClosestPointOnLine, fromDegreeToRadian, fromHeadingInDegreeToAngleInRadian, getBezierCurveArcLength, getBezierCurvePoints, getPathSamplePoints, getSegmentSamplePoints, getUniformPointsFromSamples, toDerivativeHeading } from "./core/Calculation";
+import { PointCalculationResult, findClosestPointOnLine, findLinesIntersection, fromDegreeToRadian, fromHeadingInDegreeToAngleInRadian, getBezierCurveArcLength, getBezierCurvePoints, getPathSamplePoints, getSegmentSamplePoints, getUniformPointsFromSamples, toDerivativeHeading } from "./core/Calculation";
 
 class CustomFormat implements Format {
   isInit: boolean;
@@ -583,6 +583,36 @@ test('findClosestPointOnLine', () => {
   ans = findClosestPointOnLine(new Vector(0, 0), 270, new Vector(0, 0));
   expect(ans.x).toBeCloseTo(0);
   expect(ans.y).toBeCloseTo(0);
+});
+
+test('findLinesIntersection', () => {
+  let ans: Vector | undefined;
+
+  ans = findLinesIntersection(new Vector(0, 0), 45, new Vector(2, 0), 315);
+  expect(ans).toBeDefined();
+  expect(ans!.x).toBeCloseTo(1);
+  expect(ans!.y).toBeCloseTo(1);
+
+  ans = findLinesIntersection(new Vector(0, 0), 135, new Vector(2, 0), 225);
+  expect(ans).toBeDefined();
+  expect(ans!.x).toBeCloseTo(1);
+  expect(ans!.y).toBeCloseTo(-1);
+
+  ans = findLinesIntersection(new Vector(0, 0), 0, new Vector(2, 0), 315);
+  expect(ans).toBeDefined();
+  expect(ans!.x).toBeCloseTo(0);
+  expect(ans!.y).toBeCloseTo(2);
+
+  ans = findLinesIntersection(new Vector(40, 30), 0, new Vector(42, 30), 315);
+  expect(ans).toBeDefined();
+  expect(ans!.x).toBeCloseTo(40);
+  expect(ans!.y).toBeCloseTo(32);
+
+  ans = findLinesIntersection(new Vector(0, 0), 0, new Vector(2, 0), 180);
+  expect(ans).toBeUndefined();
+
+  // write test cases
+  ans = findLinesIntersection(new Vector(0, 0), 0, new Vector(2, 0), 0);
 });
 
 test('traversal and construct', () => {

@@ -528,13 +528,13 @@ export function fromHeadingInDegreeToAngleInRadian(heading: number) {
  * Given the coordinates of point A and C, and the direction in degree from point A to point B.
  * Define line D is the line passing through point A and point B.
  * Suppose point E is a point on line D such that it is a point closet to point C, find the coordinates of E.
- * 
+ *
  * Equation of line D = (y - a.y) / (x - a.x) = tan(theta)
  *                  y = tan(theta).x + (a.y - tan(theta) * a.x)
  * Slope of CE        = -1 / tan(theta)
  * Equation of CE     = (y - c.y) / (x - c.y) = -1 / tan(theta)
- *                  y = -1 / tan(theta) * x + (1 / tan(theta) * c.x + c.y) 
- * 
+ *                  y = -1 / tan(theta) * x + (1 / tan(theta) * c.x + c.y)
+ *
  *
  * @param a The vector A
  * @param directionB The heading in degree
@@ -551,6 +551,39 @@ export function findClosestPointOnLine(a: Vector, directionB: number, c: Vector)
   const eY = (-tan * a.x + a.y + tan * c.x + tanPow2 * c.y) / (tanPow2 + 1);
 
   return new Vector(eX, eY);
+}
+
+/**
+ * In a 2D coordinate system, y axis increases by north, x axis increases by east, heading in degree starting from
+ * north (y+axis) and increasing clockwise:
+ *
+ * Given the coordinates of point A and C, the direction in degree from point A to point B and from point C to point D.
+ * Define line E is the line passing through point A and point B, line F is the line passing through point C and point D.
+ * Find the intersection of line E and F.
+ *
+ * @param a The vector A
+ * @param directionB  The heading in degree
+ * @param c The vector C
+ * @param directionD The heading in degree
+ * @returns The intersection point of line E and F, or undefined if the two lines are parallel.
+ */
+export function findLinesIntersection(
+  a: Vector,
+  directionB: number,
+  c: Vector,
+  directionD: number
+): Vector | undefined {
+  if (directionB % 180 === directionD % 180) return undefined;
+
+  const thetaB = fromHeadingInDegreeToAngleInRadian(directionB);
+  const tanB = Math.tan(thetaB);
+
+  const thetaD = fromHeadingInDegreeToAngleInRadian(directionD);
+  const tanD = Math.tan(thetaD);
+
+  const x = (tanB * a.x - a.y - tanD * c.x + c.y) / (tanB - tanD);
+  const y = (tanB * tanD * (a.x - c.x) - tanD * a.y + tanB * c.y) / (tanB - tanD);
+  return new Vector(x, y);
 }
 
 export interface MagnetReference {
