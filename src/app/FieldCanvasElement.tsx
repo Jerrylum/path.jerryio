@@ -16,8 +16,33 @@ import { clamp, useWindowSize } from "../core/Util";
 import { AddPath, AddSegment } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
 import { RobotElement } from "./RobotElement";
-import { MagnetReference, firstDerivative, fromHeadingInDegreeToAngleInRadian, toDerivativeHeading, toHeading } from "../core/Calculation";
+import {
+  firstDerivative,
+  fromHeadingInDegreeToAngleInRadian,
+  toDerivativeHeading,
+  toHeading
+} from "../core/Calculation";
 import ReactDOM from "react-dom";
+import { MagnetReference } from "../core/Magnet";
+
+const MagnetReferenceLine = observer((props: { magnetRef: MagnetReference | undefined; fcc: FieldCanvasConverter }) => {
+  const { magnetRef, fcc } = props;
+  if (magnetRef === undefined) return null;
+
+  const { source, heading } = magnetRef;
+
+  const theta = fromHeadingInDegreeToAngleInRadian(heading);
+
+  const center = fcc.toPx(source);
+  const distance =
+    Math.sqrt(fcc.pixelWidth ** 2 + fcc.pixelHeight ** 2) + source.distance(new Vector(0, 0)) * fcc.uol2pixel;
+  const start: Vector = center.add(new Vector(-distance * Math.cos(theta), distance * Math.sin(theta)));
+  const end: Vector = center.add(new Vector(distance * Math.cos(theta), -distance * Math.sin(theta)));
+
+  const lineWidth = 1;
+
+  return <Line points={[start.x, start.y, end.x, end.y]} stroke="red" strokeWidth={lineWidth} />;
+});
 
 const PathPoints = observer((props: { path: Path; fcc: FieldCanvasConverter }) => {
   const { path, fcc } = props;
@@ -336,25 +361,7 @@ const FieldCanvasElement = observer((props: {}) => {
     app.addExpanded(targetPath);
   }
 
-  const lineWidth = 1;
-  // const magnetInPx = fcc.toPx(app.magnet);
   const visiblePaths = paths.filter(path => path.visible);
-
-  function MagnetReferenceLine(props: {magnetRef: MagnetReference | undefined}) {
-    const { magnetRef } = props;
-    if (magnetRef === undefined) return null;
-
-    const { source, heading } = magnetRef;
-
-    const theta = fromHeadingInDegreeToAngleInRadian(heading);
-    
-    const center = fcc.toPx(source);
-    const distance = Math.sqrt(fcc.pixelWidth ** 2 + fcc.pixelHeight ** 2) + source.distance(new Vector(0, 0)) * fcc.uol2pixel;
-    const start: Vector = center.add(new Vector(-distance * Math.cos(theta), distance * Math.sin(theta)));
-    const end: Vector = center.add(new Vector(distance * Math.cos(theta), -distance * Math.sin(theta)));
-
-    return <Line points={[start.x, start.y, end.x, end.y]} stroke="red" strokeWidth={lineWidth} />
-  }
 
   return (
     <Stage
@@ -374,8 +381,9 @@ const FieldCanvasElement = observer((props: {}) => {
       onDragEnd={action(onDragEndStage)}>
       <Layer>
         <Image image={fieldImage} width={fcc.pixelWidth} height={fcc.pixelHeight} onClick={action(onClickFieldImage)} />
-        <MagnetReferenceLine magnetRef={app.magnet[0]} />
-        <MagnetReferenceLine magnetRef={app.magnet[1]} />
+        {app.magnet.map((magnetRef, idx) => (
+          <MagnetReferenceLine key={idx} magnetRef={magnetRef} fcc={fcc} />
+        ))}
         {visiblePaths.map(path => (
           <PathPoints key={path.uid} path={path} fcc={fcc} />
         ))}

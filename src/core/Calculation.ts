@@ -591,8 +591,3 @@ export function findLinesIntersection(
   const y = (tanB * tanD * (a.x - c.x) - tanD * a.y + tanB * c.y) / (tanB - tanD);
   return new Vector(x, y);
 }
-
-export interface MagnetReference {
-  source: Vector;
-  heading: number;
-}

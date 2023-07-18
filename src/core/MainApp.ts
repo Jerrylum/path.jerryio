@@ -15,13 +15,14 @@ import { Help } from "../app/HelpDialog";
 import { Preferences } from "../app/Preferences";
 import { GoogleAnalytics } from "./GoogleAnalytics";
 import { IOFileHandle } from "./InputOutput";
-import { MagnetReference, getPathSamplePoints, getUniformPointsFromSamples } from "./Calculation";
+import { getPathSamplePoints, getUniformPointsFromSamples } from "./Calculation";
 import { APP_VERSION_STRING } from "../Version";
 import { Logger } from "./Logger";
 import { onLatestVersionChange } from "./Versioning";
 import { enqueueSuccessSnackbar } from "../app/Notice";
 import * as SWR from "./ServiceWorkerRegistration";
 import { AppClipboard } from "./Clipboard";
+import { MagnetReference } from "./Magnet";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
@@ -38,7 +39,7 @@ export class MainApp {
   private selectedBefore: string[] = []; // ALGO: For area selection
   private lastInterestedPath: Path | undefined = undefined; // ALGO: For adding controls
   private expanded: string[] = []; // ALGO: Order doesn't matter but anyway
-  public magnet: [MagnetReference | undefined, MagnetReference | undefined] = [undefined, undefined];
+  public magnet: MagnetReference[] = [];
 
   private _history: CommandHistory = new CommandHistory(this);
 
@@ -315,7 +316,7 @@ export class MainApp {
     this.selected = [];
     this.expanded = [];
     this.lastInterestedPath = undefined;
-    this.magnet = [undefined, undefined];
+    this.magnet = [];
     this.robot.position.visible = false;
   }
 
