@@ -7,7 +7,7 @@ import { useState } from "react";
 import { SegmentElementProps } from "./SegmentElement";
 import { DragControls, RemovePathsAndEndControls, UpdatePathTreeItems } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
-import { boundHeading, toHeading } from "../core/Calculation";
+import { boundHeading, fromDegreeToRadian, fromHeadingInDegreeToAngleInRadian, toHeading } from "../core/Calculation";
 import { MagnetReference, magnet } from "../core/Magnet";
 
 export interface ControlElementProps extends SegmentElementProps {
@@ -52,7 +52,7 @@ function getHorizontalAndVerticalReferences(source: Vector, originHeading: numbe
 
 function getSiblingReferences(path: Path, target: EndPointControl | Control, followers: Control[]): MagnetReference[] {
   const references: MagnetReference[] = [];
-  
+
   const controls = path.controls;
   const idx = controls.indexOf(target);
 
@@ -239,7 +239,6 @@ const ControlElement = observer((props: ControlElementProps) => {
   const cpRadius = props.fcc.pixelWidth / 40;
   const cpInPx = props.fcc.toPx(props.cp.toVector()); // ALGO: Use toVector() for better performance
   const fillColor = app.isSelected(props.cp) ? "#5C469Cdf" : "#5C469C6f";
-  const isMainControl = props.cp instanceof EndPointControl;
 
   function onClickFirstOrLastControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
@@ -257,7 +256,7 @@ const ControlElement = observer((props: ControlElementProps) => {
 
   return (
     <>
-      {isMainControl ? (
+      {props.cp instanceof EndPointControl ? (
         <>
           <Circle
             x={cpInPx.x}
@@ -275,10 +274,10 @@ const ControlElement = observer((props: ControlElementProps) => {
             points={[
               cpInPx.x,
               cpInPx.y,
-              cpInPx.x + Math.sin(-((props.cp as EndPointControl).headingInRadian() - Math.PI)) * cpRadius,
-              cpInPx.y + Math.cos(-((props.cp as EndPointControl).headingInRadian() - Math.PI)) * cpRadius
+              cpInPx.x + Math.cos(fromHeadingInDegreeToAngleInRadian(props.cp.heading)) * cpRadius,
+              cpInPx.y - Math.sin(fromHeadingInDegreeToAngleInRadian(props.cp.heading)) * cpRadius
             ]}
-            stroke="ffffff"
+            stroke="#000"
             strokeWidth={lineWidth}
           />
         </>
