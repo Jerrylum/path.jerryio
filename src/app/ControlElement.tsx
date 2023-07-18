@@ -7,21 +7,21 @@ import { useState } from "react";
 import { SegmentElementProps } from "./SegmentElement";
 import { DragControls, RemovePathsAndEndControls } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
-import { MagnetReference, findClosestPointOnLine } from "../core/Calculation";
+import { MagnetReference, findClosestPointOnLine, findLinesIntersection, toHeading } from "../core/Calculation";
 
 export interface ControlElementProps extends SegmentElementProps {
   cp: EndPointControl | Control;
   isGrabAndMove: boolean;
 }
 
-function getFollowersAndReferences(
+function getFollowersAndRemaining(
   paths: Path[],
   target: EndPointControl | Control,
   selected: string[],
   includeControl: boolean
 ): [Control[], Control[]] {
   const followers: Control[] = [];
-  const references: Control[] = [];
+  const remaining: Control[] = [];
   for (let path of paths) {
     for (let control of path.controls) {
       if (control === target) continue;
@@ -32,14 +32,14 @@ function getFollowersAndReferences(
         control.lock ||
         path.lock
       ) {
-        references.push(control);
+        remaining.push(control);
       } else {
         followers.push(control);
       }
     }
   }
 
-  return [followers, references];
+  return [followers, remaining];
 }
 
 function getSiblingControls(path: Path, target: EndPointControl): Control[] {
@@ -87,7 +87,18 @@ function getSiblingEndControlsAndControls(
   return sibling;
 }
 
-function magnet(target: Vector, refs: MagnetReference[]): [Vector, MagnetReference | undefined] {
+function getExtraReferences(path: Path, target: EndPointControl | Control): MagnetReference[] {
+  const controls = path.controls;
+  const idx = controls.indexOf(target);
+  if (idx < 2) return [];
+
+  const prev = controls[idx - 1];
+  const prevPrev = controls[idx - 2];
+
+  return [{ source: prev, heading: toHeading(prevPrev.subtract(prev.toVector())) }];
+}
+
+function findClosetReference(target: Vector, refs: MagnetReference[]): [Vector, MagnetReference | undefined] {
   let closetPos: Vector | undefined;
   let closetDistance: number = Infinity;
   let closetRef: MagnetReference | undefined;
@@ -103,6 +114,39 @@ function magnet(target: Vector, refs: MagnetReference[]): [Vector, MagnetReferen
   }
 
   return [closetPos ?? target, closetRef];
+}
+
+function magnet(
+  target: Vector,
+  refs: MagnetReference[],
+  threshold: number
+): [Vector, [MagnetReference | undefined, MagnetReference | undefined]] {
+  const [result1, result1Ref] = findClosetReference(target, refs);
+  if (result1Ref !== undefined) {
+    const [, result2Ref] = findClosetReference(
+      result1,
+      refs.filter(ref => ref !== result1Ref)
+    );
+
+    if (result2Ref !== undefined) {
+      const result3 = findLinesIntersection(
+        result1Ref.source,
+        result1Ref.heading,
+        result2Ref.source,
+        result2Ref.heading
+      );
+
+      if (result3 !== undefined && result3.distance(target) < threshold) {
+        return [result3, [result1Ref, result2Ref]];
+      }
+    }
+  }
+
+  if (result1Ref !== undefined && result1.distance(target) < threshold) {
+    return [result1, [result1Ref, undefined]];
+  } else {
+    return [target, [undefined, undefined]];
+  }
 }
 
 const ControlElement = observer((props: ControlElementProps) => {
@@ -190,7 +234,7 @@ const ControlElement = observer((props: ControlElementProps) => {
 
     const isControlFollow = !evt.ctrlKey;
 
-    const [followers, remains] = getFollowersAndReferences(app.paths, props.cp, app.selectedEntityIds, isControlFollow);
+    const [followers, remains] = getFollowersAndRemaining(app.paths, props.cp, app.selectedEntityIds, isControlFollow);
 
     if (props.cp instanceof EndPointControl && isControlFollow) {
       getSiblingControls(props.path, props.cp)
@@ -206,28 +250,27 @@ const ControlElement = observer((props: ControlElementProps) => {
         return [{ source, heading: 0 } as MagnetReference, { source, heading: 90 } as MagnetReference];
       });
 
-      references.push(
-        ...[posBeforeDrag, ...getSiblingEndControlsAndControls(props.path, props.cp)].flatMap(source => {
-          return [{ source, heading: 45 } as MagnetReference, { source, heading: 135 } as MagnetReference];
-        })
-      );
+      // references.push(
+      //   ...getSiblingEndControlsAndControls(props.path, props.cp)
+      //     .filter(cp => cp.visible && !followers.includes(cp))
+      //     .flatMap(source => {
+      //       return [{ source, heading: 45 } as MagnetReference, { source, heading: 135 } as MagnetReference];
+      //     })
+      // );
 
-       // TODO
-
-      const [result1, result1Ref] = magnet(cpInUOL, references);
-      if (result1Ref !== undefined) {
-        const [result2, result2Ref] = magnet(
-          result1,
-          references.filter(ref => ref !== result1Ref)
-        );
-        if (result2.distance(cpInUOL) < app.gc.controlMagnetDistance) {
-          cpInUOL.setXY(result2);
-          app.magnet = [result1Ref, result2Ref];
-        } else if (result1.distance(cpInUOL) < app.gc.controlMagnetDistance) {
-          cpInUOL.setXY(result1);
-          app.magnet = [result1Ref, undefined];
+      const controls = props.path.controls;
+      const idx = controls.indexOf(props.cp);
+      if (idx >= 2) {
+        const prev = controls[idx - 1];
+        const prevPrev = controls[idx - 2];
+        if (!followers.includes(prev) && prev.visible && prevPrev.visible) {
+          references.push({ source: prev, heading: toHeading(prevPrev.subtract(prev.toVector())) });
         }
       }
+
+      const [result, magnetRefs] = magnet(cpInUOL, references, app.gc.controlMagnetDistance);
+      cpInUOL.setXY(result);
+      app.magnet = magnetRefs;
     } else {
       app.magnet = [undefined, undefined];
     }
@@ -326,3 +369,4 @@ const ControlElement = observer((props: ControlElementProps) => {
 });
 
 export { ControlElement };
+
