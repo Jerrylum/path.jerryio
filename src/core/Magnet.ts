@@ -28,7 +28,7 @@ export function magnet(target: Vector, refs: MagnetReference[], threshold: numbe
 
   const [, result2Ref] = findClosetReference(
     result1,
-    refs.filter(ref => ref !== result1Ref)
+    refs.filter(ref => (ref.heading % 180) !== (result1Ref.heading % 180))
   );
 
   if (result2Ref !== undefined) {

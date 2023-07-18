@@ -52,6 +52,16 @@ function getHorizontalAndVerticalReferences(source: Vector, originHeading: numbe
 
 function getSiblingReferences(path: Path, target: EndPointControl | Control, followers: Control[]): MagnetReference[] {
   const references: MagnetReference[] = [];
+  
+  const controls = path.controls;
+  const idx = controls.indexOf(target);
+
+  function findEndControl(step: number): EndPointControl | undefined {
+    for (let i = idx + step; i >= 0 && i < controls.length; i += step) {
+      if (controls[i] instanceof EndPointControl) return controls[i] as EndPointControl;
+    }
+    return undefined;
+  }
 
   function func(c1: Control, c2: Control) {
     if (c1.visible && !followers.includes(c1) && c2.visible && !followers.includes(c2)) {
@@ -59,10 +69,14 @@ function getSiblingReferences(path: Path, target: EndPointControl | Control, fol
     }
   }
 
-  const controls = path.controls;
-  const idx = controls.indexOf(target);
   if (idx >= 2) func(controls[idx - 1], controls[idx - 2]);
   if (idx < controls.length - 2) func(controls[idx + 1], controls[idx + 2]);
+
+  const prevEndControl = findEndControl(-1);
+  if (prevEndControl) references.push({ source: prevEndControl, heading: prevEndControl.heading });
+  const nextEndControl = findEndControl(+1);
+  if (nextEndControl) references.push({ source: nextEndControl, heading: nextEndControl.heading });
+
   return references;
 }
 
