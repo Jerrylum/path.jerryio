@@ -293,6 +293,8 @@ const FieldCanvasElement = observer((props: {}) => {
       // middle click
       setOffsetStart(undefined);
     }
+
+    app.magnet = [];
   }
 
   function onDragEndStage(event: Konva.KonvaEventObject<DragEvent>) {

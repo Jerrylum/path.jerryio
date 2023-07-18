@@ -205,7 +205,7 @@ const ControlElement = observer((props: ControlElementProps) => {
   function onMouseUpControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     if (!shouldInteract(event)) return;
 
-    app.magnet = [];
+    // Nothing to do
   }
 
   function onWheel(event: Konva.KonvaEventObject<WheelEvent>) {
