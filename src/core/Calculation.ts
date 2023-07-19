@@ -489,6 +489,13 @@ export function boundHeading(num: number): number {
   return num;
 }
 
+export function boundAngle(num: number): number {
+  // (PI, +PI] in radian; (-180, +180] in degree
+  num %= Math.PI;
+  if (num <= -Math.PI) num += 2 * Math.PI;
+  return num;
+}
+
 export function toHeading(vec: Vector) {
   const canvasDegree = 90 - (Math.atan2(vec.y, vec.x) * 180) / Math.PI;
   return boundHeading(canvasDegree);
