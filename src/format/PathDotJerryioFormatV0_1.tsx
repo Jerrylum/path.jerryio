@@ -172,15 +172,10 @@ export class PathDotJerryioFormatV0_1 implements Format {
 
       const points = getPathPoints(path, density).points;
 
-      if (points.length === 0) continue;
-      const rotation = new EuclideanTransformation(points[0] as CoordinateWithHeading);
-
       for (const point of points) {
-        const result1: Coordinate | CoordinateWithHeading = rotation.transform(point);
-
-        const x = uc.fromAtoB(result1.x).toUser();
-        const y = uc.fromAtoB(result1.y).toUser();
-        if (isCoordinateWithHeading(result1)) rtn += `${x},${y},${point.speed.toUser()},${result1.heading}\n`;
+        const x = uc.fromAtoB(point.x).toUser();
+        const y = uc.fromAtoB(point.y).toUser();
+        if (isCoordinateWithHeading(point)) rtn += `${x},${y},${point.speed.toUser()},${point.heading}\n`;
         else rtn += `${x},${y},${point.speed.toUser()}\n`;
       }
     }
