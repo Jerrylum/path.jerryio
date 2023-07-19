@@ -1,8 +1,8 @@
 import { APP_VERSION, MainApp } from "../core/MainApp";
-import { Path } from "../core/Path";
+import { Path, Segment } from "../core/Path";
 import { LemLibFormatV0_4 } from "./LemLibFormatV0_4";
 import { PathDotJerryioFormatV0_1 } from "./PathDotJerryioFormatV0_1";
-import { GeneralConfig, PathConfig } from "./Config";
+import { GeneralConfig } from "./Config";
 import { Range } from "semver";
 import { UnitOfLength } from "../core/Unit";
 import { PointCalculationResult } from "../core/Calculation";
@@ -19,7 +19,7 @@ export interface Format {
 
   getGeneralConfig(): GeneralConfig;
 
-  buildPathConfig(): PathConfig;
+  createPath(...segments: Segment[]): Path;
 
   getPathPoints(path: Path): PointCalculationResult;
 

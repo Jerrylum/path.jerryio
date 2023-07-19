@@ -314,6 +314,8 @@ export class Path implements InteractiveEntity, InteractiveEntityParent {
     this.segments = segments;
     this.pc = pc;
     this.uid = makeId(10);
+
+    pc.path = this;
     makeAutoObservable(this);
   }
 

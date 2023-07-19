@@ -115,10 +115,15 @@ export class AppClipboard {
         return false;
       }
 
-      const paths = plainToInstance(Path, this.message.paths);
-      for (const path of paths) {
+      const paths: Path[] = [];
+      for (const pathRaw of this.message.paths) {
+        const path = app.format.createPath();
+        const pathPC = path.pc;
+        plainToClassFromExist(path, pathRaw);
+        path.pc = plainToClassFromExist(pathPC, pathRaw.pc);
         path.uid = makeId(10);
-        path.pc = plainToClassFromExist(app.format.buildPathConfig(), path.pc);
+
+        // ALGO: The order of re-assigning the uid shouldn't matter
 
         // SECURITY: Sanitize path names, beware of XSS attack from the clipboard
         const temp = purify.sanitize(path.name);
@@ -134,6 +139,8 @@ export class AppClipboard {
           control.x = uc.fromAtoB(control.x);
           control.y = uc.fromAtoB(control.y);
         }
+
+        paths.push(path);
       }
 
       const interestedPath = app.interestedPath();
@@ -152,7 +159,7 @@ export class AppClipboard {
       }
 
       if (app.paths.length === 0) {
-        const newPath = new Path(app.format.buildPathConfig());
+        const newPath = app.format.createPath();
         app.history.execute(`Add path ${newPath.uid}`, new AddPath(app.paths, newPath));
         app.addExpanded(newPath);
       }

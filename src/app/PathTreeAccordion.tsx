@@ -626,8 +626,7 @@ const PathTreeAccordion = observer((props: {}) => {
     const cm60 = new Quantity<UnitOfLength>(60, UnitOfLength.Centimeter);
     const cm60inUOL = cm60.to(app.gc.uol);
 
-    const newPath = new Path(
-      app.format.buildPathConfig(),
+    const newPath = app.format.createPath(
       new Segment(new EndPointControl(-cm60inUOL, -cm60inUOL, 0), [], new EndPointControl(-cm60inUOL, cm60inUOL, 0))
     );
     app.history.execute(`Add path ${newPath.uid}`, new AddPath(app.paths, newPath));

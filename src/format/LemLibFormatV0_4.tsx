@@ -63,10 +63,13 @@ class PathConfigImpl implements PathConfig {
   };
 
   @Exclude()
-  private format_: LemLibFormatV0_4;
+  readonly format: LemLibFormatV0_4;
+
+  @Exclude()
+  public path!: Path;
 
   constructor(format: LemLibFormatV0_4) {
-    this.format_ = format;
+    this.format = format;
     makeAutoObservable(this);
 
     reaction(
@@ -78,16 +81,11 @@ class PathConfigImpl implements PathConfig {
 
     // ALGO: Convert the default parameters to the current point density
     // ALGO: This is only used when a new path is added, not when the path config is loaded
+    // ALGO: When loading path config, the configuration will be set/overwritten after this constructor
     convertPathConfigPointDensity(this, 2, format.getGeneralConfig().pointDensity);
   }
 
-  get format() {
-    return this.format_;
-  }
-
   getConfigPanel(app: MainApp) {
-    const pathUid = app.interestedPath()?.uid ?? "some-path-uid";
-
     return (
       <>
         <Box className="panel-box">
@@ -96,7 +94,7 @@ class PathConfigImpl implements PathConfig {
             range={this.speedLimit}
             onChange={(from, to) =>
               app.history.execute(
-                `Update path ${pathUid} min/max speed`,
+                `Change path ${this.path.uid} min/max speed`,
                 new UpdateProperties(this.speedLimit, { from, to })
               )
             }
@@ -108,7 +106,7 @@ class PathConfigImpl implements PathConfig {
             range={this.bentRateApplicableRange}
             onChange={(from, to) =>
               app.history.execute(
-                `Update path ${pathUid} bent rate applicable range`,
+                `Change path ${this.path.uid} bent rate applicable range`,
                 new UpdateProperties(this.bentRateApplicableRange, { from, to })
               )
             }
@@ -148,8 +146,8 @@ export class LemLibFormatV0_4 implements Format {
     return this.gc;
   }
 
-  buildPathConfig(): PathConfig {
-    return new PathConfigImpl(this);
+  createPath(...segments: Segment[]): Path {
+    return new Path(new PathConfigImpl(this), ...segments);
   }
 
   getPathPoints(path: Path): PointCalculationResult {
@@ -189,7 +187,7 @@ export class LemLibFormatV0_4 implements Format {
     const push = (segment: Segment) => {
       // check if there is a path
       if (paths.length === 0) {
-        const path = new Path(this.buildPathConfig(), segment);
+        const path = this.createPath(segment);
         path.pc.speedLimit.to = clamp(
           maxSpeed.toUser(),
           path.pc.speedLimit.minLimit.value,

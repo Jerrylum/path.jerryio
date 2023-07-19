@@ -5,7 +5,7 @@ import { Control, EndPointControl, Path, PathTreeItem, Vector, traversal } from 
 import { addToArray, clamp, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats, convertPathFileData } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
-import { plainToInstance, instanceToPlain, plainToClassFromExist } from "class-transformer";
+import { instanceToPlain, plainToClassFromExist } from "class-transformer";
 import { Quantity, UnitConverter, UnitOfLength } from "./Unit";
 import { CommandHistory } from "./Command";
 import { SemVer } from "semver";
@@ -83,21 +83,31 @@ export class MainApp {
         this.gc.robotWidth = oldGC.robotWidth;
         this.gc.robotHeight = oldGC.robotHeight;
         convertGeneralConfigUOL(this.gc, oldGC.uol);
-        this.gc.pointDensity = keepPointDensity; // UX: Keep some values
+        // TODO: Custom format conversion behavior
+        this.gc.pointDensity = keepPointDensity; // UX: Use new format point density
 
-        for (const path of this.paths) {
-          const newPC = newFormat.buildPathConfig();
+        const paths: Path[] = [];
+        for (const oldPath of this.paths) {
+          const newPath = newFormat.createPath(...oldPath.segments);
+          const newPC = newPath.pc;
 
           if (
-            newPC.speedLimit.minLimit === path.pc.speedLimit.minLimit &&
-            newPC.speedLimit.maxLimit === path.pc.speedLimit.maxLimit
+            newPC.speedLimit.minLimit === oldPath.pc.speedLimit.minLimit &&
+            newPC.speedLimit.maxLimit === oldPath.pc.speedLimit.maxLimit
           ) {
-            newPC.speedLimit = path.pc.speedLimit; // UX: Keep speed limit if the new format has the same speed limit range as the old one
+            newPC.speedLimit = oldPath.pc.speedLimit; // UX: Keep speed limit if the new format has the same speed limit range as the old one
           }
-          newPC.bentRateApplicableRange = path.pc.bentRateApplicableRange; // UX: Keep application range
-          path.pc = newPC;
+          newPC.bentRateApplicableRange = oldPath.pc.bentRateApplicableRange; // UX: Keep application range
+
+          // TODO: Custom format conversion behavior
+
           convertPathConfigPointDensity(newPC, oldGC.pointDensity, this.gc.pointDensity);
+
+          paths.push(newPath);
         }
+
+        // this.paths = paths;
+        this.paths.splice(0, this.paths.length, ...paths); // alternative to above
 
         this.resetUserControl();
 
@@ -368,10 +378,14 @@ export class MainApp {
     // ALGO: Assume the path file is valid
 
     const gc = plainToClassFromExist(format.getGeneralConfig(), data.gc);
-    const paths = plainToInstance(Path, data.paths);
+    const paths: Path[] = [];
+    for (const pathRaw of data.paths) {
+      const path = format.createPath();
+      const pathPC = path.pc;
+      plainToClassFromExist(path, pathRaw);
+      path.pc = plainToClassFromExist(pathPC, pathRaw.pc);
 
-    for (const path of paths) {
-      path.pc = plainToClassFromExist(format.buildPathConfig(), path.pc);
+      paths.push(path);
     }
 
     getAppStores().ga.gtag("event", "import_file_format", { format: format.getName() });

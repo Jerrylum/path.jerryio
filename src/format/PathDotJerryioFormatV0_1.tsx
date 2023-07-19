@@ -9,7 +9,7 @@ import { Box, Typography } from "@mui/material";
 import { UpdateProperties } from "../core/Command";
 import { Exclude } from "class-transformer";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
-import { Path } from "../core/Path";
+import { Path, Segment } from "../core/Path";
 import { isCoordinateWithHeading } from "../core/Coordinate";
 
 // observable class
@@ -64,10 +64,13 @@ class PathConfigImpl implements PathConfig {
   };
 
   @Exclude()
-  private format_: PathDotJerryioFormatV0_1;
+  readonly format: PathDotJerryioFormatV0_1;
+
+  @Exclude()
+  public path!: Path;
 
   constructor(format: PathDotJerryioFormatV0_1) {
-    this.format_ = format;
+    this.format = format;
     makeAutoObservable(this);
 
     reaction(
@@ -78,17 +81,12 @@ class PathConfigImpl implements PathConfig {
     );
 
     // ALGO: Convert the default parameters to the current point density
-    // ALGO: This is only used when a new path is added, not when the path config is loaded
+    // ALGO: This is only used when adding a new path
+    // ALGO: When loading path config, the configuration will be set/overwritten after this constructor
     convertPathConfigPointDensity(this, 2, format.getGeneralConfig().pointDensity);
   }
 
-  get format() {
-    return this.format_;
-  }
-
   getConfigPanel(app: MainApp) {
-    const pathUid = app.interestedPath()?.uid ?? "some-path-uid";
-
     return (
       <>
         <Box className="panel-box">
@@ -97,7 +95,7 @@ class PathConfigImpl implements PathConfig {
             range={this.speedLimit}
             onChange={(from, to) =>
               app.history.execute(
-                `Change path ${pathUid} min/max speed`,
+                `Change path ${this.path.uid} min/max speed`,
                 new UpdateProperties(this.speedLimit, { from, to })
               )
             }
@@ -109,7 +107,7 @@ class PathConfigImpl implements PathConfig {
             range={this.bentRateApplicableRange}
             onChange={(from, to) =>
               app.history.execute(
-                `Change path ${pathUid} bent rate applicable range`,
+                `Change path ${this.path.uid} bent rate applicable range`,
                 new UpdateProperties(this.bentRateApplicableRange, { from, to })
               )
             }
@@ -149,8 +147,8 @@ export class PathDotJerryioFormatV0_1 implements Format {
     return this.gc;
   }
 
-  buildPathConfig(): PathConfig {
-    return new PathConfigImpl(this);
+  createPath(...segments: Segment[]): Path {
+    return new Path(new PathConfigImpl(this), ...segments);
   }
 
   getPathPoints(path: Path): PointCalculationResult {

@@ -5,7 +5,7 @@ import { render, screen } from '@testing-library/react';
 import { MainApp } from './core/MainApp';
 import { Control, EndPointControl, Path, Segment, Vector, construct, traversal } from './core/Path';
 
-import { plainToClassFromExist, plainToInstance } from 'class-transformer';
+import { Exclude, plainToClassFromExist, plainToInstance } from 'class-transformer';
 import { instanceToPlain } from 'class-transformer';
 import { GeneralConfig, PathConfig } from './format/Config';
 import { Format, PathFileData } from './format/Format';
@@ -37,8 +37,8 @@ class CustomFormat implements Format {
   getGeneralConfig(): GeneralConfig {
     return new CustomGeneralConfig();
   }
-  buildPathConfig(): PathConfig {
-    return new CustomPathConfig();
+  createPath(...segments: Segment[]): Path {
+    return new Path(new CustomPathConfig(), ...segments);
   }
   getPathPoints(path: Path): PointCalculationResult {
     throw new Error("Method not implemented.");
@@ -77,6 +77,9 @@ class CustomGeneralConfig implements GeneralConfig {
 
 class CustomPathConfig implements PathConfig {
   public custom: string = "custom";
+
+  @Exclude()
+  public path!: Path;
 
   speedLimit: NumberRange = {
     minLimit: { value: 0, label: "0" },
@@ -154,9 +157,10 @@ test('Segment serialize', () => {
 
 test('Path serialize', () => {
   let format = new CustomFormat();
-  let r = new Path(format.buildPathConfig(), new Segment(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)));
+  let r = format.createPath(new Segment(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)));
   let p = instanceToPlain(r);
-  let r2 = plainToInstance(Path, p);
+  let r2 = format.createPath();
+  plainToClassFromExist(r2, p);
   let p2 = instanceToPlain(r2);
 
   expect(p).toEqual(p2);
@@ -164,12 +168,13 @@ test('Path serialize', () => {
 
 test('Path[] serialize', () => {
   let format = new CustomFormat();
-  let r = [new Path(format.buildPathConfig(), new Segment(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)))];
+  let r = [format.createPath(new Segment(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)))];
   let p = instanceToPlain(r);
-  let r2 = plainToInstance(Path, p);
+  let r2 = format.createPath();
+  plainToClassFromExist(r2, p[0]);
   let p2 = instanceToPlain(r2);
 
-  expect(p).toEqual(p2);
+  expect(p[0]).toEqual(p2);
 });
 
 test('Calculation with one segment and 6cm position changes', () => {
