@@ -56,7 +56,7 @@ Select the library you are using in the editor, and you will be able to generate
 PATH.JERRYIO is designed to be flexible and extensible. It supports multiple interchangeable output formats. That said, even if the library you are using releases a new version with a different path file format in the future, you can still open the old path file in the editor, and upgrade it to the new one.
 
 ### For Library Developers
-PATH.JERRYIO can be used to generate path files for any library as opposed to just one specific library. It is not just a path file generator for a specific library. Library developers can create a new format, and submit a pull request to add it to the editor.
+PATH.JERRYIO can be used to generate path files in any format. It is not just a path file generator for a specific library. Library developers can create a new format, and submit a pull request to add it to the editor.
 
 Depending on the path-following algorithm, what is included in the path file, can be different. For example, a library using pure pursuit may need the coordinate, heading and speed of the path waypoints, while a library using motion profiling may only need the coordinate of the segment control points.
 
@@ -69,11 +69,13 @@ By using PATH.JERRYIO, you only need to implement the path file parser and gener
 - Use Bézier curves with full control over the shape of each segment
 - Add/Delete control points with mouse click
 - Split segment or change segment type with mouse click
-- Split path into multiple paths (Coming soon)
+- Split path into multiple paths
 - Edit the exact coordinate of each control point and end point
 - Edit the heading of each end point, support Holonomic drive and Differential drive (See data structure section for more detail)
 - Delete multiple control points all at once
 - Undo/Redo support
+- Cut/Copy/Paste paths and control points
+- Reorder paths and control points
 - Real-time path preview
 - Handle multiple paths with custom names at the same time
 - Reorder path automatically based on the path name
