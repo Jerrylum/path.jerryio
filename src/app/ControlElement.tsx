@@ -7,7 +7,7 @@ import { useState } from "react";
 import { SegmentElementProps } from "./SegmentElement";
 import { DragControls, RemovePathsAndEndControls, UpdatePathTreeItems } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
-import { boundHeading, fromDegreeToRadian, fromHeadingInDegreeToAngleInRadian, toHeading } from "../core/Calculation";
+import { boundHeading, fromHeadingInDegreeToAngleInRadian, toHeading } from "../core/Calculation";
 import { MagnetReference, magnet } from "../core/Magnet";
 
 export interface ControlElementProps extends SegmentElementProps {

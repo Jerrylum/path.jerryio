@@ -10,7 +10,7 @@ import { UpdateProperties } from "../core/Command";
 import { Exclude } from "class-transformer";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
 import { Path } from "../core/Path";
-import { Coordinate, CoordinateWithHeading, EuclideanTransformation, isCoordinateWithHeading } from "../core/Coordinate";
+import { isCoordinateWithHeading } from "../core/Coordinate";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
