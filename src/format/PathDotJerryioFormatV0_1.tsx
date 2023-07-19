@@ -10,7 +10,7 @@ import { UpdateProperties } from "../core/Command";
 import { Exclude } from "class-transformer";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
 import { Path } from "../core/Path";
-import { Coordinate, CoordinateWithHeading, OriginRotation, isCoordinateWithHeading } from "../core/Coordinate";
+import { Coordinate, CoordinateWithHeading, EuclideanTransformation, isCoordinateWithHeading } from "../core/Coordinate";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -173,10 +173,10 @@ export class PathDotJerryioFormatV0_1 implements Format {
       const points = getPathPoints(path, density).points;
 
       if (points.length === 0) continue;
-      const rotation = new OriginRotation(points[0] as CoordinateWithHeading);
+      const rotation = new EuclideanTransformation(points[0] as CoordinateWithHeading);
 
       for (const point of points) {
-        const result1: Coordinate | CoordinateWithHeading = rotation.convert(point);
+        const result1: Coordinate | CoordinateWithHeading = rotation.transform(point);
 
         const x = uc.fromAtoB(result1.x).toUser();
         const y = uc.fromAtoB(result1.y).toUser();

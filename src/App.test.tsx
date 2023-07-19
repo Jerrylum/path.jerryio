@@ -13,7 +13,7 @@ import { Quantity, UnitOfLength } from "./core/Unit";
 import DOMPurify from "dompurify";
 import { NumberRange } from "./component/RangeSlider";
 import { PointCalculationResult, boundHeading, findClosestPointOnLine, findLinesIntersection, fromDegreeToRadian, fromHeadingInDegreeToAngleInRadian, getBezierCurveArcLength, getBezierCurvePoints, getPathSamplePoints, getSegmentSamplePoints, getUniformPointsFromSamples, toDerivativeHeading } from "./core/Calculation";
-import { Coordinate, CoordinateWithAngle, CoordinateWithHeading, OriginRotation, euclideanRotation, originRotation } from "./core/Coordinate";
+import { Coordinate, CoordinateWithHeading, EuclideanTransformation } from "./core/Coordinate";
 
 class CustomFormat implements Format {
   isInit: boolean;
@@ -616,72 +616,64 @@ test('findLinesIntersection', () => {
   ans = findLinesIntersection(new Vector(0, 0), 0, new Vector(2, 0), 0);
 });
 
-test('originRotation and euclideanRotation', () => {
-  let ans: Coordinate = {x: 0, y: 0};
-
-  ans = originRotation({x: 0, y: 0, heading: 0}, {x: 3, y: 4});
-  expect(ans.x).toBeCloseTo(3);
-  expect(ans.y).toBeCloseTo(4);
-
-  ans = originRotation({x: 0, y: 0, heading: 45}, {x: 3, y: 3});
-  expect(ans.x).toBeCloseTo(0);
-  expect(ans.y).toBeCloseTo(Math.sqrt(3 ** 2 + 3 ** 2));
-
-  ans = originRotation({x: 0, y: 0, heading: -45}, {x: 3, y: 3});
-  expect(ans.x).toBeCloseTo(Math.sqrt(3 ** 2 + 3 ** 2));
-  expect(ans.y).toBeCloseTo(0);
-
-  ans = originRotation({x: 0, y: 0, heading: 36.87}, {x: 3, y: 4});
-  expect(ans.x).toBeCloseTo(0);
-  expect(ans.y).toBeCloseTo(5);
-
-  ans = originRotation({x: 0, y: 0, heading: 270 + 36.87}, {x: 3, y: 4});
-  expect(ans.x).toBeCloseTo(5);
-  expect(ans.y).toBeCloseTo(0);
-});
-
-test('OriginRotation class', () => {
-  let converter = new OriginRotation({x: 0, y: 0, heading: 0});
+test('EuclideanTransformation class', () => {
+  let converter = new EuclideanTransformation({x: 0, y: 0, heading: 0});
   let ans: Coordinate = {x: 0, y: 0};
   let ans2: CoordinateWithHeading = {x: 0, y: 0, heading: 0};
 
-  ans = converter.convert({x: 3, y: 4});
+  ans = converter.transform({x: 3, y: 4});
   expect(ans.x).toBeCloseTo(3);
   expect(ans.y).toBeCloseTo(4);
 
-  ans2 = converter.convert({x: 3, y: 4, heading: 32.1});
+  ans2 = converter.transform({x: 3, y: 4, heading: 32.1});
   expect(ans2.x).toBeCloseTo(3);
   expect(ans2.y).toBeCloseTo(4);
   expect(ans2.heading).toBeCloseTo(32.1);
 
-  converter = new OriginRotation({x: 0, y: 0, heading: 45});
+  converter = new EuclideanTransformation({x: 0, y: 0, heading: 45});
 
-  ans = converter.convert({x: 3, y: 3});
+  ans = converter.transform({x: 3, y: 3});
   expect(ans.x).toBeCloseTo(0);
   expect(ans.y).toBeCloseTo(Math.sqrt(3 ** 2 + 3 ** 2));
 
-  ans2 = converter.convert({x: 3, y: 3, heading: 32.1});
+  ans2 = converter.transform({x: 3, y: 3, heading: 32.1});
   expect(ans2.x).toBeCloseTo(0);
   expect(ans2.y).toBeCloseTo(Math.sqrt(3 ** 2 + 3 ** 2));
   expect(ans2.heading).toBeCloseTo(boundHeading(32.1 - 45));
 
-  ans2 = converter.convert({x: 3, y: 3, heading: 330});
+  ans2 = converter.transform({x: 3, y: 3, heading: 330});
   expect(ans2.x).toBeCloseTo(0);
   expect(ans2.y).toBeCloseTo(Math.sqrt(3 ** 2 + 3 ** 2));
   expect(ans2.heading).toBeCloseTo(285);
 
-  converter = new OriginRotation({x: 0, y: 0, heading: -45});
+  converter = new EuclideanTransformation({x: 0, y: 0, heading: -45});
 
-  ans = converter.convert({x: 3, y: 3});
+  ans = converter.transform({x: 3, y: 3});
   expect(ans.x).toBeCloseTo(Math.sqrt(3 ** 2 + 3 ** 2));
   expect(ans.y).toBeCloseTo(0);
 
-  ans2 = converter.convert({x: 3, y: 3, heading: 32.1});
+  ans2 = converter.transform({x: 3, y: 3, heading: 32.1});
   expect(ans2.x).toBeCloseTo(Math.sqrt(3 ** 2 + 3 ** 2));
   expect(ans2.y).toBeCloseTo(0);
   expect(ans2.heading).toBeCloseTo(45 + 32.1);
 
-  ans2 = converter.convert({x: 3, y: 3, heading: 330});
+  ans2 = converter.transform({x: 3, y: 3, heading: 330});
+  expect(ans2.x).toBeCloseTo(Math.sqrt(3 ** 2 + 3 ** 2));
+  expect(ans2.y).toBeCloseTo(0);
+  expect(ans2.heading).toBeCloseTo(15);
+
+  converter = new EuclideanTransformation({x: 10, y: 20, heading: -45});
+
+  ans = converter.transform({x: 13, y: 23});
+  expect(ans.x).toBeCloseTo(Math.sqrt(3 ** 2 + 3 ** 2));
+  expect(ans.y).toBeCloseTo(0);
+
+  ans2 = converter.transform({x: 13, y: 23, heading: 32.1});
+  expect(ans2.x).toBeCloseTo(Math.sqrt(3 ** 2 + 3 ** 2));
+  expect(ans2.y).toBeCloseTo(0);
+  expect(ans2.heading).toBeCloseTo(45 + 32.1);
+
+  ans2 = converter.transform({x: 13, y: 23, heading: 330});
   expect(ans2.x).toBeCloseTo(Math.sqrt(3 ** 2 + 3 ** 2));
   expect(ans2.y).toBeCloseTo(0);
   expect(ans2.heading).toBeCloseTo(15);

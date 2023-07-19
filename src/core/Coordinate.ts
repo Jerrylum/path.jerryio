@@ -1,4 +1,4 @@
-import { boundAngle, boundHeading, fromHeadingInDegreeToAngleInRadian } from "./Calculation";
+import { boundHeading, fromHeadingInDegreeToAngleInRadian } from "./Calculation";
 
 export interface Coordinate {
   x: number;
@@ -9,10 +9,6 @@ export interface CoordinateWithHeading extends Coordinate {
   heading: number; // Degree [0, 360)
 }
 
-export interface CoordinateWithAngle extends Coordinate {
-  angle: number; // Radian [0, 2 * PI)
-}
-
 export function isCoordinate(target: any): target is Coordinate {
   return typeof target.x === "number" && typeof target.y === "number";
 }
@@ -21,15 +17,7 @@ export function isCoordinateWithHeading(target: any): target is CoordinateWithHe
   return typeof target.heading === "number" && isCoordinate(target);
 }
 
-export function isCoordinateWithAngle(target: any): target is CoordinateWithAngle {
-  return typeof target.angle === "number" && isCoordinate(target);
-}
-
-export class CartesianPlane {}
-
-// rotate CoordinateWithHeading
-
-export class OriginRotation {
+export class EuclideanTransformation {
   private theta: number;
   private sin: number;
   private cos: number;
@@ -40,15 +28,13 @@ export class OriginRotation {
     this.cos = Math.cos(this.theta);
   }
 
-  convert(target: Coordinate): Coordinate;
-  convert(target: CoordinateWithHeading): CoordinateWithHeading;
+  transform(target: Coordinate): Coordinate;
+  transform(target: CoordinateWithHeading): CoordinateWithHeading;
 
-  convert(
-    target: Coordinate | CoordinateWithHeading
-  ): Coordinate | CoordinateWithHeading {
+  transform(target: Coordinate | CoordinateWithHeading): Coordinate | CoordinateWithHeading {
     const rtn: any = {
-      y: target.x * this.sin + target.y * this.cos,
-      x: target.x * this.cos - target.y * this.sin
+      y: (target.x - this.origin.x) * this.sin + (target.y - this.origin.y) * this.cos,
+      x: (target.x - this.origin.x) * this.cos - (target.y - this.origin.y) * this.sin
     };
 
     if (isCoordinateWithHeading(target)) {
@@ -57,12 +43,6 @@ export class OriginRotation {
 
     return rtn;
   }
-}
-
-export function originRotation(origin: CoordinateWithHeading, target: Coordinate) {
-  const theta = fromHeadingInDegreeToAngleInRadian(boundHeading(-origin.heading + 90));
-
-  return euclideanRotation(theta, { x: target.x - origin.x, y: target.y - origin.y });
 }
 
 export function euclideanRotation(theta: number, target: Coordinate) {

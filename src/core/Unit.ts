@@ -14,6 +14,12 @@ export enum UnitOfLength {
   Tile = 24 * Inch
 }
 
+// Degree and Radian are "units"
+// Heading and Angle are context-dependent
+// It is possible to have a heading in degree or in radian
+// Heading starts from north (y+axis) and increases clockwise in [0, 360)
+// Angle starts from east (x+axis) and increases counter-clockwise in (-180, 180]
+
 export enum UnitOfAngle {
   Degree = 1, // default
   Radian = 180 / Math.PI
