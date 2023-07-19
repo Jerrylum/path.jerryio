@@ -5,10 +5,11 @@ import { PathConfig } from "../format/Config";
 import { InteractiveEntity, CanvasEntity, InteractiveEntityParent } from "./Canvas";
 
 import "reflect-metadata";
-import { PointCalculationResult } from "./Calculation";
+import { PointCalculationResult, boundHeading } from "./Calculation";
+import { Coordinate, CoordinateWithHeading } from "./Coordinate";
 
 // Not observable
-export class Vector {
+export class Vector implements Coordinate {
   constructor(public x: number, public y: number) {}
 
   add<T extends Vector>(vector: T): T {
@@ -128,14 +129,6 @@ export class Point extends Vector {
   }
 }
 
-export interface Position extends Vector {
-  heading: number; // [0, 360)
-
-  headingInRadian(): number;
-
-  clone(): Position;
-}
-
 // observable class
 export class Control extends Vector implements InteractiveEntity {
   public uid: string;
@@ -164,7 +157,7 @@ export class Control extends Vector implements InteractiveEntity {
 }
 
 // observable class
-export class EndPointControl extends Control implements Position {
+export class EndPointControl extends Control implements CoordinateWithHeading {
   @Expose({ name: "heading" })
   public heading_: number = 0;
 
@@ -185,13 +178,7 @@ export class EndPointControl extends Control implements Position {
   }
 
   set heading(heading: number) {
-    heading %= 360;
-    if (heading < 0) heading += 360;
-    this.heading_ = heading;
-  }
-
-  headingInRadian(): number {
-    return (this.heading * Math.PI) / 180;
+    this.heading_ = boundHeading(heading);
   }
 
   clone(): EndPointControl {
