@@ -45,16 +45,16 @@ const Root = observer(() => {
   useCustomHotkeys("Mod+P", onNew.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Mod+O", onOpen.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Mod+S", onSave.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
-  useCustomHotkeys("Mod+Shift+S", onSaveAs.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Shift+Mod+S", onSaveAs.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Mod+D", onDownload.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
-  useCustomHotkeys("Mod+Shift+D", onDownloadAs.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Shift+Mod+D", onDownloadAs.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
   useCustomHotkeys("Mod+Comma", () => appPreferences.open(), optionsToEnableHotkeys);
   useCustomHotkeys("Mod+X", () => clipboard.cut(), optionsToEnableHotkeys);
   useCustomHotkeys("Mod+C", () => clipboard.copy(), optionsToEnableHotkeys);
   useCustomHotkeys("Mod+V", () => clipboard.paste(), optionsToEnableHotkeys);
 
   useCustomHotkeys("Mod+Z", () => app.history.undo(), optionsToEnableHotkeys);
-  useCustomHotkeys("Mod+Y,Mod+Shift+Z", () => app.history.redo(), optionsToEnableHotkeys);
+  useCustomHotkeys("Mod+Y,Shift+Mod+Z", () => app.history.redo(), optionsToEnableHotkeys);
   useCustomHotkeys(
     "Mod+A",
     () => {
@@ -66,7 +66,7 @@ const Root = observer(() => {
   );
   useCustomHotkeys("Esc", () => app.clearSelected(), optionsToEnableHotkeys);
   useCustomHotkeys(
-    "Mod+Shift+A",
+    "Shift+Mod+A",
     () => {
       const path = app.selectedPath;
       const all = path !== undefined ? [path, ...path.controls] : app.allEntities;

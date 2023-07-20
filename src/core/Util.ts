@@ -117,7 +117,44 @@ export function useCustomHotkeys<T extends HTMLElement>(
 }
 
 export function useKeyName(key: string) {
-  return IS_MAC_OS ? key.replaceAll("Mod", "Meta") : key;
+  /*
+  See: https://osxdaily.com/2012/03/27/making-sense-of-mac-keyboard-symbols/
+  ⌘ is command
+  ⌥ is option
+  ⌃ is control
+  ⇧ is shift
+  ⇪ is caps lock
+  ← is left arrow
+  → is right arrow
+  ↑ is up arrow
+  ↓ is down arrow
+  ⇥ is tab
+  ⇤ is back tab
+  ↩ is return
+  ⌤ is enter
+  ⌫ is delete
+  ⌦ is forward delete
+  ⇞ is page up
+  ⇟ is page down
+  ↖ is home
+  ↘ is end
+  ⌧ is clear
+  ␣ is space
+  ⎋ is escape
+  ⏏ is eject
+  */
+  return IS_MAC_OS ? key
+    .replaceAll("Mod", "⌘")
+    .replaceAll("Option", "⌥")
+    .replaceAll("Ctrl", "⌃")
+    .replaceAll("Shift", "⇧")
+    .replaceAll("Del", "⌫")
+    .replaceAll("Esc", "⎋")
+    .replaceAll("+", "")
+    .replaceAll("Add", "+")
+    .replaceAll("Equal", "+")
+    .replaceAll("Subtract", "-")
+    .replaceAll("Minus", "-") : key;
 }
 
 export function useUnsavedChangesPrompt() {

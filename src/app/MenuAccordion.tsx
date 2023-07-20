@@ -15,7 +15,7 @@ import { observer } from "mobx-react-lite";
 
 import React from "react";
 import { DefaultComponentProps } from "@mui/material/OverridableComponent";
-import { useKeyName } from "../core/Util";
+import { IS_MAC_OS, useKeyName } from "../core/Util";
 import { onDownload, onDownloadAs, onNew, onOpen, onSave, onSaveAs } from "../core/InputOutput";
 import { MainApp, useAppStores } from "../core/MainApp";
 import { HelpPage } from "./HelpDialog";
@@ -23,6 +23,42 @@ import { AppTheme } from "./Theme";
 import { RemovePathsAndEndControls } from "../core/Command";
 import { checkForUpdates } from "../core/Versioning";
 import { Path } from "../core/Path";
+
+const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
+  const { hotkey } = props;
+
+  if (hotkey === undefined) return null;
+
+  if (IS_MAC_OS === false)
+    return (
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{
+          fontFamily: '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif'
+        }}
+        children={hotkey}
+      />
+    );
+
+  const elements: React.ReactElement[] = [];
+  for (const char of hotkey.split("")) {
+    elements.push(
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{
+          width: "1em",
+          textAlign: "center",
+          fontFamily: '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif'
+        }}
+        children={char}
+      />
+    );
+  }
+
+  return <>{elements}</>;
+});
 
 const CustomMenuItem = observer(
   (
@@ -39,9 +75,7 @@ const CustomMenuItem = observer(
       <MenuItem {...rest} className="menu-item" disabled={disable !== undefined && disable !== false}>
         <DoneIcon sx={{ visibility: !done ? "hidden" : "" }} />
         <ListItemText sx={{ marginRight: "1rem" }}>{text}</ListItemText>
-        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: "ui-monospace" }}>
-          {hotkey || ""}
-        </Typography>
+        <HotkeyTypography hotkey={hotkey} />
       </MenuItem>
     );
 
@@ -134,7 +168,7 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={false}
           text="Save As"
-          hotkey={useKeyName("Mod+Shift+S")}
+          hotkey={useKeyName("Shift+Mod+S")}
           onClick={onMenuClick(() => onSaveAs(app, confirmation))}
         />
         <Divider />
@@ -147,7 +181,7 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={false}
           text="Download As"
-          hotkey={useKeyName("Mod+Shift+D")}
+          hotkey={useKeyName("Shift+Mod+D")}
           onClick={onMenuClick(() => onDownloadAs(app, confirmation))}
         />
         <Divider />
@@ -232,14 +266,14 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={false}
           text="Select None"
-          hotkey="Esc"
+          hotkey={useKeyName("Esc")}
           disable={app.selectedEntityIds.length === 0 && "Nothing to unselect"}
           onClick={onMenuClick(() => app.clearSelected())}
         />
         <CustomMenuItem
           done={false}
           text="Select Inverse"
-          hotkey={useKeyName("Mod+Shift+A")}
+          hotkey={useKeyName("Shift+Mod+A")}
           onClick={onMenuClick(() => {
             const path = app.selectedPath;
             const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
@@ -316,3 +350,4 @@ const MenuAccordion = observer((props: {}) => {
 });
 
 export { MenuAccordion };
+
