@@ -15,7 +15,7 @@ import { observer } from "mobx-react-lite";
 
 import React from "react";
 import { DefaultComponentProps } from "@mui/material/OverridableComponent";
-import { IS_MAC_OS, useKeyName } from "../core/Util";
+import { IS_MAC_OS } from "../core/Util";
 import { onDownload, onDownloadAs, onNew, onOpen, onSave, onSaveAs } from "../core/InputOutput";
 import { MainApp, useAppStores } from "../core/MainApp";
 import { HelpPage } from "./HelpDialog";
@@ -34,15 +34,32 @@ const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
       <Typography
         variant="body2"
         color="text.secondary"
-        sx={{
-          fontFamily: '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif'
-        }}
-        children={hotkey}
+        children={hotkey.replaceAll("Mod", "Ctrl")}
       />
     );
 
+  const temp = hotkey
+    .replaceAll("Mod", "⌘")
+    .replaceAll("Option", "⌥")
+    .replaceAll("Ctrl", "⌃")
+    .replaceAll("Shift", "⇧")
+    .replaceAll("CapsLock", "⇪")
+    .replaceAll("ArrowLeft", "←")
+    .replaceAll("ArrowRight", "→")
+    .replaceAll("ArrowUp", "↑")
+    .replaceAll("ArrowDown", "↓")
+    .replaceAll("Tab", "⇥")
+    .replaceAll("Del", "⌫")
+    .replaceAll(" ", "␣")
+    .replaceAll("Esc", "")
+    .replaceAll("+", "")
+    .replaceAll("Add", "+")
+    .replaceAll("Equal", "+")
+    .replaceAll("Subtract", "-")
+    .replaceAll("Minus", "-");
+
   const elements: React.ReactElement[] = [];
-  for (const char of hotkey.split("")) {
+  for (const char of temp.split("")) {
     elements.push(
       <Typography
         variant="body2"
@@ -148,47 +165,47 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={false}
           text="New File"
-          hotkey={useKeyName("Mod+P")}
+          hotkey="Mod+P"
           onClick={onMenuClick(() => onNew(app, confirmation))}
         />
         <Divider />
         <CustomMenuItem
           done={false}
           text="Open File"
-          hotkey={useKeyName("Mod+O")}
+          hotkey="Mod+O"
           onClick={onMenuClick(() => onOpen(app, confirmation, false, false))}
         />
         <Divider />
         <CustomMenuItem
           done={false}
           text="Save"
-          hotkey={useKeyName("Mod+S")}
+          hotkey="Mod+S"
           onClick={onMenuClick(() => onSave(app, confirmation))}
         />
         <CustomMenuItem
           done={false}
           text="Save As"
-          hotkey={useKeyName("Shift+Mod+S")}
+          hotkey="Shift+Mod+S"
           onClick={onMenuClick(() => onSaveAs(app, confirmation))}
         />
         <Divider />
         <CustomMenuItem
           done={false}
           text="Download"
-          hotkey={useKeyName("Mod+D")}
+          hotkey="Mod+D"
           onClick={onMenuClick(() => onDownload(app, confirmation))}
         />
         <CustomMenuItem
           done={false}
           text="Download As"
-          hotkey={useKeyName("Shift+Mod+D")}
+          hotkey="Shift+Mod+D"
           onClick={onMenuClick(() => onDownloadAs(app, confirmation))}
         />
         <Divider />
         <CustomMenuItem
           done={false}
           text="Preferences"
-          hotkey={useKeyName("Mod+,")}
+          hotkey="Mod+,"
           onClick={onMenuClick(() => appPreferences.open())}
         />
       </Menu>
@@ -201,14 +218,14 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={false}
           text="Undo"
-          hotkey={useKeyName("Mod+Z")}
+          hotkey="Mod+Z"
           disable={app.history.canUndo === false && "Nothing to undo"}
           onClick={onMenuClick(() => app.history.undo())}
         />
         <CustomMenuItem
           done={false}
           text="Redo"
-          hotkey={useKeyName("Mod+Y")}
+          hotkey="Mod+Y"
           disable={app.history.redoHistorySize === 0 && "Nothing to redo"}
           onClick={onMenuClick(() => app.history.redo())}
         />
@@ -216,7 +233,7 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={false}
           text="Cut"
-          hotkey={useKeyName("Mod+X")}
+          hotkey="Mod+X"
           disable={
             (app.selectedEntities.length === 0 && "Select items to copy") ||
             (app.selectedEntities.some(e => e instanceof Path !== app.selectedEntities[0] instanceof Path) &&
@@ -227,7 +244,7 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={false}
           text="Copy"
-          hotkey={useKeyName("Mod+C")}
+          hotkey="Mod+C"
           disable={
             (app.selectedEntities.length === 0 && "Select items to copy") ||
             (app.selectedEntities.some(e => e instanceof Path !== app.selectedEntities[0] instanceof Path) &&
@@ -238,14 +255,14 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={false}
           text="Paste"
-          hotkey={useKeyName("Mod+V")}
+          hotkey="Mod+V"
           disable={clipboard.hasData === false && "The clipboard is empty"}
           onClick={onMenuClick(() => clipboard.paste())}
         />
         <CustomMenuItem
           done={false}
           text="Delete"
-          hotkey={useKeyName("Del")}
+          hotkey="Del"
           disable={app.selectedEntityIds.length === 0 && "Select items to delete"}
           onClick={onMenuClick(() => {
             const command = new RemovePathsAndEndControls(app.paths, app.selectedEntityIds);
@@ -256,7 +273,7 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={false}
           text="Select All"
-          hotkey={useKeyName("Mod+A")}
+          hotkey="Mod+A"
           onClick={onMenuClick(() => {
             const path = app.selectedPath;
             const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
@@ -266,14 +283,14 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={false}
           text="Select None"
-          hotkey={useKeyName("Esc")}
+          hotkey="Esc"
           disable={app.selectedEntityIds.length === 0 && "Nothing to unselect"}
           onClick={onMenuClick(() => app.clearSelected())}
         />
         <CustomMenuItem
           done={false}
           text="Select Inverse"
-          hotkey={useKeyName("Shift+Mod+A")}
+          hotkey="Shift+Mod+A"
           onClick={onMenuClick(() => {
             const path = app.selectedPath;
             const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
@@ -290,32 +307,32 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={app.view.showSpeedCanvas}
           text="Speed Graph"
-          hotkey={useKeyName("Mod+B")}
+          hotkey="Mod+B"
           onClick={onMenuClick(() => (app.view.showSpeedCanvas = !app.view.showSpeedCanvas))}
         />
         <CustomMenuItem
           done={app.view.showRightPanel}
           text="Right Panel"
-          hotkey={useKeyName("Mod+J")}
+          hotkey="Mod+J"
           onClick={onMenuClick(() => (app.view.showRightPanel = !app.view.showRightPanel))}
         />
         <Divider />
         <CustomMenuItem
           done={false}
           text="Zoom In"
-          hotkey={useKeyName("Mod+Add")}
+          hotkey="Mod+Add"
           onClick={onMenuClick(() => (app.fieldScale += 0.5))}
         />
         <CustomMenuItem
           done={false}
           text="Zoom Out"
-          hotkey={useKeyName("Mod+Minus")}
+          hotkey="Mod+Minus"
           onClick={onMenuClick(() => (app.fieldScale -= 0.5))}
         />
         <CustomMenuItem
           done={false}
           text="Zoom to Fit"
-          hotkey={useKeyName("Mod+0")}
+          hotkey="Mod+0"
           onClick={onMenuClick(() => app.resetFieldDisplay())}
         />
         <Divider />
@@ -350,4 +367,3 @@ const MenuAccordion = observer((props: {}) => {
 });
 
 export { MenuAccordion };
-
