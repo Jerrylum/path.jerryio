@@ -1,6 +1,16 @@
 import { action } from "mobx";
 import DoneIcon from "@mui/icons-material/Done";
-import { Button, Card, Divider, ListItemText, Menu, MenuItem, MenuItemTypeMap, Typography } from "@mui/material";
+import {
+  Button,
+  Card,
+  Divider,
+  ListItemText,
+  Menu,
+  MenuItem,
+  MenuItemTypeMap,
+  Tooltip,
+  Typography
+} from "@mui/material";
 import { observer } from "mobx-react-lite";
 
 import React from "react";
@@ -12,6 +22,7 @@ import { HelpPage } from "./HelpDialog";
 import { AppTheme } from "./Theme";
 import { RemovePathsAndEndControls } from "../core/Command";
 import { checkForUpdates } from "../core/Versioning";
+import { Path } from "../core/Path";
 
 const CustomMenuItem = observer(
   (
@@ -19,18 +30,25 @@ const CustomMenuItem = observer(
       done: boolean;
       text: string;
       hotkey?: string;
+      disable?: string | boolean;
     }
   ) => {
-    const { done, text, hotkey, ...rest } = props;
+    const { done, text, hotkey, disable, ...rest } = props;
 
-    return (
-      <MenuItem {...rest} className="menu-item">
+    const body = (
+      <MenuItem {...rest} className="menu-item" disabled={disable !== undefined && disable !== false}>
         <DoneIcon sx={{ visibility: !done ? "hidden" : "" }} />
         <ListItemText sx={{ marginRight: "1rem" }}>{text}</ListItemText>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: "ui-monospace" }}>
           {hotkey || ""}
         </Typography>
       </MenuItem>
+    );
+
+    return disable !== undefined && typeof disable !== "boolean" && disable !== "" ? (
+      <Tooltip title={disable} placement="right" children={body} />
+    ) : (
+      body
     );
   }
 );
@@ -150,12 +168,14 @@ const MenuAccordion = observer((props: {}) => {
           done={false}
           text="Undo"
           hotkey={useKeyName("Mod+Z")}
+          disable={app.history.canUndo === false && "Nothing to undo"}
           onClick={onMenuClick(() => app.history.undo())}
         />
         <CustomMenuItem
           done={false}
           text="Redo"
           hotkey={useKeyName("Mod+Y")}
+          disable={app.history.redoHistorySize === 0 && "Nothing to redo"}
           onClick={onMenuClick(() => app.history.redo())}
         />
         <Divider />
@@ -163,24 +183,36 @@ const MenuAccordion = observer((props: {}) => {
           done={false}
           text="Cut"
           hotkey={useKeyName("Mod+X")}
+          disable={
+            (app.selectedEntities.length === 0 && "Select items to copy") ||
+            (app.selectedEntities.some(e => e instanceof Path !== app.selectedEntities[0] instanceof Path) &&
+              "Copying controls and paths together is not supported")
+          }
           onClick={onMenuClick(() => clipboard.cut())}
         />
         <CustomMenuItem
           done={false}
           text="Copy"
           hotkey={useKeyName("Mod+C")}
+          disable={
+            (app.selectedEntities.length === 0 && "Select items to copy") ||
+            (app.selectedEntities.some(e => e instanceof Path !== app.selectedEntities[0] instanceof Path) &&
+              "Copying controls and paths together is not supported")
+          }
           onClick={onMenuClick(() => clipboard.copy())}
         />
         <CustomMenuItem
           done={false}
           text="Paste"
           hotkey={useKeyName("Mod+V")}
+          disable={clipboard.hasData === false && "The clipboard is empty"}
           onClick={onMenuClick(() => clipboard.paste())}
         />
         <CustomMenuItem
           done={false}
           text="Delete"
           hotkey={useKeyName("Del")}
+          disable={app.selectedEntityIds.length === 0 && "Select items to delete"}
           onClick={onMenuClick(() => {
             const command = new RemovePathsAndEndControls(app.paths, app.selectedEntityIds);
             app.history.execute(`Remove paths and end controls`, command);
@@ -197,7 +229,13 @@ const MenuAccordion = observer((props: {}) => {
             app.setSelected(all);
           })}
         />
-        <CustomMenuItem done={false} text="Select None" hotkey="Esc" onClick={onMenuClick(() => app.clearSelected())} />
+        <CustomMenuItem
+          done={false}
+          text="Select None"
+          hotkey="Esc"
+          disable={app.selectedEntityIds.length === 0 && "Nothing to unselect"}
+          onClick={onMenuClick(() => app.clearSelected())}
+        />
         <CustomMenuItem
           done={false}
           text="Select Inverse"

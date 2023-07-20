@@ -181,6 +181,10 @@ export class AppClipboard {
     return true;
   }
 
+  get hasData() {
+    return this.message !== undefined;
+  }
+
   private createBroadcastChannel() {
     if (this.broadcastChannel !== undefined) return undefined;
 

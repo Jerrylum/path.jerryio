@@ -77,8 +77,8 @@ export class CommandHistory {
 
   undo(): void {
     this.commit();
-    if (this.history.length > 0) {
-      const command = this.history.pop()!;
+    const command = this.history.pop();
+    if (command !== undefined) {
       command.undo();
       this.redoHistory.push(command);
       this.saveStepCounter--;
@@ -145,6 +145,18 @@ export class CommandHistory {
   isModified(): boolean {
     this.commit();
     return this.saveStepCounter !== 0;
+  }
+
+  get canUndo() {
+    return this.undoHistorySize !== 0 || this.lastExecution !== undefined;
+  }
+
+  get undoHistorySize() {
+    return this.history.length;
+  }
+
+  get redoHistorySize() {
+    return this.redoHistory.length;
   }
 }
 
