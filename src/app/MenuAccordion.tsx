@@ -231,19 +231,19 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={false}
           text="Zoom In"
-          hotkey="Mod+Add"
+          hotkey={useKeyName("Mod+Add")}
           onClick={onMenuClick(() => (app.fieldScale += 0.5))}
         />
         <CustomMenuItem
           done={false}
           text="Zoom Out"
-          hotkey="Mod+Minus"
+          hotkey={useKeyName("Mod+Minus")}
           onClick={onMenuClick(() => (app.fieldScale -= 0.5))}
         />
         <CustomMenuItem
           done={false}
           text="Zoom to Fit"
-          hotkey="Mod+0"
+          hotkey={useKeyName("Mod+0")}
           onClick={onMenuClick(() => app.resetFieldDisplay())}
         />
         <Divider />
