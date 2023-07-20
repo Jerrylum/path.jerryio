@@ -7,6 +7,17 @@ import { TokenParser, NumberWithUnit, CodePointBuffer, Computation } from "../to
 import { Unit } from "./Unit";
 import { Vector } from "./Path";
 
+export const isMacOS = (() => {
+  const os = navigator.userAgent;
+  if (os.search("Windows") !== -1) {
+    return false;
+  } else if (os.search("Mac") !== -1) {
+    return true;
+  } else {
+    return false;
+  }
+})();
+
 export function useTimer(ms: number) {
   const [time, setTime] = React.useState(Date.now());
 
@@ -18,19 +29,6 @@ export function useTimer(ms: number) {
   }, [ms]);
 
   return time;
-}
-
-export function useIsMacOS() {
-  return React.useMemo(() => {
-    const os = navigator.userAgent;
-    if (os.search("Windows") !== -1) {
-      return false;
-    } else if (os.search("Mac") !== -1) {
-      return true;
-    } else {
-      return false;
-    }
-  }, []);
 }
 
 export interface CustomHotkeysOptions extends Options {
@@ -111,7 +109,7 @@ export function useCustomHotkeys<T extends HTMLElement>(
 }
 
 export function useKeyName(key: string) {
-  return useIsMacOS() ? key.replaceAll("Ctrl", "Ctrl") : key;
+  return isMacOS ? key.replaceAll("Ctrl", "Meta") : key;
 }
 
 export function useUnsavedChangesPrompt() {

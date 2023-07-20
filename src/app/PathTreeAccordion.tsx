@@ -24,7 +24,7 @@ import {
 import { getAppStores, useAppStores } from "../core/MainApp";
 import { Quantity, UnitOfLength } from "../core/Unit";
 import classNames from "classnames";
-import { useIsMacOS } from "../core/Util";
+import { IS_MAC_OS } from "../core/Util";
 import React from "react";
 
 function getItemNameRegex() {
@@ -175,8 +175,6 @@ const TreeItem = observer((props: TreeItemProps) => {
 
   const { entity, parent, variables, treeViewRef } = props;
 
-  const isMacOS = useIsMacOS();
-
   const nameRef = React.useRef<HTMLSpanElement>(null);
   const initialValue = React.useRef(entity.name);
   const lastValidName = React.useRef(entity.name);
@@ -306,7 +304,7 @@ const TreeItem = observer((props: TreeItemProps) => {
   function onLabelClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     event.preventDefault();
     event.stopPropagation();
-    touchItem(variables, entity, event.shiftKey, isMacOS ? event.metaKey : event.ctrlKey, true);
+    touchItem(variables, entity, event.shiftKey, IS_MAC_OS ? event.metaKey : event.ctrlKey, true);
   }
 
   function onVisibleClick(event: React.MouseEvent<SVGSVGElement, MouseEvent>) {
