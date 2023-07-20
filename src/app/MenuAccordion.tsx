@@ -96,47 +96,47 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={false}
           text="New File"
-          hotkey={useKeyName("Ctrl+P")}
+          hotkey={useKeyName("Mod+P")}
           onClick={onMenuClick(() => onNew(app, confirmation))}
         />
         <Divider />
         <CustomMenuItem
           done={false}
           text="Open File"
-          hotkey={useKeyName("Ctrl+O")}
+          hotkey={useKeyName("Mod+O")}
           onClick={onMenuClick(() => onOpen(app, confirmation, false, false))}
         />
         <Divider />
         <CustomMenuItem
           done={false}
           text="Save"
-          hotkey={useKeyName("Ctrl+S")}
+          hotkey={useKeyName("Mod+S")}
           onClick={onMenuClick(() => onSave(app, confirmation))}
         />
         <CustomMenuItem
           done={false}
           text="Save As"
-          hotkey={useKeyName("Ctrl+Shift+S")}
+          hotkey={useKeyName("Mod+Shift+S")}
           onClick={onMenuClick(() => onSaveAs(app, confirmation))}
         />
         <Divider />
         <CustomMenuItem
           done={false}
           text="Download"
-          hotkey={useKeyName("Ctrl+D")}
+          hotkey={useKeyName("Mod+D")}
           onClick={onMenuClick(() => onDownload(app, confirmation))}
         />
         <CustomMenuItem
           done={false}
           text="Download As"
-          hotkey={useKeyName("Ctrl+Shift+D")}
+          hotkey={useKeyName("Mod+Shift+D")}
           onClick={onMenuClick(() => onDownloadAs(app, confirmation))}
         />
         <Divider />
         <CustomMenuItem
           done={false}
           text="Preferences"
-          hotkey={useKeyName("Ctrl+,")}
+          hotkey={useKeyName("Mod+,")}
           onClick={onMenuClick(() => appPreferences.open())}
         />
       </Menu>
@@ -149,32 +149,32 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={false}
           text="Undo"
-          hotkey={useKeyName("Ctrl+Z")}
+          hotkey={useKeyName("Mod+Z")}
           onClick={onMenuClick(() => app.history.undo())}
         />
         <CustomMenuItem
           done={false}
           text="Redo"
-          hotkey={useKeyName("Ctrl+Y")}
+          hotkey={useKeyName("Mod+Y")}
           onClick={onMenuClick(() => app.history.redo())}
         />
         <Divider />
         <CustomMenuItem
           done={false}
           text="Cut"
-          hotkey={useKeyName("Ctrl+X")}
+          hotkey={useKeyName("Mod+X")}
           onClick={onMenuClick(() => clipboard.cut())}
         />
         <CustomMenuItem
           done={false}
           text="Copy"
-          hotkey={useKeyName("Ctrl+C")}
+          hotkey={useKeyName("Mod+C")}
           onClick={onMenuClick(() => clipboard.copy())}
         />
         <CustomMenuItem
           done={false}
           text="Paste"
-          hotkey={useKeyName("Ctrl+V")}
+          hotkey={useKeyName("Mod+V")}
           onClick={onMenuClick(() => clipboard.paste())}
         />
         <CustomMenuItem
@@ -190,7 +190,7 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={false}
           text="Select All"
-          hotkey={useKeyName("Ctrl+A")}
+          hotkey={useKeyName("Mod+A")}
           onClick={onMenuClick(() => {
             const path = app.selectedPath;
             const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
@@ -201,7 +201,7 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={false}
           text="Select Inverse"
-          hotkey={useKeyName("Ctrl+Shift+A")}
+          hotkey={useKeyName("Mod+Shift+A")}
           onClick={onMenuClick(() => {
             const path = app.selectedPath;
             const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
@@ -218,32 +218,32 @@ const MenuAccordion = observer((props: {}) => {
         <CustomMenuItem
           done={app.view.showSpeedCanvas}
           text="Speed Graph"
-          hotkey={useKeyName("Ctrl+B")}
+          hotkey={useKeyName("Mod+B")}
           onClick={onMenuClick(() => (app.view.showSpeedCanvas = !app.view.showSpeedCanvas))}
         />
         <CustomMenuItem
           done={app.view.showRightPanel}
           text="Right Panel"
-          hotkey={useKeyName("Ctrl+J")}
+          hotkey={useKeyName("Mod+J")}
           onClick={onMenuClick(() => (app.view.showRightPanel = !app.view.showRightPanel))}
         />
         <Divider />
         <CustomMenuItem
           done={false}
           text="Zoom In"
-          hotkey="Ctrl+Add"
+          hotkey="Mod+Add"
           onClick={onMenuClick(() => (app.fieldScale += 0.5))}
         />
         <CustomMenuItem
           done={false}
           text="Zoom Out"
-          hotkey="Ctrl+Minus"
+          hotkey="Mod+Minus"
           onClick={onMenuClick(() => (app.fieldScale -= 0.5))}
         />
         <CustomMenuItem
           done={false}
           text="Zoom to Fit"
-          hotkey="Ctrl+0"
+          hotkey="Mod+0"
           onClick={onMenuClick(() => app.resetFieldDisplay())}
         />
         <Divider />

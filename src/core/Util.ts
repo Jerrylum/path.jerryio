@@ -7,7 +7,7 @@ import { TokenParser, NumberWithUnit, CodePointBuffer, Computation } from "../to
 import { Unit } from "./Unit";
 import { Vector } from "./Path";
 
-export const isMacOS = (() => {
+export const IS_MAC_OS = (() => {
   const os = navigator.userAgent;
   if (os.search("Windows") !== -1) {
     return false;
@@ -52,22 +52,30 @@ export function useCustomHotkeys<T extends HTMLElement>(
       UX: Debounce the keydown event to prevent the callback from being called multiple times.
       If the user holds down the key, the callback will only be called once until the key is released.
       However, it auto resets after 800ms of no keydown events to prevent the case where the keyup event is missed.
+      
+      Last but not least, do not debounce MacOS meta hotkeys.
+      See: https://stackoverflow.com/questions/11818637/why-does-javascript-drop-keyup-events-when-the-metakey-is-pressed-on-mac-browser
+      
+      The debounce times are randomly chosen.
       */
+
+      const isMacMetaHotkey = IS_MAC_OS && kvEvt.metaKey;
 
       if (kvEvt.type === "keyup") {
         timeRef.current = null;
       } else if (kvEvt.type === "keydown") {
-        if (timeRef.current === null || Date.now() - timeRef.current > 800) {
-          // 800 is randomly chosen
+        if (timeRef.current === null || Date.now() - timeRef.current > (isMacMetaHotkey ? 200 : 800)) {
           runInAction(func);
+          timeRef.current = Date.now();
+        } else if (isMacMetaHotkey === false) {
+          timeRef.current = Date.now();
         }
-        timeRef.current = Date.now();
       }
     };
   }
 
   return useHotkeys(
-    useKeyName(keys),
+    keys,
     onKeydown(callback),
     {
       ...options,
@@ -109,7 +117,7 @@ export function useCustomHotkeys<T extends HTMLElement>(
 }
 
 export function useKeyName(key: string) {
-  return isMacOS ? key.replaceAll("Ctrl", "Meta") : key;
+  return IS_MAC_OS ? key.replaceAll("Mod", "Meta") : key;
 }
 
 export function useUnsavedChangesPrompt() {

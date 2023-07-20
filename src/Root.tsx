@@ -36,27 +36,27 @@ const Root = observer(() => {
 
   const optionsToEnableHotkeys = { enabled: isUsingEditor && !isDraggingFile };
 
-  // UX: Enable custom hotkeys on input fields (e.g. Ctrl+S) to prevent accidentally triggering the browser default
+  // UX: Enable custom hotkeys on input fields (e.g. Mod+S) to prevent accidentally triggering the browser default
   // hotkeys when focusing them (e.g. Save page). However, we do not apply it to all hotkeys, because we want to keep
-  // some browser default hotkeys on input fields (e.g. Ctrl+Z to undo user input) instead of triggering custom hotkeys
-  // (e.g. Ctrl+Z to undo field change)
+  // some browser default hotkeys on input fields (e.g. Mod+Z to undo user input) instead of triggering custom hotkeys
+  // (e.g. Mod+Z to undo field change)
   const optionsToEnableHotkeysOnInputFields = { enableOnContentEditable: true, ...optionsToEnableHotkeys };
 
-  useCustomHotkeys("Ctrl+P", onNew.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
-  useCustomHotkeys("Ctrl+O", onOpen.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
-  useCustomHotkeys("Ctrl+S", onSave.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
-  useCustomHotkeys("Ctrl+Shift+S", onSaveAs.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
-  useCustomHotkeys("Ctrl+D", onDownload.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
-  useCustomHotkeys("Ctrl+Shift+D", onDownloadAs.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
-  useCustomHotkeys("Ctrl+Comma", () => appPreferences.open(), optionsToEnableHotkeys);
-  useCustomHotkeys("Ctrl+X", () => clipboard.cut(), optionsToEnableHotkeys);
-  useCustomHotkeys("Ctrl+C", () => clipboard.copy(), optionsToEnableHotkeys);
-  useCustomHotkeys("Ctrl+V", () => clipboard.paste(), optionsToEnableHotkeys);
+  useCustomHotkeys("Mod+P", onNew.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Mod+O", onOpen.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Mod+S", onSave.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Mod+Shift+S", onSaveAs.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Mod+D", onDownload.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Mod+Shift+D", onDownloadAs.bind(null, app, confirmation), optionsToEnableHotkeysOnInputFields);
+  useCustomHotkeys("Mod+Comma", () => appPreferences.open(), optionsToEnableHotkeys);
+  useCustomHotkeys("Mod+X", () => clipboard.cut(), optionsToEnableHotkeys);
+  useCustomHotkeys("Mod+C", () => clipboard.copy(), optionsToEnableHotkeys);
+  useCustomHotkeys("Mod+V", () => clipboard.paste(), optionsToEnableHotkeys);
 
-  useCustomHotkeys("Ctrl+Z", () => app.history.undo(), optionsToEnableHotkeys);
-  useCustomHotkeys("Ctrl+Y,Ctrl+Shift+Z", () => app.history.redo(), optionsToEnableHotkeys);
+  useCustomHotkeys("Mod+Z", () => app.history.undo(), optionsToEnableHotkeys);
+  useCustomHotkeys("Mod+Y,Mod+Shift+Z", () => app.history.redo(), optionsToEnableHotkeys);
   useCustomHotkeys(
-    "Ctrl+A",
+    "Mod+A",
     () => {
       const path = app.selectedPath;
       const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
@@ -66,7 +66,7 @@ const Root = observer(() => {
   );
   useCustomHotkeys("Esc", () => app.clearSelected(), optionsToEnableHotkeys);
   useCustomHotkeys(
-    "Ctrl+Shift+A",
+    "Mod+Shift+A",
     () => {
       const path = app.selectedPath;
       const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
@@ -75,12 +75,12 @@ const Root = observer(() => {
     optionsToEnableHotkeys
   );
 
-  useCustomHotkeys("Ctrl+B", () => (app.view.showSpeedCanvas = !app.view.showSpeedCanvas), optionsToEnableHotkeys);
-  useCustomHotkeys("Ctrl+J", () => (app.view.showRightPanel = !app.view.showRightPanel), optionsToEnableHotkeys);
+  useCustomHotkeys("Mod+B", () => (app.view.showSpeedCanvas = !app.view.showSpeedCanvas), optionsToEnableHotkeys);
+  useCustomHotkeys("Mod+J", () => (app.view.showRightPanel = !app.view.showRightPanel), optionsToEnableHotkeys);
 
-  useCustomHotkeys("Ctrl+Add,Ctrl+Equal", () => (app.fieldScale += 0.5), optionsToEnableHotkeys);
-  useCustomHotkeys("Ctrl+Subtract,Ctrl+Minus", () => (app.fieldScale -= 0.5), optionsToEnableHotkeys);
-  useCustomHotkeys("Ctrl+0", () => app.resetFieldDisplay(), optionsToEnableHotkeys);
+  useCustomHotkeys("Mod+Add,Mod+Equal", () => (app.fieldScale += 0.5), optionsToEnableHotkeys);
+  useCustomHotkeys("Mod+Subtract,Mod+Minus", () => (app.fieldScale -= 0.5), optionsToEnableHotkeys);
+  useCustomHotkeys("Mod+0", () => app.resetFieldDisplay(), optionsToEnableHotkeys);
 
   useCustomHotkeys("R", () => (app.gc.showRobot = !app.gc.showRobot), {
     ...optionsToEnableHotkeys,
