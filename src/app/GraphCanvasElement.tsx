@@ -10,6 +10,7 @@ import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateProperties } from "../
 import { useAppStores } from "../core/MainApp";
 import { KeyframeIndexing } from "../core/Calculation";
 import { GraphCanvasConverter } from "../core/Canvas";
+import { Box, Tooltip } from "@mui/material";
 
 const PathPoints = observer((props: { path: Path; gcc: GraphCanvasConverter }) => {
   const { path, gcc } = props;
@@ -90,6 +91,8 @@ const KeyframeElement = observer((props: { ikf: KeyframeIndexing; gcc: GraphCanv
     const posInPx = gcc.toPx(kfPos);
     event.target.x(posInPx.x);
     event.target.y(posInPx.y);
+
+    // TODO: Tooltip display
   };
 
   const onClickKeyframe = (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -124,6 +127,9 @@ const KeyframeElement = observer((props: { ikf: KeyframeIndexing; gcc: GraphCanv
       draggable
       onDragMove={action(onDragKeyframe)}
       onClick={action(onClickKeyframe)}
+      onMouseEnter={action(() => {})} // TODO
+      onMouseMove={action(() => {})}
+      onMouseLeave={action(() => {})}
     />
   );
 });
@@ -181,102 +187,122 @@ const GraphCanvasElement = observer((props: {}) => {
   };
 
   return (
-    <Stage width={canvasWidth} height={canvasHeight} onWheel={handleWheel} onContextMenu={e => e.evt.preventDefault()}>
-      <Layer>
-        <Line
-          points={[0, gcc.axisLineTopX, gcc.pixelWidth, gcc.axisLineTopX]}
-          stroke={fgColor}
-          strokeWidth={gcc.lineWidth}
-        />
-        <Line
-          points={[0, gcc.axisLineBottomX, gcc.pixelWidth, gcc.axisLineBottomX]}
-          stroke={fgColor}
-          strokeWidth={gcc.lineWidth}
-        />
+    <Tooltip title="" placement="right" arrow followCursor>
+      <Box>
+        <Stage
+          width={canvasWidth}
+          height={canvasHeight}
+          onWheel={handleWheel}
+          onContextMenu={e => e.evt.preventDefault()}>
+          <Layer>
+            <Line
+              points={[0, gcc.axisLineTopX, gcc.pixelWidth, gcc.axisLineTopX]}
+              stroke={fgColor}
+              strokeWidth={gcc.lineWidth}
+            />
+            <Line
+              points={[0, gcc.axisLineBottomX, gcc.pixelWidth, gcc.axisLineBottomX]}
+              stroke={fgColor}
+              strokeWidth={gcc.lineWidth}
+            />
 
-        <PathPoints {...{ path, gcc }} />
+            <PathPoints {...{ path, gcc }} />
 
-        <Rect x={0} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill={bgColor} />
-        <Rect x={gcc.rightPaddingStart} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill={bgColor} />
+            <Rect x={0} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill={bgColor} />
+            <Rect
+              x={gcc.rightPaddingStart}
+              y={0}
+              width={gcc.twoSidePaddingWidth}
+              height={gcc.pixelHeight}
+              fill={bgColor}
+            />
 
-        <Rect
-          x={gcc.twoSidePaddingWidth}
-          y={0}
-          width={gcc.pixelWidth - gcc.twoSidePaddingWidth * 2}
-          height={gcc.pixelHeight}
-          onClick={action(onGraphClick)}
-        />
+            <Rect
+              x={gcc.twoSidePaddingWidth}
+              y={0}
+              width={gcc.pixelWidth - gcc.twoSidePaddingWidth * 2}
+              height={gcc.pixelHeight}
+              onClick={action(onGraphClick)}
+            />
 
-        <Keyframes {...{ path, gcc }} />
+            <Keyframes {...{ path, gcc }} />
 
-        <Rect x={0} y={0} width={gcc.axisTitleWidth} height={gcc.pixelHeight} fill={bgColor} />
-        <Text
-          text={speedTo + ""}
-          x={0}
-          y={gcc.axisLineTopX - fontSize / 3}
-          fontSize={fontSize}
-          fontFamily="Roboto"
-          fill={fgColor}
-          align="right"
-          width={gcc.axisTitleWidth * 0.9}
-        />
-        <Text
-          text={speedFrom + ""}
-          x={0}
-          y={gcc.axisLineBottomX - fontSize / 3}
-          fontSize={fontSize}
-          fontFamily="Roboto"
-          fill={fgColor}
-          align="right"
-          width={gcc.axisTitleWidth * 0.9}
-        />
+            <Rect x={0} y={0} width={gcc.axisTitleWidth} height={gcc.pixelHeight} fill={bgColor} />
+            <Text
+              text={speedTo + ""}
+              x={0}
+              y={gcc.axisLineTopX - fontSize / 3}
+              fontSize={fontSize}
+              fontFamily="Roboto"
+              fill={fgColor}
+              align="right"
+              width={gcc.axisTitleWidth * 0.9}
+            />
+            <Text
+              text={speedFrom + ""}
+              x={0}
+              y={gcc.axisLineBottomX - fontSize / 3}
+              fontSize={fontSize}
+              fontFamily="Roboto"
+              fill={fgColor}
+              align="right"
+              width={gcc.axisTitleWidth * 0.9}
+            />
 
-        <Rect x={gcc.rightPaddingStart} y={0} width={gcc.twoSidePaddingWidth} height={gcc.pixelHeight} fill={bgColor} />
-        <Text
-          text={bentRateHigh + ""}
-          x={gcc.rightPaddingStart + gcc.pointWidth}
-          y={gcc.axisLineTopX - fontSize / 3}
-          fontSize={fontSize}
-          fontFamily="Roboto"
-          fill={fgColor}
-          width={gcc.axisTitleWidth}
-        />
-        <Text
-          text={bentRateLow + ""}
-          x={gcc.rightPaddingStart + gcc.pointWidth}
-          y={gcc.axisLineBottomX - fontSize / 3}
-          fontSize={fontSize}
-          fontFamily="Roboto"
-          fill={fgColor}
-          width={gcc.axisTitleWidth}
-        />
+            <Rect
+              x={gcc.rightPaddingStart}
+              y={0}
+              width={gcc.twoSidePaddingWidth}
+              height={gcc.pixelHeight}
+              fill={bgColor}
+            />
+            <Text
+              text={bentRateHigh + ""}
+              x={gcc.rightPaddingStart + gcc.pointWidth}
+              y={gcc.axisLineTopX - fontSize / 3}
+              fontSize={fontSize}
+              fontFamily="Roboto"
+              fill={fgColor}
+              width={gcc.axisTitleWidth}
+            />
+            <Text
+              text={bentRateLow + ""}
+              x={gcc.rightPaddingStart + gcc.pointWidth}
+              y={gcc.axisLineBottomX - fontSize / 3}
+              fontSize={fontSize}
+              fontFamily="Roboto"
+              fill={fgColor}
+              width={gcc.axisTitleWidth}
+            />
 
-        <Text
-          text={"Speed"}
-          x={0}
-          y={gcc.pixelHeight}
-          fontSize={fontSize}
-          fontFamily="Roboto"
-          fill={fgColor}
-          width={gcc.pixelHeight}
-          height={fontSize}
-          align="center"
-          rotation={270}
-        />
-        <Text
-          text={"Bent Rate"}
-          x={gcc.pixelWidth - gcc.pointWidth}
-          y={0}
-          fontSize={fontSize}
-          fontFamily="Roboto"
-          fill={fgColor}
-          width={gcc.pixelHeight}
-          height={fontSize}
-          align="center"
-          rotation={90}
-        />
-      </Layer>
-    </Stage>
+            <Text
+              text={"Speed"}
+              x={0}
+              y={gcc.pixelHeight}
+              fontSize={fontSize}
+              fontFamily="Roboto"
+              fill={fgColor}
+              width={gcc.pixelHeight}
+              height={fontSize}
+              align="center"
+              rotation={270}
+            />
+            <Text
+              text={"Bent Rate"}
+              x={gcc.pixelWidth - gcc.pointWidth}
+              y={0}
+              fontSize={fontSize}
+              fontFamily="Roboto"
+              fill={fgColor}
+              width={gcc.pixelHeight}
+              height={fontSize}
+              align="center"
+              rotation={90}
+            />
+          </Layer>
+        </Stage>
+      </Box>
+    </Tooltip>
   );
 });
 
