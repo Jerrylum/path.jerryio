@@ -1,4 +1,4 @@
-import { action } from "mobx";
+import { makeAutoObservable, action } from "mobx";
 import DoneIcon from "@mui/icons-material/Done";
 import {
   Button,
@@ -30,13 +30,7 @@ const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
   if (hotkey === undefined) return null;
 
   if (IS_MAC_OS === false)
-    return (
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        children={hotkey.replaceAll("Mod", "Ctrl")}
-      />
-    );
+    return <Typography variant="body2" color="text.secondary" children={hotkey.replaceAll("Mod", "Ctrl")} />;
 
   const temp = hotkey
     .replaceAll("Mod", "⌘")
@@ -51,7 +45,7 @@ const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
     .replaceAll("Tab", "⇥")
     .replaceAll("Del", "⌫")
     .replaceAll(" ", "␣")
-    .replaceAll("Esc", "")
+    .replaceAll("Esc", "") // Hide escape key
     .replaceAll("+", "")
     .replaceAll("Add", "+")
     .replaceAll("Equal", "+")
@@ -104,21 +98,45 @@ const CustomMenuItem = observer(
   }
 );
 
+class MenuVariables {
+  private menuStates: { [key: string]: boolean } = {};
+
+  isOpenMenu(menu: string): boolean {
+    return this.menuStates[menu] ?? false;
+  }
+
+  openMenu(menu: string) {
+    this.menuStates[menu] = true;
+  }
+
+  toggleMenu(menu: string) {
+    this.menuStates[menu] = !this.isOpenMenu(menu);
+  }
+
+  closeMenu(menu: string) {
+    this.menuStates[menu] = false;
+  }
+
+  closeAllMenus() {
+    for (const key in this.menuStates) {
+      this.menuStates[key] = false;
+    }
+  }
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+}
+
 const MenuAccordion = observer((props: {}) => {
   const { app, confirmation, help, appPreferences, clipboard } = useAppStores();
 
-  const [isOpenFileMenu, setIsOpenFileMenu] = React.useState(false);
-  const [isOpenEditMenu, setIsOpenEditMenu] = React.useState(false);
-  const [isOpenViewMenu, setIsOpenViewMenu] = React.useState(false);
-  const [isOpenHelpMenu, setIsOpenHelpMenu] = React.useState(false);
+  const [variables] = React.useState(() => new MenuVariables());
 
   function onMenuClick(func: (app: MainApp) => void) {
     return action(() => {
       func(app);
-      setIsOpenFileMenu(false);
-      setIsOpenEditMenu(false);
-      setIsOpenViewMenu(false);
-      setIsOpenHelpMenu(false);
+      variables.closeAllMenus();
     });
   }
 
@@ -129,7 +147,7 @@ const MenuAccordion = observer((props: {}) => {
         color="inherit"
         variant="text"
         id="menu-file-btn"
-        onClick={() => setIsOpenFileMenu(!isOpenFileMenu)}>
+        onClick={() => variables.toggleMenu("File")}>
         File
       </Button>
       <Button
@@ -137,7 +155,7 @@ const MenuAccordion = observer((props: {}) => {
         color="inherit"
         variant="text"
         id="menu-edit-btn"
-        onClick={() => setIsOpenEditMenu(!isOpenEditMenu)}>
+        onClick={() => variables.toggleMenu("Edit")}>
         Edit
       </Button>
       <Button
@@ -145,7 +163,7 @@ const MenuAccordion = observer((props: {}) => {
         color="inherit"
         variant="text"
         id="menu-view-btn"
-        onClick={() => setIsOpenViewMenu(!isOpenViewMenu)}>
+        onClick={() => variables.toggleMenu("View")}>
         View
       </Button>
       <Button
@@ -153,15 +171,15 @@ const MenuAccordion = observer((props: {}) => {
         color="inherit"
         variant="text"
         id="menu-help-btn"
-        onClick={() => setIsOpenHelpMenu(!isOpenHelpMenu)}>
+        onClick={() => variables.toggleMenu("Help")}>
         Help
       </Button>
 
       <Menu
         anchorEl={document.getElementById("menu-file-btn")}
         MenuListProps={{ dense: true }}
-        open={isOpenFileMenu}
-        onClose={() => setIsOpenFileMenu(false)}>
+        open={variables.isOpenMenu("File")}
+        onClose={() => variables.closeMenu("File")}>
         <CustomMenuItem
           done={false}
           text="New File"
@@ -213,8 +231,8 @@ const MenuAccordion = observer((props: {}) => {
       <Menu
         anchorEl={document.getElementById("menu-edit-btn")}
         MenuListProps={{ dense: true }}
-        open={isOpenEditMenu}
-        onClose={() => setIsOpenEditMenu(false)}>
+        open={variables.isOpenMenu("Edit")}
+        onClose={() => variables.closeMenu("Edit")}>
         <CustomMenuItem
           done={false}
           text="Undo"
@@ -302,8 +320,8 @@ const MenuAccordion = observer((props: {}) => {
       <Menu
         anchorEl={document.getElementById("menu-view-btn")}
         MenuListProps={{ dense: true }}
-        open={isOpenViewMenu}
-        onClose={() => setIsOpenViewMenu(false)}>
+        open={variables.isOpenMenu("View")}
+        onClose={() => variables.closeMenu("View")}>
         <CustomMenuItem
           done={app.view.showSpeedCanvas}
           text="Speed Graph"
@@ -351,8 +369,8 @@ const MenuAccordion = observer((props: {}) => {
       <Menu
         anchorEl={document.getElementById("menu-help-btn")}
         MenuListProps={{ dense: true }}
-        open={isOpenHelpMenu}
-        onClose={() => setIsOpenHelpMenu(false)}>
+        open={variables.isOpenMenu("Help")}
+        onClose={() => variables.closeMenu("Help")}>
         <CustomMenuItem done={false} text="Welcome" onClick={onMenuClick(() => help.open(HelpPage.Welcome))} />
         <CustomMenuItem
           done={false}
