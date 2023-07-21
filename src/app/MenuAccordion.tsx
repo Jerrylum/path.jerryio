@@ -179,6 +179,7 @@ const MenuAccordion = observer((props: {}) => {
       <Menu
         anchorEl={document.getElementById("menu-file-btn")}
         MenuListProps={{ dense: true }}
+        disableRestoreFocus={true}
         open={variables.isOpenMenu("File")}
         onClose={() => variables.closeMenu("File")}>
         <CustomMenuItem
@@ -232,6 +233,7 @@ const MenuAccordion = observer((props: {}) => {
       <Menu
         anchorEl={document.getElementById("menu-edit-btn")}
         MenuListProps={{ dense: true }}
+        disableRestoreFocus={true}
         open={variables.isOpenMenu("Edit")}
         onClose={() => variables.closeMenu("Edit")}>
         <CustomMenuItem
@@ -321,6 +323,7 @@ const MenuAccordion = observer((props: {}) => {
       <Menu
         anchorEl={document.getElementById("menu-view-btn")}
         MenuListProps={{ dense: true }}
+        disableRestoreFocus={true}
         open={variables.isOpenMenu("View")}
         onClose={() => variables.closeMenu("View")}>
         <CustomMenuItem
@@ -370,6 +373,7 @@ const MenuAccordion = observer((props: {}) => {
       <Menu
         anchorEl={document.getElementById("menu-help-btn")}
         MenuListProps={{ dense: true }}
+        disableRestoreFocus={true}
         open={variables.isOpenMenu("Help")}
         onClose={() => variables.closeMenu("Help")}>
         <CustomMenuItem done={false} text="Welcome" onClick={onMenuClick(() => help.open(HelpPage.Welcome))} />
