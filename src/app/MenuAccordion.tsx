@@ -53,9 +53,10 @@ const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
     .replaceAll("Minus", "-");
 
   const elements: React.ReactElement[] = [];
-  for (const char of temp.split("")) {
+  temp.split("").forEach((char, index) => {
     elements.push(
       <Typography
+        key={index}
         variant="body2"
         color="text.secondary"
         sx={{
@@ -66,7 +67,7 @@ const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
         children={char}
       />
     );
-  }
+  });
 
   return <>{elements}</>;
 });
