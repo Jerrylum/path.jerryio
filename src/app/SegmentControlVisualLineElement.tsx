@@ -12,7 +12,7 @@ const SegmentControlVisualLineElement = observer((props: { start: Vector; end: V
   return (
     <Line
       points={[startInPx.x, startInPx.y, endInPx.x, endInPx.y]}
-      stroke="ffffff"
+      stroke="#000"
       strokeWidth={lineWidth}
       opacity={0.25}
     />

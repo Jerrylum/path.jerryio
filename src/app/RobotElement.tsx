@@ -26,7 +26,7 @@ const RobotElement = observer((props: { fcc: FieldCanvasConverter; pos: EndPoint
         y={0}
         width={widthInPx}
         height={heightInPx}
-        stroke="ffffff"
+        stroke="#000"
         strokeWidth={lineWidth}
         fill="#ffffff3f"
       />
