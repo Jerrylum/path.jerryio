@@ -1,6 +1,6 @@
-import { action } from "mobx";
+import { makeAutoObservable, action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Point, Path, Vector } from "../core/Path";
+import { Point, Path, Vector, KeyframePos } from "../core/Path";
 import Konva from "konva";
 import { Circle, Layer, Line, Rect, Stage, Text } from "react-konva";
 import React from "react";
@@ -11,6 +11,18 @@ import { useAppStores } from "../core/MainApp";
 import { KeyframeIndexing } from "../core/Calculation";
 import { GraphCanvasConverter } from "../core/Canvas";
 import { Box, Tooltip } from "@mui/material";
+import { Instance } from "@popperjs/core";
+
+function showTooltip(variables: GraphCanvasVariables, ikf: KeyframeIndexing | undefined) {
+  if (ikf === undefined) {
+    variables.tooltip = undefined;
+  } else if (ikf.segment) {
+    variables.tooltip = {
+      pos: { segment: ikf.segment, xPos: ikf.keyframe.xPos, yPos: ikf.keyframe.yPos },
+      speed: ikf.keyframe.yPos
+    };
+  }
+}
 
 const PathPoints = observer((props: { path: Path; gcc: GraphCanvasConverter }) => {
   const { path, gcc } = props;
@@ -26,13 +38,13 @@ const PathPoints = observer((props: { path: Path; gcc: GraphCanvasConverter }) =
   );
 });
 
-const Keyframes = observer((props: { path: Path; gcc: GraphCanvasConverter }) => {
-  const { path, gcc } = props;
+const Keyframes = observer((props: { path: Path; gcc: GraphCanvasConverter; variables: GraphCanvasVariables }) => {
+  const { path, gcc, variables } = props;
 
   return (
     <>
       {path.cachedResult.keyframeIndexes.map(ikf => (
-        <KeyframeElement key={ikf.keyframe.uid} {...{ ikf, gcc }} />
+        <KeyframeElement key={ikf.keyframe.uid} {...{ ikf, gcc, variables }} />
       ))}
     </>
   );
@@ -63,9 +75,15 @@ const PointElement = observer((props: { point: Point; index: number; pc: PathCon
   );
 });
 
-const KeyframeElement = observer((props: { ikf: KeyframeIndexing; gcc: GraphCanvasConverter }) => {
+interface KeyframeElementProps {
+  ikf: KeyframeIndexing;
+  gcc: GraphCanvasConverter;
+  variables: GraphCanvasVariables;
+}
+
+const KeyframeElement = observer((props: KeyframeElementProps) => {
   const { app } = useAppStores();
-  const { ikf, gcc } = props;
+  const { ikf, gcc, variables } = props;
 
   const onDragKeyframe = (event: Konva.KonvaEventObject<DragEvent>) => {
     const evt = event.evt;
@@ -92,7 +110,7 @@ const KeyframeElement = observer((props: { ikf: KeyframeIndexing; gcc: GraphCanv
     event.target.x(posInPx.x);
     event.target.y(posInPx.y);
 
-    // TODO: Tooltip display
+    showTooltip(variables, ikf);
   };
 
   const onClickKeyframe = (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -112,6 +130,8 @@ const KeyframeElement = observer((props: { ikf: KeyframeIndexing; gcc: GraphCanv
         `Remove keyframe ${ikf.keyframe.uid} from path ${gcc.path.uid}`,
         new RemoveKeyframe(gcc.path, ikf.keyframe)
       );
+
+      showTooltip(variables, undefined);
     }
   };
 
@@ -127,31 +147,46 @@ const KeyframeElement = observer((props: { ikf: KeyframeIndexing; gcc: GraphCanv
       draggable
       onDragMove={action(onDragKeyframe)}
       onClick={action(onClickKeyframe)}
-      onMouseEnter={action(() => {})} // TODO
-      onMouseMove={action(() => {})}
-      onMouseLeave={action(() => {})}
+      onMouseEnter={action(() => showTooltip(variables, ikf))}
+      onMouseMove={action(() => showTooltip(variables, ikf))}
+      onMouseLeave={action(() => showTooltip(variables, undefined))}
     />
   );
 });
+
+class GraphCanvasVariables {
+  xOffset: number = 0;
+  tooltip: { pos: KeyframePos; speed: number } | undefined = undefined;
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+}
 
 const GraphCanvasElement = observer((props: {}) => {
   const { app, appPreferences: preferences } = useAppStores();
 
   const windowSize = useWindowSize();
 
-  const [xOffset, setXOffset] = React.useState(0);
+  const popperRef = React.useRef<Instance>(null);
+  const stageBoxRef = React.useRef<HTMLDivElement>(null);
+
+  const [variables] = React.useState(() => new GraphCanvasVariables());
 
   const path = app.interestedPath();
 
-  React.useEffect(() => {
-    setXOffset(0);
-  }, [path]);
+  React.useEffect(
+    action(() => {
+      variables.xOffset = 0;
+    }),
+    [path]
+  );
 
   if (path === undefined) return null;
 
   const canvasWidth = windowSize.y * 0.78;
   const canvasHeight = windowSize.y * 0.12;
-  const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, xOffset, path);
+  const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, variables.xOffset, path);
 
   const fontSize = canvasHeight / 8;
   const fgColor = preferences.theme.foregroundColor;
@@ -179,16 +214,36 @@ const GraphCanvasElement = observer((props: {}) => {
     const delta = e.evt.deltaY / 5;
 
     if (path === undefined) {
-      setXOffset(0);
+      variables.xOffset = 0;
     } else {
       const maxScrollPos = gcc.pointWidth * (path.cachedResult.points.length - 2);
-      setXOffset(prev => clamp(prev + delta, 0, maxScrollPos));
+      variables.xOffset = clamp(variables.xOffset + delta, 0, maxScrollPos);
     }
   };
 
   return (
-    <Tooltip title="" placement="right" arrow followCursor>
-      <Box>
+    <Tooltip
+      title={(() => {
+        const rtn = variables.tooltip?.speed;
+        return rtn !== undefined && (speedFrom + rtn * (speedTo - speedFrom)).toUser();
+      })()}
+      placement="right"
+      arrow
+      followCursor
+      PopperProps={{
+        popperRef,
+        anchorEl: {
+          getBoundingClientRect: () => {
+            const div = stageBoxRef.current;
+            if (div === null || variables.tooltip === undefined) return new DOMRect(0, 0, 0, 0);
+
+            const canvasPos = div.getBoundingClientRect();
+            const posInPx = gcc.toPx(variables.tooltip.pos);
+            return new DOMRect(canvasPos.x + posInPx.x, canvasPos.y + posInPx.y, 0, 0);
+          }
+        }
+      }}>
+      <Box ref={stageBoxRef}>
         <Stage
           width={canvasWidth}
           height={canvasHeight}
@@ -225,7 +280,7 @@ const GraphCanvasElement = observer((props: {}) => {
               onClick={action(onGraphClick)}
             />
 
-            <Keyframes {...{ path, gcc }} />
+            <Keyframes {...{ path, gcc, variables }} />
 
             <Rect x={0} y={0} width={gcc.axisTitleWidth} height={gcc.pixelHeight} fill={bgColor} />
             <Text
