@@ -110,7 +110,7 @@ const KeyframeElement = observer((props: KeyframeElementProps) => {
     event.target.x(posInPx.x);
     event.target.y(posInPx.y);
 
-    showTooltip(variables, ikf);
+    showTooltip(variables, { index: ikf.index, segment: kfPos.segment, keyframe: ikf.keyframe });
   };
 
   const onClickKeyframe = (event: Konva.KonvaEventObject<MouseEvent>) => {
