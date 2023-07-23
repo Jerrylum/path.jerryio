@@ -40,6 +40,7 @@ export class CommandHistory {
       for (const item of command.removedItems) {
         this.app.unselect(item);
         if (item instanceof Path) this.app.removeExpanded(item);
+        if (this.app.hoverItem === item.uid) this.app.hoverItem = undefined;
       }
     }
 
@@ -1022,4 +1023,3 @@ export class RemovePathTreeItems implements CancellableCommand, RemovePathTreeIt
     return this._entities;
   }
 }
-

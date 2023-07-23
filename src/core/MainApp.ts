@@ -35,6 +35,7 @@ export class MainApp {
   public mountingFile: IOFileHandle = new IOFileHandle(null); // This is intended to be modified outside the class
 
   public paths: Path[] = [];
+  public hoverItem: string | undefined = undefined;
   private selected: string[] = []; // ALGO: Not using Set because order matters
   private selectedBefore: string[] = []; // ALGO: For area selection
   private lastInterestedPath: Path | undefined = undefined; // ALGO: For adding controls
@@ -488,4 +489,3 @@ export { useAppStores };
 window.unregisterSW = action(() => {
   SWR.unregister();
 });
-

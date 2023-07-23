@@ -264,6 +264,8 @@ const ControlElement = observer((props: ControlElementProps) => {
             radius={cpRadius}
             fill={fillColor}
             draggable
+            stroke={app.hoverItem === props.cp.uid ? "#5C469Cdf" : undefined}
+            strokeWidth={lineWidth * 2}
             onDragMove={action(onDragControlPoint)}
             onMouseDown={action(onMouseDownControlPoint)}
             onMouseUp={action(onMouseUpControlPoint)}
@@ -288,6 +290,8 @@ const ControlElement = observer((props: ControlElementProps) => {
           radius={cpRadius / 2}
           fill={fillColor}
           draggable
+          stroke={app.hoverItem === props.cp.uid ? "#5C469Cdf" : undefined}
+          strokeWidth={lineWidth * 2}
           onDragMove={action(onDragControlPoint)}
           onMouseDown={action(onMouseDownControlPoint)}
           onMouseUp={action(onMouseUpControlPoint)}

@@ -342,6 +342,9 @@ const TreeItem = observer((props: TreeItemProps) => {
         "dragging-divider-bottom":
           showDraggingDivider && entityIdx > variables.dragging!.idx && variables.dragging!.entity instanceof Path
       })}
+      onMouseEnter={action(() => children === undefined && (app.hoverItem = entity.uid))}
+      onMouseMove={action(() => children === undefined && (app.hoverItem = entity.uid))}
+      onMouseLeave={action(() => (app.hoverItem = undefined))}
       onContextMenu={event => event.preventDefault()}
       draggable={isDraggable && !isEditingName} /* UX: No dragging path name */
       {...(!isParentDragging
@@ -574,6 +577,10 @@ const TreeView = observer((props: { variables: PathTreeVariables }) => {
       e.preventDefault();
       e.stopPropagation();
     }
+
+    if (variables.focused !== undefined) {
+      app.hoverItem = variables.focused instanceof Path ? undefined : variables.focused.uid;
+    }
   }
 
   function onBlur() {
@@ -677,4 +684,3 @@ const PathTreeAccordion = observer((props: {}) => {
 });
 
 export { PathTreeAccordion };
-
