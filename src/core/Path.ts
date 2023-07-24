@@ -10,7 +10,15 @@ import { Coordinate, CoordinateWithHeading } from "./Coordinate";
 
 // Not observable
 export class Vector implements Coordinate {
-  constructor(public x: number, public y: number) {}
+  @Expose()
+  public x: number;
+  @Expose()
+  public y: number;
+
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
 
   add<T extends Vector>(vector: T): T {
     let rtn = vector.clone() as T;
@@ -131,8 +139,11 @@ export class Point extends Vector {
 
 // observable class
 export class Control extends Vector implements InteractiveEntity {
+  @Expose()
   public uid: string;
+  @Expose()
   public lock: boolean = false;
+  @Expose()
   public visible: boolean = true;
 
   get name(): string {
@@ -194,14 +205,24 @@ export interface KeyframePos {
 
 // observable class
 export class Keyframe {
+  @Expose()
   public uid: string;
+  @Expose()
+  public xPos: number;
+  @Expose()
+  public yPos: number;
+  @Expose()
+  public followBentRate: boolean;
 
   constructor(
-    public xPos: number, // [0...1)
-    public yPos: number, // [0...1]
-    public followBentRate: boolean = false
+    xPos: number, // [0...1)
+    yPos: number, // [0...1]
+    followBentRate: boolean = false
   ) {
     this.uid = makeId(10);
+    this.xPos = xPos;
+    this.yPos = yPos;
+    this.followBentRate = followBentRate;
     makeAutoObservable(this);
   }
 
@@ -244,6 +265,7 @@ export enum SegmentVariant {
 
 // observable class
 export class Segment implements CanvasEntity {
+  @Expose()
   @Type(() => Control, {
     discriminator: {
       property: "__type",
@@ -255,8 +277,10 @@ export class Segment implements CanvasEntity {
     keepDiscriminatorProperty: true
   })
   public controls: (EndPointControl | Control)[];
+  @Expose()
   @Type(() => Keyframe)
   public speedProfiles: Keyframe[];
+  @Expose()
   public uid: string;
 
   constructor(start: EndPointControl, middle: Control[], end: EndPointControl) {
@@ -298,12 +322,18 @@ export class Segment implements CanvasEntity {
 
 // observable class
 export class Path implements InteractiveEntity, InteractiveEntityParent {
+  @Expose()
   @Type(() => Segment)
   public segments: Segment[];
+  @Expose()
   public pc: PathConfig;
+  @Expose()
   public name: string = "Path";
+  @Expose()
   public uid: string;
+  @Expose()
   public lock: boolean = false;
+  @Expose()
   public visible: boolean = true;
 
   @computed get cachedResult(): PointCalculationResult {
@@ -402,4 +432,3 @@ export function construct(entities: PathTreeItem[]): PathTreeItem[] | undefined 
 
   return removed;
 }
-

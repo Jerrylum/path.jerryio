@@ -7,19 +7,26 @@ import { Format, PathFileData } from "./Format";
 import { NumberRange, RangeSlider } from "../component/RangeSlider";
 import { Box, Typography } from "@mui/material";
 import { UpdateProperties } from "../core/Command";
-import { Exclude } from "class-transformer";
+import { Exclude, Expose } from "class-transformer";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
 import { Path, Segment } from "../core/Path";
 import { isCoordinateWithHeading } from "../core/Coordinate";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
+  @Expose()
   robotWidth: number = 30;
+  @Expose()
   robotHeight: number = 30;
+  @Expose()
   robotIsHolonomic: boolean = false;
+  @Expose()
   showRobot: boolean = false;
+  @Expose()
   uol: UnitOfLength = UnitOfLength.Centimeter;
+  @Expose()
   pointDensity: number = 2;
+  @Expose()
   controlMagnetDistance: number = 5;
 
   @Exclude()
@@ -48,6 +55,7 @@ class GeneralConfigImpl implements GeneralConfig {
 
 // observable class
 class PathConfigImpl implements PathConfig {
+  @Expose()
   speedLimit: NumberRange = {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 600, label: "600" },
@@ -55,6 +63,7 @@ class PathConfigImpl implements PathConfig {
     from: 40,
     to: 120
   };
+  @Expose()
   bentRateApplicableRange: NumberRange = {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 4, label: "4" },

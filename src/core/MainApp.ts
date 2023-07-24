@@ -378,13 +378,16 @@ export class MainApp {
 
     // ALGO: Assume the path file is valid
 
-    const gc = plainToClassFromExist(format.getGeneralConfig(), data.gc);
+    const gc = plainToClassFromExist(format.getGeneralConfig(), data.gc, {
+      excludeExtraneousValues: true,
+      exposeDefaultValues: true
+    });
     const paths: Path[] = [];
     for (const pathRaw of data.paths) {
       const path = format.createPath();
       const pathPC = path.pc;
-      plainToClassFromExist(path, pathRaw);
-      path.pc = plainToClassFromExist(pathPC, pathRaw.pc);
+      plainToClassFromExist(path, pathRaw, { excludeExtraneousValues: true, exposeDefaultValues: true });
+      path.pc = plainToClassFromExist(pathPC, pathRaw.pc, { excludeExtraneousValues: true, exposeDefaultValues: true });
 
       paths.push(path);
     }

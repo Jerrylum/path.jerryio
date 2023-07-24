@@ -119,8 +119,11 @@ export class AppClipboard {
       for (const pathRaw of this.message.paths) {
         const path = app.format.createPath();
         const pathPC = path.pc;
-        plainToClassFromExist(path, pathRaw);
-        path.pc = plainToClassFromExist(pathPC, pathRaw.pc);
+        plainToClassFromExist(path, pathRaw, { excludeExtraneousValues: true, exposeDefaultValues: true });
+        path.pc = plainToClassFromExist(pathPC, pathRaw.pc, {
+          excludeExtraneousValues: true,
+          exposeDefaultValues: true
+        });
         path.uid = makeId(10);
 
         // ALGO: The order of re-assigning the uid shouldn't matter
@@ -230,4 +233,3 @@ export class AppClipboard {
     this.broadcastChannel?.postMessage({ type: "SYNC_DATA" } as SyncDataMessage);
   }
 }
-
