@@ -8,7 +8,7 @@ import { NumberRange, RangeSlider } from "../component/RangeSlider";
 import { Box, Typography } from "@mui/material";
 import { UpdateProperties } from "../core/Command";
 import { Exclude, Expose } from "class-transformer";
-import { IsBoolean, IsEnum, IsNumber, IsPositive } from "class-validator";
+import { IsBoolean, IsEnum, IsPositive } from "class-validator";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
 import { Path, Segment } from "../core/Path";
 import { isCoordinateWithHeading } from "../core/Coordinate";

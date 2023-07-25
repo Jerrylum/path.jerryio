@@ -1,3 +1,4 @@
+import { ValidationArguments, ValidationOptions, registerDecorator } from "class-validator";
 import { TokenParser, NumberWithUnit, CodePointBuffer, Computation } from "../token/Tokens";
 import { Unit } from "./Unit";
 
@@ -71,4 +72,22 @@ Number.prototype.toUser = function (digits: number = 3) {
 
 export function parseUser(value: string, digits: number = 3): number {
   return parseFloat(value).toUser(digits);
+}
+
+export function ValidateNumber(validateFunc: (num: number) => boolean, validationOptions?: ValidationOptions) {
+  return function (target: Object, propertyName: string) {
+    registerDecorator({
+      name: "validateNumber",
+      target: target.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      constraints: [validateFunc],
+      validator: {
+        validate(value: any, args: ValidationArguments) {
+          const validateFunc: (num: number) => boolean = args.constraints[0];
+          return typeof value === "number" && validateFunc(value);
+        }
+      }
+    });
+  };
 }

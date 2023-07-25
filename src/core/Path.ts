@@ -1,8 +1,8 @@
 import "reflect-metadata";
 import { Expose, Type } from "class-transformer";
-import { IsBoolean, IsNumber, MinLength, Min, Max, ValidateNested } from "class-validator";
+import { IsBoolean, IsNumber, MinLength, ValidateNested } from "class-validator";
 import { observable, makeAutoObservable, makeObservable, computed } from "mobx";
-import { makeId } from "./Util";
+import { ValidateNumber, makeId } from "./Util";
 import { PathConfig } from "../format/Config";
 import { InteractiveEntity, CanvasEntity, InteractiveEntityParent } from "./Canvas";
 import { PointCalculationResult, boundHeading } from "./Calculation";
@@ -174,8 +174,7 @@ export class Control extends Vector implements InteractiveEntity {
 
 // observable class
 export class EndPointControl extends Control implements CoordinateWithHeading {
-  @Min(0)
-  @Max(360) // TODO: Exclude 360
+  @ValidateNumber((num) => num >= 0 && num < 360)
   @Expose({ name: "heading" })
   public heading_: number = 0;
 
@@ -215,12 +214,10 @@ export class Keyframe {
   @MinLength(10)
   @Expose()
   public uid: string;
-  @Min(0)
-  @Max(1) // TODO: Exclude 1
+  @ValidateNumber((num) => num >= 0 && num < 1)
   @Expose()
   public xPos: number;
-  @Min(0)
-  @Max(1)
+  @ValidateNumber((num) => num >= 0 && num <= 1)
   @Expose()
   public yPos: number;
   @IsBoolean()
