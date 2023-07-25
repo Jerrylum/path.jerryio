@@ -4,7 +4,7 @@ import { makeId } from "../core/Util";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
-import { NumberRange, RangeSlider } from "../component/RangeSlider";
+import { NumberRange, RangeSlider, ValidateNumberRange } from "../component/RangeSlider";
 import { Box, Typography } from "@mui/material";
 import { UpdateProperties } from "../core/Command";
 import { Exclude, Expose } from "class-transformer";
@@ -63,6 +63,7 @@ class GeneralConfigImpl implements GeneralConfig {
 
 // observable class
 class PathConfigImpl implements PathConfig {
+  @ValidateNumberRange(-Infinity, Infinity)
   @Expose()
   speedLimit: NumberRange = {
     minLimit: { value: 0, label: "0" },
@@ -71,6 +72,7 @@ class PathConfigImpl implements PathConfig {
     from: 40,
     to: 120
   };
+  @ValidateNumberRange(-Infinity, Infinity)
   @Expose()
   bentRateApplicableRange: NumberRange = {
     minLimit: { value: 0, label: "0" },

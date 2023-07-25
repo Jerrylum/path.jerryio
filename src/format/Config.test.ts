@@ -2,7 +2,7 @@ import { makeAutoObservable } from "mobx";
 
 import { Expose, Exclude } from "class-transformer";
 import { IsBoolean, IsEnum, IsPositive } from "class-validator";
-import { NumberRange } from "../component/RangeSlider";
+import { NumberRange, ValidateNumberRange } from "../component/RangeSlider";
 import { Path } from "../core/Path";
 import { UnitOfLength } from "../core/Unit";
 import { GeneralConfig, PathConfig } from "./Config";
@@ -53,6 +53,7 @@ export class CustomPathConfig implements PathConfig {
   @Exclude()
   public path!: Path;
 
+  @ValidateNumberRange(-Infinity, Infinity)
   @Expose()
   speedLimit: NumberRange = {
     minLimit: { value: 0, label: "0" },
@@ -61,6 +62,8 @@ export class CustomPathConfig implements PathConfig {
     from: 20,
     to: 100
   };
+
+  @ValidateNumberRange(-Infinity, Infinity)
   @Expose()
   bentRateApplicableRange: NumberRange = {
     minLimit: { value: 0, label: "0" },
