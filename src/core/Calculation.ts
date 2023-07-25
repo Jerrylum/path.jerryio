@@ -462,6 +462,12 @@ export function binomial(n: number, k: number): number {
   return coeff;
 }
 
+/**
+ * Calculates the first derivative of a segment at a given parameter value.
+ * @param segment The segment containing control points.
+ * @param t The parameter value [0, 1] at which to calculate the derivative.
+ * @returns The first derivative vector at the given parameter value.
+ */
 export function firstDerivative(segment: Segment, t: number): Vector {
   if (segment.controls.length === 2) {
     const vec = segment.controls[1].subtract(segment.controls[0]);
@@ -483,19 +489,33 @@ export function firstDerivative(segment: Segment, t: number): Vector {
   }
 }
 
+/**
+ * Bounds the given heading to the range [0, 360) in degrees.
+ * @param num The heading to bound.
+ * @returns The bounded heading.
+ */
 export function boundHeading(num: number): number {
   num = num % 360;
   if (num < 0) num += 360;
   return num;
 }
 
+/**
+ * Bounds the given angle to the range (-PI, PI] in radian or (-180, 180] in degrees.
+ * @param num The angle to bound.
+ * @returns The bounded angle.
+ */
 export function boundAngle(num: number): number {
-  // (PI, +PI] in radian; (-180, +180] in degree
   num %= Math.PI;
   if (num <= -Math.PI) num += 2 * Math.PI;
   return num;
 }
 
+/**
+ * Converts a vector to a heading angle in degrees.
+ * @param vec The vector to convert.
+ * @returns The heading angle in degrees.
+ */
 export function toHeading(vec: Vector) {
   const canvasDegree = 90 - (Math.atan2(vec.y, vec.x) * 180) / Math.PI;
   return boundHeading(canvasDegree);
@@ -518,14 +538,29 @@ export function toDerivativeHeading(original: number, target: number) {
   return delta > half ? high - delta : -delta;
 }
 
+/**
+ * Converts a number from degrees to radians.
+ * @param degree The value in degrees.
+ * @returns The value in radians.
+ */
 export function fromDegreeToRadian(degree: number) {
   return (degree * Math.PI) / 180;
 }
 
+/**
+ * Converts an angle value from radians to degrees.
+ * @param radians The angle value in radians.
+ * @returns The angle value in degrees.
+ */
 export function fromRadiansToDegree(radians: number) {
   return (radians * 180) / Math.PI;
 }
 
+/**
+ * Converts a heading in degrees to an angle in radians.
+ * @param heading The heading in degrees [0, 360).
+ * @returns The angle in radians (-PI, PI].
+ */
 export function fromHeadingInDegreeToAngleInRadian(heading: number) {
   // heading starts from north (y+axis) and increases clockwise in [0, 360)
   // angle starts from east (x+axis) and increases counter-clockwise in (-180, 180]
