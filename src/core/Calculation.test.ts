@@ -18,6 +18,27 @@ import { Control, EndPointControl, Path, Segment, Vector } from "./Path";
 import { Quantity, UnitOfLength } from "./Unit";
 
 
+test("getPathSamplePoints", () => {
+  const path = new Path(new CustomPathConfig(), new Segment(new EndPointControl(60, 60, 0), [], new EndPointControl(66, 60, 90)));
+  
+  const density = new Quantity(2, UnitOfLength.Centimeter);
+
+  const samples = getPathSamplePoints(path, density);
+  expect(samples.arcLength).toBeCloseTo(6);
+  expect(samples.points.length).toEqual(101);
+});
+
+
+test("getPathSamplePoints with no segment path", () => {
+  const path = new Path(new CustomPathConfig());
+  
+  const density = new Quantity(2, UnitOfLength.Centimeter);
+
+  const samples = getPathSamplePoints(path, density);
+  expect(samples.arcLength).toBeCloseTo(0);
+  expect(samples.points.length).toEqual(0);
+});
+
 test('Calculation with one segment and 6cm position changes', () => {
   const path = new Path(new CustomPathConfig(), new Segment(new EndPointControl(60, 60, 0), [], new EndPointControl(66, 60, 90)));
 

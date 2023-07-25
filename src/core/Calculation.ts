@@ -287,9 +287,8 @@ export function getUniformPointsFromSamples(
  *    also the first point of the next segment
  * D: The last point of the last segment with heading and isLast flag
  *
- * At least two points are returned.
- *
- * The path arc length must be the same as the last point integral.
+ * If there is no segment, the arc length is 0, and the result is an empty array.
+ * Otherwise, the arc length is the same as the last point integral, and the result has at least 2 points.
  *
  * @param path The path to calculate
  * @param density The density of points to generate
