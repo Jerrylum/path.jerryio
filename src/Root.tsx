@@ -35,24 +35,24 @@ const Root = observer(() => {
     onDropFile.bind(null, app, confirmation)
   );
 
-  const ENABLE_EXCEPT_INPUT_FIELD = { enabled: isUsingEditor && !isDraggingFile };
+  const ENABLE_EXCEPT_INPUT_FIELDS = { enabled: isUsingEditor && !isDraggingFile };
 
   // UX: Enable custom hotkeys on input fields (e.g. Mod+S) to prevent accidentally triggering the browser default
   // hotkeys when focusing them (e.g. Save page). However, we do not apply it to all hotkeys, because we want to keep
   // some browser default hotkeys on input fields (e.g. Mod+Z to undo user input) instead of triggering custom hotkeys
   // (e.g. Mod+Z to undo field change)
   const ENABLE_ON_ALL_INPUT_FIELDS = {
-    ...ENABLE_EXCEPT_INPUT_FIELD,
+    ...ENABLE_EXCEPT_INPUT_FIELDS,
     enableOnContentEditable: true,
     enableOnFormTags: true
   };
   const ENABLE_ON_NON_TEXT_INPUT_FIELDS = {
-    ...ENABLE_EXCEPT_INPUT_FIELD,
+    ...ENABLE_EXCEPT_INPUT_FIELDS,
     preventDefaultOnlyIfEnabled: true,
     enableOnFormTags: ["input", "INPUT"] as FormTags[],
     // UX: It is okay to enable hotkeys on some input fields (e.g. checkbox, button, range)
     enabled: (kvEvt: KeyboardEvent) => {
-      if (ENABLE_EXCEPT_INPUT_FIELD.enabled === false) return false;
+      if (ENABLE_EXCEPT_INPUT_FIELDS.enabled === false) return false;
       if (kvEvt.target instanceof HTMLInputElement)
         return ["button", "checkbox", "radio", "range", "reset", "submit"].includes(kvEvt.target.type);
       else return true;
@@ -81,7 +81,7 @@ const Root = observer(() => {
     },
     ENABLE_ON_NON_TEXT_INPUT_FIELDS
   );
-  useCustomHotkeys("Esc", () => app.clearSelected(), ENABLE_EXCEPT_INPUT_FIELD);
+  useCustomHotkeys("Esc", () => app.clearSelected(), ENABLE_EXCEPT_INPUT_FIELDS);
   useCustomHotkeys(
     "Shift+Mod+A",
     () => {
