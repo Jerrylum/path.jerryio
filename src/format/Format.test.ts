@@ -1,0 +1,146 @@
+import { action } from "mobx";
+import { instanceToPlain, plainToClassFromExist, plainToInstance, Expose, Exclude } from "class-transformer";
+import { MainApp } from "../core/MainApp";
+import { Segment, EndPointControl, Path } from "../core/Path";
+import { Format, PathFileData } from "./Format";
+import DOMPurify from "dompurify";
+import { PointCalculationResult } from "../core/Calculation";
+import { GeneralConfig } from "./Config";
+import { CustomGeneralConfig, CustomPathConfig } from "./Config.test";
+
+export class CustomFormat implements Format {
+  isInit: boolean;
+  uid: string;
+
+  constructor() {
+    this.isInit = false;
+    this.uid = "custom";
+  }
+
+  createNewInstance(): Format {
+    return new CustomFormat();
+  }
+
+  getName(): string {
+    return "Custom";
+  }
+  init(): void {
+    this.isInit = true;
+  }
+  getGeneralConfig(): GeneralConfig {
+    return new CustomGeneralConfig();
+  }
+  createPath(...segments: Segment[]): Path {
+    return new Path(new CustomPathConfig(), ...segments);
+  }
+  getPathPoints(path: Path): PointCalculationResult {
+    throw new Error("Method not implemented.");
+  }
+  recoverPathFileData(fileContent: string): PathFileData {
+    throw new Error("Method not implemented.");
+  }
+  exportPathFile(app: MainApp): string {
+    throw new Error("Method not implemented.");
+  }
+}
+
+test("Sanitize", () => {
+  const purify = DOMPurify();
+
+  expect(purify.isSupported).toBeTruthy();
+
+  expect(purify.sanitize("<script>alert('hello')</script>")).toEqual("");
+});
+
+test("Export test", () => {
+  const app = new MainApp();
+
+  const plain = JSON.stringify(app.exportPathFileData());
+
+  app.importPathFileData(JSON.parse(plain));
+
+  const plain2 = JSON.stringify(app.exportPathFileData());
+
+  expect(plain).toEqual(plain2);
+});
+
+test(
+  "Format serialize",
+  action(() => {
+    const app = new MainApp();
+
+    app.format = new CustomFormat();
+
+    let p = instanceToPlain(app.gc);
+    let gc2 = plainToClassFromExist(app.format.getGeneralConfig(), p, {
+      excludeExtraneousValues: true,
+      exposeDefaultValues: true
+    });
+    let p2 = instanceToPlain(gc2);
+
+    expect(p).toEqual(p2);
+    expect(app.gc === gc2).toBeFalsy();
+  })
+);
+
+test("Segment serialize", () => {
+  let s = new Segment(new EndPointControl(-12, -34, 9), [], new EndPointControl(-56, 78, 0));
+  let p = instanceToPlain(s);
+  let s2 = plainToInstance(Segment, p);
+  let p2 = instanceToPlain(s2);
+
+  expect(p).toEqual(p2);
+});
+
+test("Path serialize", () => {
+  let format = new CustomFormat();
+  let r = format.createPath(new Segment(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)));
+  let p = instanceToPlain(r);
+  let r2 = format.createPath();
+  plainToClassFromExist(r2, p, { excludeExtraneousValues: true, exposeDefaultValues: true });
+  let p2 = instanceToPlain(r2);
+
+  expect(p).toEqual(p2);
+});
+
+test("Path[] serialize", () => {
+  let format = new CustomFormat();
+  let r = [format.createPath(new Segment(new EndPointControl(-60, -60, 0), [], new EndPointControl(-60, 60, 0)))];
+  let p = instanceToPlain(r);
+  let r2 = format.createPath();
+  plainToClassFromExist(r2, p[0], { excludeExtraneousValues: true, exposeDefaultValues: true });
+  let p2 = instanceToPlain(r2);
+
+  expect(p[0]).toEqual(p2);
+});
+
+class TestClass {
+  @Expose()
+  attr1 = 1;
+  @Expose()
+  attr2 = "2";
+  @Expose()
+  attr3 = true;
+  // No @Expose()
+  attr5 = "5";
+  @Exclude()
+  attr6 = "6";
+  @Expose()
+  attr7 = "7";
+}
+
+test("Class transform", () => {
+  const result = plainToClassFromExist(
+    new TestClass(),
+    { attr1: 3, attr2: "4", attr3: false, attr4: "hey", attr5: "-1", attr6: "-2" },
+    { excludeExtraneousValues: true, exposeDefaultValues: true }
+  );
+
+  expect(result.attr1).toEqual(3);
+  expect(result.attr2).toEqual("4");
+  expect(result.attr3).toEqual(false);
+  expect((result as any).attr4).toBeUndefined();
+  expect(result.attr5).toEqual("5");
+  expect(result.attr6).toEqual("6");
+  expect(result.attr7).toEqual("7");
+});
