@@ -5,13 +5,14 @@ import Konva from "konva";
 import { Circle, Layer, Line, Rect, Stage, Text } from "react-konva";
 import React from "react";
 import { PathConfig } from "../format/Config";
-import { clamp, useWindowSize } from "../core/Util";
+import { clamp } from "../core/Util";
 import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateProperties } from "../core/Command";
 import { useAppStores } from "../core/MainApp";
 import { KeyframeIndexing } from "../core/Calculation";
 import { GraphCanvasConverter } from "../core/Canvas";
 import { Box, Tooltip } from "@mui/material";
 import { Instance } from "@popperjs/core";
+import { useWindowSize } from "../core/Hook";
 
 function showTooltip(variables: GraphCanvasVariables, ikf: KeyframeIndexing | undefined) {
   if (ikf === undefined) {
@@ -175,6 +176,7 @@ const GraphCanvasElement = observer((props: {}) => {
 
   const path = app.interestedPath();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(
     action(() => {
       variables.xOffset = 0;

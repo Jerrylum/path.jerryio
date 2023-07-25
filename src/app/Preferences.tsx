@@ -3,10 +3,11 @@ import { makeAutoObservable, action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useAppStores } from "../core/MainApp";
 import { lightTheme, darkTheme, AppTheme, AppThemeInfo } from "./Theme";
-import { clamp, useBackdropDialog } from "../core/Util";
+import { clamp } from "../core/Util";
 import { ObserverEnumSelect } from "../component/ObserverEnumSelect";
 import { ObserverCheckbox } from "../component/ObserverCheckbox";
 import { ObserverInput } from "../component/ObserverInput";
+import { useBackdropDialog } from "../core/Hook";
 
 export class Preferences {
   private isDialogOpen: boolean = false;

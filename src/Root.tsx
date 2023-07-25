@@ -5,7 +5,7 @@ import { observer } from "mobx-react-lite";
 import { ThemeProvider } from "@mui/material/styles";
 
 import { Box, Card } from "@mui/material";
-import { useCustomHotkeys, useDragDropFile, useUnsavedChangesPrompt } from "./core/Util";
+import { useCustomHotkeys, useDragDropFile, useUnsavedChangesPrompt } from "./core/Hook";
 import { MenuAccordion } from "./app/MenuAccordion";
 import { GeneralConfigAccordion } from "./app/GeneralConfigAccordion";
 import { PathConfigAccordion } from "./app/PathAccordion";
