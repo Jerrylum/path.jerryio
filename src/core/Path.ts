@@ -350,15 +350,8 @@ export class Path implements InteractiveEntity, InteractiveEntityParent {
   }
 
   @computed get controls(): (EndPointControl | Control)[] {
-    let rtn: (EndPointControl | Control)[] = [];
-    for (let i = 0; i < this.segments.length; i++) {
-      let segment = this.segments[i];
-      if (i === 0) rtn.push(segment.first);
-      for (let j = 1; j < segment.controls.length; j++) {
-        rtn.push(segment.controls[j]);
-      }
-    }
-    return rtn;
+    if (this.segments.length === 0) return [];
+    else return [this.segments[0].first, ...this.segments.flatMap(segment => segment.controls.slice(1))];
   }
 
   @computed get children(): InteractiveEntity[] {
