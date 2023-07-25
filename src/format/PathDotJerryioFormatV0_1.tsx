@@ -1,6 +1,6 @@
 import { makeAutoObservable, reaction, action } from "mobx";
 import { getAppStores } from "../core/MainApp";
-import { makeId } from "../core/Util";
+import { ValidateNumber, makeId } from "../core/Util";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
@@ -8,7 +8,7 @@ import { NumberRange, RangeSlider, ValidateNumberRange } from "../component/Rang
 import { Box, Typography } from "@mui/material";
 import { UpdateProperties } from "../core/Command";
 import { Exclude, Expose } from "class-transformer";
-import { IsBoolean, IsEnum, IsPositive } from "class-validator";
+import { IsBoolean, IsPositive } from "class-validator";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
 import { Path, Segment } from "../core/Path";
 import { isCoordinateWithHeading } from "../core/Coordinate";
@@ -27,7 +27,7 @@ class GeneralConfigImpl implements GeneralConfig {
   @IsBoolean()
   @Expose()
   showRobot: boolean = false;
-  @IsEnum(UnitOfLength)
+  @ValidateNumber(num => num > 0 && num <= 1000) // Don't use IsEnum
   @Expose()
   uol: UnitOfLength = UnitOfLength.Centimeter;
   @IsPositive()

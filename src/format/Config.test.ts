@@ -1,12 +1,13 @@
 import { makeAutoObservable } from "mobx";
 
 import { Expose, Exclude } from "class-transformer";
-import { IsBoolean, IsEnum, IsPositive } from "class-validator";
+import { IsBoolean, IsPositive } from "class-validator";
 import { NumberRange, ValidateNumberRange } from "../component/RangeSlider";
 import { Path } from "../core/Path";
 import { UnitOfLength } from "../core/Unit";
 import { GeneralConfig, PathConfig } from "./Config";
 import { Format } from "./Format";
+import { ValidateNumber } from "../core/Util";
 
 export class CustomGeneralConfig implements GeneralConfig {
   public custom: string = "custom";
@@ -23,7 +24,7 @@ export class CustomGeneralConfig implements GeneralConfig {
   @IsBoolean()
   @Expose()
   showRobot: boolean = true;
-  @IsEnum(UnitOfLength)
+  @ValidateNumber(num => num > 0 && num <= 1000) // Don't use IsEnum
   @Expose()
   uol: UnitOfLength = UnitOfLength.Inch;
   @IsPositive()
