@@ -86,6 +86,9 @@ export function ValidateNumber(validateFunc: (num: number) => boolean, validatio
         validate(value: any, args: ValidationArguments) {
           const validateFunc: (num: number) => boolean = args.constraints[0];
           return typeof value === "number" && validateFunc(value);
+        },
+        defaultMessage(args: ValidationArguments) {
+          return `The ${args.property} must be a valid number`;
         }
       }
     });
