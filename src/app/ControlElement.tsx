@@ -236,7 +236,7 @@ const ControlElement = observer((props: ControlElementProps) => {
   }
 
   const lineWidth = props.fcc.pixelWidth / 600;
-  const cpRadius = props.fcc.pixelWidth / 40;
+  const cpRadius = props.fcc.pixelWidth / 40 * (app.hoverItem === props.cp.uid ? 1.5 : 1);
   const cpInPx = props.fcc.toPx(props.cp.toVector()); // ALGO: Use toVector() for better performance
   const fillColor = app.isSelected(props.cp) ? "#5C469Cdf" : "#5C469C6f";
 
@@ -264,8 +264,6 @@ const ControlElement = observer((props: ControlElementProps) => {
             radius={cpRadius}
             fill={fillColor}
             draggable
-            stroke={app.hoverItem === props.cp.uid ? "#5C469Cdf" : undefined}
-            strokeWidth={lineWidth * 2}
             onDragMove={action(onDragControlPoint)}
             onMouseDown={action(onMouseDownControlPoint)}
             onMouseUp={action(onMouseUpControlPoint)}
@@ -290,8 +288,6 @@ const ControlElement = observer((props: ControlElementProps) => {
           radius={cpRadius / 2}
           fill={fillColor}
           draggable
-          stroke={app.hoverItem === props.cp.uid ? "#5C469Cdf" : undefined}
-          strokeWidth={lineWidth * 2}
           onDragMove={action(onDragControlPoint)}
           onMouseDown={action(onMouseDownControlPoint)}
           onMouseUp={action(onMouseUpControlPoint)}
