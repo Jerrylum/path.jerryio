@@ -564,9 +564,13 @@ export function fromRadiansToDegree(radians: number) {
 export function fromHeadingInDegreeToAngleInRadian(heading: number) {
   // heading starts from north (y+axis) and increases clockwise in [0, 360)
   // angle starts from east (x+axis) and increases counter-clockwise in (-180, 180]
-  const intermediate = 90 - heading;
-  const angle = intermediate <= -180 ? intermediate + 360 : intermediate;
-  return fromDegreeToRadian(angle);
+  return boundAngle(fromDegreeToRadian(90 - heading));
+}
+
+export function fromAngleInRadianToHeadingInDegree(angle: number) {
+  // heading starts from north (y+axis) and increases clockwise in [0, 360)
+  // angle starts from east (x+axis) and increases counter-clockwise in (-180, 180]
+  return boundHeading(90 - fromRadiansToDegree(angle));
 }
 
 /**
