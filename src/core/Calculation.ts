@@ -506,8 +506,8 @@ export function boundHeading(num: number): number {
  * @returns The bounded angle.
  */
 export function boundAngle(num: number): number {
-  num %= Math.PI;
-  if (num <= -Math.PI) num += 2 * Math.PI;
+  while (num > Math.PI) num -= 2 * Math.PI;
+  while (num <= -Math.PI) num += 2 * Math.PI;
   return num;
 }
 
