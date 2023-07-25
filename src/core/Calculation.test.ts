@@ -1,11 +1,351 @@
+import { CustomPathConfig } from "../format/Config.test";
 import {
   toDerivativeHeading,
   fromHeadingInDegreeToAngleInRadian,
   fromDegreeToRadian,
   findClosestPointOnLine,
-  findLinesIntersection
+  findLinesIntersection,
+  getBezierCurveArcLength,
+  getBezierCurvePoints,
+  getPathSamplePoints,
+  getSegmentSamplePoints,
+  getUniformPointsFromSamples
 } from "./Calculation";
-import { Vector } from "./Path";
+import { Control, EndPointControl, Path, Segment, Vector } from "./Path";
+import { Quantity, UnitOfLength } from "./Unit";
+
+
+test('Calculation with one segment and 6cm position changes', () => {
+  const path = new Path(new CustomPathConfig(), new Segment(new EndPointControl(60, 60, 0), [], new EndPointControl(66, 60, 90)));
+
+  expect(path.controls[0].x).toEqual(60);
+  expect(path.controls[0].y).toEqual(60);
+  expect(path.controls[1].x).toEqual(66);
+  expect(path.controls[1].y).toEqual(60);
+
+  const samples = getBezierCurvePoints(path.segments[0], 1 / 100);
+  expect(samples.length).toEqual(100);
+
+  const arcLength = getBezierCurveArcLength(path.segments[0], 1);
+  expect(arcLength).toEqual(6);
+
+  const density = new Quantity(2, UnitOfLength.Centimeter);
+  const segSamples = getSegmentSamplePoints(path.segments[0], density);
+  expect(segSamples.length).toEqual(101);
+
+  const pathSamples = getPathSamplePoints(path, density);
+  expect(pathSamples.arcLength).toEqual(6);
+  expect(pathSamples.points.length).toEqual(101);
+
+  const uniformResult = getUniformPointsFromSamples(pathSamples, density);
+  expect(uniformResult.points.length).toEqual(4);
+  expect(uniformResult.points[0]).toMatchObject({ x: 60, y: 60, heading: 0 });
+  expect(uniformResult.points[1]).toMatchObject({ x: 62, y: 60, heading: undefined });
+  expect(uniformResult.points[2]).toMatchObject({ x: 64, y: 60, heading: undefined });
+  expect(uniformResult.points[3]).toMatchObject({ x: 66, y: 60, heading: 90 });
+});
+
+// write a helper function to test an array with toMatchObject
+function toMatchObjectArray<T>(received: T[], expected: Partial<T>[]) {
+  expect(received.length).toEqual(expected.length);
+  for (let i = 0; i < received.length; i++) {
+    expect(received[i]).toMatchObject(expected[i]);
+  }
+}
+
+test('Calculation with one segment and no position changes', () => {
+  const path = new Path(new CustomPathConfig(), new Segment(
+    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(60, 60, 90)));
+
+  const density = new Quantity(2, UnitOfLength.Centimeter);
+  const segSamples = getSegmentSamplePoints(path.segments[0], density);
+  expect(segSamples.length).toEqual(101);
+
+  const pathSamples = getPathSamplePoints(path, density);
+  expect(pathSamples.arcLength).toBeCloseTo(0, 1);
+  expect(pathSamples.points.length).toEqual(101);
+
+  const uniformResult = getUniformPointsFromSamples(pathSamples, density);
+  toMatchObjectArray(uniformResult.points, [
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 60, y: 60, heading: 90, isLast: true }
+  ]);
+  toMatchObjectArray(uniformResult.segmentIndexes, [
+    { index: 0, from: 0, to: 2 }
+  ]);
+});
+
+test('Calculation with one segment and 1cm position changes', () => {
+  const path = new Path(new CustomPathConfig(), new Segment(
+    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(61, 60, 90)));
+
+  const density = new Quantity(2, UnitOfLength.Centimeter);
+  const pathSamples = getPathSamplePoints(path, density);
+  expect(pathSamples.arcLength).toBeCloseTo(1, 1);
+  expect(pathSamples.points.length).toEqual(101);
+
+  const uniformResult = getUniformPointsFromSamples(pathSamples, density);
+  toMatchObjectArray(uniformResult.points, [
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 61, y: 60, heading: 90, isLast: true }
+  ]);
+  toMatchObjectArray(uniformResult.segmentIndexes, [
+    { index: 0, from: 0, to: 2 }
+  ]);
+});
+
+test('Calculation with one segment and 2cm position changes', () => {
+  const path = new Path(new CustomPathConfig(), new Segment(
+    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(62, 60, 90)));
+
+  const density = new Quantity(2, UnitOfLength.Centimeter);
+  const pathSamples = getPathSamplePoints(path, density);
+  expect(pathSamples.arcLength).toBeCloseTo(2, 1);
+  expect(pathSamples.points.length).toEqual(101);
+
+  const uniformResult = getUniformPointsFromSamples(pathSamples, density);
+  toMatchObjectArray(uniformResult.points, [
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 62, y: 60, heading: 90, isLast: true }
+  ]);
+  toMatchObjectArray(uniformResult.segmentIndexes, [
+    { index: 0, from: 0, to: 2 }
+  ]);
+});
+
+test('Calculation with one segment and 3cm position changes', () => {
+  const path = new Path(new CustomPathConfig(), new Segment(
+    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(63, 60, 90)));
+
+  const density = new Quantity(2, UnitOfLength.Centimeter);
+  const pathSamples = getPathSamplePoints(path, density);
+  expect(pathSamples.arcLength).toBeCloseTo(3, 1);
+  expect(pathSamples.points.length).toEqual(101);
+
+  const uniformResult = getUniformPointsFromSamples(pathSamples, density);
+  toMatchObjectArray(uniformResult.points, [
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 62, y: 60, heading: undefined, isLast: false },
+    { x: 63, y: 60, heading: 90, isLast: true }
+  ]);
+  toMatchObjectArray(uniformResult.segmentIndexes, [
+    { index: 0, from: 0, to: 3 }
+  ]);
+});
+
+test('Calculation with two segments and no position changes', () => {
+  const path = new Path(new CustomPathConfig(), new Segment(
+    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(60, 60, 90)));
+
+  path.segments.push(new Segment(
+    path.segments[path.segments.length - 1].last, [],
+    new EndPointControl(60, 60, 180)
+  ));
+
+  const density = new Quantity(2, UnitOfLength.Centimeter);
+  const pathSamples = getPathSamplePoints(path, density);
+  expect(pathSamples.arcLength).toBeCloseTo(0, 1);
+  expect(pathSamples.points.length).toEqual(201);
+
+  const uniformResult = getUniformPointsFromSamples(pathSamples, density);
+  toMatchObjectArray(uniformResult.points, [
+    { x: 60, y: 60, heading: 0, isLast: true },
+    { x: 60, y: 60, heading: 180, isLast: true }
+  ]);
+  toMatchObjectArray(uniformResult.segmentIndexes, [
+    { index: 0, from: 0, to: 1 },
+    { index: 1, from: 1, to: 2 }
+  ]);
+});
+
+test('Calculation with two segments and 2cm position changes', () => {
+  const path = new Path(new CustomPathConfig(), new Segment(
+    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(62, 60, 90)));
+
+  path.segments.push(new Segment(
+    path.segments[path.segments.length - 1].last, [],
+    new EndPointControl(62, 60, 180)
+  ));
+
+  const density = new Quantity(2, UnitOfLength.Centimeter);
+  const pathSamples = getPathSamplePoints(path, density);
+  expect(pathSamples.arcLength).toBeCloseTo(2, 1);
+  expect(pathSamples.points.length).toEqual(201);
+
+  const uniformResult = getUniformPointsFromSamples(pathSamples, density);
+  toMatchObjectArray(uniformResult.points, [
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 62, y: 60, heading: 90, isLast: true },
+    { x: 62, y: 60, heading: 180, isLast: true }
+  ]);
+  toMatchObjectArray(uniformResult.segmentIndexes, [
+    { index: 0, from: 0, to: 2 },
+    { index: 1, from: 2, to: 3 }
+  ]);
+});
+
+test('Calculation with two segments and 3cm position changes', () => {
+  const path = new Path(new CustomPathConfig(), new Segment(
+    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(63, 60, 90)));
+
+  path.segments.push(new Segment(
+    path.segments[path.segments.length - 1].last, [],
+    new EndPointControl(63, 60, 180)
+  ));
+
+  const density = new Quantity(2, UnitOfLength.Centimeter);
+  const pathSamples = getPathSamplePoints(path, density);
+  expect(pathSamples.arcLength).toBeCloseTo(3, 1);
+  expect(pathSamples.points.length).toEqual(201);
+
+  const uniformResult = getUniformPointsFromSamples(pathSamples, density);
+  toMatchObjectArray(uniformResult.points, [
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 62, y: 60, heading: 90, isLast: true },
+    { x: 63, y: 60, heading: 180, isLast: true }
+  ]);
+  toMatchObjectArray(uniformResult.segmentIndexes, [
+    { index: 0, from: 0, to: 2 },
+    { index: 1, from: 2, to: 3 }
+  ]);
+});
+
+test('Calculation with three segments and 4cm position changes', () => {
+  const path = new Path(new CustomPathConfig(), new Segment(
+    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(62, 60, 90)));
+
+  path.segments.push(new Segment(
+    path.segments[path.segments.length - 1].last, [],
+    new EndPointControl(63, 60, 180)
+  ));
+
+  path.segments.push(new Segment(
+    path.segments[path.segments.length - 1].last, [],
+    new EndPointControl(64, 60, 270)
+  ));
+
+  const density = new Quantity(2, UnitOfLength.Centimeter);
+  const pathSamples = getPathSamplePoints(path, density);
+  expect(pathSamples.arcLength).toBeCloseTo(4, 1);
+  expect(pathSamples.points.length).toEqual(301);
+
+  const uniformResult = getUniformPointsFromSamples(pathSamples, density);
+  toMatchObjectArray(uniformResult.points, [
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 62, y: 60, heading: 90, isLast: true },
+    { x: 64, y: 60, heading: 270, isLast: true }
+  ]);
+  toMatchObjectArray(uniformResult.segmentIndexes, [
+    { index: 0, from: 0, to: 2 },
+    { index: 1, from: 2, to: 2 },
+    { index: 2, from: 2, to: 3 }
+  ]);
+});
+
+test('Calculation with three segments and 5cm position changes', () => {
+  const path = new Path(new CustomPathConfig(), new Segment(
+    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(62, 60, 90)));
+
+  path.segments.push(new Segment(
+    path.segments[path.segments.length - 1].last, [],
+    new EndPointControl(63, 60, 180)
+  ));
+
+  path.segments.push(new Segment(
+    path.segments[path.segments.length - 1].last, [],
+    new EndPointControl(65, 60, 270)
+  ));
+
+  const density = new Quantity(2, UnitOfLength.Centimeter);
+  const pathSamples = getPathSamplePoints(path, density);
+  expect(pathSamples.arcLength).toBeCloseTo(5, 1);
+  expect(pathSamples.points.length).toEqual(301);
+
+  const uniformResult = getUniformPointsFromSamples(pathSamples, density);
+  toMatchObjectArray(uniformResult.points, [
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 62, y: 60, heading: 90, isLast: true },
+    { x: 64, y: 60, heading: 180, isLast: true },
+    { x: 65, y: 60, heading: 270, isLast: true }
+  ]);
+  toMatchObjectArray(uniformResult.segmentIndexes, [
+    { index: 0, from: 0, to: 2 },
+    { index: 1, from: 2, to: 3 },
+    { index: 2, from: 3, to: 4 }
+  ]);
+});
+
+test('Calculation with three segments and 7cm position changes', () => {
+  const path = new Path(new CustomPathConfig(), new Segment(
+    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(65, 60, 90)));
+
+  path.segments.push(new Segment(
+    path.segments[path.segments.length - 1].last, [],
+    new EndPointControl(66, 60, 180)
+  ));
+
+  path.segments.push(new Segment(
+    path.segments[path.segments.length - 1].last, [],
+    new EndPointControl(67, 60, 270)
+  ));
+
+  const density = new Quantity(2, UnitOfLength.Centimeter);
+  const pathSamples = getPathSamplePoints(path, density);
+  expect(pathSamples.arcLength).toBeCloseTo(7, 1);
+  expect(pathSamples.points.length).toEqual(301);
+
+  const uniformResult = getUniformPointsFromSamples(pathSamples, density);
+  toMatchObjectArray(uniformResult.points, [
+    { x: 60, y: 60, heading: 0, isLast: false },
+    { x: 62, y: 60, heading: undefined, isLast: false },
+    { x: 64, y: 60, heading: 90, isLast: true }, // should be true
+    { x: 66, y: 60, heading: 180, isLast: true },
+    { x: 67, y: 60, heading: 270, isLast: true }
+  ]);
+  toMatchObjectArray(uniformResult.segmentIndexes, [
+    { index: 0, from: 0, to: 3 },
+    { index: 1, from: 3, to: 4 },
+    { index: 2, from: 4, to: 5 }
+  ]);
+});
+
+test('Calculation with two segments edge case 1', () => {
+  // it finishes all samples before t=1
+
+  const path = new Path(new CustomPathConfig(), new Segment(
+    new EndPointControl(0, 0, 0), [],
+    new EndPointControl(10, 0, 0)));
+
+  path.segments.push(new Segment(
+    path.segments[path.segments.length - 1].last,
+    [
+      new Control(10, 103.71910889077459),
+      new Control(0, 80),
+    ],
+    new EndPointControl(40, 60, 0)
+  ));
+
+  const density = new Quantity(2, UnitOfLength.Centimeter);
+  const pathSamples = getPathSamplePoints(path, density);
+  const uniformResult = getUniformPointsFromSamples(pathSamples, density);
+  expect(uniformResult.points.length).toEqual(62);
+  expect(uniformResult.points[0]).toMatchObject({ x: 0, y: 0, heading: 0, isLast: false });
+  expect(uniformResult.points[61]).toMatchObject({ x: 40, y: 60, heading: 0, isLast: true });
+  toMatchObjectArray(uniformResult.segmentIndexes, [
+    { index: 0, from: 0, to: 6 },
+    { index: 1, from: 6, to: 62 },
+  ]);
+});
 
 test("toDerivativeHeading", () => {
   expect(toDerivativeHeading(0, 270)).toBe(-90);
