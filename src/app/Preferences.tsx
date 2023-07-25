@@ -1,7 +1,7 @@
 import { Backdrop, Card, Divider, Typography } from "@mui/material";
 import { makeAutoObservable, action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useAppStores } from "../core/MainApp";
+import { getAppStores } from "../core/MainApp";
 import { lightTheme, darkTheme, AppTheme, AppThemeInfo } from "./Theme";
 import { clamp } from "../core/Util";
 import { ObserverEnumSelect } from "../component/ObserverEnumSelect";
@@ -87,7 +87,7 @@ export class Preferences {
 }
 
 const PreferencesDialog = observer((props: {}) => {
-  const { appPreferences } = useAppStores();
+  const { appPreferences } = getAppStores();
 
   useBackdropDialog(appPreferences.isOpen, () => appPreferences.close());
 

@@ -1,4 +1,4 @@
-import { APP_VERSION, MainApp } from "../core/MainApp";
+import { APP_VERSION } from "../core/MainApp";
 import { Path, Segment } from "../core/Path";
 import { LemLibFormatV0_4 } from "./LemLibFormatV0_4";
 import { PathDotJerryioFormatV0_1 } from "./PathDotJerryioFormatV0_1";
@@ -25,7 +25,7 @@ export interface Format {
 
   recoverPathFileData(fileContent: string): PathFileData;
 
-  exportPathFile(app: MainApp): string; // return file content
+  exportPathFile(): string; // return file content
 }
 
 export function getAllFormats(): Format[] {

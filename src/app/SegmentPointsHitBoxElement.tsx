@@ -5,10 +5,10 @@ import { Line } from "react-konva";
 import { EndPointControl, SegmentVariant } from "../core/Path";
 import { SegmentElementProps } from "./SegmentElement";
 import { ConvertSegment, SplitSegment } from "../core/Command";
-import { useAppStores } from "../core/MainApp";
+import { getAppStores } from "../core/MainApp";
 
 const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
-  const { app } = useAppStores();
+  const { app } = getAppStores();
 
   function onLineClick(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;

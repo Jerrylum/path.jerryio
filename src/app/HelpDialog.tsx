@@ -1,7 +1,7 @@
 import { Backdrop, Card, Typography } from "@mui/material";
 import { makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
-import { APP_VERSION, useAppStores } from "../core/MainApp";
+import { APP_VERSION, getAppStores } from "../core/MainApp";
 import { useBackdropDialog } from "../core/Hook";
 import React from "react";
 import Welcome from "./Welcome.mdx";
@@ -38,7 +38,7 @@ export class Help {
 }
 
 const HelpDialog = observer((props: {}) => {
-  const { help, appPreferences } = useAppStores();
+  const { help, appPreferences } = getAppStores();
 
   const rawGAEnabled = localStorage.getItem("googleAnalyticsEnabled");
   const [isGAEnabled, setIsGAEnabled] = React.useState(rawGAEnabled !== "false"); // UX: Default to true

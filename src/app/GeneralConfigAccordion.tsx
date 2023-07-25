@@ -15,14 +15,14 @@ import { getAllFormats } from "../format/Format";
 import { ObserverInput, clampQuantity } from "../component/ObserverInput";
 import { Quantity, UnitOfLength } from "../core/Unit";
 import { UpdateProperties } from "../core/Command";
-import { useAppStores } from "../core/MainApp";
+import { getAppStores } from "../core/MainApp";
 import { ObserverEnumSelect } from "../component/ObserverEnumSelect";
 import { ObserverCheckbox } from "../component/ObserverCheckbox";
 import { NumberUOL } from "../token/Tokens";
 import { parseFormula } from "../core/Util";
 
 const GeneralConfigAccordion = observer((props: {}) => {
-  const { app, confirmation } = useAppStores();
+  const { app, confirmation } = getAppStores();
 
   const gc = app.gc;
 
@@ -149,7 +149,7 @@ const GeneralConfigAccordion = observer((props: {}) => {
             }}
           />
         </Box>
-        {gc.getConfigPanel(app)}
+        {gc.getConfigPanel()}
       </AccordionDetails>
     </Accordion>
   );

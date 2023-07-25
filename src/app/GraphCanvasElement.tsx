@@ -7,7 +7,7 @@ import React from "react";
 import { PathConfig } from "../format/Config";
 import { clamp } from "../core/Util";
 import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateProperties } from "../core/Command";
-import { useAppStores } from "../core/MainApp";
+import { getAppStores } from "../core/MainApp";
 import { KeyframeIndexing } from "../core/Calculation";
 import { GraphCanvasConverter } from "../core/Canvas";
 import { Box, Tooltip } from "@mui/material";
@@ -83,7 +83,7 @@ interface KeyframeElementProps {
 }
 
 const KeyframeElement = observer((props: KeyframeElementProps) => {
-  const { app } = useAppStores();
+  const { app } = getAppStores();
   const { ikf, gcc, variables } = props;
 
   const onDragKeyframe = (event: Konva.KonvaEventObject<DragEvent>) => {
@@ -165,7 +165,7 @@ class GraphCanvasVariables {
 }
 
 const GraphCanvasElement = observer((props: {}) => {
-  const { app, appPreferences: preferences } = useAppStores();
+  const { app, appPreferences: preferences } = getAppStores();
 
   const windowSize = useWindowSize();
 

@@ -12,7 +12,7 @@ import { PathConfigAccordion } from "./app/PathAccordion";
 import { ControlAccordion } from "./app/ControlAccordion";
 import { GraphCanvasElement } from "./app/GraphCanvasElement";
 import { FieldCanvasElement } from "./app/FieldCanvasElement";
-import { useAppStores } from "./core/MainApp";
+import { getAppStores } from "./core/MainApp";
 
 import classNames from "classnames";
 import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./core/InputOutput";
@@ -27,12 +27,12 @@ import { PathTreeAccordion } from "./app/PathTreeAccordion";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 
 const Root = observer(() => {
-  const { app, confirmation, help, appPreferences, clipboard } = useAppStores();
+  const { app, confirmation, help, appPreferences, clipboard } = getAppStores();
 
   const isUsingEditor = !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen;
   const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(
     isUsingEditor,
-    onDropFile.bind(null, app, confirmation)
+    onDropFile
   );
 
   const ENABLE_EXCEPT_INPUT_FIELDS = { enabled: isUsingEditor && !isDraggingFile };
@@ -59,12 +59,12 @@ const Root = observer(() => {
     }
   };
 
-  useCustomHotkeys("Mod+P", onNew.bind(null, app, confirmation), ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+O", onOpen.bind(null, app, confirmation), ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+S", onSave.bind(null, app, confirmation), ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Shift+Mod+S", onSaveAs.bind(null, app, confirmation), ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+D", onDownload.bind(null, app, confirmation), ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Shift+Mod+D", onDownloadAs.bind(null, app, confirmation), ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys("Mod+P", onNew, ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys("Mod+O", onOpen, ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys("Mod+S", onSave, ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys("Shift+Mod+S", onSaveAs, ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys("Mod+D", onDownload, ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys("Shift+Mod+D", onDownloadAs, ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Mod+Comma", () => appPreferences.open(), ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Mod+X", () => clipboard.cut(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
   useCustomHotkeys("Mod+C", () => clipboard.copy(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);

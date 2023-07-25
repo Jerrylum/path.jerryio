@@ -176,7 +176,7 @@ async function doPromptUpdate() {
             label: "Save",
             color: "success",
             hotkey: "s",
-            onClick: () => onSave(app, conf).then(() => conf.close()) // ALGO: Refresh update prompt
+            onClick: () => onSave().then(() => conf.close()) // ALGO: Refresh update prompt
           },
           {
             label: "Not Now",

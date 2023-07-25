@@ -34,7 +34,7 @@ export class CustomGeneralConfig implements GeneralConfig {
     throw new Error("Method not implemented.");
   }
 
-  getConfigPanel(app: MainApp): JSX.Element {
+  getConfigPanel(): JSX.Element {
     throw new Error("Method not implemented.");
   }
 }
@@ -71,7 +71,7 @@ export class CustomPathConfig implements PathConfig {
     throw new Error("Method not implemented.");
   }
 
-  getConfigPanel(app: MainApp): JSX.Element {
+  getConfigPanel(): JSX.Element {
     throw new Error("Method not implemented.");
   }
 }

@@ -1,5 +1,5 @@
 import { makeAutoObservable, reaction, action } from "mobx";
-import { MainApp } from "../core/MainApp";
+import { getAppStores } from "../core/MainApp";
 import { makeId } from "../core/Util";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
@@ -48,7 +48,7 @@ class GeneralConfigImpl implements GeneralConfig {
     return this.format_;
   }
 
-  getConfigPanel(app: MainApp) {
+  getConfigPanel() {
     return <></>;
   }
 }
@@ -95,7 +95,9 @@ class PathConfigImpl implements PathConfig {
     convertPathConfigPointDensity(this, 2, format.getGeneralConfig().pointDensity);
   }
 
-  getConfigPanel(app: MainApp) {
+  getConfigPanel() {
+    const { app } = getAppStores();
+
     return (
       <>
         <Box className="panel-box">
@@ -168,7 +170,9 @@ export class PathDotJerryioFormatV0_1 implements Format {
     throw new Error("Unable to recover path file data from this format, try other formats?");
   }
 
-  exportPathFile(app: MainApp): string {
+  exportPathFile(): string {
+    const { app } = getAppStores();
+
     let rtn = "";
 
     const uc = new UnitConverter(app.gc.uol, UnitOfLength.Centimeter);

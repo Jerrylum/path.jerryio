@@ -21,7 +21,7 @@ import {
   UpdatePathTreeItems,
   UpdateProperties
 } from "../core/Command";
-import { getAppStores, useAppStores } from "../core/MainApp";
+import { getAppStores } from "../core/MainApp";
 import { Quantity, UnitOfLength } from "../core/Unit";
 import classNames from "classnames";
 import { IS_MAC_OS } from "../core/Util";
@@ -171,7 +171,7 @@ interface TreeItemProps {
 }
 
 const TreeItem = observer((props: TreeItemProps) => {
-  const { app } = useAppStores();
+  const { app } = getAppStores();
 
   const { entity, parent, variables, treeViewRef } = props;
 
@@ -447,7 +447,7 @@ const TreeItem = observer((props: TreeItemProps) => {
 });
 
 const TreeView = observer((props: { variables: PathTreeVariables }) => {
-  const { app } = useAppStores();
+  const { app } = getAppStores();
 
   const { variables } = props;
 
@@ -625,7 +625,7 @@ const TreeView = observer((props: { variables: PathTreeVariables }) => {
 });
 
 const PathTreeAccordion = observer((props: {}) => {
-  const { app } = useAppStores();
+  const { app } = getAppStores();
 
   function onAddPathClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     const cm60 = new Quantity<UnitOfLength>(60, UnitOfLength.Centimeter);

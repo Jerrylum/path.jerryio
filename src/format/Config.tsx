@@ -1,4 +1,3 @@
-import { MainApp } from "../core/MainApp";
 import { NumberRange } from "../component/RangeSlider";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { Format } from "./Format";
@@ -28,7 +27,7 @@ export function convertPathConfigPointDensity(pc: PathConfig, fromDensity: numbe
 
 export interface ConfigSection {
   get format(): Format;
-  getConfigPanel(app: MainApp): JSX.Element;
+  getConfigPanel(): JSX.Element;
 }
 
 export interface GeneralConfig extends ConfigSection {

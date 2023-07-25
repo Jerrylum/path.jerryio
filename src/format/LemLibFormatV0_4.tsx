@@ -1,5 +1,5 @@
 import { makeAutoObservable, reaction, action } from "mobx";
-import { MainApp } from "../core/MainApp";
+import { getAppStores } from "../core/MainApp";
 import { clamp, makeId } from "../core/Util";
 import { Control, EndPointControl, Path, Segment, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
@@ -47,7 +47,7 @@ class GeneralConfigImpl implements GeneralConfig {
     return this.format_;
   }
 
-  getConfigPanel(app: MainApp) {
+  getConfigPanel() {
     return <></>;
   }
 }
@@ -94,7 +94,9 @@ class PathConfigImpl implements PathConfig {
     convertPathConfigPointDensity(this, 2, format.getGeneralConfig().pointDensity);
   }
 
-  getConfigPanel(app: MainApp) {
+  getConfigPanel() {
+    const { app } = getAppStores();
+
     return (
       <>
         <Box className="panel-box">
@@ -234,7 +236,9 @@ export class LemLibFormatV0_4 implements Format {
     return { gc: this.gc, paths };
   }
 
-  exportPathFile(app: MainApp): string {
+  exportPathFile(): string {
+    const { app } = getAppStores();
+
     // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.
 
     let rtn = "";

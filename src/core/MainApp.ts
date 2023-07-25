@@ -10,7 +10,6 @@ import { Quantity, UnitConverter, UnitOfLength } from "./Unit";
 import { CommandHistory } from "./Command";
 import { SemVer } from "semver";
 import { Confirmation } from "../app/Confirmation";
-import React from "react";
 import { Help } from "../app/HelpDialog";
 import { Preferences } from "../app/Preferences";
 import { GoogleAnalytics } from "./GoogleAnalytics";
@@ -439,7 +438,7 @@ export class MainApp {
   }
 
   exportPathFile(): string | undefined {
-    return this.format.exportPathFile(this);
+    return this.format.exportPathFile();
   }
 }
 
@@ -464,12 +463,6 @@ const appStores: AppStores = {
 export function getAppStores(): AppStores {
   return appStores;
 }
-
-const AppStoresContext = React.createContext(appStores);
-
-const useAppStores = () => React.useContext(AppStoresContext);
-
-export { useAppStores };
 
 // @ts-ignore
 (window.testFunction = action(() => {

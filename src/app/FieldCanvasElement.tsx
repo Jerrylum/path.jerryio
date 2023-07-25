@@ -14,7 +14,7 @@ import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { FieldCanvasConverter } from "../core/Canvas";
 import { clamp } from "../core/Util";
 import { AddPath, AddSegment } from "../core/Command";
-import { useAppStores } from "../core/MainApp";
+import { getAppStores } from "../core/MainApp";
 import { RobotElement } from "./RobotElement";
 import {
   firstDerivative,
@@ -97,7 +97,7 @@ const PathControls = observer((props: { path: Path; fcc: FieldCanvasConverter; i
 });
 
 const FieldCanvasElement = observer((props: {}) => {
-  const { app } = useAppStores();
+  const { app } = getAppStores();
 
   const windowSize = useWindowSize((newSize: Vector, oldSize: Vector) => {
     const ratio = (newSize.y + oldSize.y) / 2 / oldSize.y;

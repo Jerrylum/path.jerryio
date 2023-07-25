@@ -1,13 +1,14 @@
-import { Confirmation } from "../app/Confirmation";
-import { MainApp, getAppStores } from "./MainApp";
+import { getAppStores } from "./MainApp";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "../app/Notice";
 import { Logger } from "./Logger";
 
 const logger = Logger("I/O");
 
-async function saveConfirm(app: MainApp, conf: Confirmation, callback: () => void) {
+async function saveConfirm(callback: () => void) {
+  const { app, confirmation } = getAppStores();
+
   return new Promise<boolean>((resolve, reject) => {
-    conf.prompt({
+    confirmation.prompt({
       title: "Unsaved Changes",
       description: "Do you want to save the changes made to " + app.mountingFile.name + "?",
       buttons: [
@@ -16,7 +17,7 @@ async function saveConfirm(app: MainApp, conf: Confirmation, callback: () => voi
           color: "success",
           hotkey: "s",
           onClick: async () => {
-            if (await onSave(app, conf)) {
+            if (await onSave()) {
               callback();
               resolve(true);
             } else {
@@ -38,9 +39,11 @@ async function saveConfirm(app: MainApp, conf: Confirmation, callback: () => voi
   });
 }
 
-async function fileNameConfirm(app: MainApp, conf: Confirmation, description: string, callback: () => void) {
+async function fileNameConfirm(description: string, callback: () => void) {
+  const { app, confirmation } = getAppStores();
+
   return new Promise<void>((resolve, reject) => {
-    conf.prompt({
+    confirmation.prompt({
       title: "Download",
       description,
       buttons: [
@@ -48,9 +51,9 @@ async function fileNameConfirm(app: MainApp, conf: Confirmation, description: st
           label: "Confirm",
           color: "success",
           onClick: async () => {
-            let candidate = conf.input ?? app.mountingFile.name;
+            let candidate = confirmation.input ?? app.mountingFile.name;
             if (candidate.indexOf(".") === -1) candidate += ".txt";
-            app.mountingFile.name = conf.input ?? app.mountingFile.name;
+            app.mountingFile.name = confirmation.input ?? app.mountingFile.name;
             app.mountingFile.isNameSet = true;
             callback();
             resolve();
@@ -64,16 +67,20 @@ async function fileNameConfirm(app: MainApp, conf: Confirmation, description: st
   });
 }
 
-function exportPathFile(app: MainApp): string | undefined {
+function exportPathFile(): string | undefined {
+  const { app } = getAppStores();
+
   try {
-    return app.format.exportPathFile(app);
+    return app.format.exportPathFile();
   } catch (err) {
     enqueueErrorSnackbar(logger, err);
     return undefined;
   }
 }
 
-async function writeFile(app: MainApp, contents: string): Promise<boolean> {
+async function writeFile(contents: string): Promise<boolean> {
+  const { app } = getAppStores();
+
   try {
     const file = app.mountingFile;
     if (file.handle === null) throw new Error("fileHandle is undefined");
@@ -96,7 +103,9 @@ async function writeFile(app: MainApp, contents: string): Promise<boolean> {
   }
 }
 
-async function readFile(app: MainApp): Promise<string | undefined> {
+async function readFile(): Promise<string | undefined> {
+  const { app } = getAppStores();
+
   const options = {
     types: [{ description: "Path File", accept: { "text/plain": [] } }],
     excludeAcceptAllOption: false,
@@ -121,7 +130,9 @@ async function readFile(app: MainApp): Promise<string | undefined> {
   }
 }
 
-async function readFileFromInput(app: MainApp): Promise<string | undefined> {
+async function readFileFromInput(): Promise<string | undefined> {
+  const { app } = getAppStores();
+
   const input = document.createElement("input");
   input.type = "file";
   input.multiple = false;
@@ -156,7 +167,9 @@ async function readFileFromInput(app: MainApp): Promise<string | undefined> {
   });
 }
 
-function downloadFile(app: MainApp, contents: string) {
+function downloadFile(contents: string) {
+  const { app } = getAppStores();
+
   const a = document.createElement("a");
   const file = new Blob([contents], { type: "text/plain" });
   a.href = URL.createObjectURL(file);
@@ -166,7 +179,9 @@ function downloadFile(app: MainApp, contents: string) {
   getAppStores().ga.gtag("event", "download_file_format", { format: app.format.getName() });
 }
 
-async function choiceSave(app: MainApp): Promise<boolean> {
+async function choiceSave(): Promise<boolean> {
+  const { app } = getAppStores();
+
   const options = {
     types: [{ description: "Path File", accept: { "text/plain": [] } }],
     suggestedName: app.mountingFile.name,
@@ -200,23 +215,27 @@ export function isFileSystemSupported() {
   return window.showOpenFilePicker !== undefined && window.showSaveFilePicker !== undefined;
 }
 
-export async function onNew(app: MainApp, conf: Confirmation, saveCheck: boolean = true): Promise<boolean> {
-  if (saveCheck && app.history.isModified()) return saveConfirm(app, conf, onNew.bind(null, app, conf, false));
+export async function onNew(saveCheck: boolean = true): Promise<boolean> {
+  const { app } = getAppStores();
+
+  if (saveCheck && app.history.isModified()) return saveConfirm(onNew.bind(null, false));
 
   app.newPathFile();
   app.mountingFile = new IOFileHandle();
   return true;
 }
 
-export async function onSave(app: MainApp, conf: Confirmation): Promise<boolean> {
-  if (isFileSystemSupported() === false) return onDownload(app, conf, true);
+export async function onSave(): Promise<boolean> {
+  const { app } = getAppStores();
 
-  if (app.mountingFile.handle === null) return onSaveAs(app, conf);
+  if (isFileSystemSupported() === false) return onDownload(true);
 
-  const output = exportPathFile(app);
+  if (app.mountingFile.handle === null) return onSaveAs();
+
+  const output = exportPathFile();
   if (output === undefined) return false;
 
-  if (await writeFile(app, output)) {
+  if (await writeFile(output)) {
     app.history.save();
     return true;
   } else {
@@ -224,15 +243,17 @@ export async function onSave(app: MainApp, conf: Confirmation): Promise<boolean>
   }
 }
 
-export async function onSaveAs(app: MainApp, conf: Confirmation): Promise<boolean> {
-  if (isFileSystemSupported() === false) return onDownloadAs(app, conf, true);
+export async function onSaveAs(): Promise<boolean> {
+  const { app } = getAppStores();
 
-  const output = exportPathFile(app);
+  if (isFileSystemSupported() === false) return onDownloadAs(true);
+
+  const output = exportPathFile();
   if (output === undefined) return false;
 
-  if (!(await choiceSave(app))) return false;
+  if (!(await choiceSave())) return false;
 
-  if (await writeFile(app, output)) {
+  if (await writeFile(output)) {
     app.history.save();
     return true;
   } else {
@@ -240,17 +261,14 @@ export async function onSaveAs(app: MainApp, conf: Confirmation): Promise<boolea
   }
 }
 
-export async function onOpen(
-  app: MainApp,
-  conf: Confirmation,
-  saveCheck: boolean = true,
-  interactive: boolean = true
-): Promise<boolean> {
-  if (saveCheck && app.history.isModified()) return saveConfirm(app, conf, onOpen.bind(null, app, conf, false, false));
+export async function onOpen(saveCheck: boolean = true, interactive: boolean = true): Promise<boolean> {
+  const { app, confirmation } = getAppStores();
+
+  if (saveCheck && app.history.isModified()) return saveConfirm(onOpen.bind(null, false, false));
 
   if (interactive && isFirefox()) {
     // Resolve: <input> picker was blocked due to lack of user activation.
-    await conf.prompt({
+    await confirmation.prompt({
       title: "Open File",
       description: "Press any key to continue.",
       buttons: [{ label: "Open", color: "success" }],
@@ -258,7 +276,7 @@ export async function onOpen(
     });
   }
 
-  const contents = await (isFileSystemSupported() ? readFile(app) : readFileFromInput(app));
+  const contents = await (isFileSystemSupported() ? readFile() : readFileFromInput());
   if (contents === undefined) return false;
 
   try {
@@ -270,39 +288,35 @@ export async function onOpen(
   }
 }
 
-export async function onDownload(app: MainApp, conf: Confirmation, fallback: boolean = false): Promise<boolean> {
-  if (app.mountingFile.isNameSet === false) return onDownloadAs(app, conf, fallback);
+export async function onDownload(fallback: boolean = false): Promise<boolean> {
+  const { app } = getAppStores();
 
-  const output = exportPathFile(app);
+  if (app.mountingFile.isNameSet === false) return onDownloadAs(fallback);
+
+  const output = exportPathFile();
   if (output === undefined) return false;
 
-  downloadFile(app, output);
+  downloadFile(output);
 
   return true;
 }
 
-export async function onDownloadAs(app: MainApp, conf: Confirmation, fallback: boolean = false): Promise<boolean> {
-  const output = exportPathFile(app);
+export async function onDownloadAs(fallback: boolean = false): Promise<boolean> {
+  const output = exportPathFile();
   if (output === undefined) return false;
 
   fileNameConfirm(
-    app,
-    conf,
     fallback ? "Writing file to the disk is not supported in this browser. Falling back to download." : "",
-    downloadFile.bind(null, app, output)
+    downloadFile.bind(null, output)
   );
 
   return true;
 }
 
-export async function onDropFile(
-  app: MainApp,
-  conf: Confirmation,
-  file: File,
-  saveCheck: boolean = true
-): Promise<boolean> {
-  if (saveCheck && app.history.isModified())
-    return saveConfirm(app, conf, onDropFile.bind(null, app, conf, file, false));
+export async function onDropFile(file: File, saveCheck: boolean = true): Promise<boolean> {
+  const { app } = getAppStores();
+
+  if (saveCheck && app.history.isModified()) return saveConfirm(onDropFile.bind(null, file, false));
 
   app.mountingFile.handle = null;
   app.mountingFile.name = file.name;

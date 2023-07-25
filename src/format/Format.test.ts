@@ -39,7 +39,7 @@ export class CustomFormat implements Format {
   recoverPathFileData(fileContent: string): PathFileData {
     throw new Error("Method not implemented.");
   }
-  exportPathFile(app: MainApp): string {
+  exportPathFile(): string {
     throw new Error("Method not implemented.");
   }
 }

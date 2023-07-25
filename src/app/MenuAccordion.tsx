@@ -17,7 +17,7 @@ import React from "react";
 import { DefaultComponentProps } from "@mui/material/OverridableComponent";
 import { IS_MAC_OS } from "../core/Util";
 import { onDownload, onDownloadAs, onNew, onOpen, onSave, onSaveAs } from "../core/InputOutput";
-import { MainApp, useAppStores } from "../core/MainApp";
+import { getAppStores } from "../core/MainApp";
 import { HelpPage } from "./HelpDialog";
 import { AppTheme } from "./Theme";
 import { RemovePathsAndEndControls } from "../core/Command";
@@ -130,13 +130,13 @@ class MenuVariables {
 }
 
 const MenuAccordion = observer((props: {}) => {
-  const { app, confirmation, help, appPreferences, clipboard } = useAppStores();
+  const { app, help, appPreferences, clipboard } = getAppStores();
 
   const [variables] = React.useState(() => new MenuVariables());
 
-  function onMenuClick(func: (app: MainApp) => void) {
+  function onMenuClick(func: () => void) {
     return action(() => {
-      func(app);
+      func();
       variables.closeAllMenus();
     });
   }
@@ -182,44 +182,24 @@ const MenuAccordion = observer((props: {}) => {
         disableRestoreFocus={true}
         open={variables.isOpenMenu("File")}
         onClose={() => variables.closeMenu("File")}>
-        <CustomMenuItem
-          done={false}
-          text="New File"
-          hotkey="Mod+P"
-          onClick={onMenuClick(() => onNew(app, confirmation))}
-        />
+        <CustomMenuItem done={false} text="New File" hotkey="Mod+P" onClick={onMenuClick(() => onNew())} />
         <Divider />
         <CustomMenuItem
           done={false}
           text="Open File"
           hotkey="Mod+O"
-          onClick={onMenuClick(() => onOpen(app, confirmation, false, false))}
+          onClick={onMenuClick(() => onOpen(false, false))}
         />
         <Divider />
-        <CustomMenuItem
-          done={false}
-          text="Save"
-          hotkey="Mod+S"
-          onClick={onMenuClick(() => onSave(app, confirmation))}
-        />
-        <CustomMenuItem
-          done={false}
-          text="Save As"
-          hotkey="Shift+Mod+S"
-          onClick={onMenuClick(() => onSaveAs(app, confirmation))}
-        />
+        <CustomMenuItem done={false} text="Save" hotkey="Mod+S" onClick={onMenuClick(() => onSave())} />
+        <CustomMenuItem done={false} text="Save As" hotkey="Shift+Mod+S" onClick={onMenuClick(() => onSaveAs())} />
         <Divider />
-        <CustomMenuItem
-          done={false}
-          text="Download"
-          hotkey="Mod+D"
-          onClick={onMenuClick(() => onDownload(app, confirmation))}
-        />
+        <CustomMenuItem done={false} text="Download" hotkey="Mod+D" onClick={onMenuClick(() => onDownload())} />
         <CustomMenuItem
           done={false}
           text="Download As"
           hotkey="Shift+Mod+D"
-          onClick={onMenuClick(() => onDownloadAs(app, confirmation))}
+          onClick={onMenuClick(() => onDownloadAs())}
         />
         <Divider />
         <CustomMenuItem

@@ -6,7 +6,7 @@ import { Circle, Line } from "react-konva";
 import { useState } from "react";
 import { SegmentElementProps } from "./SegmentElement";
 import { DragControls, RemovePathsAndEndControls, UpdatePathTreeItems } from "../core/Command";
-import { useAppStores } from "../core/MainApp";
+import { getAppStores } from "../core/MainApp";
 import { boundHeading, fromHeadingInDegreeToAngleInRadian, toHeading } from "../core/Calculation";
 import { MagnetReference, magnet } from "../core/Magnet";
 
@@ -96,7 +96,7 @@ function getSiblingControls(path: Path, target: EndPointControl): Control[] {
 }
 
 const ControlElement = observer((props: ControlElementProps) => {
-  const { app } = useAppStores();
+  const { app } = getAppStores();
 
   const [justSelected, setJustSelected] = useState(false);
   const [posBeforeDrag, setPosBeforeDrag] = useState(new Vector(0, 0));

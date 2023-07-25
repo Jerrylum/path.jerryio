@@ -2,7 +2,7 @@ import { runInAction } from "mobx";
 import React, { DependencyList } from "react";
 import { Options, useHotkeys } from "react-hotkeys-hook";
 import { RefType, HotkeyCallback, HotkeysEvent, Trigger } from "react-hotkeys-hook/dist/types";
-import { useAppStores } from "./MainApp";
+import { getAppStores } from "./MainApp";
 import { Vector } from "./Path";
 import { IS_MAC_OS } from "./Util";
 
@@ -105,7 +105,7 @@ export function useCustomHotkeys<T extends HTMLElement>(
 }
 
 export function useUnsavedChangesPrompt() {
-  const { app } = useAppStores();
+  const { app } = getAppStores();
 
   React.useEffect(() => {
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
