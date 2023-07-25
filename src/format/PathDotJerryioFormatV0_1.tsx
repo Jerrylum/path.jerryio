@@ -8,24 +8,32 @@ import { NumberRange, RangeSlider } from "../component/RangeSlider";
 import { Box, Typography } from "@mui/material";
 import { UpdateProperties } from "../core/Command";
 import { Exclude, Expose } from "class-transformer";
+import { IsBoolean, IsEnum, IsNumber, IsPositive } from "class-validator";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
 import { Path, Segment } from "../core/Path";
 import { isCoordinateWithHeading } from "../core/Coordinate";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
+  @IsPositive()
   @Expose()
   robotWidth: number = 30;
+  @IsPositive()
   @Expose()
   robotHeight: number = 30;
+  @IsBoolean()
   @Expose()
   robotIsHolonomic: boolean = false;
+  @IsBoolean()
   @Expose()
   showRobot: boolean = false;
+  @IsEnum(UnitOfLength)
   @Expose()
   uol: UnitOfLength = UnitOfLength.Centimeter;
+  @IsPositive()
   @Expose()
   pointDensity: number = 2;
+  @IsPositive()
   @Expose()
   controlMagnetDistance: number = 5;
 

@@ -1,17 +1,19 @@
+import "reflect-metadata";
 import { Expose, Type } from "class-transformer";
+import { IsBoolean, IsNumber, MinLength, Min, Max, ValidateNested } from "class-validator";
 import { observable, makeAutoObservable, makeObservable, computed } from "mobx";
 import { makeId } from "./Util";
 import { PathConfig } from "../format/Config";
 import { InteractiveEntity, CanvasEntity, InteractiveEntityParent } from "./Canvas";
-
-import "reflect-metadata";
 import { PointCalculationResult, boundHeading } from "./Calculation";
 import { Coordinate, CoordinateWithHeading } from "./Coordinate";
 
 // Not observable
 export class Vector implements Coordinate {
+  @IsNumber()
   @Expose()
   public x: number;
+  @IsNumber()
   @Expose()
   public y: number;
 
@@ -139,10 +141,13 @@ export class Point extends Vector {
 
 // observable class
 export class Control extends Vector implements InteractiveEntity {
+  @MinLength(10)
   @Expose()
   public uid: string;
+  @IsBoolean()
   @Expose()
   public lock: boolean = false;
+  @IsBoolean()
   @Expose()
   public visible: boolean = true;
 
@@ -169,6 +174,8 @@ export class Control extends Vector implements InteractiveEntity {
 
 // observable class
 export class EndPointControl extends Control implements CoordinateWithHeading {
+  @Min(0)
+  @Max(360) // TODO: Exclude 360
   @Expose({ name: "heading" })
   public heading_: number = 0;
 
@@ -205,12 +212,18 @@ export interface KeyframePos {
 
 // observable class
 export class Keyframe {
+  @MinLength(10)
   @Expose()
   public uid: string;
+  @Min(0)
+  @Max(1) // TODO: Exclude 1
   @Expose()
   public xPos: number;
+  @Min(0)
+  @Max(1)
   @Expose()
   public yPos: number;
+  @IsBoolean()
   @Expose()
   public followBentRate: boolean;
 
@@ -265,6 +278,7 @@ export enum SegmentVariant {
 
 // observable class
 export class Segment implements CanvasEntity {
+  @ValidateNested()
   @Expose()
   @Type(() => Control, {
     discriminator: {
@@ -277,9 +291,11 @@ export class Segment implements CanvasEntity {
     keepDiscriminatorProperty: true
   })
   public controls: (EndPointControl | Control)[];
+  @ValidateNested()
   @Expose()
   @Type(() => Keyframe)
   public speedProfiles: Keyframe[];
+  @MinLength(10)
   @Expose()
   public uid: string;
 
@@ -322,17 +338,23 @@ export class Segment implements CanvasEntity {
 
 // observable class
 export class Path implements InteractiveEntity, InteractiveEntityParent {
+  @ValidateNested()
   @Expose()
   @Type(() => Segment)
   public segments: Segment[];
+  @ValidateNested()
   @Expose()
   public pc: PathConfig;
+  @MinLength(1)
   @Expose()
   public name: string = "Path";
+  @MinLength(10)
   @Expose()
   public uid: string;
+  @IsBoolean()
   @Expose()
   public lock: boolean = false;
+  @IsBoolean()
   @Expose()
   public visible: boolean = true;
 
