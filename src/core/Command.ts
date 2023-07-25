@@ -37,11 +37,7 @@ export class CommandHistory {
 
     // UX: Unselect and collapse removed items
     if (isRemovePathTreeItemsCommand(command)) {
-      for (const item of command.removedItems) {
-        this.app.unselect(item);
-        if (item instanceof Path) this.app.removeExpanded(item);
-        if (this.app.hoverItem === item.uid) this.app.hoverItem = undefined;
-      }
+      command.removedItems.forEach(item => this.unlink(item));
     }
 
     const exe = { title, command, time: Date.now(), mergeTimeout };
@@ -98,7 +94,7 @@ export class CommandHistory {
 
       // UX: Collapse added items
       if (a) {
-        command.addedItems.forEach(item => item instanceof Path && this.app.removeExpanded(item));
+        command.addedItems.forEach(item => this.unlink(item));
       }
     }
     logger.log("UNDO", this.history.length, "->", this.redoHistory.length);
@@ -125,7 +121,7 @@ export class CommandHistory {
 
       // UX: Collapse removed items
       if (r) {
-        command.removedItems.forEach(item => item instanceof Path && this.app.removeExpanded(item));
+        command.removedItems.forEach(item => this.unlink(item));
       }
     }
     logger.log("REDO", this.history.length, "<-", this.redoHistory.length);
@@ -158,6 +154,12 @@ export class CommandHistory {
 
   get redoHistorySize() {
     return this.redoHistory.length;
+  }
+
+  private unlink(item: PathTreeItem) {
+    this.app.unselect(item);
+    if (item instanceof Path) this.app.removeExpanded(item);
+    if (this.app.hoverItem === item.uid) this.app.hoverItem = undefined;
   }
 }
 
