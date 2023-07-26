@@ -1,7 +1,8 @@
 import { EndControl, Control, Segment, construct, traversal, Path, Keyframe } from "./Path";
 import { CustomPathConfig } from "../format/Config.test";
 import { validate } from "class-validator";
-import { instanceToPlain, plainToClass } from "class-transformer";
+import { instanceToPlain, plainToClass, plainToClassFromExist } from "class-transformer";
+import { CustomFormat } from "../format/Format.test";
 
 test("validate Control", async () => {
   const c = new Control(-3.0123456789, 4);
@@ -88,15 +89,15 @@ test("validate Segment", async () => {
   expect(s.controls).toStrictEqual(controls);
   expect(s.last).toStrictEqual(controls[3]);
   expect(s.speedProfiles).toHaveLength(0);
-  
+
   expect(await validate(s)).toHaveLength(0);
-  
+
   const p = instanceToPlain(s);
   s.controls.forEach(c => expect((c as any).__type).toBeDefined());
   expect(await validate(s)).toHaveLength(0);
   s.controls.forEach(c => expect(delete (c as any).__type));
   const s2 = plainToClass(Segment, p, { excludeExtraneousValues: true, exposeDefaultValues: true });
-  
+
   expect(await validate(s2)).toHaveLength(0);
   expect(s2).toStrictEqual(s);
 
@@ -104,6 +105,45 @@ test("validate Segment", async () => {
   (s as any).controls = controls[0];
   (s as any).speedProfiles = new Keyframe(0, 0);
   expect(await validate(s)).toHaveLength(3);
+});
+
+test("validate Path", async () => {
+  const c = new CustomPathConfig();
+  const s = new Segment(new EndControl(0, 1, 2), new Control(3, 4), new Control(5, 6), new EndControl(7, 8, 9));
+  const p = new Path(c, s);
+
+  expect(p.uid).toHaveLength(10);
+  expect(p.lock).toBe(false);
+  expect(p.visible).toBe(true);
+  expect(p.pc).toStrictEqual(c);
+  expect(p.name).toBe("Path");
+  expect(p.segments).toStrictEqual([s]);
+
+  expect(await validate(p)).toHaveLength(0);
+
+  const p2 = new CustomFormat().createPath();
+  plainToClassFromExist(p2, instanceToPlain(p), { excludeExtraneousValues: true, exposeDefaultValues: true });
+
+  expect(await validate(p2)).toHaveLength(0);
+  // expect(p2).toStrictEqual(p);
+  expect(p.uid).toBe(p2.uid);
+  expect(p.lock).toStrictEqual(p2.lock);
+  expect(p.visible).toBe(p2.visible);
+  // expect(p.pc).toStrictEqual(p2.pc);
+  expect(p.name).toBe(p2.name);
+  p.segments.forEach(s => s.controls.forEach(c => expect(delete (c as any).__type)));
+  expect(p.segments).toStrictEqual(p2.segments);
+
+  (p as any).uid = "";
+  (p as any).lock = undefined;
+  (p as any).visible = 0;
+  (p as any).pc = null;
+  (p as any).name = "";
+  (p as any).segments = s;
+  expect(await validate(p)).toHaveLength(6);
+
+  (p as any).pc = [c, c];
+  expect(await validate(p)).toHaveLength(6);
 });
 
 test("traversal and construct", () => {

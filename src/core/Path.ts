@@ -4,6 +4,7 @@ import {
   IsArray,
   IsBoolean,
   IsNumber,
+  IsObject,
   MinLength,
   ValidateNested,
   ValidationArguments,
@@ -371,10 +372,12 @@ export class Segment implements CanvasEntity {
 // observable class
 export class Path implements InteractiveEntity, InteractiveEntityParent {
   @ValidateNested()
+  @IsArray()
   @Expose()
   @Type(() => Segment)
   public segments: Segment[];
   @ValidateNested()
+  @IsObject()
   @Expose()
   public pc: PathConfig;
   @MinLength(1)
