@@ -1,6 +1,78 @@
-import * as MainApp from "./MainApp";
-import { EndPointControl, Control, Segment, construct, traversal, Path } from "./Path";
+import { EndPointControl, Control, Segment, construct, traversal, Path, Keyframe } from "./Path";
 import { CustomPathConfig } from "../format/Config.test";
+import { validate } from "class-validator";
+import { instanceToPlain, plainToClass } from "class-transformer";
+
+test('validate Control', async () => {
+  const c = new Control(-3.0123456789, 4);
+
+  expect(c.uid).toHaveLength(10);
+  expect(c.x).toBe(-3.0123456789);
+  expect(c.y).toBe(4);
+
+  expect(await validate(c)).toHaveLength(0);
+
+  const p = instanceToPlain(c);
+  const c2 = plainToClass(Control, p);
+
+  expect(await validate(c2)).toHaveLength(0);
+  expect(c2).toStrictEqual(c);
+
+  (c as any).uid = "";
+  (c as any).lock = undefined;
+  (c as any).visible = 0;
+  (c as any).x = Infinity;
+  (c as any).y = NaN;
+  expect(await validate(c)).toHaveLength(5);
+});
+
+test('validate EndPointControl', async () => {
+  const c = new EndPointControl(-3.0123456789, 4, 120);
+
+  expect(c.uid).toHaveLength(10);
+  expect(c.x).toBe(-3.0123456789);
+  expect(c.y).toBe(4);
+  expect(c.heading).toBe(120);
+
+  expect(await validate(c)).toHaveLength(0);
+
+  const p = instanceToPlain(c);
+  const c2 = plainToClass(EndPointControl, p);
+
+  expect(await validate(c2)).toHaveLength(0);
+  expect(c2).toStrictEqual(c);
+
+  (c as any).uid = "";
+  (c as any).lock = undefined;
+  (c as any).visible = 0;
+  (c as any).x = Infinity;
+  (c as any).y = NaN;
+  (c as any).heading_ = 360;
+  expect(await validate(c)).toHaveLength(6);
+});
+
+test('validate Keyframe', async () => {
+  const k = new Keyframe(0.123, 0.456);
+
+  expect(k.uid).toHaveLength(10);
+  expect(k.xPos).toBe(0.123);
+  expect(k.yPos).toBe(0.456);
+  expect(k.followBentRate).toBe(false);
+
+  expect(await validate(k)).toHaveLength(0);
+
+  const p = instanceToPlain(k);
+  const k2 = plainToClass(Keyframe, p);
+
+  expect(await validate(k2)).toHaveLength(0);
+  expect(k2).toStrictEqual(k);
+
+  (k as any).uid = "";
+  (k as any).xPos = 1;
+  (k as any).yPos = 1.1;
+  (k as any).followBentRate = null;
+  expect(await validate(k)).toHaveLength(4);
+});
 
 test('traversal and construct', () => {
   const i1 = new EndPointControl(1, 0, 0);
