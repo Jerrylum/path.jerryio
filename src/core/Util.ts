@@ -1,3 +1,4 @@
+import { runInAction } from "mobx";
 import { ValidationArguments, ValidationOptions, registerDecorator } from "class-validator";
 import { TokenParser, NumberWithUnit, CodePointBuffer, Computation } from "../token/Tokens";
 import { Unit } from "./Unit";
@@ -27,6 +28,15 @@ export function makeId(length: number) {
     counter += 1;
   }
   return result;
+}
+
+export async function runInActionAsync(action: () => void): Promise<void> {
+  return new Promise(resolve => {
+    runInAction(() => {
+      action();
+      resolve();
+    });
+  });
 }
 
 export function clamp(value: number, min: number, max: number): number {

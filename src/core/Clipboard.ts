@@ -5,9 +5,10 @@ import { Logger } from "./Logger";
 import { enqueueInfoSnackbar } from "../app/Notice";
 import { UnitConverter, UnitOfLength } from "./Unit";
 import { instanceToPlain, plainToClassFromExist, plainToInstance } from "class-transformer";
-import { makeId } from "./Util";
+import { makeId, runInActionAsync } from "./Util";
 import DOMPurify from "dompurify";
 import { AddPath, InsertControls, InsertPaths, RemovePathTreeItems } from "./Command";
+import { validate } from "class-validator";
 
 const logger = Logger("Clipboard");
 
@@ -99,7 +100,7 @@ export class AppClipboard {
     return true;
   }
 
-  public paste(): boolean {
+  public async paste(): Promise<boolean> {
     const { app } = getAppStores();
     const purify = DOMPurify();
 
@@ -124,10 +125,21 @@ export class AppClipboard {
           excludeExtraneousValues: true,
           exposeDefaultValues: true
         });
-        path.uid = makeId(10);
-
         // ALGO: The order of re-assigning the uid shouldn't matter
+        path.uid = makeId(10);
+        paths.push(path);
+      }
 
+      const errors = (await Promise.all(paths.map(path => validate(path)))).flat();
+      if (errors.length > 0) {
+        errors.forEach(e => logger.error("Validation errors", e.constraints, `in ${e.property}`));
+        enqueueInfoSnackbar(logger, "Pasting data failed due to validation errors");
+        return false;
+      }
+
+      // SECURITY: Do not trust the data from the clipboard, manipulate it after validation
+
+      for (const path of paths) {
         // SECURITY: Sanitize path names, beware of XSS attack from the clipboard
         const temp = purify.sanitize(path.name);
         path.name = temp === "" ? "Path" : temp;
@@ -142,28 +154,42 @@ export class AppClipboard {
           control.x = uc.fromAtoB(control.x);
           control.y = uc.fromAtoB(control.y);
         }
-
-        paths.push(path);
       }
 
       const interestedPath = app.interestedPath();
       const idx = interestedPath === undefined ? 0 : app.paths.indexOf(interestedPath) + 1;
 
-      app.history.execute(`Paste ${paths.length} paths`, new InsertPaths(app.paths, idx, paths));
+      await runInActionAsync(() => {
+        app.history.execute(`Paste ${paths.length} paths`, new InsertPaths(app.paths, idx, paths));
+      });
       app.setSelected(paths.slice());
     } else {
       const controls: (Control | EndControl)[] = [];
       for (const raw of this.message.controls) {
         const control = plainToInstance("heading" in raw ? EndControl : Control, raw);
         control.uid = makeId(10);
+        controls.push(control);
+      }
+
+      const errors = (await Promise.all(controls.map(control => validate(control)))).flat();
+      if (errors.length > 0) {
+        errors.forEach(e => logger.error("Validation errors", e.constraints, `in ${e.property}`));
+        enqueueInfoSnackbar(logger, "Pasting data failed due to validation errors");
+        return false;
+      }
+
+      // SECURITY: Do not trust the data from the clipboard, manipulate it after validation
+
+      for (const control of controls) {
         control.x = uc.fromAtoB(control.x);
         control.y = uc.fromAtoB(control.y);
-        controls.push(control);
       }
 
       if (app.paths.length === 0) {
         const newPath = app.format.createPath();
-        app.history.execute(`Add path ${newPath.uid}`, new AddPath(app.paths, newPath));
+        await runInActionAsync(() => {
+          app.history.execute(`Add path ${newPath.uid}`, new AddPath(app.paths, newPath));
+        });
         app.addExpanded(newPath);
       }
 
@@ -177,7 +203,9 @@ export class AppClipboard {
         idx = entities.findIndex(e => e.uid === selected[selected.length - 1]) + 1;
       }
 
-      app.history.execute(`Paste ${controls.length} controls`, new InsertControls(entities, idx, controls));
+      await runInActionAsync(() => {
+        app.history.execute(`Paste ${controls.length} controls`, new InsertControls(entities, idx, controls));
+      });
       app.setSelected(controls.slice());
     }
 

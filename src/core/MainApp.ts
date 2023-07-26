@@ -22,6 +22,7 @@ import { enqueueSuccessSnackbar } from "../app/Notice";
 import * as SWR from "./ServiceWorkerRegistration";
 import { AppClipboard } from "./Clipboard";
 import { MagnetReference } from "./Magnet";
+import { validate } from "class-validator";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
@@ -365,7 +366,7 @@ export class MainApp {
     this._history.clearHistory();
   }
 
-  importPathFileData(data: Record<string, any>): void {
+  async importPathFileData(data: Record<string, any>): Promise<void> {
     // ALGO: Convert the path file to the app version
     while (data.appVersion !== APP_VERSION.version) {
       if (convertPathFileData(data) === false) throw new Error("Unable to open the path file. Try updating the app.");
@@ -391,6 +392,12 @@ export class MainApp {
       paths.push(path);
     }
 
+    const errors = [...(await validate(gc)), ...(await Promise.all(paths.map(path => validate(path)))).flat()];
+    if (errors.length > 0) {
+      errors.forEach(e => logger.error("Validation errors", e.constraints, `in ${e.property}`));
+      throw new Error("Unable to open the path file due to validation errors.");
+    }
+
     getAppStores().ga.gtag("event", "import_file_format", { format: format.getName() });
 
     this.setPathFileData(format, { gc: gc, paths: paths });
@@ -414,7 +421,7 @@ export class MainApp {
     this._history.clearHistory();
   }
 
-  importPathFile(fileContent: string): void {
+  async importPathFile(fileContent: string): Promise<void> {
     // ALGO: This function throws error
     // ALGO: Just find the first line that starts with "#PATH.JERRYIO-DATA"
     // ALGO: Throw error if not found
@@ -422,7 +429,7 @@ export class MainApp {
     for (const line of lines) {
       if (line.startsWith("#PATH.JERRYIO-DATA")) {
         const pathFileDataInString = line.substring("#PATH.JERRYIO-DATA".length).trim();
-        this.importPathFileData(JSON.parse(pathFileDataInString));
+        await this.importPathFileData(JSON.parse(pathFileDataInString));
         return;
       }
     }

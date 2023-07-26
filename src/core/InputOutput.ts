@@ -280,7 +280,7 @@ export async function onOpen(saveCheck: boolean = true, interactive: boolean = t
   if (contents === undefined) return false;
 
   try {
-    app.importPathFile(contents);
+    await app.importPathFile(contents);
     return true;
   } catch (err) {
     enqueueErrorSnackbar(logger, err);
@@ -332,7 +332,7 @@ export async function onDropFile(file: File, saveCheck: boolean = true): Promise
   if (contents === undefined) return false;
 
   try {
-    app.importPathFile(contents);
+    await app.importPathFile(contents);
     return true;
   } catch (err) {
     enqueueErrorSnackbar(logger, err);
