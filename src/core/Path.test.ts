@@ -19,6 +19,9 @@ test("validate Control", async () => {
   expect(await validate(c2)).toHaveLength(0);
   expect(c2).toStrictEqual(c);
 
+  (c as any).uid = "123456789-";
+  expect(await validate(c)).toHaveLength(1);
+
   (c as any).uid = "";
   (c as any).lock = undefined;
   (c as any).visible = 0;
@@ -42,6 +45,9 @@ test("validate EndControl", async () => {
 
   expect(await validate(c2)).toHaveLength(0);
   expect(c2).toStrictEqual(c);
+
+  (c as any).uid = "123456789-";
+  expect(await validate(c)).toHaveLength(1);
 
   (c as any).uid = "";
   (c as any).lock = undefined;
@@ -67,6 +73,9 @@ test("validate Keyframe", async () => {
 
   expect(await validate(k2)).toHaveLength(0);
   expect(k2).toStrictEqual(k);
+
+  (k as any).uid = "123456789-";
+  expect(await validate(k)).toHaveLength(1);
 
   (k as any).uid = "";
   (k as any).xPos = 1;
@@ -101,6 +110,9 @@ test("validate Segment", async () => {
   expect(await validate(s2)).toHaveLength(0);
   expect(s2).toStrictEqual(s);
 
+  (s as any).uid = "123456789-";
+  expect(await validate(s)).toHaveLength(1);
+
   (s as any).uid = "";
   (s as any).controls = controls[0];
   (s as any).speedProfiles = new Keyframe(0, 0);
@@ -133,6 +145,9 @@ test("validate Path", async () => {
   expect(p.name).toBe(p2.name);
   p.segments.forEach(s => s.controls.forEach(c => expect(delete (c as any).__type)));
   expect(p.segments).toStrictEqual(p2.segments);
+
+  (p as any).uid = "123456789-";
+  expect(await validate(p)).toHaveLength(1);
 
   (p as any).uid = "";
   (p as any).lock = undefined;

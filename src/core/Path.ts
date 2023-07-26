@@ -5,6 +5,7 @@ import {
   IsBoolean,
   IsNumber,
   IsObject,
+  Matches,
   MinLength,
   ValidateNested,
   ValidationArguments,
@@ -153,7 +154,8 @@ export class Point extends Vector {
 export class Control extends Vector implements InteractiveEntity {
   @Exclude()
   readonly discriminator: string = "control";
-
+  
+  @Matches(/^[a-zA-Z0-9]+$/)
   @MinLength(10)
   @Expose()
   public uid: string;
@@ -190,6 +192,7 @@ export class EndControl extends Vector implements InteractiveEntity, CoordinateW
   @Exclude()
   readonly discriminator: string = "end-point";
 
+  @Matches(/^[a-zA-Z0-9]+$/)
   @MinLength(10)
   @Expose()
   public uid: string;
@@ -242,6 +245,7 @@ export interface KeyframePos {
 
 // observable class
 export class Keyframe implements CanvasEntity {
+  @Matches(/^[a-zA-Z0-9]+$/)
   @MinLength(10)
   @Expose()
   public uid: string;
@@ -330,6 +334,7 @@ export class Segment implements CanvasEntity {
   @Expose()
   @Type(() => Keyframe)
   public speedProfiles: Keyframe[];
+  @Matches(/^[a-zA-Z0-9]+$/)
   @MinLength(10)
   @Expose()
   public uid: string;
@@ -383,6 +388,7 @@ export class Path implements InteractiveEntity, InteractiveEntityParent {
   @MinLength(1)
   @Expose()
   public name: string = "Path";
+  @Matches(/^[a-zA-Z0-9]+$/)
   @MinLength(10)
   @Expose()
   public uid: string;
