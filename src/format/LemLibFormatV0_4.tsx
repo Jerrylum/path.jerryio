@@ -1,7 +1,7 @@
 import { makeAutoObservable, reaction, action } from "mobx";
 import { getAppStores } from "../core/MainApp";
 import { ValidateNumber, clamp, makeId } from "../core/Util";
-import { Control, EndPointControl, Path, Segment, Vector } from "../core/Path";
+import { Control, EndControl, Path, Segment, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
@@ -233,10 +233,10 @@ export class LemLibFormatV0_4 implements Format {
       const tokens = line.split(", ");
       if (tokens.length !== 8) error();
 
-      const p1 = new EndPointControl(num(tokens[0]), num(tokens[1]), 0);
+      const p1 = new EndControl(num(tokens[0]), num(tokens[1]), 0);
       const p2 = new Control(num(tokens[2]), num(tokens[3]));
       const p3 = new Control(num(tokens[4]), num(tokens[5]));
-      const p4 = new EndPointControl(num(tokens[6]), num(tokens[7]), 0);
+      const p4 = new EndControl(num(tokens[6]), num(tokens[7]), 0);
       const segment = new Segment(p1, p2, p3, p4);
       push(segment);
 

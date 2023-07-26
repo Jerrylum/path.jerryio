@@ -1,7 +1,7 @@
 import { action } from "mobx";
 import { instanceToPlain, plainToClassFromExist, plainToInstance, Expose, Exclude, Type } from "class-transformer";
 import { MainApp } from "../core/MainApp";
-import { Segment, EndPointControl, Path } from "../core/Path";
+import { Segment, EndControl, Path } from "../core/Path";
 import { Format, PathFileData } from "./Format";
 import DOMPurify from "dompurify";
 import { PointCalculationResult } from "../core/Calculation";
@@ -84,7 +84,7 @@ test(
 );
 
 test("Segment serialize", () => {
-  let s = new Segment(new EndPointControl(-12, -34, 9), new EndPointControl(-56, 78, 0));
+  let s = new Segment(new EndControl(-12, -34, 9), new EndControl(-56, 78, 0));
   let p = instanceToPlain(s);
   let s2 = plainToInstance(Segment, p);
   let p2 = instanceToPlain(s2);
@@ -94,7 +94,7 @@ test("Segment serialize", () => {
 
 test("Path serialize", () => {
   let format = new CustomFormat();
-  let r = format.createPath(new Segment(new EndPointControl(-60, -60, 0), new EndPointControl(-60, 60, 0)));
+  let r = format.createPath(new Segment(new EndControl(-60, -60, 0), new EndControl(-60, 60, 0)));
   let p = instanceToPlain(r);
   let r2 = format.createPath();
   plainToClassFromExist(r2, p, { excludeExtraneousValues: true, exposeDefaultValues: true });
@@ -105,7 +105,7 @@ test("Path serialize", () => {
 
 test("Path[] serialize", () => {
   let format = new CustomFormat();
-  let r = [format.createPath(new Segment(new EndPointControl(-60, -60, 0), new EndPointControl(-60, 60, 0)))];
+  let r = [format.createPath(new Segment(new EndControl(-60, -60, 0), new EndControl(-60, 60, 0)))];
   let p = instanceToPlain(r);
   let r2 = format.createPath();
   plainToClassFromExist(r2, p[0], { excludeExtraneousValues: true, exposeDefaultValues: true });

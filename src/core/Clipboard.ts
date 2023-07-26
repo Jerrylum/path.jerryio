@@ -1,6 +1,6 @@
 import { makeObservable, action } from "mobx";
 import { getAppStores } from "./MainApp";
-import { Control, EndPointControl, Path } from "./Path";
+import { Control, EndControl, Path } from "./Path";
 import { Logger } from "./Logger";
 import { enqueueInfoSnackbar } from "../app/Notice";
 import { UnitConverter, UnitOfLength } from "./Unit";
@@ -51,7 +51,7 @@ export class AppClipboard {
   private broadcastChannel: BroadcastChannel | undefined;
 
   private message: CopyPathsMessage | CopyControlsMessage | undefined;
-  private items: Path[] | (Control | EndPointControl)[] | undefined;
+  private items: Path[] | (Control | EndControl)[] | undefined;
 
   public cut(): boolean {
     const { app } = getAppStores();
@@ -86,7 +86,7 @@ export class AppClipboard {
         paths: instanceToPlain(this.items)
       } as CopyPathsMessage;
     } else {
-      this.items = selected as (Control | EndPointControl)[];
+      this.items = selected as (Control | EndControl)[];
       this.message = message = {
         type: "COPY_CONTROLS",
         format: app.format.getName(),
@@ -152,9 +152,9 @@ export class AppClipboard {
       app.history.execute(`Paste ${paths.length} paths`, new InsertPaths(app.paths, idx, paths));
       app.setSelected(paths.slice());
     } else {
-      const controls: (Control | EndPointControl)[] = [];
+      const controls: (Control | EndControl)[] = [];
       for (const raw of this.message.controls) {
-        const control = plainToInstance("heading" in raw ? EndPointControl : Control, raw);
+        const control = plainToInstance("heading" in raw ? EndControl : Control, raw);
         control.uid = makeId(10);
         control.x = uc.fromAtoB(control.x);
         control.y = uc.fromAtoB(control.y);

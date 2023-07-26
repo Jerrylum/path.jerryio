@@ -2,7 +2,7 @@ import { MainApp, getAppStores } from "./MainApp";
 import { Logger } from "./Logger";
 import {
   Control,
-  EndPointControl,
+  EndControl,
   Keyframe,
   KeyframePos,
   Path,
@@ -295,11 +295,11 @@ export class AddSegment implements CancellableCommand, AddPathTreeItemsCommand {
 
   protected segment?: Segment;
 
-  constructor(protected path: Path, protected end: EndPointControl, protected variant: SegmentVariant) {}
+  constructor(protected path: Path, protected end: EndControl, protected variant: SegmentVariant) {}
 
   protected addLine(): void {
     if (this.path.segments.length === 0) {
-      this.segment = new Segment(new EndPointControl(0, 0, 0), this.end);
+      this.segment = new Segment(new EndControl(0, 0, 0), this.end);
       this._entities.push(this.end);
     } else {
       const last = this.path.segments[this.path.segments.length - 1];
@@ -313,7 +313,7 @@ export class AddSegment implements CancellableCommand, AddPathTreeItemsCommand {
     const p3 = this.end;
 
     if (this.path.segments.length === 0) {
-      const p0 = new EndPointControl(0, 0, 0);
+      const p0 = new EndControl(0, 0, 0);
       const p1 = new Control(p0.x, p3.y);
       const p2 = new Control(p3.x, p0.y);
       this.segment = new Segment(p0, p1, p2, p3);
@@ -438,7 +438,7 @@ export class SplitSegment implements CancellableCommand, AddPathTreeItemsCommand
   protected newOriginalSegmentControls: SegmentControls | undefined;
   protected newSegment?: Segment;
 
-  constructor(protected path: Path, protected originalSegment: Segment, protected point: EndPointControl) {}
+  constructor(protected path: Path, protected originalSegment: Segment, protected point: EndControl) {}
 
   execute(): void {
     this.previousOriginalSegmentControls = [...this.originalSegment.controls];
@@ -456,10 +456,10 @@ export class SplitSegment implements CancellableCommand, AddPathTreeItemsCommand
 
       this._entities = [this.point];
     } else if (cp_count === 4) {
-      const p0 = this.originalSegment.controls[0] as EndPointControl;
+      const p0 = this.originalSegment.controls[0] as EndControl;
       const p1 = this.originalSegment.controls[1];
       const p2 = this.originalSegment.controls[2];
-      const p3 = this.originalSegment.controls[3] as EndPointControl;
+      const p3 = this.originalSegment.controls[3] as EndControl;
 
       const a = p1.divide(new Control(2, 2)).add(this.point.divide(new Control(2, 2)));
       const b = this.point;
@@ -669,7 +669,7 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
   protected _entities: PathTreeItem[] = [];
 
   protected removalPaths: Path[] = [];
-  protected removalEndControls: { path: Path; control: EndPointControl }[] = [];
+  protected removalEndControls: { path: Path; control: EndControl }[] = [];
   protected affectedPaths: { index: number; path: Path }[] = [];
   protected affectedSegments: {
     index: number;
@@ -697,7 +697,7 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
       } else {
         // ALGO: Only add the end control if the path is not already in the removal list
         for (const control of path.controls) {
-          if (control instanceof EndPointControl && allEntities.delete(control.uid)) {
+          if (control instanceof EndControl && allEntities.delete(control.uid)) {
             this.removalEndControls.push({ path, control });
           }
         }
@@ -715,7 +715,7 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
     return true;
   }
 
-  protected removeControl(request: { path: Path; control: EndPointControl }): boolean {
+  protected removeControl(request: { path: Path; control: EndControl }): boolean {
     const { path, control } = request;
     for (let index = 0; index < path.segments.length; index++) {
       const segment = path.segments[index];
@@ -929,7 +929,7 @@ export class InsertControls implements CancellableCommand, AddPathTreeItemsComma
   constructor(
     protected allEntities: PathTreeItem[],
     protected idx: number,
-    protected inserting: (Control | EndPointControl)[]
+    protected inserting: (Control | EndControl)[]
   ) {
     this.original = this.allEntities.slice();
     this.modified = this.allEntities.slice();

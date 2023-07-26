@@ -2,7 +2,7 @@ import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import Konva from "konva";
 import { Line } from "react-konva";
-import { EndPointControl, SegmentVariant } from "../core/Path";
+import { EndControl, SegmentVariant } from "../core/Path";
 import { SegmentElementProps } from "./SegmentElement";
 import { ConvertSegment, SplitSegment } from "../core/Command";
 import { getAppStores } from "../core/MainApp";
@@ -23,7 +23,7 @@ const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
     const posInPx = props.fcc.getUnboundedPxFromEvent(event);
     if (posInPx === undefined) return;
 
-    const cpInUOL = props.fcc.toUOL(new EndPointControl(posInPx.x, posInPx.y, 0));
+    const cpInUOL = props.fcc.toUOL(new EndControl(posInPx.x, posInPx.y, 0));
 
     if (evt.button === 2) {
       // right click

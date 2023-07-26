@@ -1,7 +1,7 @@
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import { EndPointControl } from "../core/Path";
+import { EndControl } from "../core/Path";
 import { ObserverInput, clampQuantity } from "../component/ObserverInput";
 import { Quantity, UnitOfAngle, UnitOfLength } from "../core/Unit";
 import { UpdatePathTreeItems } from "../core/Command";
@@ -90,13 +90,13 @@ const ControlAccordion = observer((props: {}) => {
                 if (app.selectedEntityCount === 0) return "";
                 if (app.selectedEntityCount > 1) return "(mixed)";
                 const control = app.selectedControl;
-                if (!(control instanceof EndPointControl)) return "";
+                if (!(control instanceof EndControl)) return "";
                 return control.heading.toUser().toString();
               }}
               setValue={(value: string) => {
                 if (app.selectedEntityCount !== 1) return;
                 const control = app.selectedControl;
-                if (!(control instanceof EndPointControl)) return;
+                if (!(control instanceof EndControl)) return;
 
                 const controlUid = control.uid;
                 const finalVal = parseFormula(value, NumberUOA.parse)!.compute(UnitOfAngle.Degree).toUser();
@@ -111,7 +111,7 @@ const ControlAccordion = observer((props: {}) => {
               disabled={app.selectedEntityCount !== 1 || app.selectedControl === undefined}
               sx={{
                 visibility:
-                  app.selectedEntityCount === 1 && !(app.selectedControl instanceof EndPointControl) ? "hidden" : ""
+                  app.selectedEntityCount === 1 && !(app.selectedControl instanceof EndControl) ? "hidden" : ""
               }}
               numeric
             />

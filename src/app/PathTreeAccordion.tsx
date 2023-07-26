@@ -12,7 +12,7 @@ import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp
 import { AccordionDetails, AccordionSummary, Box, Card, IconButton, Tooltip, Typography } from "@mui/material";
 import { action, makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Segment, EndPointControl, Path, Control, PathTreeItem } from "../core/Path";
+import { Segment, EndControl, Path, Control, PathTreeItem } from "../core/Path";
 import {
   AddPath,
   MovePathTreeItem,
@@ -123,7 +123,7 @@ class PathTreeVariables {
 
   dragging:
     | {
-        entity: Path | EndPointControl;
+        entity: Path | EndControl;
         idx: number;
         dragOverIdx: number;
       }
@@ -134,11 +134,11 @@ class PathTreeVariables {
   }
 
   isDraggable(entity: PathTreeItem): boolean {
-    return entity instanceof Path || entity instanceof EndPointControl;
+    return entity instanceof Path || entity instanceof EndControl;
   }
 
   isParentDragging(entity: PathTreeItem): boolean {
-    return (entity instanceof Control || entity instanceof EndPointControl) && this.dragging?.entity instanceof Path;
+    return (entity instanceof Control || entity instanceof EndControl) && this.dragging?.entity instanceof Path;
   }
 
   isAllowDrop(destEntity: PathTreeItem): boolean {
@@ -151,8 +151,8 @@ class PathTreeVariables {
         return false;
       }
     } else {
-      // dragging entity is EndPointControl
-      if (destEntity instanceof EndPointControl) {
+      // dragging entity is EndControl
+      if (destEntity instanceof EndControl) {
         return this.dragging.entity !== destEntity;
       } else if (destEntity instanceof Control) {
         return true;
@@ -256,7 +256,7 @@ const TreeItem = observer((props: TreeItemProps) => {
     event.dataTransfer.setData("application/path-dot-jerryio-entity-uid", entity.uid);
 
     variables.dragging = {
-      entity: entity as Path | EndPointControl,
+      entity: entity as Path | EndControl,
       idx: entityIdx,
       dragOverIdx: entityIdx
     };
@@ -542,7 +542,7 @@ const TreeView = observer((props: { variables: PathTreeVariables }) => {
 
   function focusFirstChild(e: React.KeyboardEvent<HTMLUListElement>): boolean {
     const current = variables.focused;
-    if (current === undefined || current instanceof Control || current instanceof EndPointControl) return false;
+    if (current === undefined || current instanceof Control || current instanceof EndControl) return false;
 
     const control = current.controls[0];
     if (control === undefined || app.allNavigableEntities.includes(control) === false) return false;
@@ -632,7 +632,7 @@ const PathTreeAccordion = observer((props: {}) => {
     const cm60inUOL = cm60.to(app.gc.uol);
 
     const newPath = app.format.createPath(
-      new Segment(new EndPointControl(-cm60inUOL, -cm60inUOL, 0), new EndPointControl(-cm60inUOL, cm60inUOL, 0))
+      new Segment(new EndControl(-cm60inUOL, -cm60inUOL, 0), new EndControl(-cm60inUOL, cm60inUOL, 0))
     );
     app.history.execute(`Add path ${newPath.uid}`, new AddPath(app.paths, newPath));
     app.addExpanded(newPath);

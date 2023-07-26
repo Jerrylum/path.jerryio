@@ -1,7 +1,7 @@
 import { makeAutoObservable, computed, runInAction, reaction, action } from "mobx";
 import DOMPurify from "dompurify"; // cspell:disable-line
 import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "../format/Config";
-import { Control, EndPointControl, Path, PathTreeItem, Vector, traversal } from "./Path";
+import { Control, EndControl, Path, PathTreeItem, Vector, traversal } from "./Path";
 import { addToArray, clamp, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats, convertPathFileData } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
@@ -44,7 +44,7 @@ export class MainApp {
   private _history: CommandHistory = new CommandHistory(this);
 
   public robot = {
-    position: new EndPointControl(0, 0, 0)
+    position: new EndControl(0, 0, 0)
   };
 
   public view = {
@@ -260,7 +260,7 @@ export class MainApp {
     return this.paths.filter(path => path.visible && !path.lock);
   }
 
-  @computed get selectedControl(): EndPointControl | Control | undefined {
+  @computed get selectedControl(): EndControl | Control | undefined {
     return this.paths
       .map(path => path.controls.find(control => control.uid === this.selected[0]))
       .find(control => control !== undefined);

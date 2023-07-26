@@ -1,6 +1,6 @@
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Control, EndPointControl, Path, Vector } from "../core/Path";
+import { Control, EndControl, Path, Vector } from "../core/Path";
 import Konva from "konva";
 import { Circle, Line } from "react-konva";
 import { useState } from "react";
@@ -11,13 +11,13 @@ import { boundHeading, fromHeadingInDegreeToAngleInRadian, toHeading } from "../
 import { MagnetReference, magnet } from "../core/Magnet";
 
 export interface ControlElementProps extends SegmentElementProps {
-  cp: EndPointControl | Control;
+  cp: EndControl | Control;
   isGrabAndMove: boolean;
 }
 
 function getFollowersAndRemaining(
   paths: Path[],
-  target: EndPointControl | Control,
+  target: EndControl | Control,
   selected: string[],
   includeControl: boolean
 ): [Control[], Control[]] {
@@ -28,7 +28,7 @@ function getFollowersAndRemaining(
       if (control === target) continue;
       if (control.visible === false || path.visible === false) continue;
       if (
-        (!(control instanceof EndPointControl) && !includeControl) ||
+        (!(control instanceof EndControl) && !includeControl) ||
         !selected.includes(control.uid) ||
         control.lock ||
         path.lock
@@ -50,15 +50,15 @@ function getHorizontalAndVerticalReferences(source: Vector, originHeading: numbe
   ];
 }
 
-function getSiblingReferences(path: Path, target: EndPointControl | Control, followers: Control[]): MagnetReference[] {
+function getSiblingReferences(path: Path, target: EndControl | Control, followers: Control[]): MagnetReference[] {
   const references: MagnetReference[] = [];
 
   const controls = path.controls;
   const idx = controls.indexOf(target);
 
-  function findEndControl(step: number): EndPointControl | undefined {
+  function findEndControl(step: number): EndControl | undefined {
     for (let i = idx + step; i >= 0 && i < controls.length; i += step) {
-      if (controls[i] instanceof EndPointControl) return controls[i] as EndPointControl;
+      if (controls[i] instanceof EndControl) return controls[i] as EndControl;
     }
     return undefined;
   }
@@ -80,13 +80,13 @@ function getSiblingReferences(path: Path, target: EndPointControl | Control, fol
   return references;
 }
 
-function getSiblingControls(path: Path, target: EndPointControl): Control[] {
+function getSiblingControls(path: Path, target: EndControl): Control[] {
   const controls = path.controls;
   const idx = controls.indexOf(target);
   if (idx === -1) return [];
 
-  const prev: EndPointControl | Control | undefined = controls[idx - 1];
-  const next: EndPointControl | Control | undefined = controls[idx + 1];
+  const prev: EndControl | Control | undefined = controls[idx - 1];
+  const next: EndControl | Control | undefined = controls[idx + 1];
 
   const siblingControls: Control[] = [];
   if (prev instanceof Control) siblingControls.push(prev);
@@ -182,7 +182,7 @@ const ControlElement = observer((props: ControlElementProps) => {
 
     const [followers, remains] = getFollowersAndRemaining(app.paths, props.cp, app.selectedEntityIds, isControlFollow);
 
-    if (props.cp instanceof EndPointControl && isControlFollow) {
+    if (props.cp instanceof EndControl && isControlFollow) {
       getSiblingControls(props.path, props.cp)
         .filter(cp => cp.visible && !cp.lock)
         .forEach(cp => {
@@ -228,7 +228,7 @@ const ControlElement = observer((props: ControlElementProps) => {
     // UX: Do not interact with control points if it is zooming
     if (!shouldInteract(event) || evt.ctrlKey) return;
 
-    const epc = props.cp as EndPointControl;
+    const epc = props.cp as EndControl;
     app.history.execute(
       `Update control ${epc.uid} heading value`,
       new UpdatePathTreeItems([epc], { heading: epc.heading + evt.deltaY / 10 })
@@ -249,14 +249,14 @@ const ControlElement = observer((props: ControlElementProps) => {
 
     // UX: Remove end point from the path, selected and expanded list if: right click
     if (evt.button === 2) {
-      const command = new RemovePathsAndEndControls(app.paths, [props.cp as EndPointControl]);
+      const command = new RemovePathsAndEndControls(app.paths, [props.cp as EndControl]);
       app.history.execute(`Remove paths and end controls`, command);
     }
   }
 
   return (
     <>
-      {props.cp instanceof EndPointControl ? (
+      {props.cp instanceof EndControl ? (
         <>
           <Circle
             x={cpInPx.x}

@@ -185,7 +185,7 @@ export class Control extends Vector implements InteractiveEntity {
 }
 
 // observable class
-export class EndPointControl extends Vector implements InteractiveEntity, CoordinateWithHeading {
+export class EndControl extends Vector implements InteractiveEntity, CoordinateWithHeading {
   @Exclude()
   readonly discriminator: string = "end-point";
 
@@ -228,8 +228,8 @@ export class EndPointControl extends Vector implements InteractiveEntity, Coordi
     this.heading_ = boundHeading(heading);
   }
 
-  clone(): EndPointControl {
-    return new EndPointControl(this.x, this.y, this.heading);
+  clone(): EndControl {
+    return new EndControl(this.x, this.y, this.heading);
   }
 }
 
@@ -303,8 +303,8 @@ export enum SegmentVariant {
   CUBIC = "cubic"
 }
 
-export type LinearSegmentControls = [EndPointControl, EndPointControl];
-export type CubicSegmentControls = [EndPointControl, Control, Control, EndPointControl];
+export type LinearSegmentControls = [EndControl, EndControl];
+export type CubicSegmentControls = [EndControl, Control, Control, EndControl];
 export type SegmentControls = LinearSegmentControls | CubicSegmentControls;
 
 // observable class
@@ -317,7 +317,7 @@ export class Segment implements CanvasEntity {
     discriminator: {
       property: "__type",
       subTypes: [
-        { value: EndPointControl, name: "end-point" },
+        { value: EndControl, name: "end-point" },
         { value: Control, name: "control" }
       ]
     },
@@ -334,8 +334,8 @@ export class Segment implements CanvasEntity {
   public uid: string;
 
   constructor(); // For class-transformer
-  constructor(first: EndPointControl, last: EndPointControl);
-  constructor(first: EndPointControl, idx1: Control, idx2: Control, last: EndPointControl);
+  constructor(first: EndControl, last: EndControl);
+  constructor(first: EndControl, idx1: Control, idx2: Control, last: EndControl);
   constructor(...list: [] | SegmentControls) {
     this.controls = list as SegmentControls;
     this.speedProfiles = [];
@@ -343,19 +343,19 @@ export class Segment implements CanvasEntity {
     makeAutoObservable(this);
   }
 
-  get first(): EndPointControl {
-    return this.controls[0] as EndPointControl;
+  get first(): EndControl {
+    return this.controls[0] as EndControl;
   }
 
-  set first(point: EndPointControl) {
+  set first(point: EndControl) {
     this.controls[0] = point;
   }
 
-  get last(): EndPointControl {
-    return this.controls[this.controls.length - 1] as EndPointControl;
+  get last(): EndControl {
+    return this.controls[this.controls.length - 1] as EndControl;
   }
 
-  set last(point: EndPointControl) {
+  set last(point: EndControl) {
     this.controls[this.controls.length - 1] = point;
   }
 
@@ -403,7 +403,7 @@ export class Path implements InteractiveEntity, InteractiveEntityParent {
     makeAutoObservable(this);
   }
 
-  @computed get controls(): (EndPointControl | Control)[] {
+  @computed get controls(): (EndControl | Control)[] {
     if (this.segments.length === 0) return [];
     else return [this.segments[0].first, ...this.segments.flatMap(segment => segment.controls.slice(1))];
   }
@@ -413,8 +413,8 @@ export class Path implements InteractiveEntity, InteractiveEntityParent {
   }
 }
 
-export type PathTreeItem = Path | EndPointControl | Control;
-export type Primary = Path | EndPointControl;
+export type PathTreeItem = Path | EndControl | Control;
+export type Primary = Path | EndControl;
 export type Follower = Control;
 
 export function traversal(paths: Path[]): PathTreeItem[] {
@@ -428,7 +428,7 @@ export function construct(entities: PathTreeItem[]): PathTreeItem[] | undefined 
 
   let currentPath: Path | undefined;
   let segments: Segment[] = [];
-  let first: EndPointControl | undefined;
+  let first: EndControl | undefined;
   let middle: Control[] = [];
 
   const push = () => {
@@ -449,7 +449,7 @@ export function construct(entities: PathTreeItem[]): PathTreeItem[] | undefined 
     if (entity instanceof Path) {
       push();
       currentPath = entity;
-    } else if (entity instanceof EndPointControl) {
+    } else if (entity instanceof EndControl) {
       if (currentPath === undefined) return undefined;
 
       if (first !== undefined) {
@@ -498,14 +498,14 @@ export function ValidateSegmentControls(validationOptions?: ValidationOptions) {
           if (!(array instanceof Array)) return false;
           // check if the length is 2 or 4
           if (!(array.length === 2 || array.length === 4)) return false;
-          // check if it is an array of Control | EndPointControl, redundant
-          if (!array.every(item => item instanceof Control || item instanceof EndPointControl)) return false;
-          // check if the first is EndPointControl
-          if (!(array[0] instanceof EndPointControl)) return false;
-          // check if the last is EndPointControl
-          if (!(array[array.length - 1] instanceof EndPointControl)) return false;
+          // check if it is an array of Control | EndControl, redundant
+          if (!array.every(item => item instanceof Control || item instanceof EndControl)) return false;
+          // check if the first is EndControl
+          if (!(array[0] instanceof EndControl)) return false;
+          // check if the last is EndControl
+          if (!(array[array.length - 1] instanceof EndControl)) return false;
           // check if the middle is Control
-          if (array.length === 4 && array.slice(1, -1).some(item => item instanceof EndPointControl)) return false;
+          if (array.length === 4 && array.slice(1, -1).some(item => item instanceof EndControl)) return false;
 
           return true;
         },

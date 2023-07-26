@@ -1,6 +1,6 @@
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { EndPointControl, Path, Segment, SegmentVariant, Vector } from "../core/Path";
+import { EndControl, Path, Segment, SegmentVariant, Vector } from "../core/Path";
 import Konva from "konva";
 import { Circle, Image, Layer, Line, Stage } from "react-konva";
 import { SegmentElement } from "./SegmentElement";
@@ -332,14 +332,14 @@ const FieldCanvasElement = observer((props: {}) => {
     const posInPx = fcc.getUnboundedPxFromEvent(event);
     if (posInPx === undefined) return;
 
-    const cpInUOL = fcc.toUOL(new EndPointControl(posInPx.x, posInPx.y, 0));
+    const cpInUOL = fcc.toUOL(new EndControl(posInPx.x, posInPx.y, 0));
 
     // UX: Set target path to "interested path"
     let targetPath: Path | undefined = app.interestedPath();
     if (targetPath === undefined) {
       // UX: Create new path if: no path exists
       // UX: Use user mouse position as the last control point
-      targetPath = app.format.createPath(new Segment(new EndPointControl(0, 0, 0), cpInUOL));
+      targetPath = app.format.createPath(new Segment(new EndControl(0, 0, 0), cpInUOL));
       app.history.execute(`Add path ${targetPath.uid}`, new AddPath(app.paths, targetPath));
     } else if (targetPath.visible && !targetPath.lock) {
       // UX: Add control point if: path is selected and visible and not locked

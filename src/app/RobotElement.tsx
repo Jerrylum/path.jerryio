@@ -1,9 +1,9 @@
 import { observer } from "mobx-react-lite";
-import { EndPointControl, Vector } from "../core/Path";
+import { EndControl, Vector } from "../core/Path";
 import { FieldCanvasConverter } from "../core/Canvas";
 import { Group, Line, Rect } from "react-konva";
 
-const RobotElement = observer((props: { fcc: FieldCanvasConverter; pos: EndPointControl; width: number; height: number }) => {
+const RobotElement = observer((props: { fcc: FieldCanvasConverter; pos: EndControl; width: number; height: number }) => {
   const widthInPx = props.width * props.fcc.uol2pixel;
   const heightInPx = props.height * props.fcc.uol2pixel;
   const startInUOL = new Vector(props.pos.x, props.pos.y);
