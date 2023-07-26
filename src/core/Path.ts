@@ -1,6 +1,15 @@
 import "reflect-metadata";
 import { Expose, Type } from "class-transformer";
-import { IsBoolean, IsNumber, MinLength, ValidateNested } from "class-validator";
+import {
+  IsArray,
+  IsBoolean,
+  IsNumber,
+  MinLength,
+  ValidateNested,
+  ValidationArguments,
+  ValidationOptions,
+  registerDecorator
+} from "class-validator";
 import { observable, makeAutoObservable, makeObservable, computed } from "mobx";
 import { ValidateNumber, makeId } from "./Util";
 import { PathConfig } from "../format/Config";
@@ -174,7 +183,7 @@ export class Control extends Vector implements InteractiveEntity {
 
 // observable class
 export class EndPointControl extends Control implements CoordinateWithHeading {
-  @ValidateNumber((num) => num >= 0 && num < 360)
+  @ValidateNumber(num => num >= 0 && num < 360)
   @Expose({ name: "heading" })
   public heading_: number = 0;
 
@@ -214,10 +223,10 @@ export class Keyframe implements CanvasEntity {
   @MinLength(10)
   @Expose()
   public uid: string;
-  @ValidateNumber((num) => num >= 0 && num < 1)
+  @ValidateNumber(num => num >= 0 && num < 1)
   @Expose()
   public xPos: number;
-  @ValidateNumber((num) => num >= 0 && num <= 1)
+  @ValidateNumber(num => num >= 0 && num <= 1)
   @Expose()
   public yPos: number;
   @IsBoolean()
@@ -275,7 +284,9 @@ export enum SegmentVariant {
 
 // observable class
 export class Segment implements CanvasEntity {
+  @ValidateSegmentControls()
   @ValidateNested()
+  @IsArray()
   @Expose()
   @Type(() => Control, {
     discriminator: {
@@ -289,6 +300,7 @@ export class Segment implements CanvasEntity {
   })
   public controls: (EndPointControl | Control)[];
   @ValidateNested()
+  @IsArray()
   @Expose()
   @Type(() => Keyframe)
   public speedProfiles: Keyframe[];
@@ -443,4 +455,36 @@ export function construct(entities: PathTreeItem[]): PathTreeItem[] | undefined 
   push();
 
   return removed;
+}
+export function ValidateSegmentControls(validationOptions?: ValidationOptions) {
+  return function (target: Object, propertyName: string) {
+    registerDecorator({
+      name: "ValidateSegmentControls",
+      target: target.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      constraints: [],
+      validator: {
+        validate(array: any, args: ValidationArguments) {
+          // check if it is an array, redundant
+          if (!(array instanceof Array)) return false;
+          // check if the length is 2 or 4
+          if (!(array.length === 2 || array.length === 4)) return false;
+          // check if it is an array of Control | EndPointControl, redundant
+          if (!array.every(item => item instanceof Control)) return false;
+          // check if the first is EndPointControl
+          if (!(array[0] instanceof EndPointControl)) return false;
+          // check if the last is EndPointControl
+          if (!(array[array.length - 1] instanceof EndPointControl)) return false;
+          // check if the middle is Control
+          if (array.length === 4 && array.slice(1, -1).some(item => item instanceof EndPointControl)) return false;
+
+          return true;
+        },
+        defaultMessage(args: ValidationArguments) {
+          return `The ${args.property} must`;
+        }
+      }
+    });
+  };
 }

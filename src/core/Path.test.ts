@@ -3,7 +3,7 @@ import { CustomPathConfig } from "../format/Config.test";
 import { validate } from "class-validator";
 import { instanceToPlain, plainToClass } from "class-transformer";
 
-test('validate Control', async () => {
+test("validate Control", async () => {
   const c = new Control(-3.0123456789, 4);
 
   expect(c.uid).toHaveLength(10);
@@ -13,7 +13,7 @@ test('validate Control', async () => {
   expect(await validate(c)).toHaveLength(0);
 
   const p = instanceToPlain(c);
-  const c2 = plainToClass(Control, p);
+  const c2 = plainToClass(Control, p, { excludeExtraneousValues: true, exposeDefaultValues: true });
 
   expect(await validate(c2)).toHaveLength(0);
   expect(c2).toStrictEqual(c);
@@ -26,7 +26,7 @@ test('validate Control', async () => {
   expect(await validate(c)).toHaveLength(5);
 });
 
-test('validate EndPointControl', async () => {
+test("validate EndPointControl", async () => {
   const c = new EndPointControl(-3.0123456789, 4, 120);
 
   expect(c.uid).toHaveLength(10);
@@ -51,7 +51,7 @@ test('validate EndPointControl', async () => {
   expect(await validate(c)).toHaveLength(6);
 });
 
-test('validate Keyframe', async () => {
+test("validate Keyframe", async () => {
   const k = new Keyframe(0.123, 0.456);
 
   expect(k.uid).toHaveLength(10);
@@ -74,7 +74,39 @@ test('validate Keyframe', async () => {
   expect(await validate(k)).toHaveLength(4);
 });
 
-test('traversal and construct', () => {
+test("validate Segment", async () => {
+  const controls: [EndPointControl, Control, Control, EndPointControl] = [
+    new EndPointControl(0, 1, 2),
+    new Control(3, 4),
+    new Control(5, 6),
+    new EndPointControl(7, 8, 9)
+  ];
+  const s = new Segment(controls[0], controls.slice(1, -1), controls[3]);
+
+  expect(s.uid).toHaveLength(10);
+  expect(s.first).toStrictEqual(controls[0]);
+  expect(s.controls).toStrictEqual(controls);
+  expect(s.last).toStrictEqual(controls[3]);
+  expect(s.speedProfiles).toHaveLength(0);
+  
+  expect(await validate(s)).toHaveLength(0);
+  
+  const p = instanceToPlain(s);
+  s.controls.forEach(c => expect((c as any).__type).toBeDefined());
+  expect(await validate(s)).toHaveLength(0);
+  s.controls.forEach(c => expect(delete (c as any).__type));
+  const s2 = plainToClass(Segment, p, { excludeExtraneousValues: true, exposeDefaultValues: true });
+  
+  expect(await validate(s2)).toHaveLength(0);
+  expect(s2).toStrictEqual(s);
+
+  (s as any).uid = "";
+  (s as any).controls = controls[0];
+  (s as any).speedProfiles = new Keyframe(0, 0);
+  expect(await validate(s)).toHaveLength(3);
+});
+
+test("traversal and construct", () => {
   const i1 = new EndPointControl(1, 0, 0);
   const i2 = new Control(2, 0);
   const i3 = new Control(3, 0);
@@ -105,9 +137,34 @@ test('traversal and construct', () => {
   const i20 = new Path(new CustomPathConfig(), new Segment(i1, [], i4));
 
   const expected = [
-    i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10,
-    i11, i12, i13, i14, i15, i16, i17, i18, i19, i20,
-    i21, i22, i23, i24, i25, i26];
+    i0,
+    i1,
+    i2,
+    i3,
+    i4,
+    i5,
+    i6,
+    i7,
+    i8,
+    i9,
+    i10,
+    i11,
+    i12,
+    i13,
+    i14,
+    i15,
+    i16,
+    i17,
+    i18,
+    i19,
+    i20,
+    i21,
+    i22,
+    i23,
+    i24,
+    i25,
+    i26
+  ];
 
   const removed = construct(expected);
 
@@ -116,8 +173,8 @@ test('traversal and construct', () => {
   expect(removed).toEqual([]);
   expect(actual).toEqual(expected);
 });
-  
-test('construct removal', () => {
+
+test("construct removal", () => {
   const i1 = new Control(1, 0);
   const i2 = new Control(2, 0);
   const i3 = new EndPointControl(3, 0, 0);
@@ -142,14 +199,9 @@ test('construct removal', () => {
   const i21 = new EndPointControl(21, 0, 0);
   const i18 = new Path(new CustomPathConfig(), new Segment(i21, [], i21));
 
-  const original = [
-    i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10,
-    i11, i12, i13, i14, i15, i16, i17, i18, i19, i20,
-    i21];
+  const original = [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13, i14, i15, i16, i17, i18, i19, i20, i21];
 
-  const expected = [
-    i0, i3, i4, i5, i6, i7, i9, i10,
-    i11, i13, i14, i15, i18];
+  const expected = [i0, i3, i4, i5, i6, i7, i9, i10, i11, i13, i14, i15, i18];
 
   const removed = construct(original);
 
