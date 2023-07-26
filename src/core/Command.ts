@@ -8,6 +8,7 @@ import {
   Path,
   PathTreeItem,
   Segment,
+  SegmentControls,
   SegmentVariant,
   Vector,
   construct,
@@ -298,11 +299,11 @@ export class AddSegment implements CancellableCommand, AddPathTreeItemsCommand {
 
   protected addLine(): void {
     if (this.path.segments.length === 0) {
-      this.segment = new Segment(new EndPointControl(0, 0, 0), [], this.end);
+      this.segment = new Segment(new EndPointControl(0, 0, 0), this.end);
       this._entities.push(this.end);
     } else {
       const last = this.path.segments[this.path.segments.length - 1];
-      this.segment = new Segment(last.last, [], this.end);
+      this.segment = new Segment(last.last, this.end);
       this._entities.push(this.end);
     }
     this.path.segments.push(this.segment);
@@ -315,16 +316,16 @@ export class AddSegment implements CancellableCommand, AddPathTreeItemsCommand {
       const p0 = new EndPointControl(0, 0, 0);
       const p1 = new Control(p0.x, p3.y);
       const p2 = new Control(p3.x, p0.y);
-      this.segment = new Segment(p0, [p1, p2], p3);
+      this.segment = new Segment(p0, p1, p2, p3);
       this._entities.push(p0, p1, p2, p3);
     } else {
       const last = this.path.segments[this.path.segments.length - 1];
       const p0 = last.last;
-      const c = last.controls.length < 4 ? last.controls[0] : last.controls[2];
+      const c = last.controls.length === 2 ? last.controls[0] : last.controls[2];
       const p1 = p0.mirror(new Control(c.x, c.y));
       const p2 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
 
-      this.segment = new Segment(p0, [p1, p2], p3);
+      this.segment = new Segment(p0, p1, p2, p3);
       this._entities.push(p1, p2, p3);
     }
     this.path.segments.push(this.segment);
@@ -355,8 +356,8 @@ export class AddSegment implements CancellableCommand, AddPathTreeItemsCommand {
 }
 
 export class ConvertSegment implements CancellableCommand, AddPathTreeItemsCommand, RemovePathTreeItemsCommand {
-  protected previousControls: Control[] = [];
-  protected newControls: Control[] = [];
+  protected previousControls: SegmentControls | undefined;
+  protected newControls: SegmentControls | undefined;
 
   constructor(protected path: Path, protected segment: Segment, protected variant: SegmentVariant) {}
 
@@ -404,21 +405,21 @@ export class ConvertSegment implements CancellableCommand, AddPathTreeItemsComma
   }
 
   execute(): void {
-    this.previousControls = this.segment.controls.slice();
+    this.previousControls = [...this.segment.controls];
     if (this.variant === SegmentVariant.LINEAR) {
       this.convertToLine();
     } else if (this.variant === SegmentVariant.CUBIC) {
       this.convertToCurve();
     }
-    this.newControls = this.segment.controls.slice();
+    this.newControls = [...this.segment.controls];
   }
 
   undo(): void {
-    this.segment.controls = this.previousControls.slice();
+    this.segment.controls = [...this.previousControls!]
   }
 
   redo(): void {
-    this.segment.controls = this.newControls.slice();
+    this.segment.controls = [...this.newControls!];
   }
 
   get addedItems(): readonly PathTreeItem[] {
@@ -433,14 +434,14 @@ export class ConvertSegment implements CancellableCommand, AddPathTreeItemsComma
 export class SplitSegment implements CancellableCommand, AddPathTreeItemsCommand {
   protected _entities: PathTreeItem[] = [];
 
-  protected previousOriginalSegmentControls: Control[] = [];
-  protected newOriginalSegmentControls: Control[] = [];
+  protected previousOriginalSegmentControls: SegmentControls | undefined;
+  protected newOriginalSegmentControls: SegmentControls | undefined;
   protected newSegment?: Segment;
 
   constructor(protected path: Path, protected originalSegment: Segment, protected point: EndPointControl) {}
 
   execute(): void {
-    this.previousOriginalSegmentControls = this.originalSegment.controls.slice();
+    this.previousOriginalSegmentControls = [...this.originalSegment.controls];
 
     const index = this.path.segments.indexOf(this.originalSegment);
     const found = index !== -1;
@@ -450,7 +451,7 @@ export class SplitSegment implements CancellableCommand, AddPathTreeItemsCommand
     if (cp_count === 2) {
       const last = this.originalSegment.last;
       this.originalSegment.last = this.point;
-      this.newSegment = new Segment(this.point, [], last);
+      this.newSegment = new Segment(this.point, last);
       this.path.segments.splice(index + 1, 0, this.newSegment);
 
       this._entities = [this.point];
@@ -464,17 +465,17 @@ export class SplitSegment implements CancellableCommand, AddPathTreeItemsCommand
       const b = this.point;
       const c = p2.divide(new Control(2, 2)).add(this.point.divide(new Control(2, 2)));
       this.originalSegment.controls = [p0, p1, a, b];
-      this.newSegment = new Segment(b, [c, p2], p3);
+      this.newSegment = new Segment(b, c, p2, p3);
       this.path.segments.splice(index + 1, 0, this.newSegment);
 
       this._entities = [a, this.point, c];
     }
 
-    this.newOriginalSegmentControls = this.originalSegment.controls.slice();
+    this.newOriginalSegmentControls = [...this.originalSegment.controls];
   }
 
   undo(): void {
-    this.originalSegment.controls = this.previousOriginalSegmentControls;
+    this.originalSegment.controls = this.previousOriginalSegmentControls!;
     const index = this.path.segments.indexOf(this.newSegment!);
     this.path.segments.splice(index, 1);
   }
@@ -484,7 +485,7 @@ export class SplitSegment implements CancellableCommand, AddPathTreeItemsCommand
     // ALGO: Instead of executing, we just add the segment back
     // ALGO: Assume that the command is executed
     const index = this.path.segments.indexOf(this.originalSegment);
-    this.originalSegment.controls = this.newOriginalSegmentControls.slice();
+    this.originalSegment.controls = [...this.newOriginalSegmentControls!];
     this.path.segments.splice(index + 1, 0, this.newSegment!);
   }
 

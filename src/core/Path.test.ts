@@ -81,7 +81,7 @@ test("validate Segment", async () => {
     new Control(5, 6),
     new EndPointControl(7, 8, 9)
   ];
-  const s = new Segment(controls[0], controls.slice(1, -1), controls[3]);
+  const s = new Segment(...controls);
 
   expect(s.uid).toHaveLength(10);
   expect(s.first).toStrictEqual(controls[0]);
@@ -126,7 +126,7 @@ test("traversal and construct", () => {
   const i17 = new Control(17, 0);
   const i18 = new Control(18, 0);
   const i19 = new EndPointControl(19, 0, 0);
-  const i0 = new Path(new CustomPathConfig(), new Segment(i1, [], i4));
+  const i0 = new Path(new CustomPathConfig(), new Segment(i1, i4));
 
   const i21 = new EndPointControl(21, 0, 0);
   const i22 = new EndPointControl(22, 0, 0);
@@ -134,7 +134,7 @@ test("traversal and construct", () => {
   const i24 = new Control(24, 0);
   const i25 = new EndPointControl(25, 0, 0);
   const i26 = new EndPointControl(26, 0, 0);
-  const i20 = new Path(new CustomPathConfig(), new Segment(i1, [], i4));
+  const i20 = new Path(new CustomPathConfig(), new Segment(i1, i4));
 
   const expected = [
     i0,
@@ -192,12 +192,12 @@ test("construct removal", () => {
   const i15 = new EndPointControl(15, 0, 0);
   const i16 = new Control(16, 0);
   const i17 = new Control(17, 0);
-  const i0 = new Path(new CustomPathConfig(), new Segment(i3, [], i6));
+  const i0 = new Path(new CustomPathConfig(), new Segment(i3, i6));
 
   const i19 = new Control(19, 0);
   const i20 = new Control(20, 0);
   const i21 = new EndPointControl(21, 0, 0);
-  const i18 = new Path(new CustomPathConfig(), new Segment(i21, [], i21));
+  const i18 = new Path(new CustomPathConfig(), new Segment(i21, i21));
 
   const original = [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13, i14, i15, i16, i17, i18, i19, i20, i21];
 

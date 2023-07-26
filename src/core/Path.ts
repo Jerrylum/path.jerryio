@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Expose, Type } from "class-transformer";
+import { Exclude, Expose, Type } from "class-transformer";
 import {
   IsArray,
   IsBoolean,
@@ -282,6 +282,10 @@ export enum SegmentVariant {
   CUBIC = "cubic"
 }
 
+export type LinearSegmentControls = [EndPointControl, EndPointControl];
+export type CubicSegmentControls = [EndPointControl, Control, Control, EndPointControl];
+export type SegmentControls = LinearSegmentControls | CubicSegmentControls;
+
 // observable class
 export class Segment implements CanvasEntity {
   @ValidateSegmentControls()
@@ -298,7 +302,7 @@ export class Segment implements CanvasEntity {
     },
     keepDiscriminatorProperty: true
   })
-  public controls: (EndPointControl | Control)[];
+  public controls: SegmentControls;
   @ValidateNested()
   @IsArray()
   @Expose()
@@ -308,13 +312,11 @@ export class Segment implements CanvasEntity {
   @Expose()
   public uid: string;
 
-  constructor(start: EndPointControl, middle: Control[], end: EndPointControl) {
-    if (start === undefined) {
-      // for serialization
-      this.controls = [];
-    } else {
-      this.controls = [start, ...middle, end];
-    }
+  constructor(); // For class-transformer
+  constructor(first: EndPointControl, last: EndPointControl);
+  constructor(first: EndPointControl, idx1: Control, idx2: Control, last: EndPointControl);
+  constructor(...list: [] | SegmentControls) {
+    this.controls = list as SegmentControls;
     this.speedProfiles = [];
     this.uid = makeId(10);
     makeAutoObservable(this);
@@ -432,13 +434,17 @@ export function construct(entities: PathTreeItem[]): PathTreeItem[] | undefined 
       if (first !== undefined) {
         if (middle.length < 2) {
           removed.push(...middle);
-          middle = []; // No less than 2 controls
-        }
-        if (middle.length > 2) {
+          // No less than 2 controls
+          segments.push(new Segment(first, entity));
+        } else if (middle.length > 2) {
           removed.push(...middle.slice(1, -1));
-          middle = [middle[0], middle[middle.length - 1]]; // No more than 2 controls
+          // No more than 2 controls
+          segments.push(new Segment(first, middle[0], middle[middle.length - 1], entity));
+        } else if (middle.length === 2) {
+          segments.push(new Segment(first, middle[0], middle[1], entity));
+        } else {
+          segments.push(new Segment(first, entity));
         }
-        segments.push(new Segment(first, middle, entity));
       } else {
         removed.push(...middle);
       }
@@ -471,7 +477,7 @@ export function ValidateSegmentControls(validationOptions?: ValidationOptions) {
           // check if the length is 2 or 4
           if (!(array.length === 2 || array.length === 4)) return false;
           // check if it is an array of Control | EndPointControl, redundant
-          if (!array.every(item => item instanceof Control)) return false;
+          if (!array.every(item => item instanceof Control || item instanceof EndPointControl)) return false;
           // check if the first is EndPointControl
           if (!(array[0] instanceof EndPointControl)) return false;
           // check if the last is EndPointControl

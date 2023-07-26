@@ -19,7 +19,7 @@ import { Quantity, UnitOfLength } from "./Unit";
 
 
 test("getPathSamplePoints", () => {
-  const path = new Path(new CustomPathConfig(), new Segment(new EndPointControl(60, 60, 0), [], new EndPointControl(66, 60, 90)));
+  const path = new Path(new CustomPathConfig(), new Segment(new EndPointControl(60, 60, 0), new EndPointControl(66, 60, 90)));
   
   const density = new Quantity(2, UnitOfLength.Centimeter);
 
@@ -40,7 +40,7 @@ test("getPathSamplePoints with no segment path", () => {
 });
 
 test('Calculation with one segment and 6cm position changes', () => {
-  const path = new Path(new CustomPathConfig(), new Segment(new EndPointControl(60, 60, 0), [], new EndPointControl(66, 60, 90)));
+  const path = new Path(new CustomPathConfig(), new Segment(new EndPointControl(60, 60, 0), new EndPointControl(66, 60, 90)));
 
   expect(path.controls[0].x).toEqual(60);
   expect(path.controls[0].y).toEqual(60);
@@ -79,7 +79,7 @@ function toMatchObjectArray<T>(received: T[], expected: Partial<T>[]) {
 
 test('Calculation with one segment and no position changes', () => {
   const path = new Path(new CustomPathConfig(), new Segment(
-    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(60, 60, 0),
     new EndPointControl(60, 60, 90)));
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
@@ -102,7 +102,7 @@ test('Calculation with one segment and no position changes', () => {
 
 test('Calculation with one segment and 1cm position changes', () => {
   const path = new Path(new CustomPathConfig(), new Segment(
-    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(60, 60, 0),
     new EndPointControl(61, 60, 90)));
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
@@ -122,7 +122,7 @@ test('Calculation with one segment and 1cm position changes', () => {
 
 test('Calculation with one segment and 2cm position changes', () => {
   const path = new Path(new CustomPathConfig(), new Segment(
-    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(60, 60, 0),
     new EndPointControl(62, 60, 90)));
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
@@ -142,7 +142,7 @@ test('Calculation with one segment and 2cm position changes', () => {
 
 test('Calculation with one segment and 3cm position changes', () => {
   const path = new Path(new CustomPathConfig(), new Segment(
-    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(60, 60, 0),
     new EndPointControl(63, 60, 90)));
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
@@ -163,11 +163,11 @@ test('Calculation with one segment and 3cm position changes', () => {
 
 test('Calculation with two segments and no position changes', () => {
   const path = new Path(new CustomPathConfig(), new Segment(
-    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(60, 60, 0),
     new EndPointControl(60, 60, 90)));
 
   path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last, [],
+    path.segments[path.segments.length - 1].last,
     new EndPointControl(60, 60, 180)
   ));
 
@@ -189,11 +189,11 @@ test('Calculation with two segments and no position changes', () => {
 
 test('Calculation with two segments and 2cm position changes', () => {
   const path = new Path(new CustomPathConfig(), new Segment(
-    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(60, 60, 0),
     new EndPointControl(62, 60, 90)));
 
   path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last, [],
+    path.segments[path.segments.length - 1].last,
     new EndPointControl(62, 60, 180)
   ));
 
@@ -216,11 +216,11 @@ test('Calculation with two segments and 2cm position changes', () => {
 
 test('Calculation with two segments and 3cm position changes', () => {
   const path = new Path(new CustomPathConfig(), new Segment(
-    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(60, 60, 0),
     new EndPointControl(63, 60, 90)));
 
   path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last, [],
+    path.segments[path.segments.length - 1].last,
     new EndPointControl(63, 60, 180)
   ));
 
@@ -243,16 +243,16 @@ test('Calculation with two segments and 3cm position changes', () => {
 
 test('Calculation with three segments and 4cm position changes', () => {
   const path = new Path(new CustomPathConfig(), new Segment(
-    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(60, 60, 0),
     new EndPointControl(62, 60, 90)));
 
   path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last, [],
+    path.segments[path.segments.length - 1].last,
     new EndPointControl(63, 60, 180)
   ));
 
   path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last, [],
+    path.segments[path.segments.length - 1].last,
     new EndPointControl(64, 60, 270)
   ));
 
@@ -276,16 +276,16 @@ test('Calculation with three segments and 4cm position changes', () => {
 
 test('Calculation with three segments and 5cm position changes', () => {
   const path = new Path(new CustomPathConfig(), new Segment(
-    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(60, 60, 0),
     new EndPointControl(62, 60, 90)));
 
   path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last, [],
+    path.segments[path.segments.length - 1].last,
     new EndPointControl(63, 60, 180)
   ));
 
   path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last, [],
+    path.segments[path.segments.length - 1].last,
     new EndPointControl(65, 60, 270)
   ));
 
@@ -310,16 +310,16 @@ test('Calculation with three segments and 5cm position changes', () => {
 
 test('Calculation with three segments and 7cm position changes', () => {
   const path = new Path(new CustomPathConfig(), new Segment(
-    new EndPointControl(60, 60, 0), [],
+    new EndPointControl(60, 60, 0),
     new EndPointControl(65, 60, 90)));
 
   path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last, [],
+    path.segments[path.segments.length - 1].last,
     new EndPointControl(66, 60, 180)
   ));
 
   path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last, [],
+    path.segments[path.segments.length - 1].last,
     new EndPointControl(67, 60, 270)
   ));
 
@@ -347,15 +347,13 @@ test('Calculation with two segments edge case 1', () => {
   // it finishes all samples before t=1
 
   const path = new Path(new CustomPathConfig(), new Segment(
-    new EndPointControl(0, 0, 0), [],
+    new EndPointControl(0, 0, 0),
     new EndPointControl(10, 0, 0)));
 
   path.segments.push(new Segment(
     path.segments[path.segments.length - 1].last,
-    [
-      new Control(10, 103.71910889077459),
-      new Control(0, 80),
-    ],
+    new Control(10, 103.71910889077459),
+    new Control(0, 80),
     new EndPointControl(40, 60, 0)
   ));
 

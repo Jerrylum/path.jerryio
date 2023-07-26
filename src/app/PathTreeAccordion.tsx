@@ -632,7 +632,7 @@ const PathTreeAccordion = observer((props: {}) => {
     const cm60inUOL = cm60.to(app.gc.uol);
 
     const newPath = app.format.createPath(
-      new Segment(new EndPointControl(-cm60inUOL, -cm60inUOL, 0), [], new EndPointControl(-cm60inUOL, cm60inUOL, 0))
+      new Segment(new EndPointControl(-cm60inUOL, -cm60inUOL, 0), new EndPointControl(-cm60inUOL, cm60inUOL, 0))
     );
     app.history.execute(`Add path ${newPath.uid}`, new AddPath(app.paths, newPath));
     app.addExpanded(newPath);

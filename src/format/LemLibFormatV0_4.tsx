@@ -237,7 +237,7 @@ export class LemLibFormatV0_4 implements Format {
       const p2 = new Control(num(tokens[2]), num(tokens[3]));
       const p3 = new Control(num(tokens[4]), num(tokens[5]));
       const p4 = new EndPointControl(num(tokens[6]), num(tokens[7]), 0);
-      const segment = new Segment(p1, [p2, p3], p4);
+      const segment = new Segment(p1, p2, p3, p4);
       push(segment);
 
       i++;
