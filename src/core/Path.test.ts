@@ -37,7 +37,7 @@ test('validate EndPointControl', async () => {
   expect(await validate(c)).toHaveLength(0);
 
   const p = instanceToPlain(c);
-  const c2 = plainToClass(EndPointControl, p);
+  const c2 = plainToClass(EndPointControl, p, { excludeExtraneousValues: true, exposeDefaultValues: true });
 
   expect(await validate(c2)).toHaveLength(0);
   expect(c2).toStrictEqual(c);
@@ -62,7 +62,7 @@ test('validate Keyframe', async () => {
   expect(await validate(k)).toHaveLength(0);
 
   const p = instanceToPlain(k);
-  const k2 = plainToClass(Keyframe, p);
+  const k2 = plainToClass(Keyframe, p, { excludeExtraneousValues: true, exposeDefaultValues: true });
 
   expect(await validate(k2)).toHaveLength(0);
   expect(k2).toStrictEqual(k);

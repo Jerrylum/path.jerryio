@@ -1,5 +1,5 @@
 import { action } from "mobx";
-import { instanceToPlain, plainToClassFromExist, plainToInstance, Expose, Exclude } from "class-transformer";
+import { instanceToPlain, plainToClassFromExist, plainToInstance, Expose, Exclude, Type } from "class-transformer";
 import { MainApp } from "../core/MainApp";
 import { Segment, EndPointControl, Path } from "../core/Path";
 import { Format, PathFileData } from "./Format";
@@ -127,12 +127,34 @@ class TestClass {
   attr6 = "6";
   @Expose()
   attr7 = "7";
+  @Expose()
+  @Type(() => Number)
+  attr8 = [2, 3, 4];
+  @Expose()
+  @Type(() => Number)
+  attr9 = [5, 6, 7];
+  @Expose()
+  @Type(() => String)
+  attr10 = "string1";
+  @Expose()
+  attr11 = "string2";
 }
 
 test("Class transform", () => {
   const result = plainToClassFromExist(
     new TestClass(),
-    { attr1: 3, attr2: "4", attr3: false, attr4: "hey", attr5: "-1", attr6: "-2" },
+    {
+      attr1: 3,
+      attr2: "4",
+      attr3: false,
+      attr4: "hey",
+      attr5: "-1",
+      attr6: "-2",
+      attr8: "anything",
+      attr9: [8, 9],
+      attr10: 123,
+      attr11: 456
+    },
     { excludeExtraneousValues: true, exposeDefaultValues: true }
   );
 
@@ -143,4 +165,8 @@ test("Class transform", () => {
   expect(result.attr5).toEqual("5");
   expect(result.attr6).toEqual("6");
   expect(result.attr7).toEqual("7");
+  expect(result.attr8).toEqual(NaN);
+  expect(result.attr9).toEqual([8, 9]);
+  expect(result.attr10).toEqual("123");
+  expect(result.attr11).toEqual(456);
 });
