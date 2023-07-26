@@ -138,7 +138,7 @@ class PathTreeVariables {
   }
 
   isParentDragging(entity: PathTreeItem): boolean {
-    return entity instanceof Control && this.dragging?.entity instanceof Path;
+    return (entity instanceof Control || entity instanceof EndPointControl) && this.dragging?.entity instanceof Path;
   }
 
   isAllowDrop(destEntity: PathTreeItem): boolean {
@@ -542,7 +542,7 @@ const TreeView = observer((props: { variables: PathTreeVariables }) => {
 
   function focusFirstChild(e: React.KeyboardEvent<HTMLUListElement>): boolean {
     const current = variables.focused;
-    if (current === undefined || current instanceof Control) return false;
+    if (current === undefined || current instanceof Control || current instanceof EndPointControl) return false;
 
     const control = current.controls[0];
     if (control === undefined || app.allNavigableEntities.includes(control) === false) return false;

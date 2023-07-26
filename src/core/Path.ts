@@ -150,6 +150,9 @@ export class Point extends Vector {
 
 // observable class
 export class Control extends Vector implements InteractiveEntity {
+  @Exclude()
+  readonly discriminator: string = "control";
+
   @MinLength(10)
   @Expose()
   public uid: string;
@@ -182,7 +185,19 @@ export class Control extends Vector implements InteractiveEntity {
 }
 
 // observable class
-export class EndPointControl extends Control implements CoordinateWithHeading {
+export class EndPointControl extends Vector implements InteractiveEntity, CoordinateWithHeading {
+  @Exclude()
+  readonly discriminator: string = "end-point";
+
+  @MinLength(10)
+  @Expose()
+  public uid: string;
+  @IsBoolean()
+  @Expose()
+  public lock: boolean = false;
+  @IsBoolean()
+  @Expose()
+  public visible: boolean = true;
   @ValidateNumber(num => num >= 0 && num < 360)
   @Expose({ name: "heading" })
   public heading_: number = 0;
@@ -194,7 +209,13 @@ export class EndPointControl extends Control implements CoordinateWithHeading {
   constructor(x: number, y: number, heading: number) {
     super(x, y);
     this.heading = heading;
+    this.uid = makeId(10);
+
     makeObservable(this, {
+      x: observable,
+      y: observable,
+      lock: observable,
+      visible: observable,
       heading_: observable
     });
   }
@@ -462,6 +483,7 @@ export function construct(entities: PathTreeItem[]): PathTreeItem[] | undefined 
 
   return removed;
 }
+
 export function ValidateSegmentControls(validationOptions?: ValidationOptions) {
   return function (target: Object, propertyName: string) {
     registerDecorator({
