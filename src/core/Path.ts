@@ -210,7 +210,7 @@ export interface KeyframePos {
 }
 
 // observable class
-export class Keyframe {
+export class Keyframe implements CanvasEntity {
   @MinLength(10)
   @Expose()
   public uid: string;
