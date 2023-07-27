@@ -26,6 +26,9 @@ import { Quantity, UnitOfLength } from "../core/Unit";
 import classNames from "classnames";
 import { IS_MAC_OS } from "../core/Util";
 import React from "react";
+import { APP_VERSION_STRING } from "../Version";
+
+const MIME_TYPE = `application/x-item-uid-path.jerryio.com-${APP_VERSION_STRING}`;
 
 function getItemNameRegex() {
   return new RegExp(/^[^<>\r\n]+$/g); /* eslint-disable-line */
@@ -253,7 +256,7 @@ const TreeItem = observer((props: TreeItemProps) => {
     event.stopPropagation();
 
     event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("application/path-dot-jerryio-entity-uid", entity.uid);
+    event.dataTransfer.setData(MIME_TYPE, entity.uid);
 
     variables.dragging = {
       entity: entity as Path | EndControl,
@@ -273,7 +276,7 @@ const TreeItem = observer((props: TreeItemProps) => {
   function onDragOver(event: React.DragEvent<HTMLLIElement>) {
     event.stopPropagation();
     event.preventDefault();
-    const isEntityDragging = event.dataTransfer.types.includes("application/path-dot-jerryio-entity-uid");
+    const isEntityDragging = event.dataTransfer.types.includes(MIME_TYPE);
     if (isEntityDragging === false) return;
     if (variables.dragging === undefined) return;
 
@@ -287,7 +290,7 @@ const TreeItem = observer((props: TreeItemProps) => {
   function onDrop(event: React.DragEvent<HTMLLIElement>) {
     event.stopPropagation();
     event.preventDefault();
-    moveItem(variables, entity, event.dataTransfer.getData("application/path-dot-jerryio-entity-uid"));
+    moveItem(variables, entity, event.dataTransfer.getData(MIME_TYPE));
   }
 
   function onExpandIconClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -604,7 +607,7 @@ const TreeView = observer((props: { variables: PathTreeVariables }) => {
     }
 
     if (entity === undefined) return;
-    moveItem(variables, entity, event.dataTransfer.getData("application/path-dot-jerryio-entity-uid"));
+    moveItem(variables, entity, event.dataTransfer.getData(MIME_TYPE));
   }
 
   const ref = React.useRef<HTMLUListElement>(null);
