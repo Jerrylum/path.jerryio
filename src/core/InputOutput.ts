@@ -53,7 +53,7 @@ async function fileNameConfirm(description: string, callback: () => void) {
           onClick: async () => {
             let candidate = confirmation.input ?? app.mountingFile.name;
             if (candidate.indexOf(".") === -1) candidate += ".txt";
-            app.mountingFile.name = confirmation.input ?? app.mountingFile.name;
+            app.mountingFile.name = candidate;
             app.mountingFile.isNameSet = true;
             callback();
             resolve();

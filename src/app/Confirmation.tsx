@@ -196,7 +196,7 @@ const ConfirmationDialog = observer((props: {}) => {
             {cfm.description}
           </Typography>
         </Box>
-        {cfm.input && (
+        {cfm.input !== undefined && (
           <Box className="input-box">
             <ObserverInput
               label={cfm.inputLabel}
