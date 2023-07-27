@@ -63,6 +63,10 @@ const ObserverInput = observer(
         onConfirm(event);
         element.value = parseFloat(getValue()) + 1 + "";
         onConfirm(event);
+      } else if (event.code === "Escape") {
+        element.value = "";
+        onConfirm(event);
+        element.blur();
       }
 
       rest.onKeyDown?.(event);
