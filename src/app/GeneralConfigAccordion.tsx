@@ -41,15 +41,19 @@ const GeneralConfigAccordion = observer((props: {}) => {
             sx={{ maxWidth: "100%" }}
             value={formats.findIndex(x => x.getName() === app.format.getName())}
             onChange={action((e: SelectChangeEvent<number>) => {
-              confirmation.prompt({
-                title: "Change Format",
-                description:
-                  "Some incompatible path configurations will be discarded. Edit history will be reset. Are you sure?",
-                buttons: [
-                  { label: "Confirm", onClick: () => (app.format = formats[parseInt(e.target.value + "")]) },
-                  { label: "Cancel" }
-                ]
-              });
+              if (app.history.undoHistorySize === 0 && app.history.redoHistorySize === 0 && app.paths.length === 0) {
+                app.format = formats[parseInt(e.target.value + "")];
+              } else {
+                confirmation.prompt({
+                  title: "Change Format",
+                  description:
+                    "Some incompatible path configurations will be discarded. Edit history will be reset. Are you sure?",
+                  buttons: [
+                    { label: "Confirm", onClick: () => (app.format = formats[parseInt(e.target.value + "")]) },
+                    { label: "Cancel" }
+                  ]
+                });
+              }
             })}>
             {formats.map((x, i) => {
               return (
