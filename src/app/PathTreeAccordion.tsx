@@ -43,11 +43,11 @@ function touchItem(
   if (isRangeSelect) {
     if (variables.rangeStart === undefined) return;
 
-    const entityFlattened = app.allEntityIds;
+    const entities = app.allNavigableEntityIds;
 
     const helper = function (fromUid: string, toUid: string, cb: (target: string) => void) {
-      const fromIndex = entityFlattened.indexOf(fromUid);
-      const toIndex = entityFlattened.indexOf(toUid);
+      const fromIndex = entities.indexOf(fromUid);
+      const toIndex = entities.indexOf(toUid);
 
       if (fromIndex === -1 || toIndex === -1) return;
 
@@ -55,7 +55,7 @@ function touchItem(
       const b = Math.max(fromIndex, toIndex);
 
       for (let i = a; i <= b; i++) {
-        cb(entityFlattened[i]);
+        cb(entities[i]);
       }
     };
 
