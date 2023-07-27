@@ -30,13 +30,8 @@ export function makeId(length: number) {
   return result;
 }
 
-export async function runInActionAsync(action: () => void): Promise<void> {
-  return new Promise(resolve => {
-    runInAction(() => {
-      action();
-      resolve();
-    });
-  });
+export async function runInActionAsync<T>(action: () => T): Promise<T> {
+  return new Promise(resolve => runInAction(() => resolve(action())));
 }
 
 export function clamp(value: number, min: number, max: number): number {
