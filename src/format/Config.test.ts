@@ -1,13 +1,14 @@
 import { makeAutoObservable } from "mobx";
 
-import { Expose, Exclude } from "class-transformer";
-import { IsBoolean, IsPositive } from "class-validator";
+import { Expose, Exclude, plainToClassFromExist } from "class-transformer";
+import { IsBoolean, IsPositive, validate } from "class-validator";
 import { NumberRange, ValidateNumberRange } from "../component/RangeSlider";
 import { Path } from "../core/Path";
 import { UnitOfLength } from "../core/Unit";
 import { GeneralConfig, PathConfig } from "./Config";
 import { Format } from "./Format";
 import { ValidateNumber } from "../core/Util";
+import { CustomFormat } from "./Format.test";
 
 export class CustomGeneralConfig implements GeneralConfig {
   public custom: string = "custom";
@@ -87,4 +88,59 @@ export class CustomPathConfig implements PathConfig {
   }
 }
 
-test('Any', () => {});
+test("Class transform path config", async () => {
+  const f = new CustomFormat();
+  const path = f.createPath();
+
+  const pathRaw = {};
+  const pathPC = path.pc;
+  plainToClassFromExist(path, pathRaw, { excludeExtraneousValues: true, exposeDefaultValues: true });
+
+  expect(
+    plainToClassFromExist(pathPC, null, {
+      excludeExtraneousValues: true,
+      exposeDefaultValues: true
+    })
+  ).toBe(null);
+
+  expect(
+    plainToClassFromExist(pathPC, undefined, {
+      excludeExtraneousValues: true,
+      exposeDefaultValues: true
+    })
+  ).toBe(undefined);
+
+  expect(
+    plainToClassFromExist(pathPC, 123, {
+      excludeExtraneousValues: true,
+      exposeDefaultValues: true
+    })
+  ).toBe(123);
+
+  expect(
+    plainToClassFromExist(pathPC, NaN, {
+      excludeExtraneousValues: true,
+      exposeDefaultValues: true
+    })
+  ).toBe(NaN);
+
+  expect(
+    plainToClassFromExist(pathPC, [NaN], {
+      excludeExtraneousValues: true,
+      exposeDefaultValues: true
+    })
+  ).toStrictEqual([NaN]);
+
+  expect(
+    plainToClassFromExist(pathPC, "", {
+      excludeExtraneousValues: true,
+      exposeDefaultValues: true
+    })
+  ).toStrictEqual("");
+
+  path.pc = plainToClassFromExist(pathPC, new CustomPathConfig(), {
+    excludeExtraneousValues: true,
+    exposeDefaultValues: true
+  });
+  expect(await validate(path.pc)).toHaveLength(0);
+});

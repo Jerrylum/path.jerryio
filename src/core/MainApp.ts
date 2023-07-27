@@ -376,8 +376,6 @@ export class MainApp {
     if (format === undefined) throw new Error("Format not found.");
     format.init(); // ALGO: Suspend format reaction
 
-    // ALGO: Assume the path file is valid
-
     const gc = plainToClassFromExist(format.getGeneralConfig(), data.gc, {
       excludeExtraneousValues: true,
       exposeDefaultValues: true

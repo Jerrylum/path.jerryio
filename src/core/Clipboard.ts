@@ -1,21 +1,14 @@
 import { makeObservable, action } from "mobx";
 import { getAppStores } from "./MainApp";
-import { Control, EndControl, Path, PathTreeItem, SegmentControls } from "./Path";
+import { Control, EndControl, Path, PathTreeItem } from "./Path";
 import { Logger } from "./Logger";
 import { enqueueInfoSnackbar } from "../app/Notice";
 import { UnitConverter, UnitOfLength } from "./Unit";
-import {
-  ClassConstructor,
-  Expose,
-  Type,
-  instanceToPlain,
-  plainToClassFromExist,
-  plainToInstance
-} from "class-transformer";
+import { Expose, Type, instanceToPlain, plainToClassFromExist, plainToInstance } from "class-transformer";
 import { ValidateNumber, makeId, runInActionAsync } from "./Util";
 import DOMPurify from "dompurify";
 import { AddPath, InsertControls, InsertPaths, RemovePathTreeItems } from "./Command";
-import { Equals, IsArray, Length, ValidateNested, isObject, validate } from "class-validator";
+import { Equals, IsArray, Length, ArrayMinSize, ValidateNested, isObject, validate } from "class-validator";
 import { APP_VERSION_STRING } from "../Version";
 
 const logger = Logger("Clipboard");
@@ -48,6 +41,7 @@ class CopyPathsMessage extends ClipboardMessage {
   @Expose()
   uol!: UnitOfLength;
   @ValidateNested()
+  @ArrayMinSize(1)
   @IsArray()
   @Expose()
   @Type(() => Path)
@@ -72,20 +66,7 @@ class CopyPathsMessage extends ClipboardMessage {
     const newUOL = app.gc.uol;
     const uc = new UnitConverter(oldUOL, newUOL);
 
-    if (this.format !== app.format.getName()) {
-      enqueueInfoSnackbar(logger, "Pasting data in other format is not supported");
-      return false;
-    }
-
-    const paths: Path[] = [];
-    for (const pathRaw of this.items) {
-      const path = app.format.createPath();
-      const pathPC = path.pc;
-      plainToClassFromExist(path, pathRaw, { excludeExtraneousValues: true, exposeDefaultValues: true });
-      path.pc = plainToClassFromExist(pathPC, pathRaw.pc, {
-        excludeExtraneousValues: true,
-        exposeDefaultValues: true
-      });
+    for (const path of this.items) {
       // ALGO: The order of re-assigning the uid shouldn't matter
       path.uid = makeId(10);
 
@@ -103,14 +84,13 @@ class CopyPathsMessage extends ClipboardMessage {
         control.x = uc.fromAtoB(control.x);
         control.y = uc.fromAtoB(control.y);
       }
-      paths.push(path);
     }
 
     const interestedPath = app.interestedPath();
     const idx = interestedPath === undefined ? 0 : app.paths.indexOf(interestedPath) + 1;
 
-    app.history.execute(`Paste ${paths.length} paths`, new InsertPaths(app.paths, idx, paths));
-    app.setSelected(paths.slice());
+    app.history.execute(`Paste ${this.items.length} paths`, new InsertPaths(app.paths, idx, this.items));
+    app.setSelected(this.items.slice());
 
     return true;
   }
@@ -128,6 +108,7 @@ class CopyControlsMessage extends ClipboardMessage {
   @Expose()
   uol!: UnitOfLength;
   @ValidateNested()
+  @ArrayMinSize(1)
   @IsArray()
   @Expose()
   @Type(() => Control, {
@@ -191,10 +172,48 @@ class CopyControlsMessage extends ClipboardMessage {
   }
 }
 
+function createMessageFromData(data: Record<string, any>): CopyPathsMessage | CopyControlsMessage | undefined {
+  // ALGO: The return value maybe untrusted depending on the data
+  const { app } = getAppStores();
+  if (data["discriminator"] === "COPY_PATHS") {
+    const message = plainToInstance(
+      CopyPathsMessage,
+      { ...data, items: [] },
+      { excludeExtraneousValues: true, exposeDefaultValues: true }
+    );
+
+    if (message.format !== app.format.getName()) {
+      enqueueInfoSnackbar(logger, "Pasting data in other format is not supported");
+      return undefined;
+    }
+
+    for (const pathRaw of data.items) {
+      const path = app.format.createPath();
+      const pathPC = path.pc;
+      plainToClassFromExist(path, pathRaw, { excludeExtraneousValues: true, exposeDefaultValues: true });
+      path.pc = plainToClassFromExist(pathPC, pathRaw.pc, {
+        excludeExtraneousValues: true,
+        exposeDefaultValues: true
+      });
+
+      message.items.push(path);
+    }
+
+    return message;
+  } else if (data["discriminator"] === "COPY_CONTROLS") {
+    return plainToInstance(CopyControlsMessage, data, {
+      excludeExtraneousValues: true,
+      exposeDefaultValues: true
+    });
+  } else {
+    return undefined;
+  }
+}
+
 export class AppClipboard {
   private broadcastChannel: BroadcastChannel | undefined;
 
-  private rawMessage: Record<string, any> | undefined;
+  private data: Record<string, any> | undefined;
 
   public cut(): PathTreeItem[] | undefined {
     const { app } = getAppStores();
@@ -226,17 +245,17 @@ export class AppClipboard {
     } else {
       message = new CopyControlsMessage(app.gc.uol, selected as (Control | EndControl)[]);
     }
-    this.rawMessage = instanceToPlain(message);
+    this.data = instanceToPlain(message);
 
-    this.broadcastChannel?.postMessage(this.rawMessage);
+    this.broadcastChannel?.postMessage(this.data);
 
-    navigator.clipboard?.writeText?.(JSON.stringify(this.rawMessage));
+    navigator.clipboard?.writeText?.(JSON.stringify(this.data));
 
     return message.items;
   }
 
   public async paste(untrustedSystemClipboardDataInString: string | undefined): Promise<boolean> {
-    let message: CopyPathsMessage | CopyControlsMessage;
+    let message: CopyPathsMessage | CopyControlsMessage | undefined;
     if (untrustedSystemClipboardDataInString === undefined) {
       untrustedSystemClipboardDataInString = await new Promise(resolve => {
         if (navigator.clipboard?.readText === undefined) resolve(undefined);
@@ -249,43 +268,21 @@ export class AppClipboard {
     }
 
     if (untrustedSystemClipboardDataInString === undefined) {
-      if (this.rawMessage === undefined) return false;
+      if (this.data === undefined) return false;
 
-      let cc: new (...args: any[]) => CopyPathsMessage | CopyControlsMessage;
-      if (this.rawMessage["discriminator"] === "COPY_PATHS") {
-        cc = CopyPathsMessage;
-      } else if (this.rawMessage["discriminator"] === "COPY_CONTROLS") {
-        cc = CopyControlsMessage;
-      } else {
-        return false;
-      }
-      message = plainToInstance(cc, this.rawMessage, {
-        excludeExtraneousValues: true,
-        exposeDefaultValues: true
-      });
+      message = createMessageFromData(this.data);
     } else {
-      let untrustedClipboardData: Record<string, any>;
+      let untrustedData: Record<string, any>;
       try {
-        untrustedClipboardData = JSON.parse(untrustedSystemClipboardDataInString);
+        untrustedData = JSON.parse(untrustedSystemClipboardDataInString);
       } catch (e) {
         return false;
       }
 
-      if (untrustedClipboardData["type"] !== MIME_TYPE) return false;
+      if (untrustedData["type"] !== MIME_TYPE) return false;
 
-      let cc: new (...args: any[]) => CopyPathsMessage | CopyControlsMessage;
-      if (untrustedClipboardData["discriminator"] === "COPY_PATHS") {
-        cc = CopyPathsMessage;
-      } else if (untrustedClipboardData["discriminator"] === "COPY_CONTROLS") {
-        cc = CopyControlsMessage;
-      } else {
-        return false;
-      }
-
-      const untrustedMessage = plainToInstance(cc, untrustedClipboardData, {
-        excludeExtraneousValues: true,
-        exposeDefaultValues: true
-      });
+      const untrustedMessage = createMessageFromData(untrustedData);
+      if (untrustedMessage === undefined) return false;
 
       const errors = await validate(untrustedMessage);
       if (errors.length > 0) {
@@ -294,20 +291,20 @@ export class AppClipboard {
         return false;
       }
 
-      const trustedClipboardData = untrustedClipboardData;
+      const trustedData = untrustedData;
       const trustedMessage = untrustedMessage;
 
       message = trustedMessage;
-      this.rawMessage = trustedClipboardData;
+      this.data = trustedData;
 
-      this.broadcastChannel?.postMessage(trustedClipboardData);
+      this.broadcastChannel?.postMessage(trustedData);
     }
 
-    return runInActionAsync(() => message.paste());
+    return runInActionAsync(() => message?.paste() ?? false);
   }
 
   get hasData() {
-    return this.rawMessage !== undefined;
+    return this.data !== undefined;
   }
 
   private createBroadcastChannel() {
@@ -320,11 +317,11 @@ export class AppClipboard {
 
         const data = event.data as Record<string, any>;
         if (data["discriminator"] === "SYNC_DATA") {
-          if (this.rawMessage !== undefined) {
-            channel.postMessage(this.rawMessage);
+          if (this.data !== undefined) {
+            channel.postMessage(this.data);
           }
         } else if (data["discriminator"] === "COPY_PATHS" || data["discriminator"] === "COPY_CONTROLS") {
-          this.rawMessage = event.data;
+          this.data = event.data;
         }
       };
       return channel;
@@ -339,12 +336,12 @@ export class AppClipboard {
     // Read and write clipboard data to session storage, so that it is preserved when the page is refreshed
     const clipboardDataInSessionStorage = window.sessionStorage.getItem("clipboard");
     if (clipboardDataInSessionStorage !== null) {
-      this.rawMessage = JSON.parse(clipboardDataInSessionStorage);
+      this.data = JSON.parse(clipboardDataInSessionStorage);
     }
 
     window.addEventListener("beforeunload", () => {
-      if (this.rawMessage !== undefined) {
-        window.sessionStorage.setItem("clipboard", JSON.stringify(this.rawMessage));
+      if (this.data !== undefined) {
+        window.sessionStorage.setItem("clipboard", JSON.stringify(this.data));
       }
     });
 
