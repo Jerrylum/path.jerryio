@@ -258,7 +258,7 @@ const MenuAccordion = observer((props: {}) => {
           text="Paste"
           hotkey="Mod+V"
           disable={clipboard.hasData === false && "The clipboard is empty"}
-          onClick={onMenuClick(() => clipboard.paste())}
+          onClick={onMenuClick(() => clipboard.paste(undefined))}
         />
         <CustomMenuItem
           done={false}

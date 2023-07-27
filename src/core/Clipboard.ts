@@ -15,9 +15,12 @@ import {
 import { ValidateNumber, makeId, runInActionAsync } from "./Util";
 import DOMPurify from "dompurify";
 import { AddPath, InsertControls, InsertPaths, RemovePathTreeItems } from "./Command";
-import { IsObject, Length, ValidateNested, isObject, validate } from "class-validator";
+import { Equals, IsArray, Length, ValidateNested, isObject, validate } from "class-validator";
+import { APP_VERSION_STRING } from "../Version";
 
 const logger = Logger("Clipboard");
+
+const MIME_TYPE = `application/x-clipboard-path.jerryio.com-${APP_VERSION_STRING}`;
 
 type ClipboardMessageType = "SYNC_DATA" | "COPY_PATHS" | "COPY_CONTROLS";
 
@@ -31,6 +34,10 @@ class SyncDataMessage extends ClipboardMessage {
 }
 
 class CopyPathsMessage extends ClipboardMessage {
+  @Equals(MIME_TYPE)
+  @Expose()
+  readonly type: string = MIME_TYPE;
+  @Equals("COPY_PATHS")
   @Expose()
   readonly discriminator: ClipboardMessageType = "COPY_PATHS";
 
@@ -41,7 +48,7 @@ class CopyPathsMessage extends ClipboardMessage {
   @Expose()
   uol!: UnitOfLength;
   @ValidateNested()
-  @IsObject()
+  @IsArray()
   @Expose()
   @Type(() => Path)
   items!: Path[];
@@ -110,17 +117,18 @@ class CopyPathsMessage extends ClipboardMessage {
 }
 
 class CopyControlsMessage extends ClipboardMessage {
+  @Equals(MIME_TYPE)
+  @Expose()
+  readonly type: string = MIME_TYPE;
+  @Equals("COPY_CONTROLS")
   @Expose()
   readonly discriminator: ClipboardMessageType = "COPY_CONTROLS";
 
-  @Length(1, 100)
-  @Expose()
-  format!: string;
   @ValidateNumber(num => num > 0 && num <= 1000) // Don't use IsEnum
   @Expose()
   uol!: UnitOfLength;
   @ValidateNested()
-  @IsObject()
+  @IsArray()
   @Expose()
   @Type(() => Control, {
     discriminator: {
@@ -135,11 +143,10 @@ class CopyControlsMessage extends ClipboardMessage {
   items!: (Control | EndControl)[];
 
   constructor(); // For class-transformer
-  constructor(format: string, uol: UnitOfLength, controls: (Control | EndControl)[]);
-  constructor(format?: string, uol?: UnitOfLength, controls?: (Control | EndControl)[]) {
+  constructor(uol: UnitOfLength, controls: (Control | EndControl)[]);
+  constructor(uol?: UnitOfLength, controls?: (Control | EndControl)[]) {
     super();
-    if (format !== undefined && uol !== undefined && controls !== undefined) {
-      this.format = format;
+    if (uol !== undefined && controls !== undefined) {
       this.uol = uol;
       this.items = controls;
     }
@@ -217,19 +224,30 @@ export class AppClipboard {
     if (isCopyPaths) {
       message = new CopyPathsMessage(app.format.getName(), app.gc.uol, selected as Path[]);
     } else {
-      message = new CopyControlsMessage(app.format.getName(), app.gc.uol, selected as (Control | EndControl)[]);
+      message = new CopyControlsMessage(app.gc.uol, selected as (Control | EndControl)[]);
     }
     this.rawMessage = instanceToPlain(message);
 
     this.broadcastChannel?.postMessage(this.rawMessage);
 
-    // set clipboard
+    navigator.clipboard?.writeText?.(JSON.stringify(this.rawMessage));
 
     return message.items;
   }
 
   public async paste(untrustedSystemClipboardDataInString: string | undefined): Promise<boolean> {
     let message: CopyPathsMessage | CopyControlsMessage;
+    if (untrustedSystemClipboardDataInString === undefined) {
+      untrustedSystemClipboardDataInString = await new Promise(resolve => {
+        if (navigator.clipboard?.readText === undefined) resolve(undefined);
+        else
+          navigator.clipboard.readText().then(
+            text => resolve(text),
+            () => resolve(undefined)
+          );
+      });
+    }
+
     if (untrustedSystemClipboardDataInString === undefined) {
       if (this.rawMessage === undefined) return false;
 
@@ -252,6 +270,8 @@ export class AppClipboard {
       } catch (e) {
         return false;
       }
+
+      if (untrustedClipboardData["type"] !== MIME_TYPE) return false;
 
       let cc: new (...args: any[]) => CopyPathsMessage | CopyControlsMessage;
       if (untrustedClipboardData["discriminator"] === "COPY_PATHS") {

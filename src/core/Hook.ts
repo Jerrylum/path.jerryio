@@ -1,4 +1,4 @@
-import { runInAction } from "mobx";
+import { runInAction, action } from "mobx";
 import React, { DependencyList } from "react";
 import { Options, useHotkeys } from "react-hotkeys-hook";
 import { RefType, HotkeyCallback, HotkeysEvent, Trigger } from "react-hotkeys-hook/dist/types";
@@ -200,4 +200,21 @@ export function useDragDropFile(enable: boolean, onDrop: (file: File) => void) {
       onDrop(file);
     }
   };
+}
+
+export function useClipboardPasteText(element: HTMLElement, onPaste: (text: string, e: ClipboardEvent) => void) {
+  React.useEffect(() => {
+    const callback = action((e: ClipboardEvent) => {
+      if (e.clipboardData === null) return;
+      const text = e.clipboardData.getData("text/plain");
+      if (text === "") return;
+      onPaste(text, e);
+    });
+
+    document.addEventListener("paste", callback);
+
+    return () => {
+      document.removeEventListener("paste", callback);
+    };
+  }, [element, onPaste]);
 }

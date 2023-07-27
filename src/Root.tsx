@@ -5,7 +5,7 @@ import { observer } from "mobx-react-lite";
 import { ThemeProvider } from "@mui/material/styles";
 
 import { Box, Card } from "@mui/material";
-import { useCustomHotkeys, useDragDropFile, useUnsavedChangesPrompt } from "./core/Hook";
+import { useClipboardPasteText, useCustomHotkeys, useDragDropFile, useUnsavedChangesPrompt } from "./core/Hook";
 import { MenuAccordion } from "./app/MenuAccordion";
 import { GeneralConfigAccordion } from "./app/GeneralConfigAccordion";
 import { PathConfigAccordion } from "./app/PathAccordion";
@@ -30,10 +30,7 @@ const Root = observer(() => {
   const { app, confirmation, help, appPreferences, clipboard } = getAppStores();
 
   const isUsingEditor = !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen;
-  const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(
-    isUsingEditor,
-    onDropFile
-  );
+  const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(isUsingEditor, onDropFile);
 
   const ENABLE_EXCEPT_INPUT_FIELDS = { enabled: isUsingEditor && !isDraggingFile };
 
@@ -68,7 +65,6 @@ const Root = observer(() => {
   useCustomHotkeys("Mod+Comma", () => appPreferences.open(), ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Mod+X", () => clipboard.cut(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
   useCustomHotkeys("Mod+C", () => clipboard.copy(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
-  useCustomHotkeys("Mod+V", () => clipboard.paste(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
 
   useCustomHotkeys("Mod+Z", () => app.history.undo(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
   useCustomHotkeys("Mod+Y,Shift+Mod+Z", () => app.history.redo(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
@@ -111,6 +107,15 @@ const Root = observer(() => {
   );
 
   useUnsavedChangesPrompt();
+
+  useClipboardPasteText(document.body, (text, e) => {
+    // UX: Do not paste if the user is typing in an input field or content editable element
+    // e.target is an input field if the focused element is a text input field, textarea, etc.
+    // e.target is body if the focused element is checkbox, button, etc.
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+    if (e.target instanceof HTMLElement && e.target.isContentEditable) return;
+    clipboard.paste(text);
+  });
 
   React.useEffect(() => app.onUIReady(), [app]);
 
