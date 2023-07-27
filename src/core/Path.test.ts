@@ -1,4 +1,4 @@
-import { EndControl, Control, Segment, construct, traversal, Path, Keyframe } from "./Path";
+import { EndControl, Control, Segment, construct, traversal, Path, Keyframe, relatedPaths } from "./Path";
 import { CustomPathConfig } from "../format/Config.test";
 import { validate } from "class-validator";
 import { instanceToPlain, plainToClass, plainToClassFromExist } from "class-transformer";
@@ -264,4 +264,33 @@ test("construct removal", () => {
 
   expect(removed).toEqual([i1, i2, i8, i12, i16, i17, i19, i20, i21]);
   expect(actual).toEqual(expected);
+});
+
+test("relatedPaths", () => {
+  const c = new CustomPathConfig();
+  
+  const i0 = new EndControl(0, 0, 0);
+  const i1 = new Control(1, 0);
+  const i2 = new Control(2, 0);
+  const i3 = new EndControl(3, 0, 0);
+  const i4 = new EndControl(4, 0, 0);
+  const i5 = new EndControl(5, 0, 0);
+  const i6 = new Control(6, 0);
+  const i7 = new Control(7, 0);
+  const i8 = new EndControl(8, 0, 0);
+  const p1 = new Path(new CustomPathConfig(), new Segment(i0, i1, i2, i3), new Segment(i3, i4));
+  const p2 = new Path(new CustomPathConfig(), new Segment(i5, i6, i7, i8));
+  
+  expect(relatedPaths([p1, p2], [i0])).toEqual([p1]);
+  expect(relatedPaths([p1, p2], [i1])).toEqual([p1]);
+  expect(relatedPaths([p1, p2], [i5])).toEqual([p2]);
+  expect(relatedPaths([p1, p2], [i6])).toEqual([p2]);
+  expect(relatedPaths([p1, p2], [i0, i2])).toEqual([p1]);
+  expect(relatedPaths([p1, p2], [i1, i2])).toEqual([p1]);
+  expect(relatedPaths([p1, p2], [i5, i7])).toEqual([p2]);
+  expect(relatedPaths([p1, p2], [i6, i7])).toEqual([p2]);
+  expect(relatedPaths([p1, p2], [i0, i2, i4])).toEqual([p1]);
+  expect(relatedPaths([p1, p2], [i1, i2, i4])).toEqual([p1]);
+  expect(relatedPaths([p1, p2], [i5, i7, i8])).toEqual([p2]);
+  expect(relatedPaths([p1, p2], [i0, i5])).toEqual([p1, p2]);
 });

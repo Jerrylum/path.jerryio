@@ -154,7 +154,7 @@ export class Point extends Vector {
 export class Control extends Vector implements InteractiveEntity {
   @Exclude()
   readonly discriminator: string = "control";
-  
+
   @Matches(/^[a-zA-Z0-9]+$/)
   @MinLength(10)
   @Expose()
@@ -491,6 +491,20 @@ export function construct(entities: PathTreeItem[]): PathTreeItem[] | undefined 
   push();
 
   return removed;
+}
+
+export function relatedPaths(paths: Path[], items: PathTreeItem[]): Path[] {
+  // Returns the paths that contains the items
+  paths = [...paths];
+
+  const rtn: Path[] = [];
+  for (const item of items) {
+    const idx = item instanceof Path ? paths.indexOf(item) : paths.findIndex(path => path.controls.includes(item));
+    if (idx === -1) continue;
+    rtn.push(paths[idx]);
+    paths.splice(idx, 1);
+  }
+  return rtn;
 }
 
 export function ValidateSegmentControls(validationOptions?: ValidationOptions) {
