@@ -1,7 +1,7 @@
 import { makeAutoObservable, computed, runInAction, reaction, action } from "mobx";
 import DOMPurify from "dompurify"; // cspell:disable-line
 import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "../format/Config";
-import { Control, EndControl, Path, PathTreeItem, Vector, traversal } from "./Path";
+import { Control, EndControl, Path, PathTreeItem, Vector, relatedPaths, traversal } from "./Path";
 import { addToArray, clamp, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats, convertPathFileData } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
@@ -153,6 +153,32 @@ export class MainApp {
     if (APP_VERSION_STRING !== lastTimeAppVersion) {
       localStorage.setItem("appVersion", APP_VERSION_STRING);
       if (lastTimeAppVersion !== null) enqueueSuccessSnackbar(logger, "Updated to v" + APP_VERSION_STRING);
+    }
+  }
+
+  onSelectAll() {
+    /*
+    UX: "Select All" function
+    If there is no selection, select all controls in all paths
+    If there is a selection, check:
+      Let S be a list of path tree items containing all related paths and their controls
+      If S is equal to the current selection, select all controls in all paths
+    Otherwise, select all controls in all related paths
+    */
+
+    const selected = this.selectedEntities;
+    if (selected.length !== 0) {
+      const selectedPaths = selected.filter(e => e instanceof Path) as Path[];
+      if (selectedPaths.length !== 0) {
+        const fullSelect = traversal(selectedPaths).length === selected.length;
+        if (fullSelect) {
+          this.setSelected(traversal(this.paths));
+          return;
+        }
+      }
+      this.setSelected(traversal(relatedPaths(this.paths, selected)));
+    } else {
+      this.setSelected(traversal(this.paths));
     }
   }
 

@@ -275,11 +275,7 @@ const MenuAccordion = observer((props: {}) => {
           done={false}
           text="Select All"
           hotkey="Mod+A"
-          onClick={onMenuClick(() => {
-            const path = app.selectedPath;
-            const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
-            app.setSelected(all);
-          })}
+          onClick={onMenuClick(() => app.onSelectAll())} //
         />
         <CustomMenuItem
           done={false}
@@ -292,11 +288,7 @@ const MenuAccordion = observer((props: {}) => {
           done={false}
           text="Select Inverse"
           hotkey="Shift+Mod+A"
-          onClick={onMenuClick(() => {
-            const path = app.selectedPath;
-            const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
-            app.setSelected(all.filter(e => !app.selectedEntities.includes(e)));
-          })}
+          onClick={onMenuClick(() => app.setSelected(app.allEntities.filter(e => !app.selectedEntities.includes(e))))}
         />
       </Menu>
 

@@ -68,23 +68,11 @@ const Root = observer(() => {
 
   useCustomHotkeys("Mod+Z", () => app.history.undo(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
   useCustomHotkeys("Mod+Y,Shift+Mod+Z", () => app.history.redo(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
-  useCustomHotkeys(
-    "Mod+A",
-    () => {
-      const path = app.selectedPath;
-      const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
-      app.setSelected(all);
-    },
-    ENABLE_ON_NON_TEXT_INPUT_FIELDS
-  );
-  useCustomHotkeys("Esc", () => app.clearSelected(), ENABLE_EXCEPT_INPUT_FIELDS);
+  useCustomHotkeys("Mod+A", () => app.onSelectAll(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
+  useCustomHotkeys("Esc", () => app.clearSelected(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
   useCustomHotkeys(
     "Shift+Mod+A",
-    () => {
-      const path = app.selectedPath;
-      const all = path !== undefined ? [path, ...path.controls] : app.allEntities;
-      app.setSelected(all.filter(e => !app.selectedEntities.includes(e)));
-    },
+    () => app.setSelected(app.allEntities.filter(e => !app.selectedEntities.includes(e))),
     ENABLE_ON_ALL_INPUT_FIELDS
   );
 
