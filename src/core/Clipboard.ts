@@ -354,6 +354,6 @@ export class AppClipboard {
 
     // Create broadcast channel to sync clipboard data between tabs
     this.broadcastChannel = this.createBroadcastChannel();
-    this.broadcastChannel?.postMessage({ type: "SYNC_DATA" });
+    this.broadcastChannel?.postMessage({ discriminator: "SYNC_DATA" });
   }
 }
