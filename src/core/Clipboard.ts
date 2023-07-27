@@ -1,6 +1,6 @@
 import { makeObservable, action } from "mobx";
 import { getAppStores } from "./MainApp";
-import { Control, EndControl, Path, PathTreeItem } from "./Path";
+import { Control, EndControl, Path, PathTreeItem, relatedPaths } from "./Path";
 import { Logger } from "./Logger";
 import { enqueueInfoSnackbar } from "../app/Notice";
 import { UnitConverter, UnitOfLength } from "./Unit";
@@ -234,9 +234,16 @@ export class AppClipboard {
 
     const isCopyPaths = selected[0] instanceof Path;
     if (selected.some(e => e instanceof Path !== isCopyPaths)) {
-      // TODO: better support
-      enqueueInfoSnackbar(logger, "Copying controls and paths together is not supported");
-      return;
+      const related = relatedPaths(app.paths, selected);
+      if (related.length === 1) {
+        // Trying to copy controls and the path they belong to
+        app.setSelected([related[0]]);
+        return this.copy();
+      } else {
+        // Trying to copy controls in multiple paths or even worse
+        enqueueInfoSnackbar(logger, "Copying controls and paths together is not supported");
+        return;
+      }
     }
 
     let message: CopyPathsMessage | CopyControlsMessage;
