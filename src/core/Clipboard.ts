@@ -21,6 +21,7 @@ abstract class ClipboardMessage {
   abstract readonly discriminator: ClipboardMessageType;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class SyncDataMessage extends ClipboardMessage {
   @Expose()
   readonly discriminator: ClipboardMessageType = "SYNC_DATA";
