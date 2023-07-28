@@ -131,9 +131,11 @@ const ControlElement = observer((props: ControlElementProps) => {
         // UX: Expand the path as the same time to show the control points
         app.addExpanded(props.path);
       } else {
-        // UX: Select one control point if: left click + not pressing shift
-        app.setSelected([props.cp]);
-        setJustSelected(false);
+        if (app.isSelected(props.cp) === false) {
+          // UX: Select one control point if: left click + not pressing shift and target not selected
+          app.setSelected([props.cp]);
+          setJustSelected(false);
+        }
       }
     } else if (evt.button === 1) {
       // middle click
