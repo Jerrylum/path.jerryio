@@ -104,9 +104,9 @@ const FieldCanvasElement = observer((props: {}) => {
     app.fieldOffset = app.fieldOffset.multiply(new Vector(ratio, ratio));
   });
 
-  const uc = new UnitConverter(UnitOfLength.Foot, app.gc.uol);
+  const uc = new UnitConverter(UnitOfLength.Millimeter, app.gc.uol);
   const canvasSizeInPx = windowSize.y * (app.view.showSpeedCanvas ? 0.78 : 0.94);
-  const canvasSizeInUOL = uc.fromAtoB(12);
+  const canvasSizeInUOL = uc.fromAtoB(3683); // 3683 = 145*2.54*10 ~= 3676.528, the size of the field perimeter in Fusion 360
 
   const paths = app.paths;
 
