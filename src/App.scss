@@ -268,7 +268,7 @@ th {
 }
 
 #path-tree {
-  height: calc(92vh - (10px + 13px));
+  height: calc(94vh - (10px + 13px) - 16px);
   position: relative;
 
   .MuiAccordionSummary-root {
