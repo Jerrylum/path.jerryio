@@ -65,6 +65,10 @@ const convertFromV0_1_0ToV0_2_0: PathFileDataConverter = {
 const convertFromV0_2_0ToV0_3_0: PathFileDataConverter = {
   version: new Range("~0.2"),
   convert: (data: Record<string, any>): void => {
+    if (data.format === "LemLib v0.4.x (inch, byte-voltage)") {
+      for (const path of data.paths) path.pc.maxDecelerationRate = 127;
+    }
+
     // From v0.2.0 to v0.3.0
     data.appVersion = "0.3.0";
   }
