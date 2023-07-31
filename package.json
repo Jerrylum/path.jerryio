@@ -32,6 +32,7 @@
     "react-dom": "^18.2.0",
     "react-hotkeys-hook": "^4.4.0",
     "react-konva": "^18.2.8",
+    "react-konva-utils": "^1.0.5",
     "reflect-metadata": "^0.1.13",
     "remark-gfm": "^3.0.1",
     "sass": "^1.63.3",
