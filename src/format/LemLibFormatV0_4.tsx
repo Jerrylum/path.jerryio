@@ -300,7 +300,7 @@ export class LemLibFormatV0_4 implements Format {
       rtn += `${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${point.speed.toUser()}\n`;
     }
 
-    if (points.length > 1) {
+    if (points.length > 2) {
       /*
       Here is the original code of how the ghost point is calculated:
 
