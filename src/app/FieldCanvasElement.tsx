@@ -59,9 +59,9 @@ const PathPoints = observer((props: { path: Path; fcc: FieldCanvasConverter }) =
     <>
       {path.cachedResult.points.map((pointInUOL, index) => {
         const pointInPx = fcc.toPx(pointInUOL);
-        const percentage = (pointInUOL.speed - speedFrom) / (speedTo - speedFrom);
+        const percentage = (pointInUOL.speed - speedFrom) / (speedTo - speedFrom || 1);
         // h => hue, s => saturation, l => lightness
-        const color = `hsl(${percentage * 90}, 70%, 50%)`; // red = min speed, green = max speed
+        const color = `hsl(${clamp(percentage * 90, -20, 120)}, 70%, 50%)`; // red = min speed, green = max speed
         return <Circle key={index} x={pointInPx.x} y={pointInPx.y} radius={pointRadius} fill={color} />;
       })}
     </>

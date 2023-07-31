@@ -60,8 +60,8 @@ const PointElement = observer((props: { point: Point; index: number; pc: PathCon
   const bentRateHigh = pc.bentRateApplicableRange.to;
   const bentRateLow = pc.bentRateApplicableRange.from;
 
-  let p1 = (point.bentRate - bentRateLow) / (bentRateHigh - bentRateLow);
-  let p2 = (point.speed - speedFrom) / (speedTo - speedFrom);
+  let p1 = (point.bentRate - bentRateLow) / (bentRateHigh - bentRateLow || 1);
+  let p2 = (point.speed - speedFrom) / (speedTo - speedFrom || 1);
   let x = gcc.toPxNumber(index);
   let y1 = (1 - p1) * (gcc.pixelHeight * 0.6) + gcc.axisLineTopX;
   let y2 = (1 - p2) * (gcc.pixelHeight * 0.6) + gcc.axisLineTopX;
