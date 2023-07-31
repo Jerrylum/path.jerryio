@@ -3,6 +3,7 @@ import { observer } from "mobx-react-lite";
 import { Control, EndControl, Path, Vector } from "../core/Path";
 import Konva from "konva";
 import { Circle, Line } from "react-konva";
+import { Portal } from "react-konva-utils";
 import { useState } from "react";
 import { SegmentElementProps } from "./SegmentElement";
 import { DragControls, RemovePathsAndEndControls, UpdatePathTreeItems } from "../core/Command";
@@ -255,49 +256,37 @@ const ControlElement = observer((props: ControlElementProps) => {
     }
   }
 
+  const isEndControl = props.cp instanceof EndControl;
+
   return (
-    <>
-      {props.cp instanceof EndControl ? (
-        <>
-          <Circle
-            x={cpInPx.x}
-            y={cpInPx.y}
-            radius={cpRadius}
-            fill={fillColor}
-            draggable
-            onDragMove={action(onDragControlPoint)}
-            onMouseDown={action(onMouseDownControlPoint)}
-            onMouseUp={action(onMouseUpControlPoint)}
-            onWheel={action(onWheel)}
-            onClick={action(onClickFirstOrLastControlPoint)}
-          />
-          <Line
-            points={[
-              cpInPx.x,
-              cpInPx.y,
-              cpInPx.x + Math.cos(fromHeadingInDegreeToAngleInRadian(props.cp.heading)) * cpRadius,
-              cpInPx.y - Math.sin(fromHeadingInDegreeToAngleInRadian(props.cp.heading)) * cpRadius
-            ]}
-            stroke="#000"
-            strokeWidth={lineWidth}
-          />
-        </>
-      ) : (
-        <Circle
-          x={cpInPx.x}
-          y={cpInPx.y}
-          radius={cpRadius / 2}
-          fill={fillColor}
-          draggable
-          onDragMove={action(onDragControlPoint)}
-          onMouseDown={action(onMouseDownControlPoint)}
-          onMouseUp={action(onMouseUpControlPoint)}
-          onClick={action(onClickControlPoint)}
+    <Portal selector=".selected-controls" enabled={app.isSelected(props.cp)}>
+      <Circle
+        x={cpInPx.x}
+        y={cpInPx.y}
+        radius={isEndControl ? cpRadius : cpRadius / 2}
+        fill={fillColor}
+        draggable
+        onDragMove={action(onDragControlPoint)}
+        onMouseDown={action(onMouseDownControlPoint)}
+        onMouseUp={action(onMouseUpControlPoint)}
+        onWheel={isEndControl ? action(onWheel) : undefined}
+        onClick={action(onClickFirstOrLastControlPoint)}
+      />
+      {isEndControl && (
+        <Line
+          points={[
+            cpInPx.x,
+            cpInPx.y,
+            cpInPx.x + Math.cos(fromHeadingInDegreeToAngleInRadian((props.cp as EndControl).heading)) * cpRadius,
+            cpInPx.y - Math.sin(fromHeadingInDegreeToAngleInRadian((props.cp as EndControl).heading)) * cpRadius
+          ]}
+          stroke="#000"
+          strokeWidth={lineWidth}
+          listening={false}
         />
       )}
-    </>
+    </Portal>
   );
 });
 
 export { ControlElement };
-

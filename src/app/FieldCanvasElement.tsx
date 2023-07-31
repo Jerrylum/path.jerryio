@@ -2,7 +2,7 @@ import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { EndControl, Path, Segment, SegmentVariant, Vector } from "../core/Path";
 import Konva from "konva";
-import { Circle, Image, Layer, Line, Stage } from "react-konva";
+import { Circle, Group, Image, Layer, Line, Stage } from "react-konva";
 import { SegmentElement } from "./SegmentElement";
 import React from "react";
 import useImage from "use-image";
@@ -399,6 +399,7 @@ const FieldCanvasElement = observer((props: {}) => {
         {app.gc.showRobot && app.robot.position.visible && (
           <RobotElement fcc={fcc} pos={app.robot.position} width={app.gc.robotWidth} height={app.gc.robotHeight} />
         )}
+        <Group name="selected-controls" />
         <AreaElement from={areaSelectionStart} to={areaSelectionEnd} />
       </Layer>
     </Stage>
