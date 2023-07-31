@@ -314,8 +314,9 @@ export class LemLibFormatV0_4 implements Format {
       Notice that the variable "lastControl" is not the last control point, but the second last control point.
       This implementation is different from the original implementation by using the last point and the second last point.
       */
-      const last2 = points[points.length - 2]; // second last point, last point by the calculation
-      const last1 = points[points.length - 1]; // last point, also the last control point
+      // ALGO: use second and third last points, since first and second last point are always identical
+      const last2 = points[points.length - 3]; // third last point, last point by the calculation
+      const last1 = points[points.length - 2]; // second last point, also the last control point
       // ALGO: The 20 inches constant is a constant value in the original LemLib-Path-Gen implementation.
       const ghostPoint = last2.interpolate(last1, last2.distance(last1) + uc.fromBtoA(20));
       rtn += `${uc.fromAtoB(ghostPoint.x).toUser()}, ${uc.fromAtoB(ghostPoint.y).toUser()}, 0\n`;
