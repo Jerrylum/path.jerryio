@@ -300,27 +300,27 @@ export class LemLibFormatV0_4 implements Format {
       rtn += `${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${point.speed.toUser()}\n`;
     }
 
-    if (points.length > 2) {
-      /*
-      Here is the original code of how the ghost point is calculated:
+    if (points.length < 3) throw new Error("The path is too short to export");
 
-      ```cpp
-      // create a "ghost point" at the end of the path to make stopping nicer
-      const lastPoint = path.points[path.points.length-1];
-      const lastControl = path.segments[path.segments.length-1].p2;
-      const ghostPoint = Vector.interpolate(Vector.distance(lastControl, lastPoint) + 20, lastControl, lastPoint);
-      ```
+    /*
+    Here is the original code of how the ghost point is calculated:
 
-      Notice that the variable "lastControl" is not the last control point, but the second last control point.
-      This implementation is different from the original implementation by using the last point and the second last point.
-      */
-      // ALGO: use second and third last points, since first and second last point are always identical
-      const last2 = points[points.length - 3]; // third last point, last point by the calculation
-      const last1 = points[points.length - 2]; // second last point, also the last control point
-      // ALGO: The 20 inches constant is a constant value in the original LemLib-Path-Gen implementation.
-      const ghostPoint = last2.interpolate(last1, last2.distance(last1) + uc.fromBtoA(20));
-      rtn += `${uc.fromAtoB(ghostPoint.x).toUser()}, ${uc.fromAtoB(ghostPoint.y).toUser()}, 0\n`;
-    }
+    ```cpp
+    // create a "ghost point" at the end of the path to make stopping nicer
+    const lastPoint = path.points[path.points.length-1];
+    const lastControl = path.segments[path.segments.length-1].p2;
+    const ghostPoint = Vector.interpolate(Vector.distance(lastControl, lastPoint) + 20, lastControl, lastPoint);
+    ```
+
+    Notice that the variable "lastControl" is not the last control point, but the second last control point.
+    This implementation is different from the original implementation by using the last point and the second last point.
+    */
+    // ALGO: use second and third last points, since first and second last point are always identical
+    const last2 = points[points.length - 3]; // third last point, last point by the calculation
+    const last1 = points[points.length - 2]; // second last point, also the last control point
+    // ALGO: The 20 inches constant is a constant value in the original LemLib-Path-Gen implementation.
+    const ghostPoint = last2.interpolate(last1, last2.distance(last1) + uc.fromBtoA(20));
+    rtn += `${uc.fromAtoB(ghostPoint.x).toUser()}, ${uc.fromAtoB(ghostPoint.y).toUser()}, 0\n`;
 
     rtn += `endData\n`;
     rtn += `${(path.pc as PathConfigImpl).maxDecelerationRate}\n`;
