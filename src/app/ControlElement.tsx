@@ -102,7 +102,7 @@ const ControlElement = observer((props: ControlElementProps) => {
   const [justSelected, setJustSelected] = useState(false);
   const [posBeforeDrag, setPosBeforeDrag] = useState(new Vector(0, 0));
 
-  function shouldInteract(event: Konva.KonvaEventObject<MouseEvent>): boolean {
+  function shouldInteract(event: Konva.KonvaEventObject<MouseEvent | TouchEvent>): boolean {
     const evt = event.evt;
 
     // UX: Do not interact with control points if itself or the path is locked
@@ -116,6 +116,32 @@ const ControlElement = observer((props: ControlElementProps) => {
     return true;
   }
 
+  function interact(isShiftKey: boolean) {
+    setPosBeforeDrag(props.cp.clone());
+
+    if (isShiftKey) {
+      // UX: Add selected control point if: left click + shift
+      // UX: Prevent the control point from being removed when the mouse is released at the same round it is added
+      setJustSelected(app.select(props.cp));
+      // UX: Expand the path as the same time to show the control points
+      app.addExpanded(props.path);
+    } else {
+      if (app.isSelected(props.cp) === false) {
+        // UX: Select one control point if: left click + not pressing shift and target not selected
+        app.setSelected([props.cp]);
+        setJustSelected(false);
+      }
+    }
+  }
+
+  function onTouchStart(event: Konva.KonvaEventObject<TouchEvent>) {
+    const evt = event.evt;
+
+    if (!shouldInteract(event)) return;
+
+    interact(false);
+  }
+
   function onMouseDownControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
@@ -123,21 +149,7 @@ const ControlElement = observer((props: ControlElementProps) => {
 
     if (evt.button === 0) {
       // left click
-      setPosBeforeDrag(props.cp.clone());
-
-      if (evt.shiftKey) {
-        // UX: Add selected control point if: left click + shift
-        // UX: Prevent the control point from being removed when the mouse is released at the same round it is added
-        setJustSelected(app.select(props.cp));
-        // UX: Expand the path as the same time to show the control points
-        app.addExpanded(props.path);
-      } else {
-        if (app.isSelected(props.cp) === false) {
-          // UX: Select one control point if: left click + not pressing shift and target not selected
-          app.setSelected([props.cp]);
-          setJustSelected(false);
-        }
-      }
+      interact(evt.shiftKey);
     } else if (evt.button === 1) {
       // middle click
       // UX: Do not interact with control points if not left click
@@ -273,6 +285,7 @@ const ControlElement = observer((props: ControlElementProps) => {
         fill={fillColor}
         draggable
         onDragMove={action(onDragControlPoint)}
+        onTouchStart={action(onTouchStart)}
         onMouseDown={action(onMouseDownControlPoint)}
         onMouseUp={action(onMouseUpControlPoint)}
         onWheel={isEndControl ? action(onWheel) : undefined}

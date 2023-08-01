@@ -50,7 +50,7 @@ export class FieldCanvasConverter {
   }
 
   getUnboundedPxFromNativeEvent(
-    event: DragEvent | MouseEvent,
+    event: DragEvent | MouseEvent | TouchEvent,
     element: HTMLElement | null,
     useOffset = true,
     useScale = true
@@ -62,14 +62,17 @@ export class FieldCanvasConverter {
 
     const scale = useScale ? this.scale : 1;
 
-    const rtn = new Vector(event.clientX - canvasPos.left, event.clientY - canvasPos.top);
+    const clientX = event instanceof TouchEvent ? event.touches[0].clientX : event.clientX;
+    const clientY = event instanceof TouchEvent ? event.touches[0].clientY : event.clientY;
+
+    const rtn = new Vector(clientX - canvasPos.left, clientY - canvasPos.top);
 
     // UX: Calculate the position of the control point by the client mouse position
     return rtn.divide(new Vector(scale, scale)).add(new Vector(offset.x, offset.y));
   }
 
   getUnboundedPxFromEvent(
-    event: Konva.KonvaEventObject<DragEvent | MouseEvent>,
+    event: Konva.KonvaEventObject<DragEvent | MouseEvent | TouchEvent>,
     useOffset = true,
     useScale = true
   ): Vector | undefined {
