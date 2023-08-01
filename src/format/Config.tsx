@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { NumberRange } from "../component/RangeSlider";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { Format } from "./Format";

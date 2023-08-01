@@ -1,6 +1,6 @@
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { EndControl, Path, Segment, SegmentVariant, Vector } from "../core/Path";
+import { EndControl, Path, SegmentVariant, Vector } from "../core/Path";
 import Konva from "konva";
 import { Circle, Group, Image, Layer, Line, Stage } from "react-konva";
 import { SegmentElement } from "./SegmentElement";
