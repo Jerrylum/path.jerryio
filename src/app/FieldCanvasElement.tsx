@@ -124,38 +124,49 @@ const FieldCanvasElement = observer((props: {}) => {
   function onWheelStage(event: Konva.KonvaEventObject<WheelEvent>) {
     const evt = event.evt;
 
-    const wheel = evt.deltaY;
-    // UX: Zoom in/out if: wheel while ctrl key down
-    if (wheel === 0 || !evt.ctrlKey) return;
+    if (evt.ctrlKey === false && (evt.deltaX !== 0 || evt.deltaY !== 0) && offsetStart === undefined) {
+      // UX: Panning if: ctrl key up + wheel/mouse pad + no "Grab & Move"
+      
+      evt.preventDefault();
 
-    evt.preventDefault();
+      const newOffset = app.fieldOffset.add(new Vector(evt.deltaX * 0.5, evt.deltaY* 0.5));
+      newOffset.x = clamp(newOffset.x, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
+      newOffset.y = clamp(newOffset.y, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
+      app.fieldOffset = newOffset;
+    } else if (evt.ctrlKey === true && evt.deltaY !== 0) {
+      // UX: Zoom in/out if: wheel while ctrl key down
 
-    const pos = fcc.getUnboundedPxFromEvent(event, false, false);
-    if (pos === undefined) return;
+      evt.preventDefault();
 
-    const negative1 = new Vector(-1, -1);
+      const wheel = evt.deltaY;
 
-    const newScale = clamp(scale * (1 - wheel / 1000), 1, 3);
-    const scaleVector = new Vector(scale, scale);
-    const newScaleVector = new Vector(newScale, newScale);
+      const pos = fcc.getUnboundedPxFromEvent(event, false, false);
+      if (pos === undefined) return;
 
-    // offset is offset in Konva coordinate system (KC)
-    // offsetInCC is offset in HTML Canvas coordinate system (CC)
-    const offsetInCC = offset.multiply(scaleVector).multiply(negative1);
+      const negative1 = new Vector(-1, -1);
 
-    const canvasHalfSizeWithScale = (fcc.pixelWidth * scale) / 2;
-    const newCanvasHalfSizeWithScale = (fcc.pixelWidth * newScale) / 2;
+      const newScale = clamp(scale * (1 - wheel / 1000), 1, 3);
+      const scaleVector = new Vector(scale, scale);
+      const newScaleVector = new Vector(newScale, newScale);
 
-    // UX: Maintain zoom center at mouse pointer
-    const fieldCenter = offsetInCC.add(new Vector(canvasHalfSizeWithScale, canvasHalfSizeWithScale));
-    const newFieldCenter = offsetInCC.add(new Vector(newCanvasHalfSizeWithScale, newCanvasHalfSizeWithScale));
-    const relativePos = pos.subtract(fieldCenter).divide(scaleVector);
-    const newPos = newFieldCenter.add(relativePos.multiply(newScaleVector));
-    const newOffsetInCC = pos.subtract(newPos).add(offsetInCC);
-    const newOffsetInKC = newOffsetInCC.multiply(negative1).divide(newScaleVector);
+      // offset is offset in Konva coordinate system (KC)
+      // offsetInCC is offset in HTML Canvas coordinate system (CC)
+      const offsetInCC = offset.multiply(scaleVector).multiply(negative1);
 
-    app.fieldScale = newScale;
-    app.fieldOffset = newOffsetInKC;
+      const canvasHalfSizeWithScale = (fcc.pixelWidth * scale) / 2;
+      const newCanvasHalfSizeWithScale = (fcc.pixelWidth * newScale) / 2;
+
+      // UX: Maintain zoom center at mouse pointer
+      const fieldCenter = offsetInCC.add(new Vector(canvasHalfSizeWithScale, canvasHalfSizeWithScale));
+      const newFieldCenter = offsetInCC.add(new Vector(newCanvasHalfSizeWithScale, newCanvasHalfSizeWithScale));
+      const relativePos = pos.subtract(fieldCenter).divide(scaleVector);
+      const newPos = newFieldCenter.add(relativePos.multiply(newScaleVector));
+      const newOffsetInCC = pos.subtract(newPos).add(offsetInCC);
+      const newOffsetInKC = newOffsetInCC.multiply(negative1).divide(newScaleVector);
+
+      app.fieldScale = newScale;
+      app.fieldOffset = newOffsetInKC;
+    }
   }
 
   function onMouseDownStage(event: Konva.KonvaEventObject<MouseEvent>) {
