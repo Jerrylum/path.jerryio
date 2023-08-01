@@ -156,7 +156,7 @@ const ControlElement = observer((props: ControlElementProps) => {
     }
   }
 
-  function onDragControlPoint(event: Konva.KonvaEventObject<DragEvent>) {
+  function onDragControlPoint(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) {
     const evt = event.evt;
 
     // UX: Do not interact with control points if itself or the path is locked
@@ -230,9 +230,15 @@ const ControlElement = observer((props: ControlElementProps) => {
     // UX: Do not interact with control points if it is zooming
     if (!shouldInteract(event) || evt.ctrlKey) return;
 
+    // UX: Do not interact with control points if it is not vertical scroll
+    if (Math.abs(evt.deltaX) * 1.5 > Math.abs(evt.deltaY)) return;
+
+    // UX: Do not interact with control points if it is panning
+    if (!app.wheelControl("change heading value")) return;
+
     const epc = props.cp as EndControl;
     app.history.execute(
-      `Update control ${epc.uid} heading value`,
+      `Update control ${epc.uid} heading value by scroll wheel`,
       new UpdatePathTreeItems([epc], { heading: epc.heading + evt.deltaY / 10 })
     );
   }

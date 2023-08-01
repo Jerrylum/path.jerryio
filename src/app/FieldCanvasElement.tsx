@@ -124,12 +124,17 @@ const FieldCanvasElement = observer((props: {}) => {
   function onWheelStage(event: Konva.KonvaEventObject<WheelEvent>) {
     const evt = event.evt;
 
-    if (evt.ctrlKey === false && (evt.deltaX !== 0 || evt.deltaY !== 0) && offsetStart === undefined) {
-      // UX: Panning if: ctrl key up + wheel/mouse pad + no "Grab & Move"
-      
+    if (
+      evt.ctrlKey === false &&
+      (evt.deltaX !== 0 || evt.deltaY !== 0) &&
+      offsetStart === undefined &&
+      app.wheelControl("panning")
+    ) {
+      // UX: Panning if: ctrl key up + wheel/mouse pad + no "Grab & Move" + not changing heading value with scroll wheel in the last 300ms
+
       evt.preventDefault();
 
-      const newOffset = app.fieldOffset.add(new Vector(evt.deltaX * 0.5, evt.deltaY* 0.5));
+      const newOffset = app.fieldOffset.add(new Vector(evt.deltaX * 0.5, evt.deltaY * 0.5));
       newOffset.x = clamp(newOffset.x, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
       newOffset.y = clamp(newOffset.y, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
       app.fieldOffset = newOffset;

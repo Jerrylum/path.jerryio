@@ -53,9 +53,16 @@ export class MainApp {
     showRightPanel: true
   };
 
-  private fieldDisplay = {
+  private fieldDisplay: {
+    offset: Vector;
+    scale: number;
+    wheelControlType: "panning" | "change heading value";
+    lastWheelControlTimestamp: number;
+  } = {
     offset: new Vector(0, 0), // Clamp user input only
-    scale: 1 // 1 = 100%, [1..3]
+    scale: 1, // 1 = 100%, [1..3]
+    wheelControlType: "panning",
+    lastWheelControlTimestamp: 0
   };
 
   public latestVersion: SemVer | null | undefined = undefined;
@@ -349,6 +356,24 @@ export class MainApp {
     this.fieldDisplay.scale = clamp(scale, 1, 3);
   }
 
+  wheelControl(type: "panning" | "change heading value"): boolean {
+    const now = Date.now();
+
+    if (this.fieldDisplay.wheelControlType === type) {
+      this.fieldDisplay.lastWheelControlTimestamp = now;
+      return true;
+    } else {
+      // 300 is the time between two wheel events, it is a magic number
+      if (now - this.fieldDisplay.lastWheelControlTimestamp < 300) {
+        return false;
+      } else {
+        this.fieldDisplay.wheelControlType = type;
+        this.fieldDisplay.lastWheelControlTimestamp = now;
+        return true;
+      }
+    }
+  }
+
   resetUserControl(): void {
     this.selected = [];
     this.expanded = [];
@@ -360,7 +385,9 @@ export class MainApp {
   resetFieldDisplay(): void {
     this.fieldDisplay = {
       offset: new Vector(0, 0),
-      scale: 1
+      scale: 1,
+      wheelControlType: "panning",
+      lastWheelControlTimestamp: 0
     };
   }
 
