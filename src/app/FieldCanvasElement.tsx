@@ -337,11 +337,11 @@ const FieldCanvasElement = observer((props: {}) => {
     // UX: Set target path to "interested path"
     let targetPath: Path | undefined = app.interestedPath();
     if (targetPath === undefined) {
-      // UX: Create new path if: no path exists
-      // UX: Use user mouse position as the last control point
-      targetPath = app.format.createPath(new Segment(new EndControl(0, 0, 0), cpInUOL));
+      // UX: Create empty new path if: no path exists
+      targetPath = app.format.createPath();
       app.history.execute(`Add path ${targetPath.uid}`, new AddPath(app.paths, targetPath));
-    } else if (targetPath.visible && !targetPath.lock) {
+    }
+    if (targetPath.visible && !targetPath.lock) {
       // UX: Add control point if: path is selected and visible and not locked
       if (evt.button === 0) {
         // UX: Add 4-controls curve if: left click
