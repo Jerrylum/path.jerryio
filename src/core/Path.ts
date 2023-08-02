@@ -262,7 +262,7 @@ export class Keyframe implements CanvasEntity {
   constructor(
     xPos: number, // [0...1)
     yPos: number, // [0...1]
-    followBentRate: boolean = false
+    followBentRate: boolean = true
   ) {
     this.uid = makeId(10);
     this.xPos = xPos;
