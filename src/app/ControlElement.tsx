@@ -255,8 +255,8 @@ const ControlElement = observer((props: ControlElementProps) => {
     );
   }
 
-  const lineWidth = props.fcc.pixelWidth / 600;
-  const cpRadius = (props.fcc.pixelWidth / 40) * (app.hoverItem === props.cp.uid ? 1.5 : 1);
+  const lineWidth = props.fcc.pixelHeight / 600;
+  const cpRadius = (props.fcc.pixelHeight / 40) * (app.hoverItem === props.cp.uid ? 1.5 : 1);
   const cpInPx = props.fcc.toPx(props.cp.toVector()); // ALGO: Use toVector() for better performance
   const fillColor = app.isSelected(props.cp) ? "#5C469Cdf" : "#5C469C6f";
 

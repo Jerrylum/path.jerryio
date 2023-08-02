@@ -29,6 +29,7 @@ export class FieldCanvasConverter {
   public pixelHeightHalf: number;
   public uol2pixel: number; // in pixel/uol
   public pixel2uol: number; // in uol/pixel
+  public viewOffset: Vector;
 
   constructor(
     public pixelWidth: number,
@@ -40,20 +41,21 @@ export class FieldCanvasConverter {
   ) {
     this.pixelWidthHalf = pixelWidth / 2;
     this.pixelHeightHalf = pixelHeight / 2;
-    this.uol2pixel = pixelWidth / fieldWidth;
-    this.pixel2uol = fieldWidth / pixelWidth;
+    this.uol2pixel = pixelHeight / fieldHeight;
+    this.pixel2uol = fieldHeight / pixelHeight;
+    this.viewOffset = new Vector((pixelWidth - pixelHeight) / 2, 0);
   }
 
   toPx<T extends Vector>(inUOL: T): T {
     let rtn = inUOL.clone() as T;
-    rtn.x = inUOL.x * this.uol2pixel + this.pixelWidthHalf;
+    rtn.x = inUOL.x * this.uol2pixel + this.pixelWidthHalf - this.viewOffset.x;
     rtn.y = -inUOL.y * this.uol2pixel + this.pixelHeightHalf;
     return rtn;
   }
 
   toUOL<T extends Vector>(inPx: T): T {
     let rtn = inPx.clone() as T;
-    rtn.x = (inPx.x - this.pixelWidthHalf) * this.pixel2uol;
+    rtn.x = (inPx.x - this.pixelWidthHalf + this.viewOffset.x) * this.pixel2uol;
     rtn.y = -(inPx.y - this.pixelHeightHalf) * this.pixel2uol;
     return rtn;
   }
@@ -74,7 +76,7 @@ export class FieldCanvasConverter {
     const rtn = getClientXY(event).subtract(new Vector(canvasPos.left, canvasPos.top));
 
     // UX: Calculate the position of the control point by the client mouse position
-    return rtn.divide(new Vector(scale, scale)).add(new Vector(offset.x, offset.y));
+    return rtn.divide(new Vector(scale, scale)).add(new Vector(offset.x, offset.y)).subtract(this.viewOffset);
   }
 
   getUnboundedPxFromEvent(

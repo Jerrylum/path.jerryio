@@ -25,6 +25,7 @@ import { RemovePathsAndEndControls } from "./core/Command";
 import React from "react";
 import { PathTreeAccordion } from "./app/PathTreeAccordion";
 import { FormTags } from "react-hotkeys-hook/dist/types";
+import { LayoutType } from "./app/Layout";
 
 const Root = observer(() => {
   const { app, confirmation, help, appPreferences, clipboard } = getAppStores();
@@ -116,26 +117,35 @@ const Root = observer(() => {
       key={app.format.uid + "-" + app.gc.uol}>
       <ThemeProvider theme={appPreferences.theme.theme}>
         <NoticeProvider />
-        <Box id="left-editor-panel">
-          <MenuAccordion />
-          <PathTreeAccordion />
-        </Box>
+        {appPreferences.layoutType === LayoutType.CLASSIC_MODE && (
+          <>
+            <Box id="left-editor-panel">
+              <MenuAccordion />
+              <PathTreeAccordion />
+            </Box>
 
-        <Box id="middle-panel" className={app.view.showSpeedCanvas ? "" : "full-height"}>
-          <Card id="field-panel">
+            <Box id="middle-panel" className={app.view.showSpeedCanvas ? "" : "full-height"}>
+              <Card id="field-panel">
+                <FieldCanvasElement />
+              </Card>
+              {app.view.showSpeedCanvas && (
+                <Card id="graph-panel">
+                  <GraphCanvasElement />
+                </Card>
+              )}
+            </Box>
+            {app.view.showRightPanel && (
+              <Box id="right-editor-panel">
+                <GeneralConfigAccordion />
+                <ControlAccordion />
+                <PathConfigAccordion />
+              </Box>
+            )}
+          </>
+        )}
+        {appPreferences.layoutType === LayoutType.EXCLUSIVE_MODE && (
+          <Box id="exclusive-field">
             <FieldCanvasElement />
-          </Card>
-          {app.view.showSpeedCanvas && (
-            <Card id="graph-panel">
-              <GraphCanvasElement />
-            </Card>
-          )}
-        </Box>
-        {app.view.showRightPanel && (
-          <Box id="right-editor-panel">
-            <GeneralConfigAccordion />
-            <ControlAccordion />
-            <PathConfigAccordion />
           </Box>
         )}
         <ConfirmationDialog />

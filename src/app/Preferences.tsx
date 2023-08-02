@@ -8,6 +8,7 @@ import { ObserverEnumSelect } from "../component/ObserverEnumSelect";
 import { ObserverCheckbox } from "../component/ObserverCheckbox";
 import { ObserverInput } from "../component/ObserverInput";
 import { useBackdropDialog } from "../core/Hook";
+import { LayoutType } from "./Layout";
 
 export class Preferences {
   private isDialogOpen: boolean = false;
@@ -16,6 +17,7 @@ export class Preferences {
   private maxHistoryState: number = 50;
   private isGoogleAnalyticsEnabledState: boolean = false;
   private themeTypeState: AppTheme = AppTheme.Dark;
+  private layoutTypeState: LayoutType = LayoutType.EXCLUSIVE_MODE;
 
   constructor() {
     makeAutoObservable(this);
@@ -35,6 +37,11 @@ export class Preferences {
     const themeInStr = localStorage.getItem("theme");
     if (themeInStr === "light") this.themeTypeState = AppTheme.Light;
     else this.themeTypeState = AppTheme.Dark;
+
+    // Layout
+    const layoutInStr = localStorage.getItem("layout");
+    if (layoutInStr === "classic") this.layoutTypeState = LayoutType.CLASSIC_MODE;
+    else this.layoutTypeState = LayoutType.EXCLUSIVE_MODE;
   }
 
   close() {
@@ -83,6 +90,14 @@ export class Preferences {
   get theme(): AppThemeInfo {
     if (this.themeTypeState === AppTheme.Light) return lightTheme;
     else return darkTheme;
+  }
+
+  get layoutType(): LayoutType {
+    return this.layoutTypeState;
+  }
+
+  set layoutType(value: LayoutType) {
+    this.layoutTypeState = value;
   }
 }
 

@@ -11,7 +11,7 @@ const RobotElement = observer((props: { fcc: FieldCanvasConverter; pos: EndContr
   const centerInPx = new Vector(widthInPx / 2, heightInPx / 2);
   const frontInPx = centerInPx.add(new Vector(0, -heightInPx / 2));
 
-  const lineWidth = props.fcc.pixelWidth / 600;
+  const lineWidth = props.fcc.pixelHeight / 600;
 
   return (
     <Group

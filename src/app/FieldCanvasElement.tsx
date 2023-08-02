@@ -25,6 +25,7 @@ import {
 import ReactDOM from "react-dom";
 import { MagnetReference } from "../core/Magnet";
 import { useWindowSize } from "../core/Hook";
+import { LayoutType } from "./Layout";
 
 const MagnetReferenceLine = observer((props: { magnetRef: MagnetReference | undefined; fcc: FieldCanvasConverter }) => {
   const { magnetRef, fcc } = props;
@@ -51,7 +52,7 @@ const PathPoints = observer((props: { path: Path; fcc: FieldCanvasConverter }) =
   const pc = path.pc;
   const speedFrom = pc.speedLimit.from;
   const speedTo = pc.speedLimit.to;
-  const pointRadius = fcc.pixelWidth / 320;
+  const pointRadius = fcc.pixelHeight / 320;
 
   // ALGO: This is a separate component because it is expensive to render.
 
@@ -97,7 +98,7 @@ const PathControls = observer((props: { path: Path; fcc: FieldCanvasConverter; i
 });
 
 const FieldCanvasElement = observer((props: {}) => {
-  const { app } = getAppStores();
+  const { app, appPreferences } = getAppStores();
 
   const windowSize = useWindowSize((newSize: Vector, oldSize: Vector) => {
     const ratio = (newSize.y + oldSize.y) / 2 / oldSize.y;
@@ -105,7 +106,10 @@ const FieldCanvasElement = observer((props: {}) => {
   });
 
   const uc = new UnitConverter(UnitOfLength.Millimeter, app.gc.uol);
-  const canvasSizeInPx = windowSize.y * (app.view.showSpeedCanvas ? 0.78 : 0.94);
+  const isExclusiveMode = appPreferences.layoutType === LayoutType.EXCLUSIVE_MODE;
+
+  const canvasHeightInPx = windowSize.y * (isExclusiveMode ? 0.98 : app.view.showSpeedCanvas ? 0.78 : 0.94);
+  const canvasWidthInPx = isExclusiveMode ? windowSize.x - windowSize.y * 0.02 : canvasHeightInPx;
   const canvasSizeInUOL = uc.fromAtoB(3683); // 3683 = 145*2.54*10 ~= 3676.528, the size of the field perimeter in Fusion 360
 
   const paths = app.paths;
@@ -119,7 +123,14 @@ const FieldCanvasElement = observer((props: {}) => {
   const offset = app.fieldOffset;
   const scale = app.fieldScale;
 
-  const fcc = new FieldCanvasConverter(canvasSizeInPx, canvasSizeInPx, canvasSizeInUOL, canvasSizeInUOL, offset, scale);
+  const fcc = new FieldCanvasConverter(
+    canvasWidthInPx,
+    canvasHeightInPx,
+    canvasSizeInUOL,
+    canvasSizeInUOL,
+    offset,
+    scale
+  );
 
   function onWheelStage(event: Konva.KonvaEventObject<WheelEvent>) {
     const evt = event.evt;
@@ -135,8 +146,12 @@ const FieldCanvasElement = observer((props: {}) => {
       evt.preventDefault();
 
       const newOffset = app.fieldOffset.add(new Vector(evt.deltaX * 0.5, evt.deltaY * 0.5));
-      newOffset.x = clamp(newOffset.x, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
-      newOffset.y = clamp(newOffset.y, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
+      newOffset.x = clamp(
+        newOffset.x,
+        -canvasWidthInPx * 0.9 + fcc.viewOffset.x,
+        canvasWidthInPx * 0.9 - fcc.viewOffset.x
+      );
+      newOffset.y = clamp(newOffset.y, -canvasHeightInPx * 0.9, canvasHeightInPx * 0.9);
       app.fieldOffset = newOffset;
     } else if (evt.ctrlKey === true && evt.deltaY !== 0) {
       // UX: Zoom in/out if: wheel while ctrl key down
@@ -158,8 +173,8 @@ const FieldCanvasElement = observer((props: {}) => {
       // offsetInCC is offset in HTML Canvas coordinate system (CC)
       const offsetInCC = offset.multiply(scaleVector).multiply(negative1);
 
-      const canvasHalfSizeWithScale = (fcc.pixelWidth * scale) / 2;
-      const newCanvasHalfSizeWithScale = (fcc.pixelWidth * newScale) / 2;
+      const canvasHalfSizeWithScale = (fcc.pixelHeight * scale) / 2;
+      const newCanvasHalfSizeWithScale = (fcc.pixelHeight * newScale) / 2;
 
       // UX: Maintain zoom center at mouse pointer
       const fieldCenter = offsetInCC.add(new Vector(canvasHalfSizeWithScale, canvasHalfSizeWithScale));
@@ -250,8 +265,12 @@ const FieldCanvasElement = observer((props: {}) => {
       if (posInPx === undefined) return;
 
       const newOffset = offsetStart.subtract(posInPx);
-      newOffset.x = clamp(newOffset.x, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
-      newOffset.y = clamp(newOffset.y, -canvasSizeInPx * 0.9, canvasSizeInPx * 0.9);
+      newOffset.x = clamp(
+        newOffset.x,
+        -canvasWidthInPx * 0.9 + fcc.viewOffset.x,
+        canvasWidthInPx * 0.9 - fcc.viewOffset.x
+      );
+      newOffset.y = clamp(newOffset.y, -canvasHeightInPx * 0.9, canvasHeightInPx * 0.9);
       app.fieldOffset = newOffset;
     } else if (app.gc.showRobot) {
       // UX: Show robot if: alt key is down and no other action is performed
@@ -388,7 +407,7 @@ const FieldCanvasElement = observer((props: {}) => {
       width={fcc.pixelWidth}
       height={fcc.pixelHeight}
       scale={new Vector(scale, scale)}
-      offset={offset}
+      offset={offset.subtract(fcc.viewOffset)}
       draggable
       style={{ cursor: offsetStart ? "grab" : "" }}
       onContextMenu={e => e.evt.preventDefault()}
@@ -399,7 +418,14 @@ const FieldCanvasElement = observer((props: {}) => {
       onDragMove={action(onMouseMoveOrDragStage)}
       onDragEnd={action(onDragEndStage)}>
       <Layer>
-        <Image image={fieldImage} width={fcc.pixelWidth} height={fcc.pixelHeight} onClick={action(onClickFieldImage)} />
+        {fieldImage && (
+          <Image
+            image={fieldImage}
+            width={(fieldImage.width / fieldImage.height) * fcc.pixelHeight}
+            height={fcc.pixelHeight}
+            onClick={action(onClickFieldImage)}
+          />
+        )}
         {app.magnet.map((magnetRef, idx) => (
           <MagnetReferenceLine key={idx} magnetRef={magnetRef} fcc={fcc} />
         ))}
