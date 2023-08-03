@@ -94,6 +94,7 @@ export class Preferences {
 
   get layoutType(): LayoutType {
     return this.layoutTypeState;
+    // return LayoutType.CLASSIC_MODE;
   }
 
   set layoutType(value: LayoutType) {

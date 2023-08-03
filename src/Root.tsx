@@ -26,7 +26,7 @@ import React from "react";
 import { PathTreeAccordion } from "./app/PathTreeAccordion";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 import { LayoutType } from "./app/Layout";
-import { PanelIconBox } from "./app/PanelIconBox";
+import { FloatingPanels } from "./app/FloatingPanels";
 
 const Root = observer(() => {
   const { app, confirmation, help, appPreferences, clipboard } = getAppStores();
@@ -151,7 +151,7 @@ const Root = observer(() => {
             <Box id="exclusive-field">
               <FieldCanvasElement />
             </Box>
-            <PanelIconBox />
+            <FloatingPanels />
           </>
         )}
         <ConfirmationDialog />
