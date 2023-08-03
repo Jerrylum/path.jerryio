@@ -26,10 +26,12 @@ import React from "react";
 import { PathTreeAccordion } from "./app/PathTreeAccordion";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 import { LayoutType } from "./app/Layout";
+import { PanelIconBox } from "./app/PanelIconBox";
 
 const Root = observer(() => {
   const { app, confirmation, help, appPreferences, clipboard } = getAppStores();
 
+  const isExclusiveLayout = appPreferences.layoutType === LayoutType.EXCLUSIVE_MODE;
   const isUsingEditor = !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen;
   const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(isUsingEditor, onDropFile);
 
@@ -112,12 +114,12 @@ const Root = observer(() => {
   return (
     <Box
       tabIndex={-1}
-      className={classNames("App", appPreferences.theme.className)}
+      className={classNames("App", appPreferences.theme.className, { "exclusive-mode": isExclusiveLayout })}
       {...{ onDragEnter, onDragOver, onDrop }}
       key={app.format.uid + "-" + app.gc.uol}>
       <ThemeProvider theme={appPreferences.theme.theme}>
         <NoticeProvider />
-        {appPreferences.layoutType === LayoutType.CLASSIC_MODE && (
+        {!isExclusiveLayout && (
           <>
             <Box id="left-editor-panel">
               <MenuAccordion />
@@ -143,10 +145,13 @@ const Root = observer(() => {
             )}
           </>
         )}
-        {appPreferences.layoutType === LayoutType.EXCLUSIVE_MODE && (
-          <Box id="exclusive-field">
-            <FieldCanvasElement />
-          </Box>
+        {isExclusiveLayout && (
+          <>
+            <Box id="exclusive-field">
+              <FieldCanvasElement />
+            </Box>
+            <PanelIconBox />
+          </>
         )}
         <ConfirmationDialog />
         <HelpDialog />
