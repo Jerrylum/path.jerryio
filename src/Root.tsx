@@ -114,7 +114,8 @@ const Root = observer(() => {
   return (
     <Box
       tabIndex={-1}
-      className={classNames("App", appPreferences.theme.className, { "exclusive-mode": isExclusiveLayout })}
+      className={classNames("App", appPreferences.theme.className)}
+      data-layout={appPreferences.layoutType}
       {...{ onDragEnter, onDragOver, onDrop }}
       key={app.format.uid + "-" + app.gc.uol}>
       <ThemeProvider theme={appPreferences.theme.theme}>

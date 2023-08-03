@@ -1,4 +1,4 @@
 export enum LayoutType {
-    CLASSIC_MODE = 0,
-    EXCLUSIVE_MODE = 1 // UX: Default layout
+    CLASSIC_MODE = "classic",
+    EXCLUSIVE_MODE = "exclusive" // UX: Default layout
 }

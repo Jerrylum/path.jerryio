@@ -1,0 +1,36 @@
+#exclusive-field {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+}
+
+#panel-icon-box {
+  position: fixed;
+  margin: 0;
+}
+
+.panel-icon {
+  width: 48px;
+  height: 48px;
+  background-color: var(--bg-paper-color);
+  color: var(--text-primary-color);
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-bottom: 1vh;
+  position: relative;
+
+  > svg {
+    font-size: 36px;
+    // UX: Using vertical-align: middle with line-height can not center the icon with 1 px offset
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.panel-icon:hover {
+  background-color: var(--bg-default-color);
+}
