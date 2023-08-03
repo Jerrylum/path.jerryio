@@ -15,6 +15,15 @@ export interface InteractiveEntityParent extends InteractiveEntity {
   children: InteractiveEntity[];
 }
 
+function getClientXY(event: DragEvent | MouseEvent | TouchEvent): Vector {
+  if (window.TouchEvent && event instanceof TouchEvent) {
+    return new Vector(event.touches[0].clientX, event.touches[0].clientY);
+  } else {
+    event = event as DragEvent | MouseEvent;
+    return new Vector(event.clientX, event.clientY);
+  }
+}
+
 export class FieldCanvasConverter {
   public pixelWidthHalf: number;
   public pixelHeightHalf: number;
@@ -62,10 +71,7 @@ export class FieldCanvasConverter {
 
     const scale = useScale ? this.scale : 1;
 
-    const clientX = event instanceof TouchEvent ? event.touches[0].clientX : event.clientX;
-    const clientY = event instanceof TouchEvent ? event.touches[0].clientY : event.clientY;
-
-    const rtn = new Vector(clientX - canvasPos.left, clientY - canvasPos.top);
+    const rtn = getClientXY(event).subtract(new Vector(canvasPos.left, canvasPos.top));
 
     // UX: Calculate the position of the control point by the client mouse position
     return rtn.divide(new Vector(scale, scale)).add(new Vector(offset.x, offset.y));
