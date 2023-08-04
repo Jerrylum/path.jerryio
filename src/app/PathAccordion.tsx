@@ -24,7 +24,7 @@ const PathConfigFloatingPanel = observer((props: {}) => {
   return (
     <Box className="floating-panel">
       <Typography className="floating-panel-title">Path</Typography>
-      {pc ? pc.getConfigPanel() : <Typography style={{}}>(No selected path)</Typography>}
+      {pc ? pc.getConfigPanel() : <Typography>(No selected path)</Typography>}
     </Box>
   );
 });

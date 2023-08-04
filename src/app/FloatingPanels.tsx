@@ -10,11 +10,12 @@ import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
 import WidgetsIcon from "@mui/icons-material/Widgets";
 import TimelineIcon from "@mui/icons-material/Timeline";
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { GeneralConfigFloatingPanel } from "./GeneralConfigAccordion";
 import React from "react";
 import { ControlFloatingPanel } from "./ControlAccordion";
 import { PathConfigFloatingPanel } from "./PathAccordion";
+import { GraphCanvasElement } from "./GraphCanvasElement";
 
 class FloatingPanelsVariables {
   private panelStates: { [key: string]: boolean } = {};
@@ -34,7 +35,7 @@ class FloatingPanelsVariables {
   closePanel(panel: string) {
     this.panelStates[panel] = false;
   }
-  
+
   constructor() {
     makeAutoObservable(this);
   }
@@ -68,7 +69,7 @@ const FloatingPanels = observer((props: {}) => {
         {/* <Box className="panel-icon">
           <WidgetsIcon fontSize="large" />
         </Box> */}
-        <Box className="panel-icon">
+        <Box className="panel-icon" onClick={() => variables.togglePanel("speed-graph")}>
           <TimelineIcon fontSize="large" />
         </Box>
       </Box>
@@ -77,6 +78,11 @@ const FloatingPanels = observer((props: {}) => {
         {variables.isOpenPanel("control") && <ControlFloatingPanel />}
         {variables.isOpenPanel("path") && <PathConfigFloatingPanel />}
       </Box>
+      {variables.isOpenPanel("speed-graph") && (
+        <Box id="graph-panel">
+          {app.interestedPath() ? <GraphCanvasElement /> : <Typography>(No path to display)</Typography>}
+        </Box>
+      )}
     </>
   );
 });

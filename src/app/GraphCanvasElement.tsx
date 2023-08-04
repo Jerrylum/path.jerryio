@@ -13,6 +13,7 @@ import { GraphCanvasConverter } from "../core/Canvas";
 import { Box, Tooltip } from "@mui/material";
 import { Instance } from "@popperjs/core";
 import { useWindowSize } from "../core/Hook";
+import { LayoutType } from "./Layout";
 
 function showTooltip(variables: GraphCanvasVariables, ikf: KeyframeIndexing | undefined) {
   if (ikf === undefined) {
@@ -186,8 +187,10 @@ const GraphCanvasElement = observer((props: {}) => {
 
   if (path === undefined) return null;
 
-  const canvasWidth = windowSize.y * 0.78;
-  const canvasHeight = windowSize.y * 0.12;
+  const isExclusiveMode = preferences.layoutType === LayoutType.EXCLUSIVE_MODE;
+
+  const canvasHeight = isExclusiveMode ? Math.max(windowSize.y * 0.12, 80) : windowSize.y * 0.12;
+  const canvasWidth = isExclusiveMode ? canvasHeight * 6.5 : windowSize.y * 0.78;
   const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, variables.xOffset, path);
 
   const fontSize = canvasHeight / 8;

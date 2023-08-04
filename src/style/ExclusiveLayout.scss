@@ -50,6 +50,19 @@
   }
 }
 
+#graph-panel {
+  position: fixed;
+  bottom: 8px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  background-color: var(--bg-paper-color);
+  padding: 16px;
+  border-radius: 4px;
+  color: var(--text-primary-color);
+  box-sizing: border-box;
+  border: 0.5px solid var(--bg-default-color);
+}
+
 .floating-panel {
   background-color: var(--bg-paper-color);
   padding: 16px;
@@ -58,6 +71,7 @@
   margin-bottom: 8px;
   width: 352px;
   box-sizing: border-box;
+  border: 0.5px solid var(--bg-default-color);
 
   .floating-panel-title {
     font-size: 18px;
