@@ -249,7 +249,7 @@ const GraphCanvasElement = observer((props: {}) => {
         <Stage
           width={canvasWidth}
           height={canvasHeight}
-          onWheel={handleWheel}
+          onWheel={action(handleWheel)}
           onContextMenu={e => e.evt.preventDefault()}>
           <Layer>
             <Line
