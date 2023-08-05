@@ -628,28 +628,32 @@ const TreeView = observer((props: { variables: PathTreeVariables }) => {
   );
 });
 
-const PathTreeAccordion = observer((props: {}) => {
+function onAddPathClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
   const { app } = getAppStores();
 
-  function onAddPathClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    const cm60 = new Quantity<UnitOfLength>(60, UnitOfLength.Centimeter);
-    const cm60inUOL = cm60.to(app.gc.uol);
+  const cm60 = new Quantity<UnitOfLength>(60, UnitOfLength.Centimeter);
+  const cm60inUOL = cm60.to(app.gc.uol);
 
-    const newPath = app.format.createPath(
-      new Segment(new EndControl(-cm60inUOL, -cm60inUOL, 0), new EndControl(-cm60inUOL, cm60inUOL, 0))
-    );
-    app.history.execute(`Add path ${newPath.uid}`, new AddPath(app.paths, newPath));
-    app.addExpanded(newPath);
-  }
+  const newPath = app.format.createPath(
+    new Segment(new EndControl(-cm60inUOL, -cm60inUOL, 0), new EndControl(-cm60inUOL, cm60inUOL, 0))
+  );
+  app.history.execute(`Add path ${newPath.uid}`, new AddPath(app.paths, newPath));
+  app.addExpanded(newPath);
+}
 
-  function onExpandAllClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    if (app.expandedEntityIds.length !== app.paths.length) {
-      app.clearExpanded();
-      app.paths.forEach(path => app.addExpanded(path));
-    } else {
-      app.clearExpanded();
-    }
+function onExpandAllClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+  const { app } = getAppStores();
+
+  if (app.expandedEntityIds.length !== app.paths.length) {
+    app.clearExpanded();
+    app.paths.forEach(path => app.addExpanded(path));
+  } else {
+    app.clearExpanded();
   }
+}
+
+const PathTreeAccordion = observer((props: {}) => {
+  const { app } = getAppStores();
 
   const [variables] = React.useState(() => new PathTreeVariables());
 
@@ -687,4 +691,41 @@ const PathTreeAccordion = observer((props: {}) => {
   );
 });
 
-export { PathTreeAccordion };
+const PathTreeFloatingPanel = observer((props: {}) => {
+  const { app } = getAppStores();
+  const [variables] = React.useState(() => new PathTreeVariables());
+
+  return (
+    <Box id="path-tree" className="floating-panel">
+      <Box id="path-tree-title">
+        <Typography className="floating-panel-title">Paths</Typography>
+        <Box>
+          <Tooltip title="Add New Path">
+            <IconButton className="icon" onClick={action(onAddPathClick)}>
+              <AddIcon />
+            </IconButton>
+          </Tooltip>
+          {app.paths.length === 0 ? (
+            <IconButton className="icon" onClick={action(onExpandAllClick)} disabled={app.paths.length === 0}>
+              <KeyboardDoubleArrowUpIcon />
+            </IconButton>
+          ) : (
+            <Tooltip title={app.expandedEntityIds.length !== app.paths.length ? "Expand All" : "Collapse All"}>
+              <IconButton className="icon" onClick={action(onExpandAllClick)}>
+                {app.expandedEntityIds.length !== app.paths.length ? (
+                  <KeyboardDoubleArrowDownIcon />
+                ) : (
+                  <KeyboardDoubleArrowUpIcon />
+                )}
+              </IconButton>
+            </Tooltip>
+          )}
+        </Box>
+      </Box>
+      <TreeView variables={variables} />
+      {app.paths.length === 0 && <Typography>(The file is empty)</Typography>}
+    </Box>
+  );
+});
+
+export { PathTreeAccordion, PathTreeFloatingPanel };

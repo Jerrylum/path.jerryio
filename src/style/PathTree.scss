@@ -1,33 +1,3 @@
-#path-tree {
-  height: calc(94vh - (10px + 13px) - 16px);
-  position: relative;
-
-  .MuiAccordionSummary-root {
-    cursor: unset;
-  }
-
-  .MuiAccordionSummary-content {
-    justify-content: space-between;
-
-    .icon {
-      cursor: pointer;
-      padding: 0;
-      margin-left: 3.2px;
-    }
-  }
-
-  .MuiAccordionDetails-root {
-    overflow-y: auto;
-    position: absolute;
-    top: 48px;
-    bottom: 1.6px;
-    right: 1.6px;
-    left: 0;
-    scrollbar-gutter: stable;
-    padding-right: calc(16px - 6.4px);
-  }
-}
-
 .tree-view {
   padding: 0;
   list-style: none;

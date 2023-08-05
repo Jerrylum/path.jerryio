@@ -35,6 +35,21 @@
   background-color: var(--bg-default-color);
 }
 
+#left-editor-panel {
+  position: fixed;
+  top: 8px;
+  left: calc(8px + 48px + 8px);
+  width: calc(288px);
+  font-size: 1.5vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  max-height: calc(100vh - 16px);
+
+  .floating-panel {
+    width: 288px;
+  }
+}
+
 #right-editor-panel {
   position: fixed;
   top: 8px;
@@ -44,9 +59,26 @@
   overflow-x: hidden;
   overflow-y: auto;
   max-height: calc(100vh - 16px);
- 
+
+  .floating-panel {
+    margin-bottom: 8px;
+    width: 352px;
+  }
+
   .floating-panel:last-child {
     margin-bottom: 0;
+  }
+}
+
+#path-tree {
+  #path-tree-title {
+    position: relative;
+
+    > div {
+      position: absolute;
+      right: -8px;
+      top: -8px;
+    }
   }
 }
 
@@ -68,8 +100,6 @@
   padding: 16px;
   border-radius: 4px;
   color: var(--text-primary-color);
-  margin-bottom: 8px;
-  width: 352px;
   box-sizing: border-box;
   border: 0.5px solid var(--bg-default-color);
 

@@ -16,6 +16,7 @@ import React from "react";
 import { ControlFloatingPanel } from "./ControlAccordion";
 import { PathConfigFloatingPanel } from "./PathAccordion";
 import { GraphCanvasElement } from "./GraphCanvasElement";
+import { PathTreeFloatingPanel } from "./PathTreeAccordion";
 
 class FloatingPanelsVariables {
   private panelStates: { [key: string]: boolean } = {};
@@ -53,7 +54,7 @@ const FloatingPanels = observer((props: {}) => {
           <MenuIcon fontSize="large" />
         </Box>
         <Box className="panel-icon">
-          <ViewListIcon fontSize="large" />
+          <ViewListIcon fontSize="large" onClick={() => variables.togglePanel("paths")} />
         </Box>
       </Box>
       <Box id="panel-icon-box" style={{ right: "8px", top: "8px" }}>
@@ -72,6 +73,9 @@ const FloatingPanels = observer((props: {}) => {
         <Box className="panel-icon" onClick={() => variables.togglePanel("speed-graph")}>
           <TimelineIcon fontSize="large" />
         </Box>
+      </Box>
+      <Box id="left-editor-panel">
+        {variables.isOpenPanel("paths") && <PathTreeFloatingPanel />}
       </Box>
       <Box id="right-editor-panel">
         {variables.isOpenPanel("general-config") && <GeneralConfigFloatingPanel />}
