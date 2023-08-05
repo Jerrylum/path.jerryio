@@ -587,6 +587,7 @@ const TreeView = observer((props: { variables: PathTreeVariables }) => {
   }
 
   function onBlur() {
+    if (app.hoverItem === variables.focused?.uid) app.hoverItem = undefined;
     variables.focused = undefined;
   }
 
