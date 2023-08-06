@@ -9,13 +9,15 @@ import {
   ListItemText,
   Menu,
   MenuItem,
+  MenuItemProps,
   MenuItemTypeMap,
+  MenuProps,
   Tooltip,
   Typography
 } from "@mui/material";
 import { observer } from "mobx-react-lite";
 
-import React from "react";
+import React, { HTMLAttributes, RefAttributes, forwardRef } from "react";
 import { DefaultComponentProps } from "@mui/material/OverridableComponent";
 import { IS_MAC_OS } from "../core/Util";
 import { onDownload, onDownloadAs, onNew, onOpen, onSave, onSaveAs } from "../core/InputOutput";
@@ -74,57 +76,146 @@ const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
   return <>{elements}</>;
 });
 
-interface CustomMenuItemProps extends DefaultComponentProps<MenuItemTypeMap> {
-  done: boolean;
-  text: string;
+interface CustomMenuItemProps extends Omit<MenuItemProps, "disabled"> {
+  showLeftIcon: boolean;
+  label: string;
   hotkey?: string;
-  disable?: string | boolean;
-  children?: React.ReactElement<CustomMenuItemProps>[];
+  parentMenuOpen?: boolean;
+  disabled?: string | boolean;
+  // children?: React.ReactElement<CustomMenuItemProps>[];
+  children?: React.ReactNode;
+  // ContainerProps?: HTMLAttributes<HTMLElement> & RefAttributes<HTMLElement | null>;
+  MenuProps?: Partial<Omit<MenuProps, "children">>;
 }
 
-const CustomMenuItem = observer((props: CustomMenuItemProps) => {
-  const { done, text, hotkey, disable, children, ...rest } = props;
+const CustomMenuItem = observer(
+  forwardRef<HTMLLIElement | null, CustomMenuItemProps>(
+    (props: CustomMenuItemProps, ref: React.ForwardedRef<HTMLLIElement | null>) => {
+      const { showLeftIcon, label, hotkey, parentMenuOpen, disabled, children, MenuProps, ...MenuItemProps } = props;
 
-  const menuItemRef = React.useRef<HTMLLIElement>(null);
-  const [isChildMenuOpen, setIsChildMenuOpen] = React.useState(false);
+      // const { ref: containerRefProp, ...ContainerProps } = ContainerPropsProp;
 
-  const isDisabled = disable !== undefined && disable !== false;
-  const showTooltip = disable !== undefined && typeof disable !== "boolean" && disable !== "";
+      const menuItemRef = React.useRef<HTMLLIElement | null>(null);
+      React.useImperativeHandle(ref, () => menuItemRef.current!); // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
-  const body = (
-    <MenuItem
-      {...rest}
-      className="menu-item"
-      disabled={isDisabled}
-      ref={menuItemRef}
-      onMouseMove={() => setIsChildMenuOpen(true)} // UX: Do not use onMouseEnter because it auto-triggers when the menu is opened
-      onMouseLeave={() => setIsChildMenuOpen(false)}>
-      <DoneIcon className="menu-item-done" sx={{ visibility: !done ? "hidden" : "" }} />
-      <ListItemText sx={{ marginRight: "1rem" }}>{text}</ListItemText>
-      <HotkeyTypography hotkey={hotkey} />
-      {children && <NavigateNextIcon className="menu-item-next" />}
-      {children && (
-        <Menu
-          // Set pointer events to 'none' to prevent the invisible Popover div
-          // from capturing events for clicks and hovers
-          style={{ pointerEvents: "none" }}
-          anchorEl={menuItemRef.current}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          MenuListProps={{ dense: true }}
-          disableRestoreFocus={true}
-          open={isChildMenuOpen}
-          autoFocus={false}
-          disableAutoFocus
-          disableEnforceFocus
-          onClose={() => setIsChildMenuOpen(false)}>
-          <Box style={{ pointerEvents: "auto" }}>{children}</Box>
-        </Menu>
-      )}
-    </MenuItem>
-  );
+      // const containerRef = React.useRef<HTMLDivElement | null>(null);
+      // React.useImperativeHandle(containerRefProp, () => containerRef.current);
 
-  return showTooltip ? <Tooltip title={disable} placement="right" children={body} /> : body;
-});
+      const menuListRef = React.useRef<HTMLUListElement | null>(null);
+
+      // const menuItemRef = React.useRef<HTMLLIElement>(null);
+      const [isSubMenuOpen, setIsSubMenuOpen] = React.useState(false);
+
+      const isDisabled = disabled !== undefined && disabled !== false;
+      const showTooltip = disabled !== undefined && typeof disabled !== "boolean" && disabled !== "";
+
+      const isParentOpen = parentMenuOpen ?? true;
+      const isOpen = isSubMenuOpen && isParentOpen;
+      // console.log(label, isOpen);
+
+      // const handleMouseEnter = (e: MouseEvent<HTMLElement>) => {
+      //   setIsSubMenuOpen(true);
+      // };
+      // const handleMouseLeave = (e: MouseEvent<HTMLElement>) => {
+      //   setIsSubMenuOpen(false);
+      // };
+      const isSubMenuFocused = () => {
+        if (menuListRef.current === null) return false;
+
+        const menuList = menuListRef.current;
+        
+        const active = menuList.ownerDocument.activeElement ?? null;
+        for (const child of [...menuList.children]) {
+          if (child === active) {
+            return true;
+          }
+        }
+
+        return false;
+      };
+
+      const handleFocus = (e: React.FocusEvent<HTMLLIElement, Element>) => {
+        if (e.target === menuItemRef.current) {
+          setIsSubMenuOpen(true);
+        }
+      };
+
+      const handleBlur = (e: React.FocusEvent<HTMLLIElement, Element>) => {
+        if (e.target === menuItemRef.current) {
+          setIsSubMenuOpen(false);
+        }
+      };
+
+      const handleKeyDown = (e: React.KeyboardEvent<HTMLLIElement>) => {
+        if (e.key === "Escape") {
+          return;
+        }
+
+        console.log(menuListRef, document.activeElement, isSubMenuFocused());
+        if (isSubMenuFocused()) {
+          e.stopPropagation();
+        }
+
+        const active = menuItemRef.current?.ownerDocument.activeElement;
+
+        if (e.key === "ArrowLeft" && isSubMenuFocused()) {
+          menuItemRef.current?.focus();
+        }
+
+        if (e.key === "ArrowRight" && e.target === menuItemRef.current && e.target === active) {
+          const firstChild = menuListRef.current?.children[0] as HTMLDivElement;
+          firstChild?.focus();
+        }
+      };
+
+      const body = (
+        <MenuItem
+          {...MenuItemProps}
+          className="menu-item"
+          disabled={isDisabled}
+          ref={menuItemRef}
+          onFocus={handleFocus}
+          // onBlur={handleBlur}
+          // onMouseMove={() => setIsSubMenuOpen(true)} // UX: Do not use onMouseEnter because it auto-triggers when the menu is opened
+          // onMouseLeave={() => setIsSubMenuOpen(false)}
+          onKeyDown={handleKeyDown}>
+          <DoneIcon className="menu-item-done" sx={{ visibility: !showLeftIcon ? "hidden" : "" }} />
+          <ListItemText sx={{ marginRight: "1rem" }}>{label}</ListItemText>
+          <HotkeyTypography hotkey={hotkey} />
+          {children && <NavigateNextIcon className="menu-item-next" />}
+          {children && (
+            <Menu
+              // Set pointer events to 'none' to prevent the invisible Popover div
+              // from capturing events for clicks and hovers
+              style={{ pointerEvents: "none" }}
+              anchorEl={menuItemRef.current}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
+              transformOrigin={{ horizontal: "left", vertical: "top" }}
+              MenuListProps={{ dense: true, ref: menuListRef, style: { pointerEvents: "auto" } }}
+              disableRestoreFocus={true}
+              open={isOpen}
+              autoFocus={false}
+              disableAutoFocus
+              disableEnforceFocus
+              // onMouseMove={() => setIsSubMenuOpen(true)} // UX: Do not use onMouseEnter because it auto-triggers when the menu is opened
+              // onMouseLeave={() => setIsSubMenuOpen(false)}
+              onClose={() => setIsSubMenuOpen(false)}
+              {...MenuProps}>
+              {children}
+            </Menu>
+          )}
+        </MenuItem>
+      );
+
+      return (
+        <>
+          {showTooltip ? <Tooltip title={disabled} placement="right" children={body} /> : body}
+          
+        </>
+      );
+    }
+  )
+);
 
 class MenuVariables {
   private menuStates: { [key: string]: boolean } = {};
@@ -209,29 +300,39 @@ const MenuAccordion = observer((props: {}) => {
         disableRestoreFocus={true}
         open={variables.isOpenMenu("File")}
         onClose={() => variables.closeMenu("File")}>
-        <CustomMenuItem done={false} text="New File" hotkey="Mod+P" onClick={onMenuClick(() => onNew())} />
+        <CustomMenuItem showLeftIcon={false} label="New File" hotkey="Mod+P" onClick={onMenuClick(() => onNew())} />
         <Divider />
         <CustomMenuItem
-          done={false}
-          text="Open File"
+          showLeftIcon={false}
+          label="Open File"
           hotkey="Mod+O"
           onClick={onMenuClick(() => onOpen(false, false))}
         />
         <Divider />
-        <CustomMenuItem done={false} text="Save" hotkey="Mod+S" onClick={onMenuClick(() => onSave())} />
-        <CustomMenuItem done={false} text="Save As" hotkey="Shift+Mod+S" onClick={onMenuClick(() => onSaveAs())} />
-        <Divider />
-        <CustomMenuItem done={false} text="Download" hotkey="Mod+D" onClick={onMenuClick(() => onDownload())} />
+        <CustomMenuItem showLeftIcon={false} label="Save" hotkey="Mod+S" onClick={onMenuClick(() => onSave())} />
         <CustomMenuItem
-          done={false}
-          text="Download As"
+          showLeftIcon={false}
+          label="Save As"
+          hotkey="Shift+Mod+S"
+          onClick={onMenuClick(() => onSaveAs())}
+        />
+        <Divider />
+        <CustomMenuItem
+          showLeftIcon={false}
+          label="Download"
+          hotkey="Mod+D"
+          onClick={onMenuClick(() => onDownload())}
+        />
+        <CustomMenuItem
+          showLeftIcon={false}
+          label="Download As"
           hotkey="Shift+Mod+D"
           onClick={onMenuClick(() => onDownloadAs())}
         />
         <Divider />
         <CustomMenuItem
-          done={false}
-          text="Preferences"
+          showLeftIcon={false}
+          label="Preferences"
           hotkey="Mod+,"
           onClick={onMenuClick(() => appPreferences.open())}
         />
@@ -244,25 +345,25 @@ const MenuAccordion = observer((props: {}) => {
         open={variables.isOpenMenu("Edit")}
         onClose={() => variables.closeMenu("Edit")}>
         <CustomMenuItem
-          done={false}
-          text="Undo"
+          showLeftIcon={false}
+          label="Undo"
           hotkey="Mod+Z"
-          disable={app.history.canUndo === false && "Nothing to undo"}
+          disabled={app.history.canUndo === false && "Nothing to undo"}
           onClick={onMenuClick(() => app.history.undo())}
         />
         <CustomMenuItem
-          done={false}
-          text="Redo"
+          showLeftIcon={false}
+          label="Redo"
           hotkey="Mod+Y"
-          disable={app.history.redoHistorySize === 0 && "Nothing to redo"}
+          disabled={app.history.redoHistorySize === 0 && "Nothing to redo"}
           onClick={onMenuClick(() => app.history.redo())}
         />
         <Divider />
         <CustomMenuItem
-          done={false}
-          text="Cut"
+          showLeftIcon={false}
+          label="Cut"
           hotkey="Mod+X"
-          disable={
+          disabled={
             (app.selectedEntities.length === 0 && "Select items to copy") ||
             (app.selectedEntities.some(e => e instanceof Path !== app.selectedEntities[0] instanceof Path) &&
               "Copying controls and paths together is not supported")
@@ -270,10 +371,10 @@ const MenuAccordion = observer((props: {}) => {
           onClick={onMenuClick(() => clipboard.cut())}
         />
         <CustomMenuItem
-          done={false}
-          text="Copy"
+          showLeftIcon={false}
+          label="Copy"
           hotkey="Mod+C"
-          disable={
+          disabled={
             (app.selectedEntities.length === 0 && "Select items to copy") ||
             (app.selectedEntities.some(e => e instanceof Path !== app.selectedEntities[0] instanceof Path) &&
               "Copying controls and paths together is not supported")
@@ -281,17 +382,17 @@ const MenuAccordion = observer((props: {}) => {
           onClick={onMenuClick(() => clipboard.copy())}
         />
         <CustomMenuItem
-          done={false}
-          text="Paste"
+          showLeftIcon={false}
+          label="Paste"
           hotkey="Mod+V"
-          disable={clipboard.hasData === false && "The clipboard is empty"}
+          disabled={clipboard.hasData === false && "The clipboard is empty"}
           onClick={onMenuClick(() => clipboard.paste(undefined))}
         />
         <CustomMenuItem
-          done={false}
-          text="Delete"
+          showLeftIcon={false}
+          label="Delete"
           hotkey="Del"
-          disable={app.selectedEntityIds.length === 0 && "Select items to delete"}
+          disabled={app.selectedEntityIds.length === 0 && "Select items to delete"}
           onClick={onMenuClick(() => {
             const command = new RemovePathsAndEndControls(app.paths, app.selectedEntityIds);
             app.history.execute(`Remove paths and end controls`, command);
@@ -299,21 +400,21 @@ const MenuAccordion = observer((props: {}) => {
         />
         <Divider />
         <CustomMenuItem
-          done={false}
-          text="Select All"
+          showLeftIcon={false}
+          label="Select All"
           hotkey="Mod+A"
           onClick={onMenuClick(() => app.onSelectAll())} //
         />
         <CustomMenuItem
-          done={false}
-          text="Select None"
+          showLeftIcon={false}
+          label="Select None"
           hotkey="Esc"
-          disable={app.selectedEntityIds.length === 0 && "Nothing to unselect"}
+          disabled={app.selectedEntityIds.length === 0 && "Nothing to unselect"}
           onClick={onMenuClick(() => app.clearSelected())}
         />
         <CustomMenuItem
-          done={false}
-          text="Select Inverse"
+          showLeftIcon={false}
+          label="Select Inverse"
           hotkey="Shift+Mod+A"
           onClick={onMenuClick(() => app.setSelected(app.allEntities.filter(e => !app.selectedEntities.includes(e))))}
         />
@@ -326,45 +427,45 @@ const MenuAccordion = observer((props: {}) => {
         open={variables.isOpenMenu("View")}
         onClose={() => variables.closeMenu("View")}>
         <CustomMenuItem
-          done={app.view.showSpeedCanvas}
-          text="Speed Graph"
+          showLeftIcon={app.view.showSpeedCanvas}
+          label="Speed Graph"
           hotkey="Mod+B"
           onClick={onMenuClick(() => (app.view.showSpeedCanvas = !app.view.showSpeedCanvas))}
         />
         <CustomMenuItem
-          done={app.view.showRightPanel}
-          text="Right Panel"
+          showLeftIcon={app.view.showRightPanel}
+          label="Right Panel"
           hotkey="Mod+J"
           onClick={onMenuClick(() => (app.view.showRightPanel = !app.view.showRightPanel))}
         />
         <Divider />
         <CustomMenuItem
-          done={false}
-          text="Zoom In"
+          showLeftIcon={false}
+          label="Zoom In"
           hotkey="Mod+Add"
           onClick={onMenuClick(() => (app.fieldScale += 0.5))}
         />
         <CustomMenuItem
-          done={false}
-          text="Zoom Out"
+          showLeftIcon={false}
+          label="Zoom Out"
           hotkey="Mod+Minus"
           onClick={onMenuClick(() => (app.fieldScale -= 0.5))}
         />
         <CustomMenuItem
-          done={false}
-          text="Zoom to Fit"
+          showLeftIcon={false}
+          label="Zoom to Fit"
           hotkey="Mod+0"
           onClick={onMenuClick(() => app.resetFieldDisplay())}
         />
         <Divider />
         <CustomMenuItem
-          done={appPreferences.themeType === AppTheme.Dark}
-          text="Dark Theme (Default)"
+          showLeftIcon={appPreferences.themeType === AppTheme.Dark}
+          label="Dark Theme (Default)"
           onClick={onMenuClick(() => (appPreferences.themeType = AppTheme.Dark))}
         />
         <CustomMenuItem
-          done={appPreferences.themeType === AppTheme.Light}
-          text="Light Theme"
+          showLeftIcon={appPreferences.themeType === AppTheme.Light}
+          label="Light Theme"
           onClick={onMenuClick(() => (appPreferences.themeType = AppTheme.Light))}
         />
       </Menu>
@@ -375,14 +476,14 @@ const MenuAccordion = observer((props: {}) => {
         disableRestoreFocus={true}
         open={variables.isOpenMenu("Help")}
         onClose={() => variables.closeMenu("Help")}>
-        <CustomMenuItem done={false} text="Welcome" onClick={onMenuClick(() => help.open(HelpPage.Welcome))} />
+        <CustomMenuItem showLeftIcon={false} label="Welcome" onClick={onMenuClick(() => help.open(HelpPage.Welcome))} />
         <CustomMenuItem
-          done={false}
-          text="Wiki Page"
+          showLeftIcon={false}
+          label="Wiki Page"
           onClick={onMenuClick(() => window.open("https://github.com/Jerrylum/path.jerryio/wiki", "_blank"))}
         />
-        <CustomMenuItem done={false} text="Check for Updates" onClick={onMenuClick(() => checkForUpdates())} />
-        <CustomMenuItem done={false} text="About" onClick={onMenuClick(() => help.open(HelpPage.About))} />
+        <CustomMenuItem showLeftIcon={false} label="Check for Updates" onClick={onMenuClick(() => checkForUpdates())} />
+        <CustomMenuItem showLeftIcon={false} label="About" onClick={onMenuClick(() => help.open(HelpPage.About))} />
       </Menu>
     </Card>
   );
@@ -401,14 +502,17 @@ const MenuMainDropdown = observer((props: { anchor: HTMLElement; isOpen: boolean
         MenuListProps={{ dense: true }}
         disableRestoreFocus={true}
         open={props.isOpen}
+        autoFocus={false}
+        // disableAutoFocus
+        disableEnforceFocus
         onClose={props.onClose}>
-        <CustomMenuItem done={false} text="File">
-          <CustomMenuItem done={false} text="New" />
-          <CustomMenuItem done={false} text="New2" />
+        <CustomMenuItem showLeftIcon={false} label="File">
+          <CustomMenuItem showLeftIcon={false} label="New" />
+          <CustomMenuItem showLeftIcon={false} label="New2" />
         </CustomMenuItem>
-        <CustomMenuItem done={false} text="Edit">
-          <CustomMenuItem done={false} text="New" />
-          <CustomMenuItem done={false} text="New2" />
+        <CustomMenuItem showLeftIcon={false} label="Edit">
+          <CustomMenuItem showLeftIcon={false} label="New" />
+          <CustomMenuItem showLeftIcon={false} label="New2" />
         </CustomMenuItem>
       </Menu>
     </>
