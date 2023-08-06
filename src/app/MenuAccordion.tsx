@@ -1,6 +1,8 @@
 import { makeAutoObservable, action } from "mobx";
 import DoneIcon from "@mui/icons-material/Done";
+import NavigateNextIcon from "@mui/icons-material/KeyboardArrowRight";
 import {
+  Box,
   Button,
   Card,
   Divider,
@@ -72,32 +74,57 @@ const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
   return <>{elements}</>;
 });
 
-const CustomMenuItem = observer(
-  (
-    props: DefaultComponentProps<MenuItemTypeMap> & {
-      done: boolean;
-      text: string;
-      hotkey?: string;
-      disable?: string | boolean;
-    }
-  ) => {
-    const { done, text, hotkey, disable, ...rest } = props;
+interface CustomMenuItemProps extends DefaultComponentProps<MenuItemTypeMap> {
+  done: boolean;
+  text: string;
+  hotkey?: string;
+  disable?: string | boolean;
+  children?: React.ReactElement<CustomMenuItemProps>[];
+}
 
-    const body = (
-      <MenuItem {...rest} className="menu-item" disabled={disable !== undefined && disable !== false}>
-        <DoneIcon sx={{ visibility: !done ? "hidden" : "" }} />
-        <ListItemText sx={{ marginRight: "1rem" }}>{text}</ListItemText>
-        <HotkeyTypography hotkey={hotkey} />
-      </MenuItem>
-    );
+const CustomMenuItem = observer((props: CustomMenuItemProps) => {
+  const { done, text, hotkey, disable, children, ...rest } = props;
 
-    return disable !== undefined && typeof disable !== "boolean" && disable !== "" ? (
-      <Tooltip title={disable} placement="right" children={body} />
-    ) : (
-      body
-    );
-  }
-);
+  const menuItemRef = React.useRef<HTMLLIElement>(null);
+  const [isChildMenuOpen, setIsChildMenuOpen] = React.useState(false);
+
+  const isDisabled = disable !== undefined && disable !== false;
+  const showTooltip = disable !== undefined && typeof disable !== "boolean" && disable !== "";
+
+  const body = (
+    <MenuItem
+      {...rest}
+      className="menu-item"
+      disabled={isDisabled}
+      ref={menuItemRef}
+      onMouseMove={() => setIsChildMenuOpen(true)} // UX: Do not use onMouseEnter because it auto-triggers when the menu is opened
+      onMouseLeave={() => setIsChildMenuOpen(false)}>
+      <DoneIcon className="menu-item-done" sx={{ visibility: !done ? "hidden" : "" }} />
+      <ListItemText sx={{ marginRight: "1rem" }}>{text}</ListItemText>
+      <HotkeyTypography hotkey={hotkey} />
+      {children && <NavigateNextIcon className="menu-item-next" />}
+      {children && (
+        <Menu
+          // Set pointer events to 'none' to prevent the invisible Popover div
+          // from capturing events for clicks and hovers
+          style={{ pointerEvents: "none" }}
+          anchorEl={menuItemRef.current}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+          MenuListProps={{ dense: true }}
+          disableRestoreFocus={true}
+          open={isChildMenuOpen}
+          autoFocus={false}
+          disableAutoFocus
+          disableEnforceFocus
+          onClose={() => setIsChildMenuOpen(false)}>
+          <Box style={{ pointerEvents: "auto" }}>{children}</Box>
+        </Menu>
+      )}
+    </MenuItem>
+  );
+
+  return showTooltip ? <Tooltip title={disable} placement="right" children={body} /> : body;
+});
 
 class MenuVariables {
   private menuStates: { [key: string]: boolean } = {};
@@ -361,4 +388,31 @@ const MenuAccordion = observer((props: {}) => {
   );
 });
 
-export { MenuAccordion };
+const MenuMainDropdown = observer((props: { anchor: HTMLElement; isOpen: boolean; onClose: () => void }) => {
+  const { app, help, appPreferences, clipboard } = getAppStores();
+
+  const [variables] = React.useState(() => new MenuVariables());
+
+  return (
+    <>
+      <Menu
+        anchorReference="anchorPosition"
+        anchorPosition={{ top: 8, left: 48 + 8 + 8 }}
+        MenuListProps={{ dense: true }}
+        disableRestoreFocus={true}
+        open={props.isOpen}
+        onClose={props.onClose}>
+        <CustomMenuItem done={false} text="File">
+          <CustomMenuItem done={false} text="New" />
+          <CustomMenuItem done={false} text="New2" />
+        </CustomMenuItem>
+        <CustomMenuItem done={false} text="Edit">
+          <CustomMenuItem done={false} text="New" />
+          <CustomMenuItem done={false} text="New2" />
+        </CustomMenuItem>
+      </Menu>
+    </>
+  );
+});
+
+export { MenuAccordion, MenuMainDropdown };

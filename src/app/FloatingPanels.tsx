@@ -17,6 +17,7 @@ import { ControlFloatingPanel } from "./ControlAccordion";
 import { PathConfigFloatingPanel } from "./PathAccordion";
 import { GraphCanvasElement } from "./GraphCanvasElement";
 import { PathTreeFloatingPanel } from "./PathTreeAccordion";
+import { MenuMainDropdown } from "./MenuAccordion";
 
 class FloatingPanelsVariables {
   private panelStates: { [key: string]: boolean } = {};
@@ -50,11 +51,11 @@ const FloatingPanels = observer((props: {}) => {
   return (
     <>
       <Box id="panel-icon-box" style={{ left: "8px", top: "8px" }}>
-        <Box className="panel-icon">
+        <Box id="menu-icon" className="panel-icon" onClick={() => variables.togglePanel("menu")}>
           <MenuIcon fontSize="large" />
         </Box>
-        <Box className="panel-icon">
-          <ViewListIcon fontSize="large" onClick={() => variables.togglePanel("paths")} />
+        <Box className="panel-icon" onClick={() => variables.togglePanel("paths")}>
+          <ViewListIcon fontSize="large" />
         </Box>
       </Box>
       <Box id="panel-icon-box" style={{ right: "8px", top: "8px" }}>
@@ -75,6 +76,11 @@ const FloatingPanels = observer((props: {}) => {
         </Box>
       </Box>
       <Box id="left-editor-panel">
+        <MenuMainDropdown
+          anchor={document.getElementById("menu-icon")!}
+          isOpen={variables.isOpenPanel("menu")}
+          onClose={variables.closePanel.bind(variables, "menu")}
+        />
         {variables.isOpenPanel("paths") && <PathTreeFloatingPanel />}
       </Box>
       <Box id="right-editor-panel">
