@@ -83,7 +83,7 @@ interface CustomMenuItemProps extends Omit<MenuItemProps, "disabled"> {
   parentMenuOpen?: boolean;
   disabled?: string | boolean;
   // children?: React.ReactElement<CustomMenuItemProps>[];
-  children?: React.ReactNode;
+  children?: React.ReactElement[];
   // ContainerProps?: HTMLAttributes<HTMLElement> & RefAttributes<HTMLElement | null>;
   MenuProps?: Partial<Omit<MenuProps, "children">>;
 }
@@ -93,37 +93,25 @@ const CustomMenuItem = observer(
     (props: CustomMenuItemProps, ref: React.ForwardedRef<HTMLLIElement | null>) => {
       const { showLeftIcon, label, hotkey, parentMenuOpen, disabled, children, MenuProps, ...MenuItemProps } = props;
 
-      // const { ref: containerRefProp, ...ContainerProps } = ContainerPropsProp;
-
       const menuItemRef = React.useRef<HTMLLIElement | null>(null);
       React.useImperativeHandle(ref, () => menuItemRef.current!); // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
-      // const containerRef = React.useRef<HTMLDivElement | null>(null);
-      // React.useImperativeHandle(containerRefProp, () => containerRef.current);
-
       const menuListRef = React.useRef<HTMLUListElement | null>(null);
 
-      // const menuItemRef = React.useRef<HTMLLIElement>(null);
-      const [isSubMenuOpen, setIsSubMenuOpen] = React.useState(false);
+      const [isSubMenuOpen, setIsSubMenuOpen] = React.useState<"open" | "open-with-focus" | false>(false);
 
       const isDisabled = disabled !== undefined && disabled !== false;
       const showTooltip = disabled !== undefined && typeof disabled !== "boolean" && disabled !== "";
 
+      const hasSubMenu = children !== undefined;
       const isParentOpen = parentMenuOpen ?? true;
-      const isOpen = isSubMenuOpen && isParentOpen;
-      // console.log(label, isOpen);
+      const isSubMenuOpenFinal = isSubMenuOpen && isParentOpen && hasSubMenu;
 
-      // const handleMouseEnter = (e: MouseEvent<HTMLElement>) => {
-      //   setIsSubMenuOpen(true);
-      // };
-      // const handleMouseLeave = (e: MouseEvent<HTMLElement>) => {
-      //   setIsSubMenuOpen(false);
-      // };
       const isSubMenuFocused = () => {
         if (menuListRef.current === null) return false;
 
         const menuList = menuListRef.current;
-        
+
         const active = menuList.ownerDocument.activeElement ?? null;
         for (const child of [...menuList.children]) {
           if (child === active) {
@@ -134,15 +122,26 @@ const CustomMenuItem = observer(
         return false;
       };
 
+      const isMenuItemFocused = () => {
+        if (menuItemRef.current === null) return false;
+
+        const active = menuItemRef.current.ownerDocument.activeElement ?? null;
+        return active === menuItemRef.current;
+      };
+
       const handleFocus = (e: React.FocusEvent<HTMLLIElement, Element>) => {
-        if (e.target === menuItemRef.current) {
-          setIsSubMenuOpen(true);
+        const isTarget = e.target === menuItemRef.current;
+
+        if (isTarget) {
+          setIsSubMenuOpen("open");
         }
       };
 
       const handleBlur = (e: React.FocusEvent<HTMLLIElement, Element>) => {
-        if (e.target === menuItemRef.current) {
-          setIsSubMenuOpen(false);
+        const isTarget = e.target === menuItemRef.current;
+
+        if (isTarget) {
+          setIsSubMenuOpen("open");
         }
       };
 
@@ -151,20 +150,26 @@ const CustomMenuItem = observer(
           return;
         }
 
-        console.log(menuListRef, document.activeElement, isSubMenuFocused());
-        if (isSubMenuFocused()) {
+        const isTarget = e.target === menuItemRef.current;
+        console.log(menuListRef, isMenuItemFocused(), isSubMenuFocused());
+
+        if (isSubMenuOpenFinal) {
+          // UX: If sub menu is open, the event should not propagate to the parent menu
           e.stopPropagation();
-        }
 
-        const active = menuItemRef.current?.ownerDocument.activeElement;
+          if (e.key === "ArrowLeft" && !isTarget && isSubMenuFocused()) {
+            menuItemRef.current?.focus();
+            setIsSubMenuOpen(false);
+          } else if (isSubMenuFocused() === false) {
+            const firstChild = menuListRef.current?.children[0] as HTMLDivElement;
+            firstChild?.focus();
+          }
 
-        if (e.key === "ArrowLeft" && isSubMenuFocused()) {
-          menuItemRef.current?.focus();
-        }
-
-        if (e.key === "ArrowRight" && e.target === menuItemRef.current && e.target === active) {
-          const firstChild = menuListRef.current?.children[0] as HTMLDivElement;
-          firstChild?.focus();
+          // UX: ArrowUp and ArrowDown should be handled by the sub menu by MUI
+        } else {
+          if ((e.key === "ArrowRight" || e.key === "Enter") && isTarget && isMenuItemFocused()) {
+            setIsSubMenuOpen("open-with-focus");
+          }
         }
       };
 
@@ -174,7 +179,7 @@ const CustomMenuItem = observer(
           className="menu-item"
           disabled={isDisabled}
           ref={menuItemRef}
-          onFocus={handleFocus}
+          // onFocus={handleFocus}
           // onBlur={handleBlur}
           // onMouseMove={() => setIsSubMenuOpen(true)} // UX: Do not use onMouseEnter because it auto-triggers when the menu is opened
           // onMouseLeave={() => setIsSubMenuOpen(false)}
@@ -193,8 +198,8 @@ const CustomMenuItem = observer(
               transformOrigin={{ horizontal: "left", vertical: "top" }}
               MenuListProps={{ dense: true, ref: menuListRef, style: { pointerEvents: "auto" } }}
               disableRestoreFocus={true}
-              open={isOpen}
-              autoFocus={false}
+              open={isSubMenuOpenFinal}
+              autoFocus={isSubMenuOpen === "open-with-focus"}
               disableAutoFocus
               disableEnforceFocus
               // onMouseMove={() => setIsSubMenuOpen(true)} // UX: Do not use onMouseEnter because it auto-triggers when the menu is opened
@@ -207,12 +212,7 @@ const CustomMenuItem = observer(
         </MenuItem>
       );
 
-      return (
-        <>
-          {showTooltip ? <Tooltip title={disabled} placement="right" children={body} /> : body}
-          
-        </>
-      );
+      return <>{showTooltip ? <Tooltip title={disabled} placement="right" children={body} /> : body}</>;
     }
   )
 );
