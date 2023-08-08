@@ -10,16 +10,6 @@ import { ObserverInput } from "../component/ObserverInput";
 import { useBackdropDialog } from "../core/Hook";
 import { LayoutType } from "./Layout";
 
-export function func<T>(key: string, value: T): T {
-  reaction(
-    () => null,
-    () => {}
-  );
-
-  const item = localStorage.getItem(key);
-  return item !== null ? JSON.parse(item) : value;
-}
-
 export class Preferences {
   private isDialogOpen: boolean = false;
   private disposers: (() => void)[] = []; // Reaction disposer
@@ -28,7 +18,7 @@ export class Preferences {
   public maxHistory: number = 50;
   public isGoogleAnalyticsEnabled: boolean = false;
   public themeType: AppTheme = AppTheme.Dark;
-  public layoutType: LayoutType = LayoutType.EXCLUSIVE_MODE;
+  public layoutType: LayoutType = LayoutType.CLASSIC;
 
   constructor() {
     makeAutoObservable(this);
@@ -54,13 +44,13 @@ export class Preferences {
   }
 
   private linkLocalStorage() {
-    this.disposers.forEach((link) => link());
+    this.disposers.forEach(disposer => disposer());
     this.disposers = [
       this.link("maxHistory", "maxHistory"),
       this.link("isGoogleAnalyticsEnabled", "googleAnalyticsEnabled"),
       this.link("themeType", "theme"),
       this.link("layoutType", "layout")
-    ]
+    ];
   }
 
   get theme(): AppThemeInfo {
@@ -131,4 +121,3 @@ const PreferencesDialog = observer((props: {}) => {
 });
 
 export { PreferencesDialog };
-

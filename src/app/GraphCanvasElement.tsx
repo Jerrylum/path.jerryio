@@ -187,10 +187,10 @@ const GraphCanvasElement = observer((props: {}) => {
 
   if (path === undefined) return null;
 
-  const isExclusiveMode = preferences.layoutType === LayoutType.EXCLUSIVE_MODE;
+  const isExclusiveLayout = preferences.layoutType === LayoutType.EXCLUSIVE;
 
-  const canvasHeight = isExclusiveMode ? Math.max(windowSize.y * 0.12, 80) : windowSize.y * 0.12;
-  const canvasWidth = isExclusiveMode ? canvasHeight * 6.5 : windowSize.y * 0.78;
+  const canvasHeight = isExclusiveLayout ? Math.max(windowSize.y * 0.12, 80) : windowSize.y * 0.12;
+  const canvasWidth = isExclusiveLayout ? canvasHeight * 6.5 : windowSize.y * 0.78;
   const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, variables.xOffset, path);
 
   const fontSize = canvasHeight / 8;

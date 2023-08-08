@@ -31,7 +31,7 @@ import { FloatingPanels } from "./app/FloatingPanels";
 const Root = observer(() => {
   const { app, confirmation, help, appPreferences, clipboard } = getAppStores();
 
-  const isExclusiveLayout = appPreferences.layoutType === LayoutType.EXCLUSIVE_MODE;
+  const isExclusiveLayout = appPreferences.layoutType === LayoutType.EXCLUSIVE;
   const isUsingEditor = !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen;
   const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(isUsingEditor, onDropFile);
 

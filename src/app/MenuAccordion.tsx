@@ -24,6 +24,7 @@ import { AppTheme } from "./Theme";
 import { RemovePathsAndEndControls } from "../core/Command";
 import { checkForUpdates } from "../core/Versioning";
 import { Path } from "../core/Path";
+import { LayoutType } from "./Layout";
 
 const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
   const { hotkey } = props;
@@ -554,19 +555,36 @@ const ViewMenuItems = () => {
   return [
     <CustomMenuItem
       key={makeId(10)}
-      showLeftIcon={app.view.showSpeedCanvas}
-      label="Speed Graph"
-      hotkey="Mod+B"
-      onClick={() => (app.view.showSpeedCanvas = !app.view.showSpeedCanvas)}
+      showLeftIcon={appPreferences.layoutType === LayoutType.CLASSIC}
+      label="Classic Layout"
+      onClick={() => (appPreferences.layoutType = LayoutType.CLASSIC)}
     />,
     <CustomMenuItem
       key={makeId(10)}
-      showLeftIcon={app.view.showRightPanel}
-      label="Right Panel"
-      hotkey="Mod+J"
-      onClick={() => (app.view.showRightPanel = !app.view.showRightPanel)}
+      showLeftIcon={appPreferences.layoutType === LayoutType.EXCLUSIVE}
+      label="Exclusive Layout"
+      onClick={() => (appPreferences.layoutType = LayoutType.EXCLUSIVE)}
     />,
     <Divider key={makeId(10)} />,
+    ...(appPreferences.layoutType === LayoutType.CLASSIC
+      ? [
+          <CustomMenuItem
+            key={makeId(10)}
+            showLeftIcon={app.view.showSpeedCanvas}
+            label="Speed Graph"
+            hotkey="Mod+B"
+            onClick={() => (app.view.showSpeedCanvas = !app.view.showSpeedCanvas)}
+          />,
+          <CustomMenuItem
+            key={makeId(10)}
+            showLeftIcon={app.view.showRightPanel}
+            label="Right Panel"
+            hotkey="Mod+J"
+            onClick={() => (app.view.showRightPanel = !app.view.showRightPanel)}
+          />,
+          <Divider key={makeId(10)} />
+        ]
+      : []),
     <CustomMenuItem
       key={makeId(10)}
       showLeftIcon={false}
