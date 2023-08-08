@@ -1,8 +1,8 @@
 import { Components, Theme, ThemeOptions, createTheme } from "@mui/material";
 
 export enum AppTheme {
-  Light,
-  Dark // UX: Default theme
+  Light = "light",
+  Dark = "dark" // UX: Default theme
 }
 
 export interface AppThemeInfo {

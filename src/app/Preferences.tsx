@@ -34,14 +34,10 @@ export class Preferences {
     this.isGoogleAnalyticsEnabledState = localStorage.getItem("googleAnalyticsEnabled") === "true";
 
     // Theme
-    const themeInStr = localStorage.getItem("theme");
-    if (themeInStr === "light") this.themeTypeState = AppTheme.Light;
-    else this.themeTypeState = AppTheme.Dark;
+    this.themeTypeState = (localStorage.getItem("theme") ?? "dark") as AppTheme;
 
     // Layout
-    const layoutInStr = localStorage.getItem("layout");
-    if (layoutInStr === "classic") this.layoutTypeState = LayoutType.CLASSIC_MODE;
-    else this.layoutTypeState = LayoutType.EXCLUSIVE_MODE;
+    this.layoutTypeState = (localStorage.getItem("layout") ?? "exclusive") as LayoutType;
   }
 
   close() {
@@ -83,8 +79,7 @@ export class Preferences {
   set themeType(value: AppTheme) {
     this.themeTypeState = value;
 
-    if (value === AppTheme.Light) localStorage.setItem("theme", "light");
-    else localStorage.setItem("theme", "dark");
+    localStorage.setItem("theme", value);
   }
 
   get theme(): AppThemeInfo {
