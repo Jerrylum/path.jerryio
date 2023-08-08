@@ -1,4 +1,4 @@
-import { makeAutoObservable, action } from "mobx";
+import { makeAutoObservable, action, reaction } from "mobx";
 import DoneIcon from "@mui/icons-material/Done";
 import NavigateNextIcon from "@mui/icons-material/KeyboardArrowRight";
 import {
@@ -76,6 +76,51 @@ const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
   return <>{elements}</>;
 });
 
+class CustomMenuController {
+  private isCollapsed = false;
+  private touchingMenuItem: Symbol | null = null;
+  private touchingMode: "focus/open-sub-menu" | "open-sub-menu-with-focus" | null = null;
+
+  constructor(private parent: CustomMenuController | null) {
+    makeAutoObservable(this);
+
+    reaction(
+      () => parent?.touchingMenuItem,
+      () => {
+        this.touchingMenuItem = null;
+        this.touchingMode = null;
+      }
+    );
+  }
+
+  touch(menuItemSymbol: Symbol, mode: "focus/open-sub-menu" | "open-sub-menu-with-focus") {
+    this.touchingMenuItem = menuItemSymbol;
+    this.touchingMode = mode;
+  }
+
+  untouch() {
+    this.touchingMenuItem = null;
+    this.touchingMode = null;
+  }
+
+  collapse() {
+    this.isCollapsed = true;
+    this.touchingMenuItem = null;
+    this.touchingMode = null;
+    this.parent?.collapse();
+  }
+
+  isTouching(menuItemSymbol: Symbol): false | "focus/open-sub-menu" | "open-sub-menu-with-focus" {
+    if (this.touchingMenuItem === menuItemSymbol && this.isCollapsed === false) {
+      return this.touchingMode ?? "focus/open-sub-menu";
+    } else {
+      return false;
+    }
+  }
+}
+
+const CustomMenuControllerContext = React.createContext<CustomMenuController>(new CustomMenuController(null));
+
 interface CustomMenuItemProps extends Omit<MenuItemProps, "disabled"> {
   showLeftIcon: boolean;
   label: string;
@@ -84,28 +129,31 @@ interface CustomMenuItemProps extends Omit<MenuItemProps, "disabled"> {
   disabled?: string | boolean;
   // children?: React.ReactElement<CustomMenuItemProps>[];
   children?: React.ReactElement[];
-  // ContainerProps?: HTMLAttributes<HTMLElement> & RefAttributes<HTMLElement | null>;
+  onClick?: React.MouseEventHandler<HTMLLIElement>;
   MenuProps?: Partial<Omit<MenuProps, "children">>;
 }
 
 const CustomMenuItem = observer(
   forwardRef<HTMLLIElement | null, CustomMenuItemProps>(
     (props: CustomMenuItemProps, ref: React.ForwardedRef<HTMLLIElement | null>) => {
-      const { showLeftIcon, label, hotkey, parentMenuOpen, disabled, children, MenuProps, ...MenuItemProps } = props;
+      const { showLeftIcon, label, hotkey, parentMenuOpen, disabled, children, onClick, MenuProps, ...MenuItemProps } =
+        props;
+
+      const parentMenuCtr = React.useContext(CustomMenuControllerContext);
+      const subMenuController = React.useState(() => new CustomMenuController(parentMenuCtr))[0];
+      const menuItemSymbol = React.useState(() => Symbol())[0];
 
       const menuItemRef = React.useRef<HTMLLIElement | null>(null);
       React.useImperativeHandle(ref, () => menuItemRef.current!); // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
       const menuListRef = React.useRef<HTMLUListElement | null>(null);
 
-      const [isSubMenuOpen, setIsSubMenuOpen] = React.useState<"open" | "open-with-focus" | false>(false);
-
       const isDisabled = disabled !== undefined && disabled !== false;
       const showTooltip = disabled !== undefined && typeof disabled !== "boolean" && disabled !== "";
 
       const hasSubMenu = children !== undefined;
       const isParentOpen = parentMenuOpen ?? true;
-      const isSubMenuOpenFinal = isSubMenuOpen && isParentOpen && hasSubMenu;
+      const isSubMenuOpenFinal = hasSubMenu && isParentOpen && parentMenuCtr.isTouching(menuItemSymbol) !== false;
 
       const isSubMenuFocused = () => {
         if (menuListRef.current === null) return false;
@@ -129,29 +177,12 @@ const CustomMenuItem = observer(
         return active === menuItemRef.current;
       };
 
-      const handleFocus = (e: React.FocusEvent<HTMLLIElement, Element>) => {
-        const isTarget = e.target === menuItemRef.current;
-
-        if (isTarget) {
-          setIsSubMenuOpen("open");
-        }
-      };
-
-      const handleBlur = (e: React.FocusEvent<HTMLLIElement, Element>) => {
-        const isTarget = e.target === menuItemRef.current;
-
-        if (isTarget) {
-          setIsSubMenuOpen("open");
-        }
-      };
-
       const handleKeyDown = (e: React.KeyboardEvent<HTMLLIElement>) => {
         if (e.key === "Escape") {
           return;
         }
 
         const isTarget = e.target === menuItemRef.current;
-        console.log(menuListRef, isMenuItemFocused(), isSubMenuFocused());
 
         if (isSubMenuOpenFinal) {
           // UX: If sub menu is open, the event should not propagate to the parent menu
@@ -159,7 +190,7 @@ const CustomMenuItem = observer(
 
           if (e.key === "ArrowLeft" && !isTarget && isSubMenuFocused()) {
             menuItemRef.current?.focus();
-            setIsSubMenuOpen(false);
+            parentMenuCtr.untouch();
           } else if (isSubMenuFocused() === false) {
             const firstChild = menuListRef.current?.children[0] as HTMLDivElement;
             firstChild?.focus();
@@ -168,7 +199,7 @@ const CustomMenuItem = observer(
           // UX: ArrowUp and ArrowDown should be handled by the sub menu by MUI
         } else {
           if ((e.key === "ArrowRight" || e.key === "Enter") && isTarget && isMenuItemFocused()) {
-            setIsSubMenuOpen("open-with-focus");
+            parentMenuCtr.touch(menuItemSymbol, "open-sub-menu-with-focus");
           }
         }
       };
@@ -179,40 +210,43 @@ const CustomMenuItem = observer(
           className="menu-item"
           disabled={isDisabled}
           ref={menuItemRef}
-          // onFocus={handleFocus}
-          // onBlur={handleBlur}
-          // onMouseMove={() => setIsSubMenuOpen(true)} // UX: Do not use onMouseEnter because it auto-triggers when the menu is opened
-          // onMouseLeave={() => setIsSubMenuOpen(false)}
+          onClick={e => {
+            parentMenuCtr.collapse();
+            onClick?.(e);
+          }}
+          onMouseMove={() => parentMenuCtr.touch(menuItemSymbol, "focus/open-sub-menu")}
           onKeyDown={handleKeyDown}>
           <DoneIcon className="menu-item-done" sx={{ visibility: !showLeftIcon ? "hidden" : "" }} />
           <ListItemText sx={{ marginRight: "1rem" }}>{label}</ListItemText>
           <HotkeyTypography hotkey={hotkey} />
           {children && <NavigateNextIcon className="menu-item-next" />}
           {children && (
-            <Menu
-              // Set pointer events to 'none' to prevent the invisible Popover div
-              // from capturing events for clicks and hovers
-              style={{ pointerEvents: "none" }}
-              anchorEl={menuItemRef.current}
-              anchorOrigin={{ vertical: "top", horizontal: "right" }}
-              transformOrigin={{ horizontal: "left", vertical: "top" }}
-              MenuListProps={{ dense: true, ref: menuListRef, style: { pointerEvents: "auto" } }}
-              disableRestoreFocus={true}
-              open={isSubMenuOpenFinal}
-              autoFocus={isSubMenuOpen === "open-with-focus"}
-              disableAutoFocus
-              disableEnforceFocus
-              // onMouseMove={() => setIsSubMenuOpen(true)} // UX: Do not use onMouseEnter because it auto-triggers when the menu is opened
-              // onMouseLeave={() => setIsSubMenuOpen(false)}
-              onClose={() => setIsSubMenuOpen(false)}
-              {...MenuProps}>
-              {children}
-            </Menu>
+            // ALGO: The parent of the children should be the menu instead of the Context.Provider
+            // in order to make the Mui Menu keyboard navigation work
+            <CustomMenuControllerContext.Provider value={subMenuController}>
+              <Menu
+                // UX: Restore Focus = true
+                // Set pointer events to 'none' to prevent the invisible Popover div
+                // from capturing events for clicks and hovers
+                style={{ pointerEvents: "none" }}
+                anchorEl={menuItemRef.current}
+                anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                transformOrigin={{ horizontal: "left", vertical: "top" }}
+                MenuListProps={{ dense: true, ref: menuListRef, style: { pointerEvents: "auto" } }}
+                open={isSubMenuOpenFinal}
+                autoFocus={parentMenuCtr.isTouching(menuItemSymbol) === "open-sub-menu-with-focus"}
+                disableAutoFocus
+                disableEnforceFocus
+                onClose={() => parentMenuCtr.untouch()}
+                {...MenuProps}>
+                {children}
+              </Menu>
+            </CustomMenuControllerContext.Provider>
           )}
         </MenuItem>
       );
 
-      return <>{showTooltip ? <Tooltip title={disabled} placement="right" children={body} /> : body}</>;
+      return showTooltip ? <Tooltip title={disabled} placement="right" children={body} /> : body;
     }
   )
 );
@@ -508,7 +542,10 @@ const MenuMainDropdown = observer((props: { anchor: HTMLElement; isOpen: boolean
         onClose={props.onClose}>
         <CustomMenuItem showLeftIcon={false} label="File">
           <CustomMenuItem showLeftIcon={false} label="New" />
-          <CustomMenuItem showLeftIcon={false} label="New2" />
+          <CustomMenuItem showLeftIcon={false} label="New2">
+            <CustomMenuItem showLeftIcon={false} label="New3" onClick={e => console.log("hi")} />
+            <CustomMenuItem showLeftIcon={false} label="New4" />
+          </CustomMenuItem>
         </CustomMenuItem>
         <CustomMenuItem showLeftIcon={false} label="Edit">
           <CustomMenuItem showLeftIcon={false} label="New" />
@@ -520,3 +557,4 @@ const MenuMainDropdown = observer((props: { anchor: HTMLElement; isOpen: boolean
 });
 
 export { MenuAccordion, MenuMainDropdown };
+
