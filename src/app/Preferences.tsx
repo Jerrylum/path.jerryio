@@ -1,5 +1,5 @@
 import { Backdrop, Card, Divider, Typography } from "@mui/material";
-import { makeAutoObservable, action } from "mobx";
+import { makeAutoObservable, action, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import { getAppStores } from "../core/MainApp";
 import { lightTheme, darkTheme, AppTheme, AppThemeInfo } from "./Theme";
@@ -10,34 +10,61 @@ import { ObserverInput } from "../component/ObserverInput";
 import { useBackdropDialog } from "../core/Hook";
 import { LayoutType } from "./Layout";
 
+export function func<T>(key: string, value: T): T {
+  reaction(
+    () => null,
+    () => {}
+  );
+
+  const item = localStorage.getItem(key);
+  return item !== null ? JSON.parse(item) : value;
+}
+
 export class Preferences {
   private isDialogOpen: boolean = false;
+  private disposers: (() => void)[] = []; // Reaction disposer
 
   // Local storage
-  private maxHistoryState: number = 50;
-  private isGoogleAnalyticsEnabledState: boolean = false;
-  private themeTypeState: AppTheme = AppTheme.Dark;
-  private layoutTypeState: LayoutType = LayoutType.EXCLUSIVE_MODE;
+  public maxHistory: number = 50;
+  public isGoogleAnalyticsEnabled: boolean = false;
+  public themeType: AppTheme = AppTheme.Dark;
+  public layoutType: LayoutType = LayoutType.EXCLUSIVE_MODE;
 
   constructor() {
     makeAutoObservable(this);
 
-    this.pullFromLocalStorage();
-    window.addEventListener("storage", () => this.pullFromLocalStorage());
+    this.linkLocalStorage();
+    window.addEventListener("storage", () => this.linkLocalStorage());
   }
 
-  pullFromLocalStorage() {
-    // Max history
-    this.maxHistoryState = parseInt(localStorage.getItem("maxHistory") ?? "50");
+  private link(key: keyof this, storageKey: string) {
+    const item = localStorage.getItem(storageKey);
+    if (item !== null) {
+      try {
+        this[key] = JSON.parse(item);
+      } catch (e) {
+        this[key] = item as any; // ALGO: Legacy string support
+      }
+    }
 
-    // Is Google Analytics enabled
-    this.isGoogleAnalyticsEnabledState = localStorage.getItem("googleAnalyticsEnabled") === "true";
+    return reaction(
+      () => this[key],
+      () => localStorage.setItem(storageKey, JSON.stringify(this[key]))
+    );
+  }
 
-    // Theme
-    this.themeTypeState = (localStorage.getItem("theme") ?? "dark") as AppTheme;
+  private linkLocalStorage() {
+    this.disposers.forEach((link) => link());
+    this.disposers = [
+      this.link("maxHistory", "maxHistory"),
+      this.link("isGoogleAnalyticsEnabled", "googleAnalyticsEnabled"),
+      this.link("themeType", "theme"),
+      this.link("layoutType", "layout")
+    ]
+  }
 
-    // Layout
-    this.layoutTypeState = (localStorage.getItem("layout") ?? "exclusive") as LayoutType;
+  get theme(): AppThemeInfo {
+    return this.themeType === AppTheme.Dark ? darkTheme : lightTheme;
   }
 
   close() {
@@ -50,50 +77,6 @@ export class Preferences {
 
   get isOpen() {
     return this.isDialogOpen;
-  }
-
-  get maxHistory() {
-    return this.maxHistoryState;
-  }
-
-  set maxHistory(value: number) {
-    this.maxHistoryState = value;
-
-    localStorage.setItem("maxHistory", value.toString());
-  }
-
-  get isGoogleAnalyticsEnabled() {
-    return this.isGoogleAnalyticsEnabledState;
-  }
-
-  set isGoogleAnalyticsEnabled(value: boolean) {
-    this.isGoogleAnalyticsEnabledState = value;
-
-    localStorage.setItem("googleAnalyticsEnabled", value ? "true" : "false");
-  }
-
-  get themeType(): AppTheme {
-    return this.themeTypeState;
-  }
-
-  set themeType(value: AppTheme) {
-    this.themeTypeState = value;
-
-    localStorage.setItem("theme", value);
-  }
-
-  get theme(): AppThemeInfo {
-    if (this.themeTypeState === AppTheme.Light) return lightTheme;
-    else return darkTheme;
-  }
-
-  get layoutType(): LayoutType {
-    return this.layoutTypeState;
-    // return LayoutType.CLASSIC_MODE;
-  }
-
-  set layoutType(value: LayoutType) {
-    this.layoutTypeState = value;
   }
 }
 
@@ -148,3 +131,4 @@ const PreferencesDialog = observer((props: {}) => {
 });
 
 export { PreferencesDialog };
+
