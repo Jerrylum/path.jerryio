@@ -152,11 +152,17 @@ export function useBackdropDialog(enable: boolean, onClose?: () => void) {
 }
 
 export function useWindowSize(resizeCallback?: (newSize: Vector, oldSize: Vector) => void): Vector {
-  const [size, setSize] = React.useState<Vector>(new Vector(window.innerWidth, window.innerHeight));
+  function getSize(): Vector {
+    // UX: innerHeight is only used in the first render
+    // UX: clientWidth is better than innerWidth because it is accurate when the web page is zoomed
+    return new Vector(document.body.clientWidth || window.innerWidth, document.body.clientHeight || window.innerHeight);
+  }
+
+  const [size, setSize] = React.useState<Vector>(getSize());
 
   React.useEffect(() => {
     const onResize = () => {
-      const newSize = new Vector(window.innerWidth, window.innerHeight);
+      const newSize = getSize();
 
       setSize(oldSize => {
         resizeCallback?.(newSize, oldSize);
