@@ -1,5 +1,5 @@
 import { Backdrop, Card, Typography } from "@mui/material";
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { APP_VERSION, getAppStores } from "../core/MainApp";
 import { useBackdropDialog } from "../core/Hook";
@@ -48,10 +48,10 @@ const HelpDialog = observer((props: {}) => {
     if (rawGAEnabled === null) help.open(HelpPage.Welcome); // UX: Show welcome page if user is new
   }, [help, rawGAEnabled]);
 
-  function onClose() {
+  const onClose = action(() => {
     help.close();
     appPreferences.isGoogleAnalyticsEnabled = isGAEnabled;
-  }
+  });
 
   useBackdropDialog(help.isOpen, onClose);
 
