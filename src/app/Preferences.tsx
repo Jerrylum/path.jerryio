@@ -12,7 +12,7 @@ import { LayoutType } from "./Layout";
 
 export class Preferences {
   private isDialogOpen: boolean = false;
-  private disposers: (() => void)[] = []; // Reaction disposer
+  private disposers: (() => void)[] = []; // intercept() disposer
 
   // Local storage
   public maxHistory: number = 50;

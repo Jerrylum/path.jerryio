@@ -14,7 +14,7 @@ import { Box, Tooltip } from "@mui/material";
 import { Instance } from "@popperjs/core";
 import { useWindowSize } from "../core/Hook";
 import { LayoutType } from "./Layout";
-import { themes } from "./Theme";
+import { getAppThemeInfo } from "./Theme";
 
 function showTooltip(variables: GraphCanvasVariables, ikf: KeyframeIndexing | undefined) {
   if (ikf === undefined) {
@@ -195,8 +195,8 @@ const GraphCanvasElement = observer((props: {}) => {
   const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, variables.xOffset, path);
 
   const fontSize = canvasHeight / 8;
-  const fgColor = themes[preferences.themeType].foregroundColor;
-  const bgColor = themes[preferences.themeType].backgroundColor;
+  const fgColor = getAppThemeInfo().foregroundColor;
+  const bgColor = getAppThemeInfo().backgroundColor;
 
   const speedFrom = path.pc.speedLimit.from;
   const speedTo = path.pc.speedLimit.to;

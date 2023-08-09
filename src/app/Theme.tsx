@@ -1,5 +1,5 @@
 import { Components, Theme, ThemeOptions, createTheme } from "@mui/material";
-import { satisfies } from "semver";
+import { getAppStores } from "../core/MainApp";
 
 export enum AppThemeType {
   Light = "light",
@@ -77,4 +77,8 @@ export const themes = {
       components: componentsStyleOverrides
     })
   }
-} as const;
+} as const satisfies {[key in AppThemeType]: Readonly<AppThemeInfo>};
+
+export function getAppThemeInfo() {
+  return themes[getAppStores().appPreferences.themeType] ?? themes[AppThemeType.Dark];
+}
