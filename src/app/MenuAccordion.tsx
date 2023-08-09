@@ -20,7 +20,7 @@ import { IS_MAC_OS, makeId } from "../core/Util";
 import { onDownload, onDownloadAs, onNew, onOpen, onSave, onSaveAs } from "../core/InputOutput";
 import { getAppStores } from "../core/MainApp";
 import { HelpPage } from "./HelpDialog";
-import { AppTheme } from "./Theme";
+import { AppThemeType } from "./Theme";
 import { RemovePathsAndEndControls } from "../core/Command";
 import { checkForUpdates } from "../core/Versioning";
 import { Path } from "../core/Path";
@@ -609,15 +609,15 @@ const ViewMenuItems = () => {
     <Divider key={makeId(10)} />,
     <CustomMenuItem
       key={makeId(10)}
-      showLeftIcon={appPreferences.themeType === AppTheme.Dark}
+      showLeftIcon={appPreferences.themeType === AppThemeType.Dark}
       label="Dark Theme (Default)"
-      onClick={() => (appPreferences.themeType = AppTheme.Dark)}
+      onClick={() => (appPreferences.themeType = AppThemeType.Dark)}
     />,
     <CustomMenuItem
       key={makeId(10)}
-      showLeftIcon={appPreferences.themeType === AppTheme.Light}
+      showLeftIcon={appPreferences.themeType === AppThemeType.Light}
       label="Light Theme"
-      onClick={() => (appPreferences.themeType = AppTheme.Light)}
+      onClick={() => (appPreferences.themeType = AppThemeType.Light)}
     />
   ];
 };

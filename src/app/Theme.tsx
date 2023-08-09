@@ -1,6 +1,7 @@
 import { Components, Theme, ThemeOptions, createTheme } from "@mui/material";
+import { satisfies } from "semver";
 
-export enum AppTheme {
+export enum AppThemeType {
   Light = "light",
   Dark = "dark" // UX: Default theme
 }
@@ -14,45 +15,6 @@ export interface AppThemeInfo {
 }
 
 const componentsStyleOverrides: Components<Omit<Theme, "components">> = {};
-
-const darkTheme: AppThemeInfo = {
-  name: "Dark",
-  foregroundColor: "#a4a4a4",
-  backgroundColor: "#353535",
-  className: "dark-theme",
-  theme: createMuiTheme({
-    palette: {
-      mode: "dark",
-      primary: {
-        light: "#5C469C",
-        main: "#7F47B3",
-        dark: "#474AB3",
-        contrastText: "#fff"
-      },
-      background: {
-        default: "#1E1E1E",
-        paper: "#353535"
-      }
-    },
-    components: componentsStyleOverrides
-  })
-};
-
-const lightTheme: AppThemeInfo = {
-  name: "Light",
-  foregroundColor: "grey",
-  backgroundColor: "#ffffff",
-  className: "light-theme",
-  theme: createMuiTheme({
-    palette: {
-      mode: "light",
-      primary: {
-        main: "#5C469C"
-      }
-    },
-    components: componentsStyleOverrides
-  })
-};
 
 function createMuiTheme(options?: ThemeOptions | undefined, ...args: object[]): Theme {
   const theme = createTheme(options, ...args);
@@ -77,4 +39,42 @@ function createMuiTheme(options?: ThemeOptions | undefined, ...args: object[]): 
   return theme;
 }
 
-export { darkTheme, lightTheme };
+export const themes = {
+  [AppThemeType.Light]: {
+    name: "Light",
+    foregroundColor: "grey",
+    backgroundColor: "#ffffff",
+    className: "light-theme",
+    theme: createMuiTheme({
+      palette: {
+        mode: "light",
+        primary: {
+          main: "#5C469C"
+        }
+      },
+      components: componentsStyleOverrides
+    })
+  },
+  [AppThemeType.Dark]: {
+    name: "Dark",
+    foregroundColor: "#a4a4a4",
+    backgroundColor: "#353535",
+    className: "dark-theme",
+    theme: createMuiTheme({
+      palette: {
+        mode: "dark",
+        primary: {
+          light: "#5C469C",
+          main: "#7F47B3",
+          dark: "#474AB3",
+          contrastText: "#fff"
+        },
+        background: {
+          default: "#1E1E1E",
+          paper: "#353535"
+        }
+      },
+      components: componentsStyleOverrides
+    })
+  }
+} as const;

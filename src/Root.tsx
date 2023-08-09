@@ -27,6 +27,7 @@ import { PathTreeAccordion } from "./app/PathTreeAccordion";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 import { LayoutType } from "./app/Layout";
 import { FloatingPanels } from "./app/FloatingPanels";
+import { themes } from "./app/Theme";
 
 const Root = observer(() => {
   const { app, confirmation, help, appPreferences, clipboard } = getAppStores();
@@ -114,11 +115,11 @@ const Root = observer(() => {
   return (
     <Box
       tabIndex={-1}
-      className={classNames("App", appPreferences.theme.className)}
+      className={classNames("App", themes[appPreferences.themeType].className)}
       data-layout={appPreferences.layoutType}
       {...{ onDragEnter, onDragOver, onDrop }}
       key={app.format.uid + "-" + app.gc.uol}>
-      <ThemeProvider theme={appPreferences.theme.theme}>
+      <ThemeProvider theme={themes[appPreferences.themeType].theme}>
         <NoticeProvider />
         {!isExclusiveLayout && (
           <>

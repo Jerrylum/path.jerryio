@@ -2,7 +2,7 @@ import { Backdrop, Card, Divider, Typography } from "@mui/material";
 import { makeAutoObservable, action, intercept } from "mobx";
 import { observer } from "mobx-react-lite";
 import { getAppStores } from "../core/MainApp";
-import { lightTheme, darkTheme, AppTheme, AppThemeInfo } from "./Theme";
+import { AppThemeType } from "./Theme";
 import { clamp } from "../core/Util";
 import { ObserverEnumSelect } from "../component/ObserverEnumSelect";
 import { ObserverCheckbox } from "../component/ObserverCheckbox";
@@ -17,7 +17,7 @@ export class Preferences {
   // Local storage
   public maxHistory: number = 50;
   public isGoogleAnalyticsEnabled: boolean = false;
-  public themeType: AppTheme = AppTheme.Dark;
+  public themeType: AppThemeType = AppThemeType.Dark;
   public layoutType: LayoutType = LayoutType.CLASSIC;
 
   constructor() {
@@ -52,10 +52,6 @@ export class Preferences {
       this.link("themeType", "theme"),
       this.link("layoutType", "layout")
     ];
-  }
-
-  get theme(): AppThemeInfo {
-    return this.themeType === AppTheme.Dark ? darkTheme : lightTheme;
   }
 
   close() {
@@ -105,7 +101,7 @@ const PreferencesDialog = observer((props: {}) => {
           label="Theme"
           enumValue={appPreferences.themeType}
           onEnumChange={v => (appPreferences.themeType = v)}
-          enumType={AppTheme}
+          enumType={AppThemeType}
         />
 
         <Divider />
