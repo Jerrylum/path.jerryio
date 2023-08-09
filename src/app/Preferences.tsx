@@ -1,5 +1,5 @@
 import { Backdrop, Card, Divider, Typography } from "@mui/material";
-import { makeAutoObservable, action, reaction } from "mobx";
+import { makeAutoObservable, action, intercept } from "mobx";
 import { observer } from "mobx-react-lite";
 import { getAppStores } from "../core/MainApp";
 import { lightTheme, darkTheme, AppTheme, AppThemeInfo } from "./Theme";
@@ -37,10 +37,11 @@ export class Preferences {
       }
     }
 
-    return reaction(
-      () => this[key],
-      () => localStorage.setItem(storageKey, JSON.stringify(this[key]))
-    );
+    // ALGO: intercept() invokes the callback even if the value is the same
+    return intercept(this, key, change => {
+      localStorage.setItem(storageKey, JSON.stringify(change.newValue));
+      return change;
+    });
   }
 
   private linkLocalStorage() {
