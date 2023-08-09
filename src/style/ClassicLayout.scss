@@ -1,38 +1,38 @@
 .panel-box {
-  margin-top: 1vh;
+  margin-top: 1svh;
 }
 
 #middle-panel {
   display: flex;
-  width: 80vh;
-  height: 96vh;
+  width: 80svh;
+  height: 96svh;
   flex-direction: row;
   flex-wrap: wrap;
   align-content: flex-start;
 
   #field-panel {
-    width: 78vh;
-    height: 78vh;
-    padding: 1vh;
+    width: 78svh;
+    height: 78svh;
+    padding: 1svh;
     overflow: hidden;
   }
 }
 
 #middle-panel.full-height {
-  width: 96vh;
+  width: 96svh;
 
   #field-panel {
-    width: 94vh;
-    height: 94vh;
+    width: 94svh;
+    height: 94svh;
   }
 }
 
 #graph-panel {
-  width: 78vh;
-  height: 12vh;
-  padding: 1vh;
+  width: 78svh;
+  height: 12svh;
+  padding: 1svh;
   overflow: hidden;
-  margin-top: 2vh;
+  margin-top: 2svh;
 }
 
 #right-editor-panel {
@@ -40,14 +40,14 @@
   flex-grow: 1;
   min-width: 352px;
   max-width: 352px;
-  margin: calc(1vh - 4px);
+  margin: calc(1svh - 4px);
   margin-bottom: 0;
   border-top: 4px solid var(--bg-body-color);
   border-bottom: 4px solid var(--bg-body-color);
-  font-size: 1.5vh;
+  font-size: 1.5svh;
   overflow-x: hidden;
   overflow-y: auto;
-  height: calc(97vh);
+  height: calc(97svh);
 }
 
 #left-editor-panel {
@@ -55,11 +55,11 @@
   flex-grow: 1;
   min-width: 288px;
   max-width: 288px;
-  margin: calc(1vh - 4px) !important;
+  margin: calc(1svh - 4px) !important;
   padding-top: 4px;
-  font-size: 1.5vh;
+  font-size: 1.5svh;
   overflow-x: hidden;
-  height: calc(97vh);
+  height: calc(97svh);
   border-radius: 4px;
 }
 
@@ -85,7 +85,7 @@
 }
 
 #path-tree {
-  height: calc(94vh - (10px + 13px) - 16px);
+  height: calc(94svh - (10px + 13px) - 16px);
   position: relative;
 
   .MuiAccordionSummary-root {
@@ -116,15 +116,15 @@
 
 #control-editor {
   text-align: left;
-  margin-bottom: 3vh;
+  margin-bottom: 3svh;
   position: sticky;
-  top: -0.5vh;
+  top: -0.5svh;
   z-index: 100;
-  padding-top: 1vh;
+  padding-top: 1svh;
 }
 
 #main-menu {
-  margin-bottom: 2vh !important;
+  margin-bottom: 2svh !important;
   padding: 8px;
   height: calc(10px + 13px);
   display: flex;

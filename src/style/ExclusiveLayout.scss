@@ -1,6 +1,6 @@
 #exclusive-field {
-  width: 100vw;
-  height: 100vh;
+  width: 100svw;
+  height: 100svh;
   margin: 0;
 }
 
@@ -40,10 +40,10 @@
   top: 8px;
   left: calc(8px + 48px + 8px);
   width: calc(288px);
-  font-size: 1.5vh;
+  font-size: 1.5svh;
   overflow-x: hidden;
   overflow-y: auto;
-  max-height: calc(100vh - 16px);
+  max-height: calc(100svh - 16px);
 
   .floating-panel {
     width: 288px;
@@ -55,10 +55,10 @@
   top: 8px;
   right: calc(8px - 8px + 48px + 8px);
   width: calc(352px + 8px);
-  font-size: 1.5vh;
+  font-size: 1.5svh;
   overflow-x: hidden;
   overflow-y: auto;
-  max-height: calc(100vh - 16px);
+  max-height: calc(100svh - 16px);
 
   .floating-panel {
     margin-bottom: 8px;

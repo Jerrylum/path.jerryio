@@ -60,7 +60,7 @@ const GeneralConfigPanel = observer((props: {}) => {
           })}
         </Select>
       </Box>
-      <Box className="flex-editor-panel" sx={{ marginTop: "2vh" }}>
+      <Box className="flex-editor-panel" sx={{ marginTop: "2svh" }}>
         <ObserverEnumSelect
           label="Unit of Length"
           enumValue={gc.uol}
@@ -89,7 +89,7 @@ const GeneralConfigPanel = observer((props: {}) => {
           numeric
         />
       </Box>
-      <Typography sx={{ marginTop: "2vh" }} gutterBottom>
+      <Typography sx={{ marginTop: "2svh" }} gutterBottom>
         Robot Visualize
       </Typography>
       <Box className="flex-editor-panel">

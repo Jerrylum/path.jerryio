@@ -7,18 +7,18 @@
 
 .App {
   display: flex;
-  width: 100vw;
-  height: 100vh;
+  width: 100svw;
+  height: 100svh;
   box-sizing: border-box;
 
 }
 
 .App[data-layout="classic"] {
-  padding: 1vh;
+  padding: 1svh;
 
   > * {
     box-sizing: border-box;
-    margin: 1vh;
+    margin: 1svh;
   }
 
   @import "style/ClassicLayout.scss";
@@ -84,7 +84,7 @@
   flex-wrap: nowrap;
   justify-content: flex-start;
   align-items: center;
-  gap: 1vh;
+  gap: 1svh;
 }
 
 .menu-item.MuiMenuItem-root {

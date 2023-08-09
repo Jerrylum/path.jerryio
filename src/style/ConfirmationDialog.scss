@@ -7,7 +7,7 @@
   .confirmation-card {
     padding: 16px;
     min-width: 320px;
-    max-width: calc(90vw - 64px);
+    max-width: calc(90svw - 64px);
     min-height: 96px;
     outline: none !important;
 
@@ -33,7 +33,7 @@
       margin-top: 16px;
       justify-content: flex-end;
       align-items: flex-end;
-      gap: 1vh;
+      gap: 1svh;
 
       *:focus {
         background-color: rgba(255, 255, 255, 0.1);
