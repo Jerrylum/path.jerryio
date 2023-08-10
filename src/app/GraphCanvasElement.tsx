@@ -217,7 +217,9 @@ const GraphCanvasElement = observer((props: {}) => {
   };
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
-    const delta = e.evt.deltaY / 5;
+    const delta = (Math.abs(e.evt.deltaX) > Math.abs(e.evt.deltaY * 1.5) ? e.evt.deltaX : e.evt.deltaY) / 5;
+
+    e.evt.preventDefault(); // UX: Disable swipe left action on touch pad
 
     if (path === undefined) {
       variables.xOffset = 0;
