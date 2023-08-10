@@ -346,8 +346,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
     if (event.evt === undefined) return; // XXX: Drag end event from segment control
 
-    const clientX = event.evt.clientX;
-    const clientY = event.evt.clientY;
+    const { x: clientX, y: clientY } = getClientXY(event.evt);
 
     if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
       setAreaSelectionStart(undefined);

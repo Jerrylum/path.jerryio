@@ -15,9 +15,10 @@ export interface InteractiveEntityParent extends InteractiveEntity {
   children: InteractiveEntity[];
 }
 
-function getClientXY(event: DragEvent | MouseEvent | TouchEvent): Vector {
+export function getClientXY(event: DragEvent | MouseEvent | TouchEvent): Vector {
   if (window.TouchEvent && event instanceof TouchEvent) {
-    return new Vector(event.touches[0].clientX, event.touches[0].clientY);
+    const touch = event.touches[0] || event.changedTouches[0];
+    return touch ? new Vector(touch.clientX, touch.clientY) : new Vector(0, 0);
   } else {
     event = event as DragEvent | MouseEvent;
     return new Vector(event.clientX, event.clientY);
