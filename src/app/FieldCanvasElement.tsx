@@ -1,4 +1,4 @@
-import { action } from "mobx";
+import { action, makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
 import { EndControl, Path, SegmentVariant, Vector } from "../core/Path";
 import Konva from "konva";
@@ -97,74 +97,58 @@ const PathControls = observer((props: { path: Path; fcc: FieldCanvasConverter; i
   );
 });
 
-const FieldCanvasElement = observer((props: {}) => {
-  const { app, appPreferences } = getAppStores();
+class FieldController {
+  fcc!: FieldCanvasConverter;
 
-  const windowSize = useWindowSize((newSize: Vector, oldSize: Vector) => {
-    const ratio = (newSize.y + oldSize.y) / 2 / oldSize.y;
-    app.fieldOffset = app.fieldOffset.multiply(new Vector(ratio, ratio));
-  });
+  areaSelectionStart: Vector | undefined = undefined;
+  areaSelectionEnd: Vector | undefined = undefined;
+  isAddingControl: boolean = false;
+  offsetStart: Vector | undefined = undefined;
 
-  const uc = new UnitConverter(UnitOfLength.Millimeter, app.gc.uol);
-  const isExclusiveLayout = appPreferences.layoutType === LayoutType.EXCLUSIVE;
+  constructor() {
+    makeAutoObservable(this, { fcc: false });
+  }
 
-  const canvasHeightInPx = windowSize.y * (isExclusiveLayout ? 1 : app.view.showSpeedCanvas ? 0.78 : 0.94);
-  const canvasWidthInPx = isExclusiveLayout ? windowSize.x : canvasHeightInPx;
-  const canvasSizeInUOL = uc.fromAtoB(3683); // 3683 = 145*2.54*10 ~= 3676.528, the size of the field perimeter in Fusion 360
+  doAreaSelection(posInPx: Vector): boolean {
+    const { app } = getAppStores();
 
-  const paths = app.paths;
-
-  const [fieldImage] = useImage(fieldImageUrl);
-
-  const [areaSelectionStart, setAreaSelectionStart] = React.useState<Vector | undefined>(undefined);
-  const [areaSelectionEnd, setAreaSelectionEnd] = React.useState<Vector | undefined>(undefined);
-  const [isAddingControl, setIsAddingControl] = React.useState(false);
-  const [offsetStart, setOffsetStart] = React.useState<Vector | undefined>(undefined); // ALGO: For "Grab & Move"
-  const offset = app.fieldOffset;
-  const scale = app.fieldScale;
-
-  const fcc = new FieldCanvasConverter(
-    canvasWidthInPx,
-    canvasHeightInPx,
-    canvasSizeInUOL,
-    canvasSizeInUOL,
-    offset,
-    scale
-  );
-
-  function doAreaSelection(posInPx: Vector): boolean {
-    if (areaSelectionStart === undefined) return false;
+    if (this.areaSelectionStart === undefined) return false;
     // UX: Select control point if mouse down on field image
 
     // UX: Use flushSync to prevent lagging
     // See: https://github.com/reactwg/react-18/discussions/21
-    ReactDOM.flushSync(() => setAreaSelectionEnd(posInPx));
-    app.updateAreaSelection(fcc.toUOL(areaSelectionStart), fcc.toUOL(posInPx));
+    // ReactDOM.flushSync(() => setAreaSelectionEnd(posInPx));
+    ReactDOM.flushSync(action(() => (this.areaSelectionEnd = posInPx)));
+    app.updateAreaSelection(this.fcc.toUOL(this.areaSelectionStart), this.fcc.toUOL(posInPx));
     return true;
   }
 
-  function doPanning(posInPx: Vector): boolean {
-    // UX: Move field if: middle click
-    if (offsetStart === undefined) return false;
+  doPanning(posInPx: Vector): boolean {
+    const { app } = getAppStores();
 
-    const newOffset = offsetStart.subtract(posInPx);
+    // UX: Move field if: middle click
+    if (this.offsetStart === undefined) return false;
+
+    const newOffset = this.offsetStart.subtract(posInPx);
     newOffset.x = clamp(
       newOffset.x,
-      -canvasWidthInPx * 0.9 + fcc.viewOffset.x,
-      canvasWidthInPx * 0.9 - fcc.viewOffset.x
+      -this.fcc.pixelWidth * 0.9 + this.fcc.viewOffset.x,
+      this.fcc.pixelWidth * 0.9 - this.fcc.viewOffset.x
     );
-    newOffset.y = clamp(newOffset.y, -canvasHeightInPx * 0.9, canvasHeightInPx * 0.9);
+    newOffset.y = clamp(newOffset.y, -this.fcc.pixelHeight * 0.9, this.fcc.pixelHeight * 0.9);
     app.fieldOffset = newOffset;
     // setOffsetStart(posInPx.add(newOffset));
     return true;
   }
 
-  function doShowRobot(posInPx: Vector): boolean {
+  doShowRobot(posInPx: Vector): boolean {
+    const { app } = getAppStores();
+
     // UX: Show robot if: alt key is down and no other action is performed
     if (app.gc.showRobot === false) return false;
 
     if (posInPx === undefined) return false;
-    const posInUOL = fcc.toUOL(posInPx);
+    const posInUOL = this.fcc.toUOL(posInPx);
 
     const interested = app.interestedPath();
     if (interested === undefined) return false;
@@ -205,6 +189,105 @@ const FieldCanvasElement = observer((props: {}) => {
 
     return true;
   }
+}
+
+class TouchInteractiveHandler {
+  touchesLastPosition: { [identifier: number]: Vector } = {};
+  touchesVector: { [identifier: number]: Vector } = {};
+
+  initialDistanceBetweenTwoTouches: number = 0;
+  distanceScaleBetweenTwoTouches: number = 0;
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  private toVector(t: Touch) {
+    return new Vector(t.clientX, t.clientY);
+  }
+
+  onTouchStart = (evt: TouchEvent) => {
+    if (evt.touches.length === 1) {
+      this.initialDistanceBetweenTwoTouches = 0;
+      this.distanceScaleBetweenTwoTouches = 0;
+    } else if (evt.touches.length >= 2) {
+      const touch1 = this.toVector(evt.touches[0]);
+      const touch2 = this.toVector(evt.touches[1]);
+      const distance = touch1.distance(touch2);
+      this.initialDistanceBetweenTwoTouches = distance;
+      this.distanceScaleBetweenTwoTouches = 0;
+    }
+
+    [...evt.touches].forEach(t => {
+      const pos = this.toVector(t);
+      const lastPos = this.touchesLastPosition[t.identifier] ?? pos;
+      this.touchesVector[t.identifier] = pos.subtract(lastPos);
+      this.touchesLastPosition[t.identifier] = pos;
+    });
+  };
+
+  onTouchMove = (evt: TouchEvent) => {
+    if (evt.touches.length === 1) {
+      this.initialDistanceBetweenTwoTouches = 0;
+      this.distanceScaleBetweenTwoTouches = 0;
+    } else if (evt.touches.length >= 2) {
+      const touch1 = this.toVector(evt.touches[0]);
+      const touch2 = this.toVector(evt.touches[1]);
+      const distance = touch1.distance(touch2);
+      const delta = distance - this.initialDistanceBetweenTwoTouches;
+      this.distanceScaleBetweenTwoTouches = delta / this.initialDistanceBetweenTwoTouches;
+    }
+
+    [...evt.touches].forEach(t => {
+      const pos = this.toVector(t);
+      const lastPos = this.touchesLastPosition[t.identifier] ?? pos;
+      this.touchesVector[t.identifier] = pos.subtract(lastPos);
+      this.touchesLastPosition[t.identifier] = pos;
+    });
+  };
+
+  onTouchEnd = (evt: TouchEvent) => {
+    this.initialDistanceBetweenTwoTouches = 0;
+    this.distanceScaleBetweenTwoTouches = 0;
+
+    [...evt.changedTouches].forEach(t => {
+      delete this.touchesVector[t.identifier];
+      delete this.touchesLastPosition[t.identifier];
+    });
+  };
+}
+
+const FieldCanvasElement = observer((props: {}) => {
+  const { app, appPreferences } = getAppStores();
+
+  const windowSize = useWindowSize((newSize: Vector, oldSize: Vector) => {
+    const ratio = (newSize.y + oldSize.y) / 2 / oldSize.y;
+    app.fieldOffset = app.fieldOffset.multiply(new Vector(ratio, ratio));
+  });
+
+  const uc = new UnitConverter(UnitOfLength.Millimeter, app.gc.uol);
+  const isExclusiveLayout = appPreferences.layoutType === LayoutType.EXCLUSIVE;
+
+  const canvasHeightInPx = windowSize.y * (isExclusiveLayout ? 1 : app.view.showSpeedCanvas ? 0.78 : 0.94);
+  const canvasWidthInPx = isExclusiveLayout ? windowSize.x : canvasHeightInPx;
+  const canvasSizeInUOL = uc.fromAtoB(3683); // 3683 = 145*2.54*10 ~= 3676.528, the size of the field perimeter in Fusion 360
+
+  const [fieldImage] = useImage(fieldImageUrl);
+
+  const offset = app.fieldOffset;
+  const scale = app.fieldScale;
+
+  const fcc = new FieldCanvasConverter(
+    canvasWidthInPx,
+    canvasHeightInPx,
+    canvasSizeInUOL,
+    canvasSizeInUOL,
+    offset,
+    scale
+  );
+
+  const fieldCtrl = React.useState(new FieldController())[0];
+  fieldCtrl.fcc = fcc;
 
   function onTouchStartStage(event: Konva.KonvaEventObject<TouchEvent>) {
     const evt = event.evt;
@@ -216,11 +299,11 @@ const FieldCanvasElement = observer((props: {}) => {
     if (touches.length === 1) {
       console.log("onTouchStartStage: 1 touch", touches.item(0));
 
-      if (areaSelectionStart === undefined) {
+      if (fieldCtrl.areaSelectionStart === undefined) {
         const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
         if (posWithOffsetInPx === undefined) return;
 
-        setOffsetStart(posWithOffsetInPx.add(offset));
+        fieldCtrl.offsetStart = posWithOffsetInPx.add(offset);
       }
     } else {
       // TODO
@@ -243,7 +326,7 @@ const FieldCanvasElement = observer((props: {}) => {
       if (posWithOffsetInPx === undefined) return;
 
       // TODO
-      doAreaSelection(posInPx) || doPanning(posWithOffsetInPx) || doShowRobot(posInPx);
+      fieldCtrl.doAreaSelection(posInPx) || fieldCtrl.doPanning(posWithOffsetInPx) || fieldCtrl.doShowRobot(posInPx);
     } else {
       // TODO
     }
@@ -256,9 +339,9 @@ const FieldCanvasElement = observer((props: {}) => {
 
     if (touches.length === 0) {
       // TODO
-      setAreaSelectionStart(undefined);
-      setAreaSelectionEnd(undefined);
-      setOffsetStart(undefined);
+      fieldCtrl.areaSelectionStart = undefined;
+      fieldCtrl.areaSelectionEnd = undefined;
+      fieldCtrl.offsetStart = undefined;
     }
   }
 
@@ -268,7 +351,7 @@ const FieldCanvasElement = observer((props: {}) => {
     if (
       evt.ctrlKey === false &&
       (evt.deltaX !== 0 || evt.deltaY !== 0) &&
-      offsetStart === undefined &&
+      fieldCtrl.offsetStart === undefined &&
       app.wheelControl("panning")
     ) {
       // UX: Panning if: ctrl key up + wheel/mouse pad + no "Grab & Move" + not changing heading value with scroll wheel in the last 300ms
@@ -325,12 +408,12 @@ const FieldCanvasElement = observer((props: {}) => {
     if ((evt.button === 0 || evt.button === 2) && event.target instanceof Konva.Image) {
       // UX: A flag to indicate that the user is adding a control, this will set to false if mouse is moved
       // UX: onClickFieldImage will check this state, control can only be added inside the field image because of this
-      setIsAddingControl(true);
+      fieldCtrl.isAddingControl = true;
     }
 
     if (
       evt.button === 0 &&
-      offsetStart === undefined &&
+      fieldCtrl.offsetStart === undefined &&
       (event.target instanceof Konva.Stage || event.target instanceof Konva.Image)
     ) {
       // left click
@@ -347,8 +430,8 @@ const FieldCanvasElement = observer((props: {}) => {
 
       const posInPx = fcc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
-      setAreaSelectionStart(posInPx);
-    } else if (evt.button === 1 && areaSelectionStart === undefined) {
+      fieldCtrl.areaSelectionStart = posInPx;
+    } else if (evt.button === 1 && fieldCtrl.areaSelectionStart === undefined) {
       // middle click
       // UX: Start "Grab & Move" if: middle click at any position
       evt.preventDefault(); // UX: Prevent default action (scrolling)
@@ -356,8 +439,8 @@ const FieldCanvasElement = observer((props: {}) => {
       const posInPx = fcc.getUnboundedPxFromEvent(event, false);
       if (posInPx === undefined) return;
 
-      setOffsetStart(posInPx.add(offset));
-    } else if (evt.button === 1 && areaSelectionStart !== undefined) {
+      fieldCtrl.offsetStart = posInPx.add(offset);
+    } else if (evt.button === 1 && fieldCtrl.areaSelectionStart !== undefined) {
       // middle click
       // UX: Do not start "Grab & Move" if it is in area selection, but still prevent default
       evt.preventDefault(); // UX: Prevent default action (scrolling)
@@ -378,14 +461,14 @@ const FieldCanvasElement = observer((props: {}) => {
     // UX: It is not actually dragged "stage", reset the position to (0, 0)
     if (event.target instanceof Konva.Stage) event.target.setPosition(new Vector(0, 0));
 
-    setIsAddingControl(false);
+    fieldCtrl.isAddingControl = false;
 
     const posInPx = fcc.getUnboundedPxFromEvent(event);
     if (posInPx === undefined) return;
     const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
     if (posWithOffsetInPx === undefined) return;
 
-    doAreaSelection(posInPx) || doPanning(posWithOffsetInPx) || doShowRobot(posInPx);
+    fieldCtrl.doAreaSelection(posInPx) || fieldCtrl.doPanning(posWithOffsetInPx) || fieldCtrl.doShowRobot(posInPx);
   }
 
   function onMouseUpStage(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -394,11 +477,11 @@ const FieldCanvasElement = observer((props: {}) => {
 
     if (event.evt.button === 0) {
       // left click
-      setAreaSelectionStart(undefined);
-      setAreaSelectionEnd(undefined);
+      fieldCtrl.areaSelectionStart = undefined;
+      fieldCtrl.areaSelectionEnd = undefined;
     } else if (event.evt.button === 1) {
       // middle click
-      setOffsetStart(undefined);
+      fieldCtrl.offsetStart = undefined;
     }
 
     app.magnet = [];
@@ -420,9 +503,9 @@ const FieldCanvasElement = observer((props: {}) => {
     const { x: clientX, y: clientY } = getClientXY(event.evt);
 
     if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
-      setAreaSelectionStart(undefined);
-      setAreaSelectionEnd(undefined);
-      setOffsetStart(undefined);
+      fieldCtrl.areaSelectionStart = undefined;
+      fieldCtrl.areaSelectionEnd = undefined;
+      fieldCtrl.offsetStart = undefined;
     }
   }
 
@@ -430,9 +513,9 @@ const FieldCanvasElement = observer((props: {}) => {
     const evt = event.evt;
 
     // UX: Add control point if: left click or right click without moving the mouse
-    if (!(isAddingControl && (evt.button === 0 || evt.button === 2))) return;
+    if (!(fieldCtrl.isAddingControl && (evt.button === 0 || evt.button === 2))) return;
 
-    setIsAddingControl(false);
+    fieldCtrl.isAddingControl = false;
 
     const posInPx = fcc.getUnboundedPxFromEvent(event);
     if (posInPx === undefined) return;
@@ -469,7 +552,7 @@ const FieldCanvasElement = observer((props: {}) => {
     app.addExpanded(targetPath);
   }
 
-  const visiblePaths = paths.filter(path => path.visible);
+  const visiblePaths = app.paths.filter(path => path.visible);
 
   return (
     <Stage
@@ -479,7 +562,7 @@ const FieldCanvasElement = observer((props: {}) => {
       scale={new Vector(scale, scale)}
       offset={offset.subtract(fcc.viewOffset)}
       draggable
-      style={{ cursor: offsetStart ? "grab" : "" }}
+      style={{ cursor: fieldCtrl.offsetStart ? "grab" : "" }}
       onTouchStart={action(onTouchStartStage)}
       onTouchMove={action(onTouchMoveStage)}
       onTouchEnd={action(onTouchEndStage)}
@@ -509,13 +592,13 @@ const FieldCanvasElement = observer((props: {}) => {
           <PathSegments key={path.uid} path={path} fcc={fcc} />
         ))}
         {visiblePaths.map(path => (
-          <PathControls key={path.uid} path={path} fcc={fcc} isGrabAndMove={offsetStart !== undefined} />
+          <PathControls key={path.uid} path={path} fcc={fcc} isGrabAndMove={fieldCtrl.offsetStart !== undefined} />
         ))}
         {app.gc.showRobot && app.robot.position.visible && (
           <RobotElement fcc={fcc} pos={app.robot.position} width={app.gc.robotWidth} height={app.gc.robotHeight} />
         )}
         <Group name="selected-controls" />
-        <AreaElement from={areaSelectionStart} to={areaSelectionEnd} />
+        <AreaElement from={fieldCtrl.areaSelectionStart} to={fieldCtrl.areaSelectionEnd} />
       </Layer>
     </Stage>
   );
