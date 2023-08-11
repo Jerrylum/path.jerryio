@@ -11,7 +11,7 @@ import fieldImageUrl from "../static/field2023.png";
 import { ControlElement } from "./ControlElement";
 import { AreaElement } from "./AreaElement";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
-import { FieldCanvasConverter } from "../core/Canvas";
+import { FieldCanvasConverter, getClientXY } from "../core/Canvas";
 import { clamp } from "../core/Util";
 import { AddPath, AddSegment } from "../core/Command";
 import { getAppStores } from "../core/MainApp";
@@ -132,6 +132,136 @@ const FieldCanvasElement = observer((props: {}) => {
     scale
   );
 
+  function doAreaSelection(posInPx: Vector): boolean {
+    if (areaSelectionStart === undefined) return false;
+    // UX: Select control point if mouse down on field image
+
+    // UX: Use flushSync to prevent lagging
+    // See: https://github.com/reactwg/react-18/discussions/21
+    ReactDOM.flushSync(() => setAreaSelectionEnd(posInPx));
+    app.updateAreaSelection(fcc.toUOL(areaSelectionStart), fcc.toUOL(posInPx));
+    return true;
+  }
+
+  function doPanning(posInPx: Vector): boolean {
+    // UX: Move field if: middle click
+    if (offsetStart === undefined) return false;
+
+    const newOffset = offsetStart.subtract(posInPx);
+    newOffset.x = clamp(
+      newOffset.x,
+      -canvasWidthInPx * 0.9 + fcc.viewOffset.x,
+      canvasWidthInPx * 0.9 - fcc.viewOffset.x
+    );
+    newOffset.y = clamp(newOffset.y, -canvasHeightInPx * 0.9, canvasHeightInPx * 0.9);
+    app.fieldOffset = newOffset;
+    // setOffsetStart(posInPx.add(newOffset));
+    return true;
+  }
+
+  function doShowRobot(posInPx: Vector): boolean {
+    // UX: Show robot if: alt key is down and no other action is performed
+    if (app.gc.showRobot === false) return false;
+
+    if (posInPx === undefined) return false;
+    const posInUOL = fcc.toUOL(posInPx);
+
+    const interested = app.interestedPath();
+    if (interested === undefined) return false;
+
+    const magnetDistance = app.gc.controlMagnetDistance;
+
+    const points = interested.cachedResult.points;
+
+    let closestPoint = undefined;
+    let closestDistance = Number.MAX_VALUE;
+    for (let i = 0; i < points.length; i++) {
+      const point = points[i];
+      const distance = point.distance(posInUOL);
+      if (distance < closestDistance) {
+        closestPoint = point;
+        closestDistance = distance;
+      }
+    }
+
+    if (closestPoint !== undefined && closestDistance < magnetDistance * 4) {
+      app.robot.position.setXY(closestPoint);
+
+      const t = closestPoint.sampleT;
+      const segment = closestPoint.sampleRef;
+      const c0 = segment.first;
+      const c3 = segment.last;
+
+      if (app.gc.robotIsHolonomic) {
+        const c3Heading = toDerivativeHeading(c0.heading, c3.heading);
+        app.robot.position.heading = c0.heading + c3Heading * t;
+      } else {
+        const heading = toHeading(firstDerivative(closestPoint.sampleRef, closestPoint.sampleT));
+        app.robot.position.heading = heading;
+      }
+
+      app.robot.position.visible = true;
+    }
+
+    return true;
+  }
+
+  function onTouchStartStage(event: Konva.KonvaEventObject<TouchEvent>) {
+    const evt = event.evt;
+
+    evt.preventDefault();
+
+    const touches = evt.touches;
+
+    if (touches.length === 1) {
+      console.log("onTouchStartStage: 1 touch", touches.item(0));
+
+      if (areaSelectionStart === undefined) {
+        const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
+        if (posWithOffsetInPx === undefined) return;
+
+        setOffsetStart(posWithOffsetInPx.add(offset));
+      }
+    } else {
+      // TODO
+    }
+  }
+
+  function onTouchMoveStage(event: Konva.KonvaEventObject<TouchEvent>) {
+    const evt = event.evt;
+
+    evt.preventDefault();
+
+    const touches = evt.touches;
+
+    if (touches.length === 1) {
+      console.log("onTouchMoveStage: 1 touch", event.evt.type);
+
+      const posInPx = fcc.getUnboundedPxFromEvent(event);
+      if (posInPx === undefined) return;
+      const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
+      if (posWithOffsetInPx === undefined) return;
+
+      // TODO
+      doAreaSelection(posInPx) || doPanning(posWithOffsetInPx) || doShowRobot(posInPx);
+    } else {
+      // TODO
+    }
+  }
+
+  function onTouchEndStage(event: Konva.KonvaEventObject<TouchEvent>) {
+    const evt = event.evt;
+
+    const touches = evt.touches;
+
+    if (touches.length === 0) {
+      // TODO
+      setAreaSelectionStart(undefined);
+      setAreaSelectionEnd(undefined);
+      setOffsetStart(undefined);
+    }
+  }
+
   function onWheelStage(event: Konva.KonvaEventObject<WheelEvent>) {
     const evt = event.evt;
 
@@ -234,7 +364,7 @@ const FieldCanvasElement = observer((props: {}) => {
     }
   }
 
-  function onMouseMoveOrDragStage(event: Konva.KonvaEventObject<DragEvent | MouseEvent>) {
+  function onMouseMoveOrDragStage(event: Konva.KonvaEventObject<DragEvent | MouseEvent | TouchEvent>) {
     /*
     UX:
     Both mouse move and drag events will trigger this function. it allows users to perform area selection and 
@@ -250,71 +380,12 @@ const FieldCanvasElement = observer((props: {}) => {
 
     setIsAddingControl(false);
 
-    if (areaSelectionStart !== undefined) {
-      // UX: Select control point if mouse down on field image
-      const posInPx = fcc.getUnboundedPxFromEvent(event);
-      if (posInPx === undefined) return;
+    const posInPx = fcc.getUnboundedPxFromEvent(event);
+    if (posInPx === undefined) return;
+    const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
+    if (posWithOffsetInPx === undefined) return;
 
-      // UX: Use flushSync to prevent lagging
-      // See: https://github.com/reactwg/react-18/discussions/21
-      ReactDOM.flushSync(() => setAreaSelectionEnd(posInPx));
-      app.updateAreaSelection(fcc.toUOL(areaSelectionStart), fcc.toUOL(posInPx));
-    } else if (offsetStart !== undefined) {
-      // UX: Move field if: middle click
-      const posInPx = fcc.getUnboundedPxFromEvent(event, false);
-      if (posInPx === undefined) return;
-
-      const newOffset = offsetStart.subtract(posInPx);
-      newOffset.x = clamp(
-        newOffset.x,
-        -canvasWidthInPx * 0.9 + fcc.viewOffset.x,
-        canvasWidthInPx * 0.9 - fcc.viewOffset.x
-      );
-      newOffset.y = clamp(newOffset.y, -canvasHeightInPx * 0.9, canvasHeightInPx * 0.9);
-      app.fieldOffset = newOffset;
-    } else if (app.gc.showRobot) {
-      // UX: Show robot if: alt key is down and no other action is performed
-      const posInPx = fcc.getUnboundedPxFromEvent(event);
-      if (posInPx === undefined) return;
-      const posInUOL = fcc.toUOL(posInPx);
-
-      const interested = app.interestedPath();
-      if (interested === undefined) return;
-
-      const magnetDistance = app.gc.controlMagnetDistance;
-
-      const points = interested.cachedResult.points;
-
-      let closestPoint = undefined;
-      let closestDistance = Number.MAX_VALUE;
-      for (let i = 0; i < points.length; i++) {
-        const point = points[i];
-        const distance = point.distance(posInUOL);
-        if (distance < closestDistance) {
-          closestPoint = point;
-          closestDistance = distance;
-        }
-      }
-
-      if (closestPoint !== undefined && closestDistance < magnetDistance * 4) {
-        app.robot.position.setXY(closestPoint);
-
-        const t = closestPoint.sampleT;
-        const segment = closestPoint.sampleRef;
-        const c0 = segment.first;
-        const c3 = segment.last;
-
-        if (app.gc.robotIsHolonomic) {
-          const c3Heading = toDerivativeHeading(c0.heading, c3.heading);
-          app.robot.position.heading = c0.heading + c3Heading * t;
-        } else {
-          const heading = toHeading(firstDerivative(closestPoint.sampleRef, closestPoint.sampleT));
-          app.robot.position.heading = heading;
-        }
-
-        app.robot.position.visible = true;
-      }
-    }
+    doAreaSelection(posInPx) || doPanning(posWithOffsetInPx) || doShowRobot(posInPx);
   }
 
   function onMouseUpStage(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -333,7 +404,7 @@ const FieldCanvasElement = observer((props: {}) => {
     app.magnet = [];
   }
 
-  function onDragEndStage(event: Konva.KonvaEventObject<DragEvent>) {
+  function onDragEndStage(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) {
     /*
     UX:
     If the mouse is down(any buttons), the drag end event is triggered.
@@ -409,6 +480,9 @@ const FieldCanvasElement = observer((props: {}) => {
       offset={offset.subtract(fcc.viewOffset)}
       draggable
       style={{ cursor: offsetStart ? "grab" : "" }}
+      onTouchStart={action(onTouchStartStage)}
+      onTouchMove={action(onTouchMoveStage)}
+      onTouchEnd={action(onTouchEndStage)}
       onContextMenu={e => e.evt.preventDefault()}
       onWheel={action(onWheelStage)}
       onMouseDown={action(onMouseDownStage)}
@@ -448,3 +522,4 @@ const FieldCanvasElement = observer((props: {}) => {
 });
 
 export { FieldCanvasElement };
+
