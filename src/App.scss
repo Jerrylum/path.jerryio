@@ -16,11 +16,6 @@
 .App[data-layout="classic"] {
   padding: 1svh;
 
-  > * {
-    box-sizing: border-box;
-    margin: 1svh;
-  }
-
   @import "style/ClassicLayout.scss";
 }
 
