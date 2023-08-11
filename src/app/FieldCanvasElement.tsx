@@ -506,6 +506,7 @@ const FieldCanvasElement = observer((props: {}) => {
       fieldCtrl.areaSelectionStart = undefined;
       fieldCtrl.areaSelectionEnd = undefined;
       fieldCtrl.offsetStart = undefined;
+      app.magnet = [];
     }
   }
 
