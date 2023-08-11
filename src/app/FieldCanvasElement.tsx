@@ -137,7 +137,23 @@ class FieldController {
     );
     newOffset.y = clamp(newOffset.y, -this.fcc.pixelHeight * 0.9, this.fcc.pixelHeight * 0.9);
     app.fieldOffset = newOffset;
-    // setOffsetStart(posInPx.add(newOffset));
+    return true;
+  }
+
+  doPanningWithVector(vec: Vector): boolean {
+    const { app } = getAppStores();
+
+    // UX: Move field if offsetStart is not undefined, the value is not used in the calculation but still need to check
+    if (this.offsetStart === undefined) return false;
+
+    const newOffset = app.fieldOffset.subtract(vec);
+    newOffset.x = clamp(
+      newOffset.x,
+      -this.fcc.pixelWidth * 0.9 + this.fcc.viewOffset.x,
+      this.fcc.pixelWidth * 0.9 - this.fcc.viewOffset.x
+    );
+    newOffset.y = clamp(newOffset.y, -this.fcc.pixelHeight * 0.9, this.fcc.pixelHeight * 0.9);
+    app.fieldOffset = newOffset;
     return true;
   }
 
@@ -198,7 +214,7 @@ class TouchInteractiveHandler {
   initialDistanceBetweenTwoTouches: number = 0;
   distanceScaleBetweenTwoTouches: number = 0;
 
-  constructor() {
+  constructor(private fieldCtrl: FieldController) {
     makeAutoObservable(this);
   }
 
@@ -224,6 +240,11 @@ class TouchInteractiveHandler {
       this.touchesVector[t.identifier] = pos.subtract(lastPos);
       this.touchesLastPosition[t.identifier] = pos;
     });
+
+    const keys = this.keys;
+    if (keys.length > 0) {
+      this.fieldCtrl.offsetStart = this.pos(keys[0]);
+    }
   };
 
   onTouchMove = (evt: TouchEvent) => {
@@ -244,6 +265,11 @@ class TouchInteractiveHandler {
       this.touchesVector[t.identifier] = pos.subtract(lastPos);
       this.touchesLastPosition[t.identifier] = pos;
     });
+
+    const keys = this.keys;
+    if (keys.length > 0) {
+      this.fieldCtrl.doPanningWithVector(this.touchesVector[this.keys[0]]);
+    }
   };
 
   onTouchEnd = (evt: TouchEvent) => {
@@ -254,7 +280,24 @@ class TouchInteractiveHandler {
       delete this.touchesVector[t.identifier];
       delete this.touchesLastPosition[t.identifier];
     });
+
+    if (evt.touches.length === 0) {
+      // TODO
+      this.touchesVector = {};
+      this.touchesLastPosition = {};
+      this.fieldCtrl.areaSelectionStart = undefined;
+      this.fieldCtrl.areaSelectionEnd = undefined;
+      this.fieldCtrl.offsetStart = undefined;
+    }
   };
+
+  private get keys() {
+    return Object.keys(this.touchesVector).map(k => parseInt(k));
+  }
+
+  private pos(key: number) {
+    return this.touchesLastPosition[key];
+  }
 }
 
 const FieldCanvasElement = observer((props: {}) => {
@@ -288,6 +331,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
   const fieldCtrl = React.useState(new FieldController())[0];
   fieldCtrl.fcc = fcc;
+  const tiHandler = React.useState(new TouchInteractiveHandler(fieldCtrl))[0];
 
   function onTouchStartStage(event: Konva.KonvaEventObject<TouchEvent>) {
     const evt = event.evt;
@@ -296,18 +340,20 @@ const FieldCanvasElement = observer((props: {}) => {
 
     const touches = evt.touches;
 
-    if (touches.length === 1) {
-      console.log("onTouchStartStage: 1 touch", touches.item(0));
+    // if (touches.length === 1) {
+    //   console.log("onTouchStartStage: 1 touch", touches.item(0));
 
-      if (fieldCtrl.areaSelectionStart === undefined) {
-        const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
-        if (posWithOffsetInPx === undefined) return;
+    //   if (fieldCtrl.areaSelectionStart === undefined) {
+    //     const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
+    //     if (posWithOffsetInPx === undefined) return;
 
-        fieldCtrl.offsetStart = posWithOffsetInPx.add(offset);
-      }
-    } else {
-      // TODO
-    }
+    //     fieldCtrl.offsetStart = posWithOffsetInPx.add(offset);
+    //   }
+    // } else {
+    //   // TODO
+    // }
+
+    tiHandler.onTouchStart(evt);
   }
 
   function onTouchMoveStage(event: Konva.KonvaEventObject<TouchEvent>) {
@@ -317,32 +363,36 @@ const FieldCanvasElement = observer((props: {}) => {
 
     const touches = evt.touches;
 
-    if (touches.length === 1) {
-      console.log("onTouchMoveStage: 1 touch", event.evt.type);
+    // if (touches.length === 1) {
+    //   console.log("onTouchMoveStage: 1 touch", event.evt.type);
 
-      const posInPx = fcc.getUnboundedPxFromEvent(event);
-      if (posInPx === undefined) return;
-      const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
-      if (posWithOffsetInPx === undefined) return;
+    //   const posInPx = fcc.getUnboundedPxFromEvent(event);
+    //   if (posInPx === undefined) return;
+    //   const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
+    //   if (posWithOffsetInPx === undefined) return;
 
-      // TODO
-      fieldCtrl.doAreaSelection(posInPx) || fieldCtrl.doPanning(posWithOffsetInPx) || fieldCtrl.doShowRobot(posInPx);
-    } else {
-      // TODO
-    }
+    //   // TODO
+    //   fieldCtrl.doAreaSelection(posInPx) || fieldCtrl.doPanning(posWithOffsetInPx) || fieldCtrl.doShowRobot(posInPx);
+    // } else {
+    //   // TODO
+    // }
+
+    tiHandler.onTouchMove(evt);
   }
 
   function onTouchEndStage(event: Konva.KonvaEventObject<TouchEvent>) {
     const evt = event.evt;
 
-    const touches = evt.touches;
+    // const touches = evt.touches;
 
-    if (touches.length === 0) {
-      // TODO
-      fieldCtrl.areaSelectionStart = undefined;
-      fieldCtrl.areaSelectionEnd = undefined;
-      fieldCtrl.offsetStart = undefined;
-    }
+    // if (touches.length === 0) {
+    //   // TODO
+    //   fieldCtrl.areaSelectionStart = undefined;
+    //   fieldCtrl.areaSelectionEnd = undefined;
+    //   fieldCtrl.offsetStart = undefined;
+    // }
+
+    tiHandler.onTouchEnd(evt);
   }
 
   function onWheelStage(event: Konva.KonvaEventObject<WheelEvent>) {
@@ -461,14 +511,21 @@ const FieldCanvasElement = observer((props: {}) => {
     // UX: It is not actually dragged "stage", reset the position to (0, 0)
     if (event.target instanceof Konva.Stage) event.target.setPosition(new Vector(0, 0));
 
-    fieldCtrl.isAddingControl = false;
+    const evt = event.evt;
 
-    const posInPx = fcc.getUnboundedPxFromEvent(event);
-    if (posInPx === undefined) return;
-    const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
-    if (posWithOffsetInPx === undefined) return;
+    if (evt instanceof TouchEvent) {
+      tiHandler.onTouchMove(evt);
+    } else {
+      fieldCtrl.isAddingControl = false;
+  
+      const posInPx = fcc.getUnboundedPxFromEvent(event);
+      if (posInPx === undefined) return;
+      const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
+      if (posWithOffsetInPx === undefined) return;
+  
+      fieldCtrl.doAreaSelection(posInPx) || fieldCtrl.doPanning(posWithOffsetInPx) || fieldCtrl.doShowRobot(posInPx);
+    }
 
-    fieldCtrl.doAreaSelection(posInPx) || fieldCtrl.doPanning(posWithOffsetInPx) || fieldCtrl.doShowRobot(posInPx);
   }
 
   function onMouseUpStage(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -494,6 +551,8 @@ const FieldCanvasElement = observer((props: {}) => {
     After that, without dragging, we lose the information of the mouse position outside the canvas.
     We reset everything if the mouse is down outside the canvas.
     */
+
+    // UX: No need to call touchend event handler here
 
     const rect = event.target.getStage()?.container().getBoundingClientRect();
     if (rect === undefined) return;
