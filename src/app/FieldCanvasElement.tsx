@@ -205,6 +205,38 @@ class FieldController {
 
     return true;
   }
+
+  doScaleField(variable: number, posInPx: Vector): boolean {
+    const { app } = getAppStores();
+
+    const negative1 = new Vector(-1, -1);
+    const oldScale = app.fieldScale;
+    const oldOffset = app.fieldOffset;
+
+    const newScale = clamp(variable, 1, 3);
+    const scaleVector = new Vector(oldScale, oldScale);
+    const newScaleVector = new Vector(newScale, newScale);
+
+    // offset is offset in Konva coordinate system (KC)
+    // offsetInCC is offset in HTML Canvas coordinate system (CC)
+    const offsetInCC = oldOffset.multiply(scaleVector).multiply(negative1);
+
+    const canvasHalfSizeWithScale = (this.fcc.pixelHeight * oldScale) / 2;
+    const newCanvasHalfSizeWithScale = (this.fcc.pixelHeight * newScale) / 2;
+
+    // UX: Maintain zoom center at mouse pointer
+    const fieldCenter = offsetInCC.add(new Vector(canvasHalfSizeWithScale, canvasHalfSizeWithScale));
+    const newFieldCenter = offsetInCC.add(new Vector(newCanvasHalfSizeWithScale, newCanvasHalfSizeWithScale));
+    const relativePos = posInPx.subtract(fieldCenter).divide(scaleVector);
+    const newPos = newFieldCenter.add(relativePos.multiply(newScaleVector));
+    const newOffsetInCC = posInPx.subtract(newPos).add(offsetInCC);
+    const newOffsetInKC = newOffsetInCC.multiply(negative1).divide(newScaleVector);
+
+    app.fieldScale = newScale;
+    app.fieldOffset = newOffsetInKC;
+
+    return true;
+  }
 }
 
 class TouchInteractiveHandler {
@@ -212,7 +244,7 @@ class TouchInteractiveHandler {
   touchesVector: { [identifier: number]: Vector } = {};
 
   initialDistanceBetweenTwoTouches: number = 0;
-  distanceScaleBetweenTwoTouches: number = 0;
+  distanceDeltaBetweenTwoTouches: number = 0;
 
   constructor(private fieldCtrl: FieldController) {
     makeAutoObservable(this);
@@ -225,13 +257,13 @@ class TouchInteractiveHandler {
   onTouchStart = (evt: TouchEvent) => {
     if (evt.touches.length === 1) {
       this.initialDistanceBetweenTwoTouches = 0;
-      this.distanceScaleBetweenTwoTouches = 0;
+      this.distanceDeltaBetweenTwoTouches = 0;
     } else if (evt.touches.length >= 2) {
       const touch1 = this.toVector(evt.touches[0]);
       const touch2 = this.toVector(evt.touches[1]);
       const distance = touch1.distance(touch2);
-      this.initialDistanceBetweenTwoTouches = distance;
-      this.distanceScaleBetweenTwoTouches = 0;
+      this.initialDistanceBetweenTwoTouches = Math.max(distance, 0.1);
+      this.distanceDeltaBetweenTwoTouches = 0;
     }
 
     [...evt.touches].forEach(t => {
@@ -248,15 +280,17 @@ class TouchInteractiveHandler {
   };
 
   onTouchMove = (evt: TouchEvent) => {
+    const { app } = getAppStores();
+
     if (evt.touches.length === 1) {
       this.initialDistanceBetweenTwoTouches = 0;
-      this.distanceScaleBetweenTwoTouches = 0;
+      this.distanceDeltaBetweenTwoTouches = 0;
     } else if (evt.touches.length >= 2) {
       const touch1 = this.toVector(evt.touches[0]);
       const touch2 = this.toVector(evt.touches[1]);
       const distance = touch1.distance(touch2);
       const delta = distance - this.initialDistanceBetweenTwoTouches;
-      this.distanceScaleBetweenTwoTouches = delta / this.initialDistanceBetweenTwoTouches;
+      this.distanceDeltaBetweenTwoTouches = delta;
     }
 
     [...evt.touches].forEach(t => {
@@ -269,12 +303,20 @@ class TouchInteractiveHandler {
     const keys = this.keys;
     if (keys.length > 0) {
       this.fieldCtrl.doPanningWithVector(this.touchesVector[this.keys[0]]);
+      // TODO scale down vector when scale is large
+    }
+    if (keys.length > 1) {
+      const t1 = this.pos(keys[0]);
+      const t2 = this.pos(keys[1]);
+      const middle = t1.add(t2).divide(new Vector(2, 2));
+      this.fieldCtrl.doScaleField(app.fieldScale + this.distanceDeltaBetweenTwoTouches / 400, middle);
+      // TODO: No magic number
     }
   };
 
   onTouchEnd = (evt: TouchEvent) => {
     this.initialDistanceBetweenTwoTouches = 0;
-    this.distanceScaleBetweenTwoTouches = 0;
+    this.distanceDeltaBetweenTwoTouches = 0;
 
     [...evt.changedTouches].forEach(t => {
       delete this.touchesVector[t.identifier];
@@ -421,34 +463,12 @@ const FieldCanvasElement = observer((props: {}) => {
 
       evt.preventDefault();
 
-      const wheel = evt.deltaY;
+      // const wheel = evt.deltaY;
 
       const pos = fcc.getUnboundedPxFromEvent(event, false, false);
       if (pos === undefined) return;
 
-      const negative1 = new Vector(-1, -1);
-
-      const newScale = clamp(scale * (1 - wheel / 1000), 1, 3);
-      const scaleVector = new Vector(scale, scale);
-      const newScaleVector = new Vector(newScale, newScale);
-
-      // offset is offset in Konva coordinate system (KC)
-      // offsetInCC is offset in HTML Canvas coordinate system (CC)
-      const offsetInCC = offset.multiply(scaleVector).multiply(negative1);
-
-      const canvasHalfSizeWithScale = (fcc.pixelHeight * scale) / 2;
-      const newCanvasHalfSizeWithScale = (fcc.pixelHeight * newScale) / 2;
-
-      // UX: Maintain zoom center at mouse pointer
-      const fieldCenter = offsetInCC.add(new Vector(canvasHalfSizeWithScale, canvasHalfSizeWithScale));
-      const newFieldCenter = offsetInCC.add(new Vector(newCanvasHalfSizeWithScale, newCanvasHalfSizeWithScale));
-      const relativePos = pos.subtract(fieldCenter).divide(scaleVector);
-      const newPos = newFieldCenter.add(relativePos.multiply(newScaleVector));
-      const newOffsetInCC = pos.subtract(newPos).add(offsetInCC);
-      const newOffsetInKC = newOffsetInCC.multiply(negative1).divide(newScaleVector);
-
-      app.fieldScale = newScale;
-      app.fieldOffset = newOffsetInKC;
+      fieldCtrl.doScaleField(scale * (1 - evt.deltaY / 1000), pos);
     }
   }
 
@@ -517,15 +537,14 @@ const FieldCanvasElement = observer((props: {}) => {
       tiHandler.onTouchMove(evt);
     } else {
       fieldCtrl.isAddingControl = false;
-  
+
       const posInPx = fcc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
       const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
       if (posWithOffsetInPx === undefined) return;
-  
+
       fieldCtrl.doAreaSelection(posInPx) || fieldCtrl.doPanning(posWithOffsetInPx) || fieldCtrl.doShowRobot(posInPx);
     }
-
   }
 
   function onMouseUpStage(event: Konva.KonvaEventObject<MouseEvent>) {
