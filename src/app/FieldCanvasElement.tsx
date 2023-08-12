@@ -236,12 +236,20 @@ class FieldController {
   }
 }
 
+enum TouchAction {
+  None,
+  PanningAndScaling,
+  Selection
+}
+
 class TouchInteractiveHandler {
+  touchAction: TouchAction = TouchAction.None;
   touchesLastPosition: { [identifier: number]: Vector } = {};
   touchesVector: { [identifier: number]: Vector } = {};
 
+  startSelectionTimer: number = Infinity;
   initialFieldScale: number = 0;
-  initialScalePosition: Vector | undefined = undefined;
+  initialPosition: Vector = new Vector(0, 0);
   initialDistanceBetweenTwoTouches: number = 0;
 
   constructor(private fieldCtrl: FieldController) {
@@ -255,17 +263,6 @@ class TouchInteractiveHandler {
   onTouchStart = (evt: TouchEvent) => {
     const { app } = getAppStores();
 
-    if (evt.touches.length === 1) {
-      this.initialDistanceBetweenTwoTouches = 0;
-    } else if (evt.touches.length >= 2) {
-      const touch1 = this.toVector(evt.touches[0]);
-      const touch2 = this.toVector(evt.touches[1]);
-      const distance = touch1.distance(touch2);
-      this.initialFieldScale = app.fieldScale;
-      this.initialScalePosition = touch1.add(touch2).divide(2);
-      this.initialDistanceBetweenTwoTouches = Math.max(distance, 0.1);
-    }
-
     [...evt.touches].forEach(t => {
       const pos = this.toVector(t);
       const lastPos = this.touchesLastPosition[t.identifier] ?? pos;
@@ -274,6 +271,19 @@ class TouchInteractiveHandler {
     });
 
     const keys = this.keys;
+
+    if (evt.touches.length === 1) {
+      this.startSelectionTimer = Date.now() + 1000; // 1000ms is the magic number
+      this.initialPosition = this.pos(keys[0]);
+    } else if (evt.touches.length >= 2) {
+      const touch1 = this.pos(keys[0]);
+      const touch2 = this.pos(keys[1]);
+      const distance = touch1.distance(touch2);
+      this.initialFieldScale = app.fieldScale;
+      this.initialPosition = touch1.add(touch2).divide(2);
+      this.initialDistanceBetweenTwoTouches = Math.max(distance, 0.1);
+    }
+
     if (keys.length > 0) {
       this.fieldCtrl.offsetStart = this.pos(keys[0]);
     }
@@ -290,19 +300,34 @@ class TouchInteractiveHandler {
     });
 
     const keys = this.keys;
-    if (keys.length === 1) {
-      this.fieldCtrl.doPanningWithVector(
-        this.touchesVector[this.keys[0]].divide(app.fieldScale)
-      );
-    } else if (keys.length > 1) {
-      const t1 = this.pos(keys[0]);
-      const t2 = this.pos(keys[1]);
-      const scale = this.initialFieldScale * (t1.distance(t2) / this.initialDistanceBetweenTwoTouches);
-      const middlePos = t1.add(t2).divide(2);
-      this.fieldCtrl.doScaleField(scale, middlePos);
 
-      const vecPos = this.vec(keys[0]).add(this.vec(keys[1])).divide(2);
-      this.fieldCtrl.doPanningWithVector(vecPos.divide(app.fieldScale));
+    if (this.touchAction === TouchAction.None) {
+      if (keys.length === 1) {
+        const t = this.pos(keys[0]);
+        if (t.distance(this.initialPosition) > 48) { // Half inch
+          this.touchAction = TouchAction.PanningAndScaling;
+        } else if (Date.now() > this.startSelectionTimer) {
+          this.touchAction = TouchAction.Selection;
+          // TODO need timer
+        }
+      } else {
+        this.touchAction = TouchAction.PanningAndScaling;
+      }
+    } else if (this.touchAction === TouchAction.PanningAndScaling) {
+      if (keys.length === 1) {
+        this.fieldCtrl.doPanningWithVector(this.touchesVector[this.keys[0]].divide(app.fieldScale));
+      } else if (keys.length >= 2) {
+        const t1 = this.pos(keys[0]);
+        const t2 = this.pos(keys[1]);
+        const scale = this.initialFieldScale * (t1.distance(t2) / this.initialDistanceBetweenTwoTouches);
+        const middlePos = t1.add(t2).divide(2);
+        this.fieldCtrl.doScaleField(scale, middlePos);
+  
+        const vecPos = this.vec(keys[0]).add(this.vec(keys[1])).divide(2);
+        this.fieldCtrl.doPanningWithVector(vecPos.divide(app.fieldScale));
+      }
+    } else if (this.touchAction === TouchAction.Selection) {
+
     }
   };
 
@@ -314,6 +339,7 @@ class TouchInteractiveHandler {
 
     if (evt.touches.length === 0) {
       // TODO
+      this.touchAction = TouchAction.None;
       this.touchesVector = {};
       this.touchesLastPosition = {};
       this.fieldCtrl.areaSelectionStart = undefined;
