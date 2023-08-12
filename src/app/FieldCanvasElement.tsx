@@ -243,8 +243,8 @@ class TouchInteractiveHandler {
   touchesLastPosition: { [identifier: number]: Vector } = {};
   touchesVector: { [identifier: number]: Vector } = {};
 
+  initialFieldScale: number = 0;
   initialDistanceBetweenTwoTouches: number = 0;
-  distanceDeltaBetweenTwoTouches: number = 0;
 
   constructor(private fieldCtrl: FieldController) {
     makeAutoObservable(this);
@@ -255,15 +255,16 @@ class TouchInteractiveHandler {
   }
 
   onTouchStart = (evt: TouchEvent) => {
+    const { app } = getAppStores();
+
     if (evt.touches.length === 1) {
       this.initialDistanceBetweenTwoTouches = 0;
-      this.distanceDeltaBetweenTwoTouches = 0;
     } else if (evt.touches.length >= 2) {
       const touch1 = this.toVector(evt.touches[0]);
       const touch2 = this.toVector(evt.touches[1]);
       const distance = touch1.distance(touch2);
+      this.initialFieldScale = app.fieldScale;
       this.initialDistanceBetweenTwoTouches = Math.max(distance, 0.1);
-      this.distanceDeltaBetweenTwoTouches = 0;
     }
 
     [...evt.touches].forEach(t => {
@@ -282,17 +283,6 @@ class TouchInteractiveHandler {
   onTouchMove = (evt: TouchEvent) => {
     const { app } = getAppStores();
 
-    if (evt.touches.length === 1) {
-      this.initialDistanceBetweenTwoTouches = 0;
-      this.distanceDeltaBetweenTwoTouches = 0;
-    } else if (evt.touches.length >= 2) {
-      const touch1 = this.toVector(evt.touches[0]);
-      const touch2 = this.toVector(evt.touches[1]);
-      const distance = touch1.distance(touch2);
-      const delta = distance - this.initialDistanceBetweenTwoTouches;
-      this.distanceDeltaBetweenTwoTouches = delta;
-    }
-
     [...evt.touches].forEach(t => {
       const pos = this.toVector(t);
       const lastPos = this.touchesLastPosition[t.identifier] ?? pos;
@@ -302,22 +292,26 @@ class TouchInteractiveHandler {
 
     const keys = this.keys;
     if (keys.length > 0) {
-      this.fieldCtrl.doPanningWithVector(this.touchesVector[this.keys[0]]);
+      this.fieldCtrl.doPanningWithVector(
+        this.touchesVector[this.keys[0]].divide(new Vector(app.fieldScale, app.fieldScale))
+      );
       // TODO scale down vector when scale is large
     }
     if (keys.length > 1) {
       const t1 = this.pos(keys[0]);
       const t2 = this.pos(keys[1]);
       const middle = t1.add(t2).divide(new Vector(2, 2));
-      this.fieldCtrl.doScaleField(app.fieldScale + this.distanceDeltaBetweenTwoTouches / 400, middle);
-      // TODO: No magic number
+
+      const scale = this.initialFieldScale * (t1.distance(t2) / this.initialDistanceBetweenTwoTouches);
+
+      this.fieldCtrl.doScaleField(scale, middle);
+
+      // XXX: Improve scaling position
+      // Remember initial middle point
     }
   };
 
   onTouchEnd = (evt: TouchEvent) => {
-    this.initialDistanceBetweenTwoTouches = 0;
-    this.distanceDeltaBetweenTwoTouches = 0;
-
     [...evt.changedTouches].forEach(t => {
       delete this.touchesVector[t.identifier];
       delete this.touchesLastPosition[t.identifier];
@@ -468,7 +462,8 @@ const FieldCanvasElement = observer((props: {}) => {
       const pos = fcc.getUnboundedPxFromEvent(event, false, false);
       if (pos === undefined) return;
 
-      fieldCtrl.doScaleField(scale * (1 - evt.deltaY / 1000), pos);
+      // TEST ONLY
+      // fieldCtrl.doScaleField(scale * (1 - evt.deltaY / 1000), pos);
     }
   }
 
@@ -684,4 +679,3 @@ const FieldCanvasElement = observer((props: {}) => {
 });
 
 export { FieldCanvasElement };
-
