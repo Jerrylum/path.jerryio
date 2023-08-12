@@ -1,4 +1,4 @@
-import { makeAutoObservable, action } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
 
 import { getAppStores } from "../core/MainApp";
@@ -8,7 +8,7 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import TuneIcon from "@mui/icons-material/Tune";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
-import WidgetsIcon from "@mui/icons-material/Widgets";
+// import WidgetsIcon from "@mui/icons-material/Widgets";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import { Box, Typography } from "@mui/material";
 import { GeneralConfigFloatingPanel } from "./GeneralConfigAccordion";
@@ -44,7 +44,7 @@ class FloatingPanelsVariables {
 }
 
 const FloatingPanels = observer((props: {}) => {
-  const { app, help, appPreferences, clipboard } = getAppStores();
+  const { app } = getAppStores();
 
   const [variables] = React.useState(() => new FloatingPanelsVariables());
 
