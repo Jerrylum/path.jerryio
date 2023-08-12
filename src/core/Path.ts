@@ -533,7 +533,7 @@ export function ValidateSegmentControls(validationOptions?: ValidationOptions) {
           return true;
         },
         defaultMessage(args: ValidationArguments) {
-          return `The ${args.property} must`;
+          return `The ${args.property} must be an array of segment controls.`;
         }
       }
     });
