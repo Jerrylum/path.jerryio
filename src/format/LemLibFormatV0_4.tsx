@@ -338,7 +338,7 @@ export class LemLibFormatV0_4 implements Format {
         output(segment.controls[2]);
         output(segment.controls[3], "\n");
       } else if (segment.controls.length === 2) {
-        const center = segment.controls[0].add(segment.controls[1]).divide(new Vector(2, 2));
+        const center = segment.controls[0].add(segment.controls[1]).divide(2);
         output(segment.controls[0]);
         output(center);
         output(center);

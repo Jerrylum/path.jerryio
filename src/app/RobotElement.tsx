@@ -6,7 +6,7 @@ import { Group, Line, Rect } from "react-konva";
 const RobotElement = observer((props: { fcc: FieldCanvasConverter; pos: EndControl; width: number; height: number }) => {
   const widthInPx = props.width * props.fcc.uol2pixel;
   const heightInPx = props.height * props.fcc.uol2pixel;
-  const startInUOL = new Vector(props.pos.x, props.pos.y);
+  const startInUOL = props.pos.toVector();
   const startInPx = props.fcc.toPx(startInUOL);
   const centerInPx = new Vector(widthInPx / 2, heightInPx / 2);
   const frontInPx = centerInPx.add(new Vector(0, -heightInPx / 2));

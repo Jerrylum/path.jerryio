@@ -209,28 +209,25 @@ class FieldController {
   doScaleField(variable: number, posInPx: Vector): boolean {
     const { app } = getAppStores();
 
-    const negative1 = new Vector(-1, -1);
     const oldScale = app.fieldScale;
     const oldOffset = app.fieldOffset;
 
     const newScale = clamp(variable, 1, 3);
-    const scaleVector = new Vector(oldScale, oldScale);
-    const newScaleVector = new Vector(newScale, newScale);
 
     // offset is offset in Konva coordinate system (KC)
     // offsetInCC is offset in HTML Canvas coordinate system (CC)
-    const offsetInCC = oldOffset.multiply(scaleVector).multiply(negative1);
+    const offsetInCC = oldOffset.multiply(oldScale).multiply(-1);
 
     const canvasHalfSizeWithScale = (this.fcc.pixelHeight * oldScale) / 2;
     const newCanvasHalfSizeWithScale = (this.fcc.pixelHeight * newScale) / 2;
 
     // UX: Maintain zoom center at mouse pointer
-    const fieldCenter = offsetInCC.add(new Vector(canvasHalfSizeWithScale, canvasHalfSizeWithScale));
-    const newFieldCenter = offsetInCC.add(new Vector(newCanvasHalfSizeWithScale, newCanvasHalfSizeWithScale));
-    const relativePos = posInPx.subtract(fieldCenter).divide(scaleVector);
-    const newPos = newFieldCenter.add(relativePos.multiply(newScaleVector));
+    const fieldCenter = offsetInCC.add(canvasHalfSizeWithScale);
+    const newFieldCenter = offsetInCC.add(newCanvasHalfSizeWithScale);
+    const relativePos = posInPx.subtract(fieldCenter).divide(oldScale);
+    const newPos = newFieldCenter.add(relativePos.multiply(newScale));
     const newOffsetInCC = posInPx.subtract(newPos).add(offsetInCC);
-    const newOffsetInKC = newOffsetInCC.multiply(negative1).divide(newScaleVector);
+    const newOffsetInKC = newOffsetInCC.multiply(-1).divide(newScale);
 
     app.fieldScale = newScale;
     app.fieldOffset = newOffsetInKC;
@@ -265,7 +262,7 @@ class TouchInteractiveHandler {
       const touch2 = this.toVector(evt.touches[1]);
       const distance = touch1.distance(touch2);
       this.initialFieldScale = app.fieldScale;
-      this.initialScalePosition = touch1.add(touch2).divide(new Vector(2, 2));
+      this.initialScalePosition = touch1.add(touch2).divide(2);
       this.initialDistanceBetweenTwoTouches = Math.max(distance, 0.1);
     }
 
@@ -295,17 +292,17 @@ class TouchInteractiveHandler {
     const keys = this.keys;
     if (keys.length === 1) {
       this.fieldCtrl.doPanningWithVector(
-        this.touchesVector[this.keys[0]].divide(new Vector(app.fieldScale, app.fieldScale))
+        this.touchesVector[this.keys[0]].divide(app.fieldScale)
       );
     } else if (keys.length > 1) {
       const t1 = this.pos(keys[0]);
       const t2 = this.pos(keys[1]);
       const scale = this.initialFieldScale * (t1.distance(t2) / this.initialDistanceBetweenTwoTouches);
-      const middlePos = t1.add(t2).divide(new Vector(2, 2));
+      const middlePos = t1.add(t2).divide(2);
       this.fieldCtrl.doScaleField(scale, middlePos);
 
-      const vecPos = this.vec(keys[0]).add(this.vec(keys[1])).divide(new Vector(2, 2));
-      this.fieldCtrl.doPanningWithVector(vecPos.divide(new Vector(app.fieldScale, app.fieldScale)));
+      const vecPos = this.vec(keys[0]).add(this.vec(keys[1])).divide(2);
+      this.fieldCtrl.doPanningWithVector(vecPos.divide(app.fieldScale));
     }
   };
 
@@ -343,7 +340,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
   const windowSize = useWindowSize((newSize: Vector, oldSize: Vector) => {
     const ratio = (newSize.y + oldSize.y) / 2 / oldSize.y;
-    app.fieldOffset = app.fieldOffset.multiply(new Vector(ratio, ratio));
+    app.fieldOffset = app.fieldOffset.multiply(ratio);
   });
 
   const uc = new UnitConverter(UnitOfLength.Millimeter, app.gc.uol);

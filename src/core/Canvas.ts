@@ -70,14 +70,14 @@ export class FieldCanvasConverter {
     const canvasPos = element?.getBoundingClientRect();
     if (canvasPos === undefined) return;
 
-    const offset = useOffset ? this.offset.subtract(this.viewOffset) : new Vector(0, 0);
+    const offset = useOffset ? this.offset.subtract(this.viewOffset) : 0;
 
     const scale = useScale ? this.scale : 1;
 
     const rtn = getClientXY(event).subtract(new Vector(canvasPos.left, canvasPos.top));
 
     // UX: Calculate the position of the control point by the client mouse position
-    return rtn.divide(new Vector(scale, scale)).add(offset);
+    return rtn.divide(scale).add(offset);
   }
 
   getUnboundedPxFromEvent(

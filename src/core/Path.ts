@@ -35,6 +35,7 @@ export class Vector implements Coordinate {
 
   add(value: number): Vector;
   add<T extends Vector>(value: T): T;
+  add<T extends Vector>(value: number | T): Vector | T;
   add<T extends Vector>(value: number | T): Vector | T {
     if (typeof value === "number") {
       return new Vector(this.x + value, this.y + value);
@@ -47,6 +48,7 @@ export class Vector implements Coordinate {
 
   subtract(value: number): Vector;
   subtract<T extends Vector>(value: T): T;
+  subtract<T extends Vector>(value: number | T): Vector | T;
   subtract<T extends Vector>(value: number | T): Vector | T {
     if (typeof value === "number") {
       return new Vector(this.x - value, this.y - value);
@@ -59,6 +61,7 @@ export class Vector implements Coordinate {
 
   multiply(value: number): Vector;
   multiply<T extends Vector>(value: T): T;
+  multiply<T extends Vector>(value: number | T): Vector | T;
   multiply<T extends Vector>(value: number | T): Vector | T {
     if (typeof value === "number") {
       return new Vector(this.x * value, this.y * value);
@@ -71,6 +74,7 @@ export class Vector implements Coordinate {
 
   divide(value: number): Vector;
   divide<T extends Vector>(value: T): T;
+  divide<T extends Vector>(value: number | T): Vector | T;
   divide<T extends Vector>(value: number | T): Vector | T {
     if (typeof value === "number") {
       return new Vector(this.x / value, this.y / value);

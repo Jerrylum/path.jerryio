@@ -469,8 +469,7 @@ export function binomial(n: number, k: number): number {
  */
 export function firstDerivative(segment: Segment, t: number): Vector {
   if (segment.controls.length === 2) {
-    const vec = segment.controls[1].subtract(segment.controls[0]);
-    return new Vector(vec.x, vec.y);
+    return segment.controls[1].subtract(segment.controls[0]).toVector();
   } else if (segment.controls.length === 4) {
     const x =
       3 * (segment.controls[1].x - segment.controls[0].x) * (1 - t) * (1 - t) +
