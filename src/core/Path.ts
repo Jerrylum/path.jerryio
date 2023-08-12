@@ -33,32 +33,52 @@ export class Vector implements Coordinate {
     this.y = y;
   }
 
-  add<T extends Vector>(vector: T): T {
-    let rtn = vector.clone();
-    rtn.x += this.x;
-    rtn.y += this.y;
-    return rtn;
+  add(value: number): Vector;
+  add<T extends Vector>(value: T): T;
+  add<T extends Vector>(value: number | T): Vector | T {
+    if (typeof value === "number") {
+      return new Vector(this.x + value, this.y + value);
+    } else {
+      const rtn = value.clone();
+      rtn.setXY(this.x + value.x, this.y + value.y);
+      return rtn;
+    }
   }
 
-  subtract<T extends Vector>(vector: T): T {
-    let rtn = vector.clone();
-    rtn.x = this.x - rtn.x;
-    rtn.y = this.y - rtn.y;
-    return rtn;
+  subtract(value: number): Vector;
+  subtract<T extends Vector>(value: T): T;
+  subtract<T extends Vector>(value: number | T): Vector | T {
+    if (typeof value === "number") {
+      return new Vector(this.x - value, this.y - value);
+    } else {
+      const rtn = value.clone();
+      rtn.setXY(this.x - value.x, this.y - value.y);
+      return rtn;
+    }
   }
 
-  multiply<T extends Vector>(vector: T): T {
-    let rtn = vector.clone();
-    rtn.x *= this.x;
-    rtn.y *= this.y;
-    return rtn;
+  multiply(value: number): Vector;
+  multiply<T extends Vector>(value: T): T;
+  multiply<T extends Vector>(value: number | T): Vector | T {
+    if (typeof value === "number") {
+      return new Vector(this.x * value, this.y * value);
+    } else {
+      const rtn = value.clone();
+      rtn.setXY(this.x * value.x, this.y * value.y);
+      return rtn;
+    }
   }
 
-  divide<T extends Vector>(vector: T): T {
-    let rtn = vector.clone();
-    rtn.x = this.x / rtn.x;
-    rtn.y = this.y / rtn.y;
-    return rtn;
+  divide(value: number): Vector;
+  divide<T extends Vector>(value: T): T;
+  divide<T extends Vector>(value: number | T): Vector | T {
+    if (typeof value === "number") {
+      return new Vector(this.x / value, this.y / value);
+    } else {
+      const rtn = value.clone();
+      rtn.setXY(this.x / value.x, this.y / value.y);
+      return rtn;
+    }
   }
 
   dot(vector: Vector): number {
@@ -88,9 +108,16 @@ export class Vector implements Coordinate {
     return rtn;
   }
 
-  setXY(other: Vector): void {
-    this.x = other.x;
-    this.y = other.y;
+  setXY(x: number, y: number): void;
+  setXY(other: Vector): void;
+  setXY(arg0: number | Vector, arg1?: number): void {
+    if (arg0 instanceof Vector) {
+      this.x = arg0.x;
+      this.y = arg0.y;
+    } else {
+      this.x = arg0;
+      this.y = arg1!;
+    }
   }
 
   isWithinArea(from: Vector, to: Vector) {

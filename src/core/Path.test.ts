@@ -1,8 +1,63 @@
-import { EndControl, Control, Segment, construct, traversal, Path, Keyframe, relatedPaths } from "./Path";
+import { EndControl, Control, Segment, construct, traversal, Path, Keyframe, relatedPaths, Vector } from "./Path";
 import { CustomPathConfig } from "../format/Config.test";
 import { validate } from "class-validator";
 import { instanceToPlain, plainToClass, plainToClassFromExist } from "class-transformer";
 import { CustomFormat } from "../format/Format.test";
+
+test("Vector manipulation functions", () => {
+  const v1 = new Vector(1, 2);
+
+  expect(v1.x).toBe(1);
+  expect(v1.y).toBe(2);
+
+  const v2 = v1.add(new Vector(3, 4));
+  expect(v1.x).toBe(1);
+  expect(v1.y).toBe(2);
+  expect(v2.x).toBe(4);
+  expect(v2.y).toBe(6);
+
+  const v3 = v1.add(4);
+  expect(v1.x).toBe(1);
+  expect(v1.y).toBe(2);
+  expect(v3.x).toBe(5);
+  expect(v3.y).toBe(6);
+
+  const v4 = v1.subtract(new Vector(3, 4));
+  expect(v1.x).toBe(1);
+  expect(v1.y).toBe(2);
+  expect(v4.x).toBe(-2);
+  expect(v4.y).toBe(-2);
+
+  const v5 = v1.subtract(4);
+  expect(v1.x).toBe(1);
+  expect(v1.y).toBe(2);
+  expect(v5.x).toBe(-3);
+  expect(v5.y).toBe(-2);
+
+  const v6 = v1.multiply(new Vector(3, 4));
+  expect(v1.x).toBe(1);
+  expect(v1.y).toBe(2);
+  expect(v6.x).toBe(3);
+  expect(v6.y).toBe(8);
+
+  const v7 = v1.multiply(4);
+  expect(v1.x).toBe(1);
+  expect(v1.y).toBe(2);
+  expect(v7.x).toBe(4);
+  expect(v7.y).toBe(8);
+
+  const v8 = v1.divide(new Vector(3, 4));
+  expect(v1.x).toBe(1);
+  expect(v1.y).toBe(2);
+  expect(v8.x).toBe(1 / 3);
+  expect(v8.y).toBe(2 / 4);
+  
+  const v9 = v1.divide(4);
+  expect(v1.x).toBe(1);
+  expect(v1.y).toBe(2);
+  expect(v9.x).toBe(1 / 4);
+  expect(v9.y).toBe(2 / 4);
+});
 
 test("validate Control", async () => {
   const c = new Control(-3.0123456789, 4);
