@@ -257,19 +257,26 @@ interface CustomMenuProps extends MenuProps {
 }
 
 const CustomMenuRoot = observer((props: CustomMenuProps) => {
-  const rootMenuCtr = React.useMemo(() => new CustomMenuController(null), [props.open]);
-
   const { open, onClose, ...MenuProps } = props;
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const rootMenuCtr = React.useMemo(() => new CustomMenuController(null), [open]);
 
   React.useEffect(() => {
     if (rootMenuCtr.isCollapsed) {
-      props.onClose?.({}, "menuItemClick");
+      onClose?.({}, "menuItemClick");
     }
-  }, [rootMenuCtr.isCollapsed]);
+  }, [onClose, rootMenuCtr.isCollapsed]);
 
-  React.useEffect(() => {
-    rootMenuCtr.enabled = props.open;
-  }, [props.open]);
+  // UX: Disable the root menu immediately when the menu is closed
+  // It is used to prevent the user from moving the mouse to open the sub menu again
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useEffect(
+    action(() => {
+      rootMenuCtr.enabled = open;
+    }),
+    [open, rootMenuCtr]
+  );
 
   return (
     <CustomMenuControllerContext.Provider value={rootMenuCtr}>
@@ -279,7 +286,7 @@ const CustomMenuRoot = observer((props: CustomMenuProps) => {
         autoFocus={true}
         disableAutoFocus
         disableEnforceFocus
-        open={props.open && rootMenuCtr.isCollapsed === false}
+        open={open && rootMenuCtr.isCollapsed === false}
         onClose={(e, reason) => {
           rootMenuCtr.untouch();
           onClose?.(e, reason);
