@@ -244,6 +244,7 @@ class TouchInteractiveHandler {
   touchesVector: { [identifier: number]: Vector } = {};
 
   initialFieldScale: number = 0;
+  initialScalePosition: Vector | undefined = undefined;
   initialDistanceBetweenTwoTouches: number = 0;
 
   constructor(private fieldCtrl: FieldController) {
@@ -264,6 +265,7 @@ class TouchInteractiveHandler {
       const touch2 = this.toVector(evt.touches[1]);
       const distance = touch1.distance(touch2);
       this.initialFieldScale = app.fieldScale;
+      this.initialScalePosition = touch1.add(touch2).divide(new Vector(2, 2));
       this.initialDistanceBetweenTwoTouches = Math.max(distance, 0.1);
     }
 
@@ -291,23 +293,19 @@ class TouchInteractiveHandler {
     });
 
     const keys = this.keys;
-    if (keys.length > 0) {
+    if (keys.length === 1) {
       this.fieldCtrl.doPanningWithVector(
         this.touchesVector[this.keys[0]].divide(new Vector(app.fieldScale, app.fieldScale))
       );
-      // TODO scale down vector when scale is large
-    }
-    if (keys.length > 1) {
+    } else if (keys.length > 1) {
       const t1 = this.pos(keys[0]);
       const t2 = this.pos(keys[1]);
-      const middle = t1.add(t2).divide(new Vector(2, 2));
-
       const scale = this.initialFieldScale * (t1.distance(t2) / this.initialDistanceBetweenTwoTouches);
+      const middlePos = t1.add(t2).divide(new Vector(2, 2));
+      this.fieldCtrl.doScaleField(scale, middlePos);
 
-      this.fieldCtrl.doScaleField(scale, middle);
-
-      // XXX: Improve scaling position
-      // Remember initial middle point
+      const vecPos = this.vec(keys[0]).add(this.vec(keys[1])).divide(new Vector(2, 2));
+      this.fieldCtrl.doPanningWithVector(vecPos.divide(new Vector(app.fieldScale, app.fieldScale)));
     }
   };
 
@@ -333,6 +331,10 @@ class TouchInteractiveHandler {
 
   private pos(key: number) {
     return this.touchesLastPosition[key];
+  }
+
+  private vec(key: number) {
+    return this.touchesVector[key];
   }
 }
 
@@ -457,13 +459,10 @@ const FieldCanvasElement = observer((props: {}) => {
 
       evt.preventDefault();
 
-      // const wheel = evt.deltaY;
-
       const pos = fcc.getUnboundedPxFromEvent(event, false, false);
       if (pos === undefined) return;
 
-      // TEST ONLY
-      // fieldCtrl.doScaleField(scale * (1 - evt.deltaY / 1000), pos);
+      fieldCtrl.doScaleField(scale * (1 - evt.deltaY / 1000), pos);
     }
   }
 
