@@ -1,9 +1,9 @@
 import { TextField, TextFieldProps } from "@mui/material";
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useEffect, useMemo, useRef } from "react";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
 import { clamp } from "../core/Util";
+import React from "react";
 
 export function clampQuantity(
   value: number,
@@ -30,10 +30,10 @@ const ObserverInput = observer(
     // rest is used to send props to TextField without custom attributes
     const { getValue, setValue, isValidIntermediate, isValidValue, numeric: isNumeric, ...rest } = props;
 
-    const memoInitialValue = useMemo(() => getValue(), []); // eslint-disable-line react-hooks/exhaustive-deps
-    const inputRef = useRef<HTMLInputElement>(null);
-    const initialValue = useRef(memoInitialValue);
-    const lastValidIntermediate = useRef(memoInitialValue);
+    const initialValue = React.useState(() => getValue())[0];
+    const inputRef = React.useRef<HTMLInputElement>(null);
+    const lastValidValue = React.useRef(initialValue);
+    const lastValidIntermediate = React.useRef(initialValue);
 
     function onChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
       const element = event.nativeEvent.target as HTMLInputElement;
@@ -87,21 +87,21 @@ const ObserverInput = observer(
       const isValid = Array.isArray(result) ? result[0] : result;
       const payload = Array.isArray(result) ? result[1] : undefined;
       if (isValid === false) {
-        element.value = rtn = initialValue.current;
+        element.value = rtn = lastValidValue.current;
       } else {
         rtn = candidate;
       }
 
       setValue(rtn, payload);
-      inputRef.current && (inputRef.current.value = initialValue.current = lastValidIntermediate.current = getValue());
+      inputRef.current && (inputRef.current.value = lastValidValue.current = lastValidIntermediate.current = getValue());
     }
 
     const value = getValue();
 
-    useEffect(() => {
+    React.useEffect(() => {
       const value = getValue();
-      if (value !== initialValue.current) {
-        initialValue.current = value;
+      if (value !== lastValidValue.current) {
+        lastValidValue.current = value;
         lastValidIntermediate.current = value;
         inputRef.current!.value = value;
       }
@@ -113,7 +113,7 @@ const ObserverInput = observer(
         InputLabelProps={{ shrink: true }}
         inputRef={inputRef}
         size="small"
-        defaultValue={memoInitialValue}
+        defaultValue={initialValue}
         onChange={onChange}
         {...rest}
         onKeyDown={action(onKeyDown)}
