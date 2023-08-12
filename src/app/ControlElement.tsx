@@ -117,7 +117,7 @@ const ControlElement = observer((props: ControlElementProps) => {
   }
 
   function interact(isShiftKey: boolean) {
-    setPosBeforeDrag(props.cp.clone());
+    setPosBeforeDrag(props.cp.toVector());
 
     if (isShiftKey) {
       // UX: Add selected control point if: left click + shift

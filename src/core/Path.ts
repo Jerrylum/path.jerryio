@@ -34,28 +34,28 @@ export class Vector implements Coordinate {
   }
 
   add<T extends Vector>(vector: T): T {
-    let rtn = vector.clone() as T;
+    let rtn = vector.clone();
     rtn.x += this.x;
     rtn.y += this.y;
     return rtn;
   }
 
   subtract<T extends Vector>(vector: T): T {
-    let rtn = vector.clone() as T;
+    let rtn = vector.clone();
     rtn.x = this.x - rtn.x;
     rtn.y = this.y - rtn.y;
     return rtn;
   }
 
   multiply<T extends Vector>(vector: T): T {
-    let rtn = vector.clone() as T;
+    let rtn = vector.clone();
     rtn.x *= this.x;
     rtn.y *= this.y;
     return rtn;
   }
 
   divide<T extends Vector>(vector: T): T {
-    let rtn = vector.clone() as T;
+    let rtn = vector.clone();
     rtn.x = this.x / rtn.x;
     rtn.y = this.y / rtn.y;
     return rtn;
@@ -71,7 +71,7 @@ export class Vector implements Coordinate {
 
   interpolate<T extends Vector>(other: T, distance: number): T {
     // "this" as the center
-    let rtn = other.clone() as T;
+    let rtn = other.clone();
     // use trig to find the angle between the two points
     const angle = Math.atan2(rtn.y - this.y, rtn.x - this.x);
     // use the angle to find the x and y components of the vector
@@ -82,7 +82,7 @@ export class Vector implements Coordinate {
 
   mirror<T extends Vector>(other: T): T {
     // "this" as the center
-    let rtn = other.clone() as T;
+    let rtn = other.clone();
     rtn.x = 2 * this.x - other.x;
     rtn.y = 2 * this.y - other.y;
     return rtn;
@@ -97,8 +97,8 @@ export class Vector implements Coordinate {
     return this.x >= from.x && this.x <= to.x && this.y >= from.y && this.y <= to.y;
   }
 
-  clone(): Vector {
-    return new Vector(this.x, this.y);
+  clone(): this {
+    return new Vector(this.x, this.y) as this;
   }
 
   toVector(): Vector {
@@ -122,8 +122,8 @@ export class SamplePoint extends Vector {
     super(x, y);
   }
 
-  clone(): SamplePoint {
-    return new SamplePoint(this.x, this.y, this.delta, this.integral, this.ref, this.t, this.heading);
+  clone(): this {
+    return new SamplePoint(this.x, this.y, this.delta, this.integral, this.ref, this.t, this.heading) as this;
   }
 }
 
@@ -145,8 +145,8 @@ export class Point extends Vector {
     super(x, y);
   }
 
-  clone(): Point {
-    return new Point(this.x, this.y, this.sampleRef, this.sampleT, this.speed, this.heading);
+  clone(): this {
+    return new Point(this.x, this.y, this.sampleRef, this.sampleT, this.speed, this.heading) as this;
   }
 }
 
@@ -182,8 +182,8 @@ export class Control extends Vector implements InteractiveEntity {
     });
   }
 
-  clone(): Control {
-    return new Control(this.x, this.y);
+  clone(): this {
+    return new Control(this.x, this.y) as this;
   }
 }
 
@@ -232,8 +232,8 @@ export class EndControl extends Vector implements InteractiveEntity, CoordinateW
     this.heading_ = boundHeading(heading);
   }
 
-  clone(): EndControl {
-    return new EndControl(this.x, this.y, this.heading);
+  clone(): this {
+    return new EndControl(this.x, this.y, this.heading) as this;
   }
 }
 

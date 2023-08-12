@@ -48,14 +48,14 @@ export class FieldCanvasConverter {
   }
 
   toPx<T extends Vector>(inUOL: T): T {
-    let rtn = inUOL.clone() as T;
+    let rtn = inUOL.clone();
     rtn.x = inUOL.x * this.uol2pixel + this.pixelWidthHalf - this.viewOffset.x;
     rtn.y = -inUOL.y * this.uol2pixel + this.pixelHeightHalf;
     return rtn;
   }
 
   toUOL<T extends Vector>(inPx: T): T {
-    let rtn = inPx.clone() as T;
+    let rtn = inPx.clone();
     rtn.x = (inPx.x - this.pixelWidthHalf + this.viewOffset.x) * this.pixel2uol;
     rtn.y = -(inPx.y - this.pixelHeightHalf) * this.pixel2uol;
     return rtn;
