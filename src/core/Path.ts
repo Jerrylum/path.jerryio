@@ -552,7 +552,7 @@ export function ValidateSegmentControls(validationOptions?: ValidationOptions) {
           if (!(array instanceof Array)) return false;
           // check if the length is 2 or 4
           if (!(array.length === 2 || array.length === 4)) return false;
-          // check if it is an array of Control | EndControl, redundant
+          // check if it is an array of EndControl | Control, redundant
           if (!array.every(item => item instanceof Control || item instanceof EndControl)) return false;
           // check if the first is EndControl
           if (!(array[0] instanceof EndControl)) return false;

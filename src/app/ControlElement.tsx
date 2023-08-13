@@ -21,9 +21,9 @@ function getFollowersAndRemaining(
   target: EndControl | Control,
   selected: string[],
   includeControl: boolean
-): [Control[], Control[]] {
-  const followers: Control[] = [];
-  const remaining: Control[] = [];
+): [(EndControl | Control)[], (EndControl | Control)[]] {
+  const followers: (EndControl | Control)[] = [];
+  const remaining: (EndControl | Control)[] = [];
   for (let path of paths) {
     for (let control of path.controls) {
       if (control === target) continue;
@@ -74,9 +74,11 @@ function getSiblingReferences(path: Path, target: EndControl | Control, follower
   if (idx < controls.length - 2) func(controls[idx + 1], controls[idx + 2]);
 
   const prevEndControl = findEndControl(-1);
-  if (prevEndControl) references.push({ source: prevEndControl, heading: prevEndControl.heading });
+  if (prevEndControl && !followers.includes(prevEndControl))
+    references.push({ source: prevEndControl, heading: prevEndControl.heading });
   const nextEndControl = findEndControl(+1);
-  if (nextEndControl) references.push({ source: nextEndControl, heading: nextEndControl.heading });
+  if (nextEndControl && !followers.includes(nextEndControl))
+    references.push({ source: nextEndControl, heading: nextEndControl.heading });
 
   return references;
 }

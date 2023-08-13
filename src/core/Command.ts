@@ -929,7 +929,7 @@ export class InsertControls implements CancellableCommand, AddPathTreeItemsComma
   constructor(
     protected allEntities: PathTreeItem[],
     protected idx: number,
-    protected inserting: (Control | EndControl)[]
+    protected inserting: (EndControl | Control)[]
   ) {
     this.original = this.allEntities.slice();
     this.modified = this.allEntities.slice();

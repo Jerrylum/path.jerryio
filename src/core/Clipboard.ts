@@ -122,11 +122,11 @@ class CopyControlsMessage extends ClipboardMessage {
     },
     keepDiscriminatorProperty: true
   })
-  items!: (Control | EndControl)[];
+  items!: (EndControl | Control)[];
 
   constructor(); // For class-transformer
-  constructor(uol: UnitOfLength, controls: (Control | EndControl)[]);
-  constructor(uol?: UnitOfLength, controls?: (Control | EndControl)[]) {
+  constructor(uol: UnitOfLength, controls: (EndControl | Control)[]);
+  constructor(uol?: UnitOfLength, controls?: (EndControl | Control)[]) {
     super();
     if (uol !== undefined && controls !== undefined) {
       this.uol = uol;
@@ -141,7 +141,7 @@ class CopyControlsMessage extends ClipboardMessage {
     const newUOL = app.gc.uol;
     const uc = new UnitConverter(oldUOL, newUOL);
 
-    const controls: (Control | EndControl)[] = [];
+    const controls: (EndControl | Control)[] = [];
     for (const raw of this.items) {
       const control = plainToInstance("heading" in raw ? EndControl : Control, raw);
       control.uid = makeId(10);
@@ -248,7 +248,7 @@ export class AppClipboard {
     if (isCopyPaths) {
       message = new CopyPathsMessage(app.format.getName(), app.gc.uol, selected as Path[]);
     } else {
-      message = new CopyControlsMessage(app.gc.uol, selected as (Control | EndControl)[]);
+      message = new CopyControlsMessage(app.gc.uol, selected as (EndControl | Control)[]);
     }
     this.data = instanceToPlain(message);
 
