@@ -247,7 +247,7 @@ class TouchInteractiveHandler {
   touchesLastPosition: { [identifier: number]: Vector } = {};
   touchesVector: { [identifier: number]: Vector } = {};
 
-  startSelectionTimer: number = Infinity;
+  startSelectionTimer: NodeJS.Timer | undefined = undefined;
   initialFieldScale: number = 0;
   initialPosition: Vector = new Vector(0, 0);
   initialDistanceBetweenTwoTouches: number = 0;
@@ -260,8 +260,10 @@ class TouchInteractiveHandler {
     return new Vector(t.clientX, t.clientY);
   }
 
-  onTouchStart = (evt: TouchEvent) => {
+  onTouchStart = (event: Konva.KonvaEventObject<TouchEvent>) => {
     const { app } = getAppStores();
+
+    const evt = event.evt;
 
     [...evt.touches].forEach(t => {
       const pos = this.toVector(t);
@@ -273,9 +275,16 @@ class TouchInteractiveHandler {
     const keys = this.keys;
 
     if (evt.touches.length === 1) {
-      this.startSelectionTimer = Date.now() + 1000; // 1000ms is the magic number
+      // ALGO: Start selection if one finger is down
+      this.startSelectionTimer = setInterval(() => {
+        this.touchAction = TouchAction.Selection;
+      }, 500); // Magic number
       this.initialPosition = this.pos(keys[0]);
     } else if (evt.touches.length >= 2) {
+      // ALGO: Cancel selection if two fingers are down
+      clearInterval(this.startSelectionTimer);
+      this.startSelectionTimer = undefined;
+
       const touch1 = this.pos(keys[0]);
       const touch2 = this.pos(keys[1]);
       const distance = touch1.distance(touch2);
@@ -289,8 +298,10 @@ class TouchInteractiveHandler {
     }
   };
 
-  onTouchMove = (evt: TouchEvent) => {
+  onTouchMove = (event: Konva.KonvaEventObject<TouchEvent>) => {
     const { app } = getAppStores();
+
+    const evt = event.evt;
 
     [...evt.touches].forEach(t => {
       const pos = this.toVector(t);
@@ -304,12 +315,13 @@ class TouchInteractiveHandler {
     if (this.touchAction === TouchAction.None) {
       if (keys.length === 1) {
         const t = this.pos(keys[0]);
-        if (t.distance(this.initialPosition) > 48) { // Half inch
-          this.touchAction = TouchAction.PanningAndScaling;
-        } else if (Date.now() > this.startSelectionTimer) {
-          this.touchAction = TouchAction.Selection;
-          // TODO need timer
+        if (t.distance(this.initialPosition) > 48) {
+          // ALGO: Cancel the timer for selection if the user moves the finger more than 1/2 inch
+          clearInterval(this.startSelectionTimer);
+          this.startSelectionTimer = undefined;
         }
+        // Set the touch action to panning and scaling
+        this.touchAction = TouchAction.PanningAndScaling;
       } else {
         this.touchAction = TouchAction.PanningAndScaling;
       }
@@ -327,11 +339,20 @@ class TouchInteractiveHandler {
         this.fieldCtrl.doPanningWithVector(vecPos.divide(app.fieldScale));
       }
     } else if (this.touchAction === TouchAction.Selection) {
+      const posInPx = this.fieldCtrl.fcc.getUnboundedPxFromEvent(event);
+      if (posInPx === undefined) return;
 
+      if (this.fieldCtrl.areaSelectionStart === undefined) {
+        this.fieldCtrl.areaSelectionStart = posInPx;
+      } else {
+        this.fieldCtrl.doAreaSelection(posInPx);
+      }
     }
   };
 
-  onTouchEnd = (evt: TouchEvent) => {
+  onTouchEnd = (event: Konva.KonvaEventObject<TouchEvent>) => {
+    const evt = event.evt;
+
     [...evt.changedTouches].forEach(t => {
       delete this.touchesVector[t.identifier];
       delete this.touchesLastPosition[t.identifier];
@@ -345,6 +366,10 @@ class TouchInteractiveHandler {
       this.fieldCtrl.areaSelectionStart = undefined;
       this.fieldCtrl.areaSelectionEnd = undefined;
       this.fieldCtrl.offsetStart = undefined;
+
+      // ALGO: Cancel selection if the user lifts the finger
+      clearInterval(this.startSelectionTimer);
+      this.startSelectionTimer = undefined;
     }
   };
 
@@ -399,7 +424,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
     evt.preventDefault();
 
-    const touches = evt.touches;
+    // const touches = evt.touches;
 
     // if (touches.length === 1) {
     //   console.log("onTouchStartStage: 1 touch", touches.item(0));
@@ -414,7 +439,7 @@ const FieldCanvasElement = observer((props: {}) => {
     //   // TODO
     // }
 
-    tiHandler.onTouchStart(evt);
+    tiHandler.onTouchStart(event);
   }
 
   function onTouchMoveStage(event: Konva.KonvaEventObject<TouchEvent>) {
@@ -422,7 +447,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
     evt.preventDefault();
 
-    const touches = evt.touches;
+    // const touches = evt.touches;
 
     // if (touches.length === 1) {
     //   console.log("onTouchMoveStage: 1 touch", event.evt.type);
@@ -438,7 +463,7 @@ const FieldCanvasElement = observer((props: {}) => {
     //   // TODO
     // }
 
-    tiHandler.onTouchMove(evt);
+    tiHandler.onTouchMove(event);
   }
 
   function onTouchEndStage(event: Konva.KonvaEventObject<TouchEvent>) {
@@ -453,7 +478,7 @@ const FieldCanvasElement = observer((props: {}) => {
     //   fieldCtrl.offsetStart = undefined;
     // }
 
-    tiHandler.onTouchEnd(evt);
+    tiHandler.onTouchEnd(event);
   }
 
   function onWheelStage(event: Konva.KonvaEventObject<WheelEvent>) {
@@ -548,10 +573,8 @@ const FieldCanvasElement = observer((props: {}) => {
     // UX: It is not actually dragged "stage", reset the position to (0, 0)
     if (event.target instanceof Konva.Stage) event.target.setPosition(new Vector(0, 0));
 
-    const evt = event.evt;
-
-    if (evt instanceof TouchEvent) {
-      tiHandler.onTouchMove(evt);
+    if (event.evt instanceof TouchEvent) {
+      tiHandler.onTouchMove(event as Konva.KonvaEventObject<TouchEvent>);
     } else {
       fieldCtrl.isAddingControl = false;
 
