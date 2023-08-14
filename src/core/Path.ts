@@ -184,7 +184,7 @@ export class Point extends Vector {
 // observable class
 export class Control extends Vector implements InteractiveEntity {
   @Exclude()
-  readonly discriminator: string = "control";
+  readonly discriminator = "control";
 
   @Matches(/^[a-zA-Z0-9]+$/)
   @MinLength(10)
@@ -221,7 +221,7 @@ export class Control extends Vector implements InteractiveEntity {
 // observable class
 export class EndControl extends Vector implements InteractiveEntity, CoordinateWithHeading {
   @Exclude()
-  readonly discriminator: string = "end-point";
+  readonly discriminator = "end-point";
 
   @Matches(/^[a-zA-Z0-9]+$/)
   @MinLength(10)

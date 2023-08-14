@@ -141,13 +141,10 @@ class CopyControlsMessage extends ClipboardMessage {
     const newUOL = app.gc.uol;
     const uc = new UnitConverter(oldUOL, newUOL);
 
-    const controls: AnyControl[] = [];
-    for (const raw of this.items) {
-      const control = plainToInstance("heading" in raw ? EndControl : Control, raw);
+    for (const control of this.items) {
       control.uid = makeId(10);
       control.x = uc.fromAtoB(control.x);
       control.y = uc.fromAtoB(control.y);
-      controls.push(control);
     }
 
     if (app.paths.length === 0) {
@@ -166,8 +163,8 @@ class CopyControlsMessage extends ClipboardMessage {
       idx = entities.findIndex(e => e.uid === selected[selected.length - 1]) + 1;
     }
 
-    app.history.execute(`Paste ${controls.length} controls`, new InsertControls(entities, idx, controls));
-    app.setSelected(controls.slice());
+    app.history.execute(`Paste ${this.items.length} controls`, new InsertControls(entities, idx, this.items));
+    app.setSelected(this.items.slice());
 
     return true;
   }

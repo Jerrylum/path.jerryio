@@ -51,7 +51,7 @@ function getHorizontalAndVerticalReferences(source: Vector, originHeading: numbe
   ];
 }
 
-function getSiblingReferences(path: Path, target: AnyControl, followers: Control[]): MagnetReference[] {
+function getSiblingReferences(path: Path, target: AnyControl, followers: AnyControl[]): MagnetReference[] {
   const references: MagnetReference[] = [];
 
   const controls = path.controls;
@@ -64,7 +64,7 @@ function getSiblingReferences(path: Path, target: AnyControl, followers: Control
     return undefined;
   }
 
-  function func(c1: Control, c2: Control) {
+  function func(c1: AnyControl, c2: AnyControl) {
     if (c1.visible && !followers.includes(c1) && c2.visible && !followers.includes(c2)) {
       references.push({ source: c1, heading: toHeading(c2.subtract(c1.toVector())) });
     }

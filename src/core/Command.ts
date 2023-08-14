@@ -367,40 +367,31 @@ export class ConvertSegment implements CancellableCommand, AddPathTreeItemsComma
   }
 
   protected convertToCurve(): void {
-    let index = this.path.segments.indexOf(this.segment);
-    let found = index !== -1;
+    const index = this.path.segments.indexOf(this.segment);
+    const found = index !== -1;
     if (!found) return;
 
-    let prev: Segment | null = null;
-    if (index > 0) {
-      prev = this.path.segments[index - 1];
-    }
+    const prev: Segment | undefined = this.path.segments[index - 1];
+    const next: Segment | undefined = this.path.segments[index + 1];
 
-    let next: Segment | null = null;
-    if (index + 1 < this.path.segments.length) {
-      next = this.path.segments[index + 1];
-    }
+    const p0 = this.segment.first;
+    const p3 = this.segment.last;
 
-    let p0 = this.segment.first;
-    let p3 = this.segment.last;
+    let temp: Vector;
 
-    let p1: Control;
-    if (prev !== null) {
-      p1 = p0.mirror(prev.controls[prev.controls.length - 2]);
-      // ensure is a control point (not an end point)
-      p1 = new Control(p1.x, p1.y);
+    if (prev !== undefined) {
+      temp = p0.mirror(prev.controls[prev.controls.length - 2].toVector());
     } else {
-      p1 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
+      temp = p0.add(p3.toVector()).divide(2);
     }
+    const p1 = new Control(temp.x, temp.y);
 
-    let p2: Control;
-    if (next !== null) {
-      p2 = p3.mirror(next.controls[1]);
-      // ensure is a control point (not an end point)
-      p2 = new Control(p2.x, p2.y);
+    if (next !== undefined) {
+      temp = p3.mirror(next.controls[1].toVector());
     } else {
-      p2 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
+      temp = p0.add(p3.toVector()).divide(2);
     }
+    const p2 = new Control(temp.x, temp.y);
 
     this.segment.controls = [p0, p1, p2, p3];
   }
@@ -496,7 +487,7 @@ export class SplitSegment implements CancellableCommand, AddPathTreeItemsCommand
 }
 
 export class DragControls implements CancellableCommand, MergeableCommand, UpdatePathTreeItemsCommand {
-  constructor(protected main: Control, protected from: Vector, protected to: Vector, protected followers: Control[]) {}
+  constructor(protected main: AnyControl, protected from: Vector, protected to: Vector, protected followers: AnyControl[]) {}
 
   execute(): void {
     const offsetX = this.to.x - this.from.x;
