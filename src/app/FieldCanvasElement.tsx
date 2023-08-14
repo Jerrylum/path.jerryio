@@ -467,7 +467,7 @@ const FieldCanvasElement = observer((props: {}) => {
   }
 
   function onTouchEndStage(event: Konva.KonvaEventObject<TouchEvent>) {
-    const evt = event.evt;
+    // const evt = event.evt;
 
     // const touches = evt.touches;
 
@@ -494,7 +494,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
       evt.preventDefault();
 
-      const newOffset = app.fieldOffset.add(new Vector(evt.deltaX * 0.5, evt.deltaY * 0.5));
+      const newOffset = app.fieldOffset.add(new Vector(evt.deltaX * 0.5, evt.deltaY * 0.5).divide(app.fieldScale));
       newOffset.x = clamp(
         newOffset.x,
         -canvasWidthInPx * 0.9 + fcc.viewOffset.x,
