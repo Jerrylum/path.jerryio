@@ -571,7 +571,7 @@ export class OpenBracket extends Token {
     return doParseCodepoint(buffer, ["("], OpenBracket);
   }
 
-  readonly value: string = "(";
+  readonly value = "(";
 }
 
 export class CloseBracket extends Token {
@@ -579,7 +579,7 @@ export class CloseBracket extends Token {
     return doParseCodepoint(buffer, [")"], CloseBracket);
   }
 
-  readonly value: string = ")";
+  readonly value = ")";
 }
 
 export abstract class NumberWithUnit<U extends Unit> extends Token {
