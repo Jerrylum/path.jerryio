@@ -1,6 +1,7 @@
 import { MainApp, getAppStores } from "./MainApp";
 import { Logger } from "./Logger";
 import {
+  AnyControl,
   Control,
   EndControl,
   Keyframe,
@@ -929,7 +930,7 @@ export class InsertControls implements CancellableCommand, AddPathTreeItemsComma
   constructor(
     protected allEntities: PathTreeItem[],
     protected idx: number,
-    protected inserting: (EndControl | Control)[]
+    protected inserting: AnyControl[]
   ) {
     this.original = this.allEntities.slice();
     this.modified = this.allEntities.slice();

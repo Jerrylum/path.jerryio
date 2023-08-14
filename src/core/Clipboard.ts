@@ -1,6 +1,6 @@
 import { makeObservable, action } from "mobx";
 import { getAppStores } from "./MainApp";
-import { Control, EndControl, Path, PathTreeItem, relatedPaths } from "./Path";
+import { AnyControl, Control, EndControl, Path, PathTreeItem, relatedPaths } from "./Path";
 import { Logger } from "./Logger";
 import { enqueueInfoSnackbar } from "../app/Notice";
 import { UnitConverter, UnitOfLength } from "./Unit";
@@ -122,11 +122,11 @@ class CopyControlsMessage extends ClipboardMessage {
     },
     keepDiscriminatorProperty: true
   })
-  items!: (EndControl | Control)[];
+  items!: AnyControl[];
 
   constructor(); // For class-transformer
-  constructor(uol: UnitOfLength, controls: (EndControl | Control)[]);
-  constructor(uol?: UnitOfLength, controls?: (EndControl | Control)[]) {
+  constructor(uol: UnitOfLength, controls: AnyControl[]);
+  constructor(uol?: UnitOfLength, controls?: AnyControl[]) {
     super();
     if (uol !== undefined && controls !== undefined) {
       this.uol = uol;
@@ -141,7 +141,7 @@ class CopyControlsMessage extends ClipboardMessage {
     const newUOL = app.gc.uol;
     const uc = new UnitConverter(oldUOL, newUOL);
 
-    const controls: (EndControl | Control)[] = [];
+    const controls: AnyControl[] = [];
     for (const raw of this.items) {
       const control = plainToInstance("heading" in raw ? EndControl : Control, raw);
       control.uid = makeId(10);
@@ -248,7 +248,7 @@ export class AppClipboard {
     if (isCopyPaths) {
       message = new CopyPathsMessage(app.format.getName(), app.gc.uol, selected as Path[]);
     } else {
-      message = new CopyControlsMessage(app.gc.uol, selected as (EndControl | Control)[]);
+      message = new CopyControlsMessage(app.gc.uol, selected as AnyControl[]);
     }
     this.data = instanceToPlain(message);
 

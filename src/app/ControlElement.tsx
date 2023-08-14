@@ -1,6 +1,6 @@
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Control, EndControl, Path, Vector } from "../core/Path";
+import { AnyControl, Control, EndControl, Path, Vector } from "../core/Path";
 import Konva from "konva";
 import { Circle, Line } from "react-konva";
 import { Portal } from "react-konva-utils";
@@ -12,18 +12,18 @@ import { boundHeading, fromHeadingInDegreeToAngleInRadian, toHeading } from "../
 import { MagnetReference, magnet } from "../core/Magnet";
 
 export interface ControlElementProps extends SegmentElementProps {
-  cp: EndControl | Control;
+  cp: AnyControl;
   isGrabAndMove: boolean;
 }
 
 function getFollowersAndRemaining(
   paths: Path[],
-  target: EndControl | Control,
+  target: AnyControl,
   selected: string[],
   includeControl: boolean
-): [(EndControl | Control)[], (EndControl | Control)[]] {
-  const followers: (EndControl | Control)[] = [];
-  const remaining: (EndControl | Control)[] = [];
+): [AnyControl[], AnyControl[]] {
+  const followers: AnyControl[] = [];
+  const remaining: AnyControl[] = [];
   for (let path of paths) {
     for (let control of path.controls) {
       if (control === target) continue;
@@ -51,7 +51,7 @@ function getHorizontalAndVerticalReferences(source: Vector, originHeading: numbe
   ];
 }
 
-function getSiblingReferences(path: Path, target: EndControl | Control, followers: Control[]): MagnetReference[] {
+function getSiblingReferences(path: Path, target: AnyControl, followers: Control[]): MagnetReference[] {
   const references: MagnetReference[] = [];
 
   const controls = path.controls;
@@ -88,8 +88,8 @@ function getSiblingControls(path: Path, target: EndControl): Control[] {
   const idx = controls.indexOf(target);
   if (idx === -1) return [];
 
-  const prev: EndControl | Control | undefined = controls[idx - 1];
-  const next: EndControl | Control | undefined = controls[idx + 1];
+  const prev: AnyControl | undefined = controls[idx - 1];
+  const next: AnyControl | undefined = controls[idx + 1];
 
   const siblingControls: Control[] = [];
   if (prev instanceof Control) siblingControls.push(prev);

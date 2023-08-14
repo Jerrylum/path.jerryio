@@ -1,7 +1,7 @@
 import { makeAutoObservable, computed, runInAction, reaction, action } from "mobx";
 import DOMPurify from "dompurify"; // cspell:disable-line
 import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "../format/Config";
-import { Control, EndControl, Path, PathTreeItem, Vector, relatedPaths, traversal } from "./Path";
+import { AnyControl, Control, EndControl, Path, PathTreeItem, Vector, relatedPaths, traversal } from "./Path";
 import { addToArray, clamp, removeFromArray } from "./Util";
 import { PathFileData, Format, getAllFormats, convertPathFileData } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
@@ -294,7 +294,7 @@ export class MainApp {
     return this.paths.filter(path => path.visible && !path.lock);
   }
 
-  @computed get selectedControl(): EndControl | Control | undefined {
+  @computed get selectedControl(): AnyControl | undefined {
     return this.paths
       .map(path => path.controls.find(control => control.uid === this.selected[0]))
       .find(control => control !== undefined);

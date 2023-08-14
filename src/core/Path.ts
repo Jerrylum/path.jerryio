@@ -443,7 +443,7 @@ export class Path implements InteractiveEntity, InteractiveEntityParent {
     makeAutoObservable(this);
   }
 
-  @computed get controls(): (EndControl | Control)[] {
+  @computed get controls(): AnyControl[] {
     if (this.segments.length === 0) return [];
     else return [this.segments[0].first, ...this.segments.flatMap(segment => segment.controls.slice(1))];
   }
@@ -454,8 +454,7 @@ export class Path implements InteractiveEntity, InteractiveEntityParent {
 }
 
 export type PathTreeItem = Path | EndControl | Control;
-export type Primary = Path | EndControl;
-export type Follower = Control;
+export type AnyControl = EndControl | Control;
 
 export function traversal(paths: Path[]): PathTreeItem[] {
   return paths.reduce((acc, path) => {
