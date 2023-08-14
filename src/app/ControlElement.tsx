@@ -137,8 +137,6 @@ const ControlElement = observer((props: ControlElementProps) => {
   }
 
   function onTouchStart(event: Konva.KonvaEventObject<TouchEvent>) {
-    const evt = event.evt;
-
     if (!shouldInteract(event)) return;
 
     interact(false);
