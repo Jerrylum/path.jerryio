@@ -202,7 +202,8 @@ export class MainApp {
   }
 
   select(x: PathTreeItem | string): boolean {
-    return addToArray(this.selected, typeof x === "string" ? x : x.uid);
+    const uid = typeof x === "string" ? x : x.uid;
+    return this.allEntityIds.includes(uid) && addToArray(this.selected, uid);
   }
 
   unselect(x: PathTreeItem | string): boolean {
@@ -210,7 +211,8 @@ export class MainApp {
   }
 
   setSelected(x: PathTreeItem[] | string[]): void {
-    this.selected = typeof x[0] === "string" ? (x as string[]).slice() : x.map(cp => (cp as PathTreeItem).uid);
+    const uidArr = typeof x[0] === "string" ? (x as string[]) : (x as PathTreeItem[]).map(cp => cp.uid);
+    this.selected = uidArr.filter(uid => this.allEntityIds.includes(uid));
   }
 
   clearSelected(): void {
@@ -222,7 +224,8 @@ export class MainApp {
   }
 
   addExpanded(x: Path | string): boolean {
-    return addToArray(this.expanded, typeof x === "string" ? x : x.uid);
+    const uid = typeof x === "string" ? x : x.uid;
+    return this.allEntityIds.includes(uid) && addToArray(this.expanded, uid);
   }
 
   removeExpanded(x: Path | string): boolean {
