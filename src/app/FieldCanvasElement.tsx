@@ -26,8 +26,39 @@ import ReactDOM from "react-dom";
 import { MagnetReference } from "../core/Magnet";
 import { useWindowSize } from "../core/Hook";
 import { LayoutType } from "./Layout";
-import { Box, Tooltip } from "@mui/material";
+import { Box, Tooltip, TooltipProps, Typography, styled, tooltipClasses } from "@mui/material";
 import { Instance } from "@popperjs/core";
+
+const Padding0Tooltip = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    padding: "0"
+  }
+}));
+
+const FieldTooltipContent = observer((props: { fieldCtrl: FieldController }) => {
+  const { fieldCtrl } = props;
+
+  if (fieldCtrl.tooltipPosition === undefined) return <></>;
+
+  const Label = function (props: { text: string }) {
+    return (
+      <Typography variant="body2" component="span" className="field-canvas-tooltip-label" onClick={() => {}}>
+        {props.text}
+      </Typography>
+    );
+  };
+
+  return (
+    <Box>
+      <Label text="Curve" />
+      <Label text="Line" />
+      <Label text="Paste" />
+      <Label text="Select" />
+    </Box>
+  );
+});
 
 const MagnetReferenceLine = observer((props: { magnetRef: MagnetReference | undefined; fcc: FieldCanvasConverter }) => {
   const { magnetRef, fcc } = props;
@@ -440,10 +471,13 @@ class TouchInteractiveHandler {
 const FieldCanvasElement = observer((props: {}) => {
   const { app, appPreferences } = getAppStores();
 
-  const windowSize = useWindowSize((newSize: Vector, oldSize: Vector) => {
+  const windowSize = useWindowSize(action((newSize: Vector, oldSize: Vector) => {
     const ratio = (newSize.y + oldSize.y) / 2 / oldSize.y;
     app.fieldOffset = app.fieldOffset.multiply(ratio);
-  });
+
+    // UX: Hide tooltip when the window size changes
+    fieldCtrl.tooltipPosition = undefined;
+  }));
 
   const popperRef = React.useRef<Instance>(null);
   const stageBoxRef = React.useRef<HTMLDivElement>(null);
@@ -686,25 +720,19 @@ const FieldCanvasElement = observer((props: {}) => {
   const visiblePaths = app.paths.filter(path => path.visible);
 
   return (
-    <Tooltip
-      title={(() => {
-        if (fieldCtrl.tooltipPosition === undefined) return "";
-        return "Hi";
-      })()}
+    <Padding0Tooltip
+      title={<FieldTooltipContent fieldCtrl={fieldCtrl} />}
       placement="top"
       arrow
-      // followCursor
       open={fieldCtrl.tooltipPosition !== undefined}
       disableFocusListener
       disableHoverListener
       disableTouchListener
       PopperProps={{
-        // disablePortal: true,
+        disablePortal: true,
         popperRef,
         anchorEl: {
           getBoundingClientRect: () => {
-            console.log("hi");
-
             const div = stageBoxRef.current;
             if (div === null || fieldCtrl.tooltipPosition === undefined) return new DOMRect(0, 0, 0, 0);
 
@@ -764,7 +792,7 @@ const FieldCanvasElement = observer((props: {}) => {
           </Layer>
         </Stage>
       </Box>
-    </Tooltip>
+    </Padding0Tooltip>
   );
 });
 
