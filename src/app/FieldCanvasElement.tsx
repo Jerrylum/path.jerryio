@@ -26,6 +26,8 @@ import ReactDOM from "react-dom";
 import { MagnetReference } from "../core/Magnet";
 import { useWindowSize } from "../core/Hook";
 import { LayoutType } from "./Layout";
+import { Box, Tooltip } from "@mui/material";
+import { Instance } from "@popperjs/core";
 
 const MagnetReferenceLine = observer((props: { magnetRef: MagnetReference | undefined; fcc: FieldCanvasConverter }) => {
   const { magnetRef, fcc } = props;
@@ -104,6 +106,8 @@ class FieldController {
   areaSelectionEnd: Vector | undefined = undefined;
   isAddingControl: boolean = false;
   offsetStart: Vector | undefined = undefined;
+  isPendingShowTooltip: boolean = false;
+  tooltipPosition: Vector | undefined = undefined;
 
   constructor() {
     makeAutoObservable(this, { fcc: false });
@@ -237,18 +241,21 @@ class FieldController {
 }
 
 enum TouchAction {
-  None,
+  Start,
   PendingSelection,
   PanningAndScaling,
-  Selection
+  Selection,
+  Release,
+  End
 }
 
 class TouchInteractiveHandler {
-  touchAction: TouchAction = TouchAction.None;
+  touchAction: TouchAction = TouchAction.Start;
   touchesLastPosition: { [identifier: number]: Vector } = {};
   touchesVector: { [identifier: number]: Vector } = {};
 
   startSelectionTimer: NodeJS.Timer | undefined = undefined;
+  initialTime: number = 0;
   initialFieldScale: number = 0;
   initialPosition: Vector = new Vector(0, 0);
   initialDistanceBetweenTwoTouches: number = 0;
@@ -257,7 +264,10 @@ class TouchInteractiveHandler {
   constructor(private fieldCtrl: FieldController) {
     makeAutoObservable(this);
 
-    reaction(() => this.touchAction, () => this.interact())
+    reaction(
+      () => this.touchAction,
+      () => this.interact()
+    );
   }
 
   private toVector(t: Touch) {
@@ -265,8 +275,6 @@ class TouchInteractiveHandler {
   }
 
   onTouchStart(event: Konva.KonvaEventObject<TouchEvent>) {
-    const { app } = getAppStores();
-
     const evt = event.evt;
 
     [...evt.touches].forEach(t => {
@@ -279,14 +287,14 @@ class TouchInteractiveHandler {
     const keys = this.keys;
 
     if (evt.touches.length === 1) {
+      this.initialTime = Date.now();
       this.initialPosition = this.pos(keys[0]);
     } else if (evt.touches.length >= 2) {
       const touch1 = this.pos(keys[0]);
       const touch2 = this.pos(keys[1]);
       const distance = touch1.distance(touch2);
-      this.initialFieldScale = app.fieldScale;
       this.initialPosition = touch1.add(touch2).divide(2);
-      this.initialDistanceBetweenTwoTouches = Math.max(distance, 0.1);
+      this.initialDistanceBetweenTwoTouches = Math.max(distance, 0.1); // 0.1 pixel is the minimum distance
     }
 
     this.interactWithEvent(event);
@@ -315,16 +323,8 @@ class TouchInteractiveHandler {
 
     if (evt.touches.length === 0) {
       // TODO
-      this.touchAction = TouchAction.None;
       this.touchesVector = {};
       this.touchesLastPosition = {};
-      this.fieldCtrl.areaSelectionStart = undefined;
-      this.fieldCtrl.areaSelectionEnd = undefined;
-      this.fieldCtrl.offsetStart = undefined;
-
-      // ALGO: Cancel selection if the user lifts the finger
-      clearTimeout(this.startSelectionTimer);
-      this.startSelectionTimer = undefined;
     }
 
     this.interactWithEvent(event);
@@ -334,25 +334,40 @@ class TouchInteractiveHandler {
     const { app } = getAppStores();
 
     const keys = this.keys;
-    if (this.touchAction === TouchAction.None) {
+    if (this.touchAction === TouchAction.Start) {
+      this.fieldCtrl.isPendingShowTooltip =
+        this.fieldCtrl.areaSelectionStart === undefined &&
+        this.fieldCtrl.areaSelectionEnd === undefined &&
+        this.fieldCtrl.tooltipPosition === undefined;
+      this.fieldCtrl.areaSelectionStart = undefined;
+      this.fieldCtrl.areaSelectionEnd = undefined;
+      this.fieldCtrl.tooltipPosition = undefined;
+
       if (keys.length >= 1) {
         this.touchAction = TouchAction.PendingSelection;
 
-        this.startSelectionTimer = setTimeout(action(() => {
-          if (this.touchAction !== TouchAction.PendingSelection) return;
-          this.touchAction = TouchAction.Selection;
-          this.interact();
-        }), 600); // Magic number
+        this.startSelectionTimer = setTimeout(
+          action(() => {
+            if (this.touchAction !== TouchAction.PendingSelection) return;
+            this.touchAction = TouchAction.Selection;
+            this.interact();
+          }),
+          600
+        ); // Magic number
       } else {
-        this.touchAction = TouchAction.None;
+        this.touchAction = TouchAction.Start;
       }
     } else if (this.touchAction === TouchAction.PendingSelection) {
       if (keys.length >= 1) {
         const t = this.pos(keys[0]);
         if (t.distance(this.initialPosition) > 96 * 0.25) {
+          // 1/4 inch, magic number
+          this.initialFieldScale = app.fieldScale;
           this.fieldCtrl.offsetStart = t; // ALGO: The value doesn't matter
           this.touchAction = TouchAction.PanningAndScaling;
         }
+      } else {
+        this.touchAction = TouchAction.Release;
       }
     } else if (this.touchAction === TouchAction.PanningAndScaling) {
       if (keys.length === 1) {
@@ -366,9 +381,11 @@ class TouchInteractiveHandler {
 
         const vecPos = this.vec(keys[0]).add(this.vec(keys[1])).divide(2);
         this.fieldCtrl.doPanningWithVector(vecPos.divide(app.fieldScale));
+      } else {
+        this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.Selection) {
-      if (keys.length === 1) {
+      if (keys.length >= 1) {
         const posInPx = this.fieldCtrl.fcc.getUnboundedPxFromEvent(this.lastEvent!);
         if (posInPx === undefined) return;
 
@@ -376,6 +393,28 @@ class TouchInteractiveHandler {
           this.fieldCtrl.areaSelectionStart = posInPx;
         }
         this.fieldCtrl.doAreaSelection(posInPx);
+      } else {
+        this.touchAction = TouchAction.End;
+      }
+    } else if (this.touchAction === TouchAction.Release) {
+      if (Date.now() - this.initialTime < 600) {
+        // this.pos(keys[0]) is undefined, use last event
+        if (this.fieldCtrl.isPendingShowTooltip) {
+          this.fieldCtrl.tooltipPosition = getClientXY(this.lastEvent!.evt);
+        }
+      }
+      this.touchAction = TouchAction.End;
+    } else if (this.touchAction === TouchAction.End) {
+      if (keys.length === 0) {
+        this.fieldCtrl.areaSelectionStart = undefined;
+        this.fieldCtrl.areaSelectionEnd = undefined;
+        this.fieldCtrl.offsetStart = undefined;
+
+        // ALGO: Cancel selection if the user lifts the finger
+        clearTimeout(this.startSelectionTimer);
+        this.startSelectionTimer = undefined;
+      } else {
+        this.touchAction = TouchAction.Start;
       }
     }
   }
@@ -405,6 +444,9 @@ const FieldCanvasElement = observer((props: {}) => {
     const ratio = (newSize.y + oldSize.y) / 2 / oldSize.y;
     app.fieldOffset = app.fieldOffset.multiply(ratio);
   });
+
+  const popperRef = React.useRef<Instance>(null);
+  const stageBoxRef = React.useRef<HTMLDivElement>(null);
 
   const uc = new UnitConverter(UnitOfLength.Millimeter, app.gc.uol);
   const isExclusiveLayout = appPreferences.layoutType === LayoutType.EXCLUSIVE;
@@ -436,21 +478,6 @@ const FieldCanvasElement = observer((props: {}) => {
 
     evt.preventDefault();
 
-    // const touches = evt.touches;
-
-    // if (touches.length === 1) {
-    //   console.log("onTouchStartStage: 1 touch", touches.item(0));
-
-    //   if (fieldCtrl.areaSelectionStart === undefined) {
-    //     const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
-    //     if (posWithOffsetInPx === undefined) return;
-
-    //     fieldCtrl.offsetStart = posWithOffsetInPx.add(offset);
-    //   }
-    // } else {
-    //   // TODO
-    // }
-
     tiHandler.onTouchStart(event);
   }
 
@@ -459,37 +486,10 @@ const FieldCanvasElement = observer((props: {}) => {
 
     evt.preventDefault();
 
-    // const touches = evt.touches;
-
-    // if (touches.length === 1) {
-    //   console.log("onTouchMoveStage: 1 touch", event.evt.type);
-
-    //   const posInPx = fcc.getUnboundedPxFromEvent(event);
-    //   if (posInPx === undefined) return;
-    //   const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
-    //   if (posWithOffsetInPx === undefined) return;
-
-    //   // TODO
-    //   fieldCtrl.doAreaSelection(posInPx) || fieldCtrl.doPanning(posWithOffsetInPx) || fieldCtrl.doShowRobot(posInPx);
-    // } else {
-    //   // TODO
-    // }
-
     tiHandler.onTouchMove(event);
   }
 
   function onTouchEndStage(event: Konva.KonvaEventObject<TouchEvent>) {
-    // const evt = event.evt;
-
-    // const touches = evt.touches;
-
-    // if (touches.length === 0) {
-    //   // TODO
-    //   fieldCtrl.areaSelectionStart = undefined;
-    //   fieldCtrl.areaSelectionEnd = undefined;
-    //   fieldCtrl.offsetStart = undefined;
-    // }
-
     tiHandler.onTouchEnd(event);
   }
 
@@ -686,56 +686,85 @@ const FieldCanvasElement = observer((props: {}) => {
   const visiblePaths = app.paths.filter(path => path.visible);
 
   return (
-    <Stage
-      className="field-canvas"
-      width={fcc.pixelWidth}
-      height={fcc.pixelHeight}
-      scale={new Vector(scale, scale)}
-      offset={offset.subtract(fcc.viewOffset)}
-      draggable
-      style={{ cursor: fieldCtrl.offsetStart ? "grab" : "" }}
-      onTouchStart={action(onTouchStartStage)}
-      onTouchMove={action(onTouchMoveStage)}
-      onTouchEnd={action(onTouchEndStage)}
-      onContextMenu={e => e.evt.preventDefault()}
-      onWheel={action(onWheelStage)}
-      onMouseDown={action(onMouseDownStage)}
-      onMouseMove={action(onMouseMoveOrDragStage)}
-      onMouseUp={action(onMouseUpStage)}
-      onDragMove={action(onMouseMoveOrDragStage)}
-      onDragEnd={action(onDragEndStage)}>
-      <Layer>
-        {fieldImage && (
-          <Image
-            image={fieldImage}
-            width={(fieldImage.width / fieldImage.height) * fcc.pixelHeight}
-            height={fcc.pixelHeight}
-            onClick={action(onClickFieldImage)}
-          />
-        )}
-        {app.magnet.map((magnetRef, idx) => (
-          <MagnetReferenceLine key={idx} magnetRef={magnetRef} fcc={fcc} />
-        ))}
-        {visiblePaths.map(path => (
-          <PathPoints key={path.uid} path={path} fcc={fcc} />
-        ))}
-        {visiblePaths.map(path => (
-          <PathSegments key={path.uid} path={path} fcc={fcc} />
-        ))}
-        {visiblePaths.map(path => (
-          <PathControls key={path.uid} path={path} fcc={fcc} isGrabAndMove={fieldCtrl.offsetStart !== undefined} />
-        ))}
-        {app.gc.showRobot && app.robot.position.visible && (
-          <RobotElement fcc={fcc} pos={app.robot.position} width={app.gc.robotWidth} height={app.gc.robotHeight} />
-        )}
-        <Group name="selected-controls" />
-        <AreaSelectionElement
-          from={fieldCtrl.areaSelectionStart}
-          to={fieldCtrl.areaSelectionEnd}
-          animation={tiHandler.keys.length !== 0}
-        />
-      </Layer>
-    </Stage>
+    <Tooltip
+      title={(() => {
+        if (fieldCtrl.tooltipPosition === undefined) return "";
+        return "Hi";
+      })()}
+      placement="top"
+      arrow
+      // followCursor
+      open={fieldCtrl.tooltipPosition !== undefined}
+      disableFocusListener
+      disableHoverListener
+      disableTouchListener
+      PopperProps={{
+        // disablePortal: true,
+        popperRef,
+        anchorEl: {
+          getBoundingClientRect: () => {
+            console.log("hi");
+
+            const div = stageBoxRef.current;
+            if (div === null || fieldCtrl.tooltipPosition === undefined) return new DOMRect(0, 0, 0, 0);
+
+            return new DOMRect(fieldCtrl.tooltipPosition.x, fieldCtrl.tooltipPosition.y, 0, 0);
+          }
+        }
+      }}>
+      <Box ref={stageBoxRef}>
+        <Stage
+          className="field-canvas"
+          width={fcc.pixelWidth}
+          height={fcc.pixelHeight}
+          scale={new Vector(scale, scale)}
+          offset={offset.subtract(fcc.viewOffset)}
+          draggable
+          style={{ cursor: fieldCtrl.offsetStart ? "grab" : "" }}
+          onTouchStart={action(onTouchStartStage)}
+          onTouchMove={action(onTouchMoveStage)}
+          onTouchEnd={action(onTouchEndStage)}
+          onContextMenu={e => e.evt.preventDefault()}
+          onWheel={action(onWheelStage)}
+          onMouseDown={action(onMouseDownStage)}
+          onMouseMove={action(onMouseMoveOrDragStage)}
+          onMouseUp={action(onMouseUpStage)}
+          onDragMove={action(onMouseMoveOrDragStage)}
+          onDragEnd={action(onDragEndStage)}>
+          <Layer>
+            {fieldImage && (
+              <Image
+                image={fieldImage}
+                width={(fieldImage.width / fieldImage.height) * fcc.pixelHeight}
+                height={fcc.pixelHeight}
+                onClick={action(onClickFieldImage)}
+              />
+            )}
+            {app.magnet.map((magnetRef, idx) => (
+              <MagnetReferenceLine key={idx} magnetRef={magnetRef} fcc={fcc} />
+            ))}
+            {visiblePaths.map(path => (
+              <PathPoints key={path.uid} path={path} fcc={fcc} />
+            ))}
+            {visiblePaths.map(path => (
+              <PathSegments key={path.uid} path={path} fcc={fcc} />
+            ))}
+            {visiblePaths.map(path => (
+              <PathControls key={path.uid} path={path} fcc={fcc} isGrabAndMove={fieldCtrl.offsetStart !== undefined} />
+            ))}
+            {app.gc.showRobot && app.robot.position.visible && (
+              <RobotElement fcc={fcc} pos={app.robot.position} width={app.gc.robotWidth} height={app.gc.robotHeight} />
+            )}
+            <Group name="selected-controls" />
+            <AreaSelectionElement
+              from={fieldCtrl.areaSelectionStart}
+              to={fieldCtrl.areaSelectionEnd}
+              animation={tiHandler.keys.length !== 0}
+            />
+          </Layer>
+        </Stage>
+      </Box>
+    </Tooltip>
   );
 });
 
