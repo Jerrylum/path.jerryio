@@ -33,7 +33,8 @@ const Padding0Tooltip = styled(({ className, ...props }: TooltipProps) => (
   <Tooltip {...props} classes={{ popper: className }} />
 ))(({ theme }) => ({
   [`& .${tooltipClasses.tooltip}`]: {
-    padding: "0"
+    padding: "0",
+    marginBottom: "8px !important"
   }
 }));
 
@@ -42,20 +43,83 @@ const FieldTooltipContent = observer((props: { fieldCtrl: FieldController }) => 
 
   if (fieldCtrl.tooltipPosition === undefined) return <></>;
 
-  const Label = function (props: { text: string }) {
+  const { app, clipboard } = getAppStores();
+
+  const Label = function (props: { text: string; onClick: () => void }) {
     return (
-      <Typography variant="body2" component="span" className="field-canvas-tooltip-label" onClick={() => {}}>
+      <Typography
+        variant="body2"
+        component="span"
+        className="field-canvas-tooltip-label"
+        onClick={action(() => {
+          props.onClick();
+          fieldCtrl.tooltipPosition = undefined; // UX: Hide tooltip
+        })}>
         {props.text}
       </Typography>
     );
   };
 
+  function onAddCurve() {
+    if (fieldCtrl.tooltipPosition === undefined) return;
+
+    const posInPx = fieldCtrl.fcc.getUnboundedPx(fieldCtrl.tooltipPosition);
+    if (posInPx === undefined) return;
+
+    const cpInUOL = fieldCtrl.fcc.toUOL(new EndControl(posInPx.x, posInPx.y, 0));
+
+    // UX: Set target path to "interested path"
+    let targetPath: Path | undefined = app.interestedPath();
+    if (targetPath === undefined) {
+      // UX: Create empty new path if: no path exists
+      targetPath = app.format.createPath();
+      app.history.execute(`Add path ${targetPath.uid}`, new AddPath(app.paths, targetPath));
+    }
+
+    if (targetPath.visible && !targetPath.lock) {
+      // UX: Add control point if: path is selected and visible and not locked
+      app.history.execute(
+        `Add curve segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
+        new AddSegment(targetPath, cpInUOL, SegmentVariant.CUBIC)
+      );
+    }
+  }
+
+  function onAddLine() {
+    if (fieldCtrl.tooltipPosition === undefined) return;
+
+    const posInPx = fieldCtrl.fcc.getUnboundedPx(fieldCtrl.tooltipPosition);
+    if (posInPx === undefined) return;
+
+    const cpInUOL = fieldCtrl.fcc.toUOL(new EndControl(posInPx.x, posInPx.y, 0));
+
+    // UX: Set target path to "interested path"
+    let targetPath: Path | undefined = app.interestedPath();
+    if (targetPath === undefined) {
+      // UX: Create empty new path if: no path exists
+      targetPath = app.format.createPath();
+      app.history.execute(`Add path ${targetPath.uid}`, new AddPath(app.paths, targetPath));
+    }
+
+    if (targetPath.visible && !targetPath.lock) {
+      // UX: Add control point if: path is selected and visible and not locked
+      app.history.execute(
+        `Add linear segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
+        new AddSegment(targetPath, cpInUOL, SegmentVariant.LINEAR)
+      );
+    }
+  }
+
+  function onPaste() {
+    clipboard.paste(undefined);
+  }
+
   return (
     <Box>
-      <Label text="Curve" />
-      <Label text="Line" />
-      <Label text="Paste" />
-      <Label text="Select" />
+      <Label text="Curve" onClick={onAddCurve} />
+      <Label text="Line" onClick={onAddLine} />
+      {clipboard.hasData && <Label text="Paste" onClick={onPaste} />}
+      <Label text="Select" onClick={() => {}} />
     </Box>
   );
 });
@@ -471,13 +535,15 @@ class TouchInteractiveHandler {
 const FieldCanvasElement = observer((props: {}) => {
   const { app, appPreferences } = getAppStores();
 
-  const windowSize = useWindowSize(action((newSize: Vector, oldSize: Vector) => {
-    const ratio = (newSize.y + oldSize.y) / 2 / oldSize.y;
-    app.fieldOffset = app.fieldOffset.multiply(ratio);
+  const windowSize = useWindowSize(
+    action((newSize: Vector, oldSize: Vector) => {
+      const ratio = (newSize.y + oldSize.y) / 2 / oldSize.y;
+      app.fieldOffset = app.fieldOffset.multiply(ratio);
 
-    // UX: Hide tooltip when the window size changes
-    fieldCtrl.tooltipPosition = undefined;
-  }));
+      // UX: Hide tooltip when the window size changes
+      fieldCtrl.tooltipPosition = undefined;
+    })
+  );
 
   const popperRef = React.useRef<Instance>(null);
   const stageBoxRef = React.useRef<HTMLDivElement>(null);
@@ -500,7 +566,8 @@ const FieldCanvasElement = observer((props: {}) => {
     canvasSizeInUOL,
     canvasSizeInUOL,
     offset,
-    scale
+    scale,
+    stageBoxRef.current
   );
 
   const fieldCtrl = React.useState(new FieldController())[0];

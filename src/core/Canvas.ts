@@ -38,7 +38,8 @@ export class FieldCanvasConverter {
     public fieldWidth: number,
     public fieldHeight: number,
     public offset: Vector,
-    public scale: number
+    public scale: number,
+    public container: HTMLElement | null
   ) {
     this.pixelWidthHalf = pixelWidth / 2;
     this.pixelHeightHalf = pixelHeight / 2;
@@ -61,23 +62,26 @@ export class FieldCanvasConverter {
     return rtn;
   }
 
-  getUnboundedPxFromNativeEvent(
-    event: DragEvent | MouseEvent | TouchEvent,
-    element: HTMLElement | null,
-    useOffset = true,
-    useScale = true
-  ): Vector | undefined {
-    const canvasPos = element?.getBoundingClientRect();
+  getUnboundedPx(clientXY: Vector, useOffset = true, useScale = true): Vector | undefined {
+    const canvasPos = this.container?.getBoundingClientRect();
     if (canvasPos === undefined) return;
 
     const offset = useOffset ? this.offset.subtract(this.viewOffset) : 0;
 
     const scale = useScale ? this.scale : 1;
 
-    const rtn = getClientXY(event).subtract(new Vector(canvasPos.left, canvasPos.top));
+    const rtn = clientXY.subtract(new Vector(canvasPos.left, canvasPos.top));
 
     // UX: Calculate the position of the control point by the client mouse position
     return rtn.divide(scale).add(offset);
+  }
+
+  getUnboundedPxFromNativeEvent(
+    event: DragEvent | MouseEvent | TouchEvent,
+    useOffset = true,
+    useScale = true
+  ): Vector | undefined {
+    return this.getUnboundedPx(getClientXY(event), useOffset, useScale);
   }
 
   getUnboundedPxFromEvent(
@@ -85,12 +89,7 @@ export class FieldCanvasConverter {
     useOffset = true,
     useScale = true
   ): Vector | undefined {
-    return this.getUnboundedPxFromNativeEvent(
-      event.evt,
-      event.target.getStage()?.container() || null,
-      useOffset,
-      useScale
-    );
+    return this.getUnboundedPxFromNativeEvent(event.evt, useOffset, useScale);
   }
 }
 
@@ -167,3 +166,4 @@ export class GraphCanvasConverter {
     return new Vector(this.toPxNumber(x), y);
   }
 }
+
