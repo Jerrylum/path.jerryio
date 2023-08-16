@@ -597,21 +597,21 @@ const ViewMenuItems = () => {
       showLeftIcon={false}
       label="Zoom In"
       hotkey="Mod+Add"
-      onClick={() => (app.fieldScale += 0.5)}
+      onClick={() => (app.fieldEditor.scale += 0.5)}
     />,
     <CustomMenuItem
       key={makeId(10)}
       showLeftIcon={false}
       label="Zoom Out"
       hotkey="Mod+Minus"
-      onClick={() => (app.fieldScale -= 0.5)}
+      onClick={() => (app.fieldEditor.scale -= 0.5)}
     />,
     <CustomMenuItem
       key={makeId(10)}
       showLeftIcon={false}
       label="Zoom to Fit"
       hotkey="Mod+0"
-      onClick={() => app.resetFieldDisplay()}
+      onClick={() => app.resetFieldEditor()}
     />,
     <Divider key={makeId(10)} />,
     <CustomMenuItem

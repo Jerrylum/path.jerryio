@@ -83,9 +83,9 @@ const Root = observer(() => {
   useCustomHotkeys("Mod+B", () => (app.view.showSpeedCanvas = !app.view.showSpeedCanvas), ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Mod+J", () => (app.view.showRightPanel = !app.view.showRightPanel), ENABLE_ON_ALL_INPUT_FIELDS);
 
-  useCustomHotkeys("Mod+Add,Mod+Equal", () => (app.fieldScale += 0.5), ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+Subtract,Mod+Minus", () => (app.fieldScale -= 0.5), ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+0", () => app.resetFieldDisplay(), ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys("Mod+Add,Mod+Equal", () => (app.fieldEditor.scale += 0.5), ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys("Mod+Subtract,Mod+Minus", () => (app.fieldEditor.scale -= 0.5), ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys("Mod+0", () => app.resetFieldEditor(), ENABLE_ON_ALL_INPUT_FIELDS);
 
   useCustomHotkeys("R", () => (app.gc.showRobot = !app.gc.showRobot), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
 

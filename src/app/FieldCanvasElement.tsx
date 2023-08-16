@@ -28,6 +28,7 @@ import { useWindowSize } from "../core/Hook";
 import { LayoutType } from "./Layout";
 import { Box, Tooltip, TooltipProps, Typography, styled, tooltipClasses } from "@mui/material";
 import { Instance } from "@popperjs/core";
+import { FieldEditor } from "../core/FieldEditor";
 
 const Padding0Tooltip = styled(({ className, ...props }: TooltipProps) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -38,10 +39,10 @@ const Padding0Tooltip = styled(({ className, ...props }: TooltipProps) => (
   }
 }));
 
-const FieldTooltipContent = observer((props: { fieldCtrl: FieldController }) => {
-  const { fieldCtrl } = props;
+const FieldTooltipContent = observer((props: { fieldEditor: FieldEditor }) => {
+  const { fieldEditor } = props;
 
-  if (fieldCtrl.tooltipPosition === undefined) return <></>;
+  if (fieldEditor.tooltipPosition === undefined) return <></>;
 
   const { app, clipboard } = getAppStores();
 
@@ -53,7 +54,7 @@ const FieldTooltipContent = observer((props: { fieldCtrl: FieldController }) => 
         className="field-canvas-tooltip-label"
         onClick={action(() => {
           props.onClick();
-          fieldCtrl.tooltipPosition = undefined; // UX: Hide tooltip
+          fieldEditor.tooltipPosition = undefined; // UX: Hide tooltip
         })}>
         {props.text}
       </Typography>
@@ -61,12 +62,12 @@ const FieldTooltipContent = observer((props: { fieldCtrl: FieldController }) => 
   };
 
   function onAddCurve() {
-    if (fieldCtrl.tooltipPosition === undefined) return;
+    if (fieldEditor.tooltipPosition === undefined) return;
 
-    const posInPx = fieldCtrl.fcc.getUnboundedPx(fieldCtrl.tooltipPosition);
+    const posInPx = fieldEditor.fcc.getUnboundedPx(fieldEditor.tooltipPosition);
     if (posInPx === undefined) return;
 
-    const cpInUOL = fieldCtrl.fcc.toUOL(new EndControl(posInPx.x, posInPx.y, 0));
+    const cpInUOL = fieldEditor.fcc.toUOL(new EndControl(posInPx.x, posInPx.y, 0));
 
     // UX: Set target path to "interested path"
     let targetPath: Path | undefined = app.interestedPath();
@@ -86,12 +87,12 @@ const FieldTooltipContent = observer((props: { fieldCtrl: FieldController }) => 
   }
 
   function onAddLine() {
-    if (fieldCtrl.tooltipPosition === undefined) return;
+    if (fieldEditor.tooltipPosition === undefined) return;
 
-    const posInPx = fieldCtrl.fcc.getUnboundedPx(fieldCtrl.tooltipPosition);
+    const posInPx = fieldEditor.fcc.getUnboundedPx(fieldEditor.tooltipPosition);
     if (posInPx === undefined) return;
 
-    const cpInUOL = fieldCtrl.fcc.toUOL(new EndControl(posInPx.x, posInPx.y, 0));
+    const cpInUOL = fieldEditor.fcc.toUOL(new EndControl(posInPx.x, posInPx.y, 0));
 
     // UX: Set target path to "interested path"
     let targetPath: Path | undefined = app.interestedPath();
@@ -194,147 +195,6 @@ const PathControls = observer((props: { path: Path; fcc: FieldCanvasConverter; i
   );
 });
 
-class FieldController {
-  fcc!: FieldCanvasConverter;
-
-  areaSelectionStart: Vector | undefined = undefined;
-  areaSelectionEnd: Vector | undefined = undefined;
-  isAddingControl: boolean = false;
-  offsetStart: Vector | undefined = undefined;
-  isPendingShowTooltip: boolean = false;
-  tooltipPosition: Vector | undefined = undefined;
-
-  constructor() {
-    makeAutoObservable(this, { fcc: false });
-  }
-
-  doAreaSelection(posInPx: Vector): boolean {
-    const { app } = getAppStores();
-
-    if (this.areaSelectionStart === undefined) return false;
-    // UX: Select control point if mouse down on field image
-
-    // UX: Use flushSync to prevent lagging
-    // See: https://github.com/reactwg/react-18/discussions/21
-    // ReactDOM.flushSync(() => setAreaSelectionEnd(posInPx));
-    ReactDOM.flushSync(action(() => (this.areaSelectionEnd = posInPx)));
-    app.updateAreaSelection(this.fcc.toUOL(this.areaSelectionStart), this.fcc.toUOL(posInPx));
-    return true;
-  }
-
-  doPanning(posInPx: Vector): boolean {
-    const { app } = getAppStores();
-
-    // UX: Move field if: middle click
-    if (this.offsetStart === undefined) return false;
-
-    const newOffset = this.offsetStart.subtract(posInPx);
-    newOffset.x = clamp(
-      newOffset.x,
-      -this.fcc.pixelWidth * 0.9 + this.fcc.viewOffset.x,
-      this.fcc.pixelWidth * 0.9 - this.fcc.viewOffset.x
-    );
-    newOffset.y = clamp(newOffset.y, -this.fcc.pixelHeight * 0.9, this.fcc.pixelHeight * 0.9);
-    app.fieldOffset = newOffset;
-    return true;
-  }
-
-  doPanningWithVector(vec: Vector): boolean {
-    const { app } = getAppStores();
-
-    // UX: Move field if offsetStart is not undefined, the value is not used in the calculation but still need to check
-    if (this.offsetStart === undefined) return false;
-
-    const newOffset = app.fieldOffset.subtract(vec);
-    newOffset.x = clamp(
-      newOffset.x,
-      -this.fcc.pixelWidth * 0.9 + this.fcc.viewOffset.x,
-      this.fcc.pixelWidth * 0.9 - this.fcc.viewOffset.x
-    );
-    newOffset.y = clamp(newOffset.y, -this.fcc.pixelHeight * 0.9, this.fcc.pixelHeight * 0.9);
-    app.fieldOffset = newOffset;
-    return true;
-  }
-
-  doShowRobot(posInPx: Vector): boolean {
-    const { app } = getAppStores();
-
-    // UX: Show robot if: alt key is down and no other action is performed
-    if (app.gc.showRobot === false) return false;
-
-    if (posInPx === undefined) return false;
-    const posInUOL = this.fcc.toUOL(posInPx);
-
-    const interested = app.interestedPath();
-    if (interested === undefined) return false;
-
-    const magnetDistance = app.gc.controlMagnetDistance;
-
-    const points = interested.cachedResult.points;
-
-    let closestPoint = undefined;
-    let closestDistance = Number.MAX_VALUE;
-    for (let i = 0; i < points.length; i++) {
-      const point = points[i];
-      const distance = point.distance(posInUOL);
-      if (distance < closestDistance) {
-        closestPoint = point;
-        closestDistance = distance;
-      }
-    }
-
-    if (closestPoint !== undefined && closestDistance < magnetDistance * 4) {
-      app.robot.position.setXY(closestPoint);
-
-      const t = closestPoint.sampleT;
-      const segment = closestPoint.sampleRef;
-      const c0 = segment.first;
-      const c3 = segment.last;
-
-      if (app.gc.robotIsHolonomic) {
-        const c3Heading = toDerivativeHeading(c0.heading, c3.heading);
-        app.robot.position.heading = c0.heading + c3Heading * t;
-      } else {
-        const heading = toHeading(firstDerivative(closestPoint.sampleRef, closestPoint.sampleT));
-        app.robot.position.heading = heading;
-      }
-
-      app.robot.position.visible = true;
-    }
-
-    return true;
-  }
-
-  doScaleField(variable: number, posInPx: Vector): boolean {
-    const { app } = getAppStores();
-
-    const oldScale = app.fieldScale;
-    const oldOffset = app.fieldOffset;
-
-    const newScale = clamp(variable, 1, 3);
-
-    // offset is offset in Konva coordinate system (KC)
-    // offsetInCC is offset in HTML Canvas coordinate system (CC)
-    const offsetInCC = oldOffset.multiply(oldScale).multiply(-1);
-
-    const canvasHalfSizeWithScale = (this.fcc.pixelHeight * oldScale) / 2;
-    const newCanvasHalfSizeWithScale = (this.fcc.pixelHeight * newScale) / 2;
-
-    // UX: Maintain zoom center at mouse pointer
-    const fieldCenter = offsetInCC.add(canvasHalfSizeWithScale);
-    const newFieldCenter = offsetInCC.add(newCanvasHalfSizeWithScale);
-    const relativePos = posInPx.subtract(fieldCenter).divide(oldScale);
-    const newPos = newFieldCenter.add(relativePos.multiply(newScale));
-    const newOffsetInCC = posInPx.subtract(newPos).add(offsetInCC);
-    const newOffsetInKC = newOffsetInCC.multiply(-1).divide(newScale);
-
-    app.fieldScale = newScale;
-    app.fieldOffset = newOffsetInKC;
-
-    return true;
-  }
-}
-
 enum TouchAction {
   Start,
   PendingSelection,
@@ -356,7 +216,7 @@ class TouchInteractiveHandler {
   initialDistanceBetweenTwoTouches: number = 0;
   lastEvent: Konva.KonvaEventObject<TouchEvent> | undefined = undefined;
 
-  constructor(private fieldCtrl: FieldController) {
+  constructor() {
     makeAutoObservable(this);
 
     reaction(
@@ -430,13 +290,11 @@ class TouchInteractiveHandler {
 
     const keys = this.keys;
     if (this.touchAction === TouchAction.Start) {
-      this.fieldCtrl.isPendingShowTooltip =
-        this.fieldCtrl.areaSelectionStart === undefined &&
-        this.fieldCtrl.areaSelectionEnd === undefined &&
-        this.fieldCtrl.tooltipPosition === undefined;
-      this.fieldCtrl.areaSelectionStart = undefined;
-      this.fieldCtrl.areaSelectionEnd = undefined;
-      this.fieldCtrl.tooltipPosition = undefined;
+      app.fieldEditor.isPendingShowTooltip =
+        app.fieldEditor.areaSelection === undefined &&
+        app.fieldEditor.tooltipPosition === undefined;
+      app.fieldEditor.endAreaSelection();
+      app.fieldEditor.tooltipPosition = undefined;
 
       if (keys.length >= 1) {
         this.touchAction = TouchAction.PendingSelection;
@@ -444,8 +302,14 @@ class TouchInteractiveHandler {
         this.startSelectionTimer = setTimeout(
           action(() => {
             if (this.touchAction !== TouchAction.PendingSelection) return;
+
+            app.setSelected([]);
+
+            const posInPx = app.fieldEditor.fcc.getUnboundedPxFromEvent(this.lastEvent!);
+            if (posInPx === undefined) return;
+
+            app.fieldEditor.startAreaSelection(posInPx);
             this.touchAction = TouchAction.Selection;
-            this.interact();
           }),
           600
         ); // Magic number
@@ -457,8 +321,8 @@ class TouchInteractiveHandler {
         const t = this.pos(keys[0]);
         if (t.distance(this.initialPosition) > 96 * 0.25) {
           // 1/4 inch, magic number
-          this.initialFieldScale = app.fieldScale;
-          this.fieldCtrl.offsetStart = t; // ALGO: The value doesn't matter
+          this.initialFieldScale = app.fieldEditor.scale;
+          app.fieldEditor.offsetStart = t; // ALGO: The value doesn't matter
           this.touchAction = TouchAction.PanningAndScaling;
         }
       } else {
@@ -466,44 +330,40 @@ class TouchInteractiveHandler {
       }
     } else if (this.touchAction === TouchAction.PanningAndScaling) {
       if (keys.length === 1) {
-        this.fieldCtrl.doPanningWithVector(this.touchesVector[this.keys[0]].divide(app.fieldScale));
+        app.fieldEditor.doPanningWithVector(this.touchesVector[this.keys[0]].divide(app.fieldEditor.scale));
       } else if (keys.length >= 2) {
         const t1 = this.pos(keys[0]);
         const t2 = this.pos(keys[1]);
         const scale = this.initialFieldScale * (t1.distance(t2) / this.initialDistanceBetweenTwoTouches);
         const middlePos = t1.add(t2).divide(2);
-        this.fieldCtrl.doScaleField(scale, middlePos);
+        app.fieldEditor.doScaleField(scale, middlePos);
 
         const vecPos = this.vec(keys[0]).add(this.vec(keys[1])).divide(2);
-        this.fieldCtrl.doPanningWithVector(vecPos.divide(app.fieldScale));
+        app.fieldEditor.doPanningWithVector(vecPos.divide(app.fieldEditor.scale));
       } else {
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.Selection) {
       if (keys.length >= 1) {
-        const posInPx = this.fieldCtrl.fcc.getUnboundedPxFromEvent(this.lastEvent!);
+        const posInPx = app.fieldEditor.fcc.getUnboundedPxFromEvent(this.lastEvent!);
         if (posInPx === undefined) return;
 
-        if (this.fieldCtrl.areaSelectionStart === undefined) {
-          this.fieldCtrl.areaSelectionStart = posInPx;
-        }
-        this.fieldCtrl.doAreaSelection(posInPx);
+        app.fieldEditor.updateAreaSelection(posInPx);
       } else {
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.Release) {
       if (Date.now() - this.initialTime < 600) {
         // this.pos(keys[0]) is undefined, use last event
-        if (this.fieldCtrl.isPendingShowTooltip) {
-          this.fieldCtrl.tooltipPosition = getClientXY(this.lastEvent!.evt);
+        if (app.fieldEditor.isPendingShowTooltip) {
+          app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!.evt);
         }
       }
       this.touchAction = TouchAction.End;
     } else if (this.touchAction === TouchAction.End) {
       if (keys.length === 0) {
-        this.fieldCtrl.areaSelectionStart = undefined;
-        this.fieldCtrl.areaSelectionEnd = undefined;
-        this.fieldCtrl.offsetStart = undefined;
+        app.fieldEditor.endAreaSelection();
+        app.fieldEditor.offsetStart = undefined;
 
         // ALGO: Cancel selection if the user lifts the finger
         clearTimeout(this.startSelectionTimer);
@@ -538,10 +398,10 @@ const FieldCanvasElement = observer((props: {}) => {
   const windowSize = useWindowSize(
     action((newSize: Vector, oldSize: Vector) => {
       const ratio = (newSize.y + oldSize.y) / 2 / oldSize.y;
-      app.fieldOffset = app.fieldOffset.multiply(ratio);
+      app.fieldEditor.offset = app.fieldEditor.offset.multiply(ratio);
 
       // UX: Hide tooltip when the window size changes
-      fieldCtrl.tooltipPosition = undefined;
+      fieldEditor.tooltipPosition = undefined;
     })
   );
 
@@ -557,8 +417,8 @@ const FieldCanvasElement = observer((props: {}) => {
 
   const [fieldImage] = useImage(fieldImageUrl);
 
-  const offset = app.fieldOffset;
-  const scale = app.fieldScale;
+  const offset = app.fieldEditor.offset;
+  const scale = app.fieldEditor.scale;
 
   const fcc = new FieldCanvasConverter(
     canvasWidthInPx,
@@ -570,9 +430,9 @@ const FieldCanvasElement = observer((props: {}) => {
     stageBoxRef.current
   );
 
-  const fieldCtrl = React.useState(new FieldController())[0];
-  fieldCtrl.fcc = fcc;
-  const tiHandler = React.useState(new TouchInteractiveHandler(fieldCtrl))[0];
+  app.fieldEditor.fcc = fcc;
+  const fieldEditor = app.fieldEditor;
+  const tiHandler = React.useState(new TouchInteractiveHandler())[0];
 
   function onTouchStartStage(event: Konva.KonvaEventObject<TouchEvent>) {
     const evt = event.evt;
@@ -600,21 +460,21 @@ const FieldCanvasElement = observer((props: {}) => {
     if (
       evt.ctrlKey === false &&
       (evt.deltaX !== 0 || evt.deltaY !== 0) &&
-      fieldCtrl.offsetStart === undefined &&
+      fieldEditor.offsetStart === undefined &&
       app.wheelControl("panning")
     ) {
       // UX: Panning if: ctrl key up + wheel/mouse pad + no "Grab & Move" + not changing heading value with scroll wheel in the last 300ms
 
       evt.preventDefault();
 
-      const newOffset = app.fieldOffset.add(new Vector(evt.deltaX * 0.5, evt.deltaY * 0.5).divide(app.fieldScale));
+      const newOffset = app.fieldEditor.offset.add(new Vector(evt.deltaX * 0.5, evt.deltaY * 0.5).divide(app.fieldEditor.scale));
       newOffset.x = clamp(
         newOffset.x,
         -canvasWidthInPx * 0.9 + fcc.viewOffset.x,
         canvasWidthInPx * 0.9 - fcc.viewOffset.x
       );
       newOffset.y = clamp(newOffset.y, -canvasHeightInPx * 0.9, canvasHeightInPx * 0.9);
-      app.fieldOffset = newOffset;
+      app.fieldEditor.offset = newOffset;
     } else if (evt.ctrlKey === true && evt.deltaY !== 0) {
       // UX: Zoom in/out if: wheel while ctrl key down
 
@@ -623,7 +483,7 @@ const FieldCanvasElement = observer((props: {}) => {
       const pos = fcc.getUnboundedPxFromEvent(event, false, false);
       if (pos === undefined) return;
 
-      fieldCtrl.doScaleField(scale * (1 - evt.deltaY / 1000), pos);
+      fieldEditor.doScaleField(scale * (1 - evt.deltaY / 1000), pos);
     }
   }
 
@@ -633,12 +493,12 @@ const FieldCanvasElement = observer((props: {}) => {
     if ((evt.button === 0 || evt.button === 2) && event.target instanceof Konva.Image) {
       // UX: A flag to indicate that the user is adding a control, this will set to false if mouse is moved
       // UX: onClickFieldImage will check this state, control can only be added inside the field image because of this
-      fieldCtrl.isAddingControl = true;
+      fieldEditor.isAddingControl = true;
     }
 
     if (
       evt.button === 0 &&
-      fieldCtrl.offsetStart === undefined &&
+      fieldEditor.offsetStart === undefined &&
       (event.target instanceof Konva.Stage || event.target instanceof Konva.Image)
     ) {
       // left click
@@ -651,12 +511,10 @@ const FieldCanvasElement = observer((props: {}) => {
       }
 
       // UX: selectedBefore is empty if: left click without shift
-      app.startAreaSelection();
-
       const posInPx = fcc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
-      fieldCtrl.areaSelectionStart = posInPx;
-    } else if (evt.button === 1 && fieldCtrl.areaSelectionStart === undefined) {
+      app.fieldEditor.startAreaSelection(posInPx);
+    } else if (evt.button === 1 && fieldEditor.areaSelection === undefined) {
       // middle click
       // UX: Start "Grab & Move" if: middle click at any position
       evt.preventDefault(); // UX: Prevent default action (scrolling)
@@ -664,8 +522,8 @@ const FieldCanvasElement = observer((props: {}) => {
       const posInPx = fcc.getUnboundedPxFromEvent(event, false);
       if (posInPx === undefined) return;
 
-      fieldCtrl.offsetStart = posInPx.add(offset);
-    } else if (evt.button === 1 && fieldCtrl.areaSelectionStart !== undefined) {
+      fieldEditor.offsetStart = posInPx.add(offset);
+    } else if (evt.button === 1 && fieldEditor.areaSelection !== undefined) {
       // middle click
       // UX: Do not start "Grab & Move" if it is in area selection, but still prevent default
       evt.preventDefault(); // UX: Prevent default action (scrolling)
@@ -689,14 +547,16 @@ const FieldCanvasElement = observer((props: {}) => {
     if (event.evt instanceof TouchEvent) {
       tiHandler.onTouchMove(event as Konva.KonvaEventObject<TouchEvent>);
     } else {
-      fieldCtrl.isAddingControl = false;
+      fieldEditor.isAddingControl = false;
 
       const posInPx = fcc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
       const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
       if (posWithOffsetInPx === undefined) return;
 
-      fieldCtrl.doAreaSelection(posInPx) || fieldCtrl.doPanning(posWithOffsetInPx) || fieldCtrl.doShowRobot(posInPx);
+      fieldEditor.updateAreaSelection(posInPx) ||
+        fieldEditor.doPanning(posWithOffsetInPx) ||
+        fieldEditor.doShowRobot(posInPx);
     }
   }
 
@@ -706,11 +566,10 @@ const FieldCanvasElement = observer((props: {}) => {
 
     if (event.evt.button === 0) {
       // left click
-      fieldCtrl.areaSelectionStart = undefined;
-      fieldCtrl.areaSelectionEnd = undefined;
+      fieldEditor.endAreaSelection();
     } else if (event.evt.button === 1) {
       // middle click
-      fieldCtrl.offsetStart = undefined;
+      fieldEditor.offsetStart = undefined;
     }
 
     app.magnet = [];
@@ -734,9 +593,8 @@ const FieldCanvasElement = observer((props: {}) => {
     const { x: clientX, y: clientY } = getClientXY(event.evt);
 
     if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
-      fieldCtrl.areaSelectionStart = undefined;
-      fieldCtrl.areaSelectionEnd = undefined;
-      fieldCtrl.offsetStart = undefined;
+      fieldEditor.endAreaSelection();
+      fieldEditor.offsetStart = undefined;
       app.magnet = [];
     }
   }
@@ -745,9 +603,9 @@ const FieldCanvasElement = observer((props: {}) => {
     const evt = event.evt;
 
     // UX: Add control point if: left click or right click without moving the mouse
-    if (!(fieldCtrl.isAddingControl && (evt.button === 0 || evt.button === 2))) return;
+    if (!(fieldEditor.isAddingControl && (evt.button === 0 || evt.button === 2))) return;
 
-    fieldCtrl.isAddingControl = false;
+    fieldEditor.isAddingControl = false;
 
     const posInPx = fcc.getUnboundedPxFromEvent(event);
     if (posInPx === undefined) return;
@@ -788,10 +646,10 @@ const FieldCanvasElement = observer((props: {}) => {
 
   return (
     <Padding0Tooltip
-      title={<FieldTooltipContent fieldCtrl={fieldCtrl} />}
+      title={<FieldTooltipContent fieldEditor={fieldEditor} />}
       placement="top"
       arrow
-      open={fieldCtrl.tooltipPosition !== undefined}
+      open={fieldEditor.tooltipPosition !== undefined}
       disableFocusListener
       disableHoverListener
       disableTouchListener
@@ -801,9 +659,9 @@ const FieldCanvasElement = observer((props: {}) => {
         anchorEl: {
           getBoundingClientRect: () => {
             const div = stageBoxRef.current;
-            if (div === null || fieldCtrl.tooltipPosition === undefined) return new DOMRect(0, 0, 0, 0);
+            if (div === null || fieldEditor.tooltipPosition === undefined) return new DOMRect(0, 0, 0, 0);
 
-            return new DOMRect(fieldCtrl.tooltipPosition.x, fieldCtrl.tooltipPosition.y, 0, 0);
+            return new DOMRect(fieldEditor.tooltipPosition.x, fieldEditor.tooltipPosition.y, 0, 0);
           }
         }
       }}>
@@ -815,7 +673,7 @@ const FieldCanvasElement = observer((props: {}) => {
           scale={new Vector(scale, scale)}
           offset={offset.subtract(fcc.viewOffset)}
           draggable
-          style={{ cursor: fieldCtrl.offsetStart ? "grab" : "" }}
+          style={{ cursor: fieldEditor.offsetStart ? "grab" : "" }}
           onTouchStart={action(onTouchStartStage)}
           onTouchMove={action(onTouchMoveStage)}
           onTouchEnd={action(onTouchEndStage)}
@@ -845,15 +703,20 @@ const FieldCanvasElement = observer((props: {}) => {
               <PathSegments key={path.uid} path={path} fcc={fcc} />
             ))}
             {visiblePaths.map(path => (
-              <PathControls key={path.uid} path={path} fcc={fcc} isGrabAndMove={fieldCtrl.offsetStart !== undefined} />
+              <PathControls
+                key={path.uid}
+                path={path}
+                fcc={fcc}
+                isGrabAndMove={fieldEditor.offsetStart !== undefined}
+              />
             ))}
             {app.gc.showRobot && app.robot.position.visible && (
               <RobotElement fcc={fcc} pos={app.robot.position} width={app.gc.robotWidth} height={app.gc.robotHeight} />
             )}
             <Group name="selected-controls" />
             <AreaSelectionElement
-              from={fieldCtrl.areaSelectionStart}
-              to={fieldCtrl.areaSelectionEnd}
+              from={fieldEditor.areaSelection?.from}
+              to={fieldEditor.areaSelection?.to}
               animation={tiHandler.keys.length !== 0}
             />
           </Layer>

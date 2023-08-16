@@ -23,6 +23,7 @@ import * as SWR from "./ServiceWorkerRegistration";
 import { AppClipboard } from "./Clipboard";
 import { MagnetReference } from "./Magnet";
 import { validate } from "class-validator";
+import { FieldEditor } from "./FieldEditor";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
@@ -54,16 +55,14 @@ export class MainApp {
   };
 
   private fieldDisplay: {
-    offset: Vector;
-    scale: number;
     wheelControlType: "panning" | "change heading value";
     lastWheelControlTimestamp: number;
   } = {
-    offset: new Vector(0, 0), // Clamp user input only
-    scale: 1, // 1 = 100%, [1..3]
     wheelControlType: "panning",
     lastWheelControlTimestamp: 0
   };
+
+  public fieldEditor = new FieldEditor();
 
   public latestVersion: SemVer | null | undefined = undefined;
 
@@ -236,29 +235,6 @@ export class MainApp {
     this.expanded = [];
   }
 
-  startAreaSelection(): void {
-    this.selectedBefore = [...this.selected];
-  }
-
-  updateAreaSelection(from: Vector, to: Vector): void {
-    const fixedFrom = new Vector(Math.min(from.x, to.x), Math.min(from.y, to.y));
-    const fixedTo = new Vector(Math.max(from.x, to.x), Math.max(from.y, to.y));
-
-    // ALGO: Select all controls that are within the area
-    const highlighted = this.selectableControls
-      .filter(control => control.isWithinArea(fixedFrom, fixedTo))
-      .map(cp => cp.uid);
-
-    // UX: select all highlighted controls except the ones that were selected before the area selection
-    // outer-excluding-join
-    const selected = [...this.selectedBefore, ...highlighted].filter(
-      uid => !(this.selectedBefore.includes(uid) && highlighted.includes(uid))
-    );
-
-    // remove duplicates
-    this.selected = Array.from(new Set(selected));
-  }
-
   @computed get allEntities(): PathTreeItem[] {
     return traversal(this.paths);
   }
@@ -343,22 +319,6 @@ export class MainApp {
     return rtn;
   }
 
-  @computed get fieldOffset() {
-    return this.fieldDisplay.offset;
-  }
-
-  @computed get fieldScale() {
-    return this.fieldDisplay.scale;
-  }
-
-  set fieldOffset(offset: Vector) {
-    this.fieldDisplay.offset = offset;
-  }
-
-  set fieldScale(scale: number) {
-    this.fieldDisplay.scale = clamp(scale, 1, 3);
-  }
-
   wheelControl(type: "panning" | "change heading value"): boolean {
     const now = Date.now();
 
@@ -385,10 +345,9 @@ export class MainApp {
     this.robot.position.visible = false;
   }
 
-  resetFieldDisplay(): void {
+  resetFieldEditor(): void {
+    this.fieldEditor.reset();
     this.fieldDisplay = {
-      offset: new Vector(0, 0),
-      scale: 1,
       wheelControlType: "panning",
       lastWheelControlTimestamp: 0
     };
@@ -417,7 +376,7 @@ export class MainApp {
     this.paths = pfd.paths;
 
     this.resetUserControl();
-    this.resetFieldDisplay();
+    this.resetFieldEditor();
 
     this._history.clearHistory();
   }
@@ -470,7 +429,7 @@ export class MainApp {
     this.usingUOL = this.gc.uol;
     this.paths = [];
     this.resetUserControl();
-    this.resetFieldDisplay();
+    this.resetFieldEditor();
 
     this._history.clearHistory();
   }
@@ -546,3 +505,4 @@ export function getAppStores(): AppStores {
 window.unregisterSW = action(() => {
   SWR.unregister();
 });
+
