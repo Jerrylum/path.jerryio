@@ -146,10 +146,13 @@ const ControlElement = observer((props: ControlElementProps) => {
       if (app.isSelected(props.cp) === false) {
         app.setSelected([props.cp]);
       }
-  
+
       if (app.fieldEditor.isTouchingControl === false) {
         app.fieldEditor.isTouchingControl = "touch";
       }
+    } else {
+      // UX: Do not interact with control points if multi-touch, e.g. pinch to zoom and drag control at the same time
+      event.target.stopDrag();
     }
   }
 
@@ -340,4 +343,3 @@ const ControlElement = observer((props: ControlElementProps) => {
 });
 
 export { ControlElement };
-
