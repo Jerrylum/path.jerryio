@@ -318,7 +318,9 @@ class TouchInteractiveHandler {
     if (this.touchAction === TouchAction.Start) {
       app.fieldEditor.isPendingShowTooltip =
         app.fieldEditor.areaSelection === undefined && app.fieldEditor.tooltipPosition === undefined;
-      app.fieldEditor.endAreaSelection();
+        console.log("start", app.fieldEditor.isPendingShowTooltip, app.fieldEditor.areaSelection, app.fieldEditor.tooltipPosition);
+
+        app.fieldEditor.endAreaSelection();
       app.fieldEditor.tooltipPosition = undefined;
 
       if (keys.length >= 1) {
@@ -393,8 +395,10 @@ class TouchInteractiveHandler {
       if (Date.now() - this.initialTime < 600) {
         // UX: If click without moving the finger
 
-        if (app.selectedEntityCount !== 0) {
-          // UX: Clear selection first if the selection is not empty
+        if (app.fieldEditor.isPendingShowTooltip && app.selectedEntityCount !== 0) {
+          // UX: Clear selection first if no tooltip is shown and no entity is selected
+          console.log("clear selection");
+          
           app.setSelected([]);
         } else if (app.fieldEditor.isPendingShowTooltip) {
           // UX: Show tooltip if the selection is empty
