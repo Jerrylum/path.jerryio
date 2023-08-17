@@ -322,7 +322,6 @@ class TouchInteractiveHandler {
         if (t.distance(this.initialPosition) > 96 * 0.25) {
           // 1/4 inch, magic number
           this.initialFieldScale = app.fieldEditor.scale;
-          app.fieldEditor.offsetStart = t; // ALGO: The value doesn't matter
           this.touchAction = TouchAction.PanningAndScaling;
         }
       } else {
@@ -330,7 +329,7 @@ class TouchInteractiveHandler {
       }
     } else if (this.touchAction === TouchAction.PanningAndScaling) {
       if (keys.length === 1) {
-        app.fieldEditor.doPanningWithVector(this.touchesVector[this.keys[0]].divide(app.fieldEditor.scale));
+        app.fieldEditor.panning(this.touchesVector[this.keys[0]].divide(app.fieldEditor.scale));
       } else if (keys.length >= 2) {
         const t1 = this.pos(keys[0]);
         const t2 = this.pos(keys[1]);
@@ -339,7 +338,7 @@ class TouchInteractiveHandler {
         app.fieldEditor.doScaleField(scale, middlePos);
 
         const vecPos = this.vec(keys[0]).add(this.vec(keys[1])).divide(2);
-        app.fieldEditor.doPanningWithVector(vecPos.divide(app.fieldEditor.scale));
+        app.fieldEditor.panning(vecPos.divide(app.fieldEditor.scale));
       } else {
         this.touchAction = TouchAction.End;
       }
@@ -363,7 +362,7 @@ class TouchInteractiveHandler {
     } else if (this.touchAction === TouchAction.End) {
       if (keys.length === 0) {
         app.fieldEditor.endAreaSelection();
-        app.fieldEditor.offsetStart = undefined;
+        app.fieldEditor.endGrabAndMove();
 
         // ALGO: Cancel selection if the user lifts the finger
         clearTimeout(this.startSelectionTimer);
@@ -460,21 +459,14 @@ const FieldCanvasElement = observer((props: {}) => {
     if (
       evt.ctrlKey === false &&
       (evt.deltaX !== 0 || evt.deltaY !== 0) &&
-      fieldEditor.offsetStart === undefined &&
+      fieldEditor.isGrabAndMove === false &&
       app.wheelControl("panning")
     ) {
       // UX: Panning if: ctrl key up + wheel/mouse pad + no "Grab & Move" + not changing heading value with scroll wheel in the last 300ms
 
       evt.preventDefault();
 
-      const newOffset = app.fieldEditor.offset.add(new Vector(evt.deltaX * 0.5, evt.deltaY * 0.5).divide(app.fieldEditor.scale));
-      newOffset.x = clamp(
-        newOffset.x,
-        -canvasWidthInPx * 0.9 + fcc.viewOffset.x,
-        canvasWidthInPx * 0.9 - fcc.viewOffset.x
-      );
-      newOffset.y = clamp(newOffset.y, -canvasHeightInPx * 0.9, canvasHeightInPx * 0.9);
-      app.fieldEditor.offset = newOffset;
+      fieldEditor.panning(new Vector(evt.deltaX * -0.5, evt.deltaY * -0.5));
     } else if (evt.ctrlKey === true && evt.deltaY !== 0) {
       // UX: Zoom in/out if: wheel while ctrl key down
 
@@ -498,7 +490,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
     if (
       evt.button === 0 &&
-      fieldEditor.offsetStart === undefined &&
+      fieldEditor.isGrabAndMove === false &&
       (event.target instanceof Konva.Stage || event.target instanceof Konva.Image)
     ) {
       // left click
@@ -513,16 +505,15 @@ const FieldCanvasElement = observer((props: {}) => {
       // UX: selectedBefore is empty if: left click without shift
       const posInPx = fcc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
-      app.fieldEditor.startAreaSelection(posInPx);
+      fieldEditor.startAreaSelection(posInPx);
     } else if (evt.button === 1 && fieldEditor.areaSelection === undefined) {
       // middle click
       // UX: Start "Grab & Move" if: middle click at any position
       evt.preventDefault(); // UX: Prevent default action (scrolling)
 
-      const posInPx = fcc.getUnboundedPxFromEvent(event, false);
-      if (posInPx === undefined) return;
-
-      fieldEditor.offsetStart = posInPx.add(offset);
+      const posWithoutOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
+      if (posWithoutOffsetInPx === undefined) return;
+      fieldEditor.startGrabAndMove(posWithoutOffsetInPx);
     } else if (evt.button === 1 && fieldEditor.areaSelection !== undefined) {
       // middle click
       // UX: Do not start "Grab & Move" if it is in area selection, but still prevent default
@@ -551,11 +542,11 @@ const FieldCanvasElement = observer((props: {}) => {
 
       const posInPx = fcc.getUnboundedPxFromEvent(event);
       if (posInPx === undefined) return;
-      const posWithOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
-      if (posWithOffsetInPx === undefined) return;
+      const posWithoutOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
+      if (posWithoutOffsetInPx === undefined) return;
 
       fieldEditor.updateAreaSelection(posInPx) ||
-        fieldEditor.doPanning(posWithOffsetInPx) ||
+        fieldEditor.grabAndMove(posWithoutOffsetInPx) ||
         fieldEditor.doShowRobot(posInPx);
     }
   }
@@ -569,7 +560,7 @@ const FieldCanvasElement = observer((props: {}) => {
       fieldEditor.endAreaSelection();
     } else if (event.evt.button === 1) {
       // middle click
-      fieldEditor.offsetStart = undefined;
+      fieldEditor.endGrabAndMove();
     }
 
     app.magnet = [];
@@ -594,7 +585,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
     if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
       fieldEditor.endAreaSelection();
-      fieldEditor.offsetStart = undefined;
+      fieldEditor.endGrabAndMove();
       app.magnet = [];
     }
   }
@@ -673,7 +664,7 @@ const FieldCanvasElement = observer((props: {}) => {
           scale={new Vector(scale, scale)}
           offset={offset.subtract(fcc.viewOffset)}
           draggable
-          style={{ cursor: fieldEditor.offsetStart ? "grab" : "" }}
+          style={{ cursor: fieldEditor.isGrabAndMove ? "grab" : "" }}
           onTouchStart={action(onTouchStartStage)}
           onTouchMove={action(onTouchMoveStage)}
           onTouchEnd={action(onTouchEndStage)}
@@ -707,7 +698,7 @@ const FieldCanvasElement = observer((props: {}) => {
                 key={path.uid}
                 path={path}
                 fcc={fcc}
-                isGrabAndMove={fieldEditor.offsetStart !== undefined}
+                isGrabAndMove={fieldEditor.isGrabAndMove}
               />
             ))}
             {app.gc.showRobot && app.robot.position.visible && (

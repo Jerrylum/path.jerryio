@@ -14,11 +14,11 @@ export class FieldEditor {
     to: Vector;
   } | undefined = undefined;
   private selectedBefore: string[] = []; // Selected controls before area selection
+  private offsetStart: Vector | undefined = undefined;
 
   fcc!: FieldCanvasConverter;
 
   isAddingControl: boolean = false;
-  offsetStart: Vector | undefined = undefined;
   isPendingShowTooltip: boolean = false;
   tooltipPosition: Vector | undefined = undefined;
 
@@ -78,30 +78,30 @@ export class FieldEditor {
     return true;
   }
 
-  doPanning(posInPx: Vector): boolean {
-    const { app } = getAppStores();
-
+  startGrabAndMove(posInPx: Vector): void { // position with scale
     // UX: Move field if: middle click
-    if (this.offsetStart === undefined) return false;
-
-    const newOffset = this.offsetStart.subtract(posInPx);
-    newOffset.x = clamp(
-      newOffset.x,
-      -this.fcc.pixelWidth * 0.9 + this.fcc.viewOffset.x,
-      this.fcc.pixelWidth * 0.9 - this.fcc.viewOffset.x
-    );
-    newOffset.y = clamp(newOffset.y, -this.fcc.pixelHeight * 0.9, this.fcc.pixelHeight * 0.9);
-    app.fieldEditor.offset = newOffset;
-    return true;
+    this.offsetStart = posInPx;
   }
 
-  doPanningWithVector(vec: Vector): boolean {
+  grabAndMove(posInPx: Vector): boolean { // position with scale
+    if (this.isGrabAndMove === false) return false;
+
+    const vec = posInPx.subtract(this.offsetStart!);
+    this.offsetStart = posInPx;
+
+    return this.panning(vec);
+  }
+
+  endGrabAndMove(): boolean {
+    const isGrabbing = this.isGrabAndMove;
+    this.offsetStart = undefined;
+    return isGrabbing;
+  }
+
+  panning(vec: Vector): boolean {
     const { app } = getAppStores();
 
-    // UX: Move field if offsetStart is not undefined, the value is not used in the calculation but still need to check
-    if (this.offsetStart === undefined) return false;
-
-    const newOffset = app.fieldEditor.offset.subtract(vec);
+    const newOffset = this.offset.subtract(vec);
     newOffset.x = clamp(
       newOffset.x,
       -this.fcc.pixelWidth * 0.9 + this.fcc.viewOffset.x,
@@ -217,6 +217,10 @@ export class FieldEditor {
 
   get areaSelection() {
     return this._areaSelection;
+  }
+
+  get isGrabAndMove() {
+    return this.offsetStart !== undefined;
   }
 }
 
