@@ -19,7 +19,7 @@ export class FieldEditor {
   fcc!: FieldCanvasConverter;
 
   isAddingControl: boolean = false;
-  isTouchingControl: boolean = false;
+  isTouchingControl: "touch" | "drag" | false = false;
   isPendingShowTooltip: boolean = false;
   tooltipPosition: Vector | undefined = undefined;
 

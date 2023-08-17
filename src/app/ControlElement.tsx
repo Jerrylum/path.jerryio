@@ -141,12 +141,16 @@ const ControlElement = observer((props: ControlElementProps) => {
 
     event.evt.preventDefault();
 
-    // UX: Select one control point if: touch + target not selected
-    if (app.isSelected(props.cp) === false) {
-      app.setSelected([props.cp]);
+    if (event.evt.touches.length === 1) {
+      // UX: Select one control point if: touch + target not selected
+      if (app.isSelected(props.cp) === false) {
+        app.setSelected([props.cp]);
+      }
+  
+      if (app.fieldEditor.isTouchingControl === false) {
+        app.fieldEditor.isTouchingControl = "touch";
+      }
     }
-
-    app.fieldEditor.isTouchingControl = true;
   }
 
   function onTouchMove(event: Konva.KonvaEventObject<TouchEvent>) {
@@ -159,8 +163,6 @@ const ControlElement = observer((props: ControlElementProps) => {
     if (!shouldInteract(event)) return;
 
     const { app } = getAppStores();
-
-    app.fieldEditor.isTouchingControl = false;
   }
 
   function onMouseDown(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -249,9 +251,11 @@ const ControlElement = observer((props: ControlElementProps) => {
     cpInPx = props.fcc.toPx(cpInUOL);
     event.target.x(cpInPx.x);
     event.target.y(cpInPx.y);
+
+    app.fieldEditor.isTouchingControl = "drag";
   }
 
-  function onDragEnd(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) {}
+  // function onDragEnd(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) { }
 
   function onMouseUpControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     if (!shouldInteract(event)) return;

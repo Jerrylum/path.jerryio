@@ -13,7 +13,7 @@ import { AreaSelectionElement } from "./AreaSelectionElement";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { FieldCanvasConverter, getClientXY } from "../core/Canvas";
 import { clamp } from "../core/Util";
-import { AddPath, AddSegment } from "../core/Command";
+import { AddPath, AddSegment, RemovePathsAndEndControls } from "../core/Command";
 import { getAppStores } from "../core/MainApp";
 import { RobotElement } from "./RobotElement";
 import {
@@ -39,27 +39,28 @@ const Padding0Tooltip = styled(({ className, ...props }: TooltipProps) => (
   }
 }));
 
-const FieldTooltipContent = observer((props: { fieldEditor: FieldEditor }) => {
-  const { fieldEditor } = props;
+const Label = function (props: { text: string; onClick: () => void }) {
+  const fieldEditor = getAppStores().app.fieldEditor;
+
+  return (
+    <Typography
+      variant="body2"
+      component="span"
+      className="field-canvas-tooltip-label"
+      onClick={action(() => {
+        props.onClick();
+        fieldEditor.tooltipPosition = undefined; // UX: Hide tooltip
+      })}>
+      {props.text}
+    </Typography>
+  );
+};
+
+const FieldTooltipContent = observer((props: {}) => {
+  const { app, clipboard } = getAppStores();
+  const fieldEditor = app.fieldEditor;
 
   if (fieldEditor.tooltipPosition === undefined) return <></>;
-
-  const { app, clipboard } = getAppStores();
-
-  const Label = function (props: { text: string; onClick: () => void }) {
-    return (
-      <Typography
-        variant="body2"
-        component="span"
-        className="field-canvas-tooltip-label"
-        onClick={action(() => {
-          props.onClick();
-          fieldEditor.tooltipPosition = undefined; // UX: Hide tooltip
-        })}>
-        {props.text}
-      </Typography>
-    );
-  };
 
   function onAddCurve() {
     if (fieldEditor.tooltipPosition === undefined) return;
@@ -121,6 +122,29 @@ const FieldTooltipContent = observer((props: { fieldEditor: FieldEditor }) => {
       <Label text="Line" onClick={onAddLine} />
       {clipboard.hasData && <Label text="Paste" onClick={onPaste} />}
       <Label text="Select" onClick={() => {}} />
+    </Box>
+  );
+});
+
+const ControlTooltipContent = observer((props: {}) => {
+  function onDelete() {
+    const { app } = getAppStores();
+
+    if (app.selectedEntityCount === 0) return;
+    const command = new RemovePathsAndEndControls(app.paths, app.selectedEntityIds);
+    app.history.execute(`Remove paths and end controls`, command);
+  }
+
+  function onCopy() {
+    const { clipboard } = getAppStores();
+
+    clipboard.copy();
+  }
+
+  return (
+    <Box>
+      <Label text="Delete" onClick={onDelete} />
+      <Label text="Copy" onClick={onCopy} />
     </Box>
   );
 });
@@ -202,7 +226,8 @@ enum TouchAction {
   PanningAndScaling,
   Selection,
   Release,
-  End
+  End,
+  DraggingControl
 }
 
 class TouchInteractiveHandler {
@@ -292,8 +317,7 @@ class TouchInteractiveHandler {
     const keys = this.keys;
     if (this.touchAction === TouchAction.Start) {
       app.fieldEditor.isPendingShowTooltip =
-        app.fieldEditor.areaSelection === undefined &&
-        app.fieldEditor.tooltipPosition === undefined;
+        app.fieldEditor.areaSelection === undefined && app.fieldEditor.tooltipPosition === undefined;
       app.fieldEditor.endAreaSelection();
       app.fieldEditor.tooltipPosition = undefined;
 
@@ -318,7 +342,7 @@ class TouchInteractiveHandler {
         this.touchAction = TouchAction.Start;
       }
     } else if (this.touchAction === TouchAction.PendingSelection) {
-      if(app.fieldEditor.isTouchingControl) {
+      if (app.fieldEditor.isTouchingControl) {
         this.touchAction = TouchAction.TouchingControl;
       } else if (keys.length >= 1) {
         const t = this.pos(keys[0]);
@@ -331,7 +355,14 @@ class TouchInteractiveHandler {
         this.touchAction = TouchAction.Release;
       }
     } else if (this.touchAction === TouchAction.TouchingControl) {
-      if (app.fieldEditor.isTouchingControl === false) {
+      if (app.fieldEditor.isTouchingControl === "drag") {
+        this.touchAction = TouchAction.DraggingControl;
+      } else if (keys.length === 0) {
+        app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!.evt);
+        this.touchAction = TouchAction.End;
+      }
+    } else if (this.touchAction === TouchAction.DraggingControl) {
+      if (keys.length === 0) {
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.PanningAndScaling) {
@@ -361,7 +392,7 @@ class TouchInteractiveHandler {
     } else if (this.touchAction === TouchAction.Release) {
       if (Date.now() - this.initialTime < 600) {
         // UX: If click without moving the finger
-      
+
         if (app.selectedEntityCount !== 0) {
           // UX: Clear selection first if the selection is not empty
           app.setSelected([]);
@@ -376,6 +407,8 @@ class TouchInteractiveHandler {
       if (keys.length === 0) {
         app.fieldEditor.endAreaSelection();
         app.fieldEditor.endGrabAndMove();
+        // UX: Only reset isTouchingControl to false if: no finger is touching the screen
+        app.fieldEditor.isTouchingControl = false;
 
         // ALGO: Cancel selection if the user lifts the finger
         clearTimeout(this.startSelectionTimer);
@@ -650,7 +683,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
   return (
     <Padding0Tooltip
-      title={<FieldTooltipContent fieldEditor={fieldEditor} />}
+      title={app.selectedEntityCount ? <ControlTooltipContent /> : <FieldTooltipContent />}
       placement="top"
       arrow
       open={fieldEditor.tooltipPosition !== undefined}
@@ -707,12 +740,7 @@ const FieldCanvasElement = observer((props: {}) => {
               <PathSegments key={path.uid} path={path} fcc={fcc} />
             ))}
             {visiblePaths.map(path => (
-              <PathControls
-                key={path.uid}
-                path={path}
-                fcc={fcc}
-                isGrabAndMove={fieldEditor.isGrabAndMove}
-              />
+              <PathControls key={path.uid} path={path} fcc={fcc} isGrabAndMove={fieldEditor.isGrabAndMove} />
             ))}
             {app.gc.showRobot && app.robot.position.visible && (
               <RobotElement fcc={fcc} pos={app.robot.position} width={app.gc.robotWidth} height={app.gc.robotHeight} />
