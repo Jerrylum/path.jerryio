@@ -139,10 +139,31 @@ const ControlElement = observer((props: ControlElementProps) => {
   function onTouchStart(event: Konva.KonvaEventObject<TouchEvent>) {
     if (!shouldInteract(event)) return;
 
-    interact(false);
+    event.evt.preventDefault();
+
+    // UX: Select one control point if: touch + target not selected
+    if (app.isSelected(props.cp) === false) {
+      app.setSelected([props.cp]);
+    }
+
+    app.fieldEditor.isTouchingControl = true;
   }
 
-  function onMouseDownControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
+  function onTouchMove(event: Konva.KonvaEventObject<TouchEvent>) {
+    if (!shouldInteract(event)) return;
+
+    event.evt.preventDefault();
+  }
+
+  function onTouchEnd(event: Konva.KonvaEventObject<TouchEvent>) {
+    if (!shouldInteract(event)) return;
+
+    const { app } = getAppStores();
+
+    app.fieldEditor.isTouchingControl = false;
+  }
+
+  function onMouseDown(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
     if (!shouldInteract(event)) return;
@@ -157,7 +178,7 @@ const ControlElement = observer((props: ControlElementProps) => {
     }
   }
 
-  function onClickControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
+  function onMouseClick(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
     if (!shouldInteract(event)) return;
@@ -168,7 +189,7 @@ const ControlElement = observer((props: ControlElementProps) => {
     }
   }
 
-  function onDragControlPoint(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) {
+  function onDragMove(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) {
     const evt = event.evt;
 
     // UX: Do not interact with control points if itself or the path is locked
@@ -230,6 +251,8 @@ const ControlElement = observer((props: ControlElementProps) => {
     event.target.y(cpInPx.y);
   }
 
+  function onDragEnd(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) {}
+
   function onMouseUpControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     if (!shouldInteract(event)) return;
 
@@ -263,7 +286,7 @@ const ControlElement = observer((props: ControlElementProps) => {
   function onClickFirstOrLastControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
-    onClickControlPoint(event);
+    onMouseClick(event);
 
     if (!shouldInteract(event)) return;
 
@@ -284,11 +307,15 @@ const ControlElement = observer((props: ControlElementProps) => {
         radius={isEndControl ? cpRadius : cpRadius / 2}
         fill={fillColor}
         draggable
-        onDragMove={action(onDragControlPoint)}
         onTouchStart={action(onTouchStart)}
-        onMouseDown={action(onMouseDownControlPoint)}
-        onMouseUp={action(onMouseUpControlPoint)}
+        onTouchMove={action(onTouchMove)}
+        onTouchEnd={action(onTouchEnd)}
         onWheel={isEndControl ? action(onWheel) : undefined}
+        onMouseDown={action(onMouseDown)}
+        // onMouseMove
+        onMouseUp={action(onMouseUpControlPoint)}
+        onDragMove={action(onDragMove)}
+        // onDragEnd={action(onDragEnd)}
         onClick={action(onClickFirstOrLastControlPoint)}
       />
       {isEndControl && (
@@ -309,3 +336,4 @@ const ControlElement = observer((props: ControlElementProps) => {
 });
 
 export { ControlElement };
+

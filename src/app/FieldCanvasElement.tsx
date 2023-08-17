@@ -198,6 +198,7 @@ const PathControls = observer((props: { path: Path; fcc: FieldCanvasConverter; i
 enum TouchAction {
   Start,
   PendingSelection,
+  TouchingControl,
   PanningAndScaling,
   Selection,
   Release,
@@ -317,7 +318,9 @@ class TouchInteractiveHandler {
         this.touchAction = TouchAction.Start;
       }
     } else if (this.touchAction === TouchAction.PendingSelection) {
-      if (keys.length >= 1) {
+      if(app.fieldEditor.isTouchingControl) {
+        this.touchAction = TouchAction.TouchingControl;
+      } else if (keys.length >= 1) {
         const t = this.pos(keys[0]);
         if (t.distance(this.initialPosition) > 96 * 0.25) {
           // 1/4 inch, magic number
@@ -326,6 +329,10 @@ class TouchInteractiveHandler {
         }
       } else {
         this.touchAction = TouchAction.Release;
+      }
+    } else if (this.touchAction === TouchAction.TouchingControl) {
+      if (app.fieldEditor.isTouchingControl === false) {
+        this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.PanningAndScaling) {
       if (keys.length === 1) {
@@ -353,8 +360,14 @@ class TouchInteractiveHandler {
       }
     } else if (this.touchAction === TouchAction.Release) {
       if (Date.now() - this.initialTime < 600) {
-        // this.pos(keys[0]) is undefined, use last event
-        if (app.fieldEditor.isPendingShowTooltip) {
+        // UX: If click without moving the finger
+      
+        if (app.selectedEntityCount !== 0) {
+          // UX: Clear selection first if the selection is not empty
+          app.setSelected([]);
+        } else if (app.fieldEditor.isPendingShowTooltip) {
+          // UX: Show tooltip if the selection is empty
+          // this.pos(keys[0]) is undefined, use last event
           app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!.evt);
         }
       }

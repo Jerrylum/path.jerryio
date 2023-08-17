@@ -19,6 +19,7 @@ export class FieldEditor {
   fcc!: FieldCanvasConverter;
 
   isAddingControl: boolean = false;
+  isTouchingControl: boolean = false;
   isPendingShowTooltip: boolean = false;
   tooltipPosition: Vector | undefined = undefined;
 
@@ -191,8 +192,8 @@ export class FieldEditor {
   reset() {
     this._areaSelection = undefined;
     this.selectedBefore = [];
-    this.isAddingControl = false;
     this.offsetStart = undefined;
+    this.isAddingControl = false;
     this.isPendingShowTooltip = false;
     this.tooltipPosition = undefined;
     this.offset = new Vector(0, 0);
