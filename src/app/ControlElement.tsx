@@ -1,4 +1,4 @@
-import { makeObservable, action, observable } from "mobx";
+import { makeObservable, makeAutoObservable, action, observable } from "mobx";
 import { observer } from "mobx-react-lite";
 import { AnyControl, Control, EndControl, Path, Vector } from "../core/Path";
 import Konva from "konva";
@@ -113,18 +113,94 @@ function shouldInteract(props: ControlElementProps, event: Konva.KonvaEventObjec
   return true;
 }
 
+function onDragMoveAnyControl(props: ControlElementProps, enableMagnet: boolean, posBeforeDrag: Vector, event: Konva.KonvaEventObject<DragEvent | TouchEvent>) {
+  const { app } = getAppStores();
+  
+  const evt = event.evt;
+
+  // UX: Do not interact with control points if itself or the path is locked
+  if (props.cp.lock || props.path.lock) {
+    evt.preventDefault();
+
+    const cpInUOL = props.cp.toVector(); // ALGO: Use toVector for better performance
+    const cpInPx = props.fcc.toPx(cpInUOL);
+
+    // UX: Set the position of the control point back to the original position
+    event.target.x(cpInPx.x);
+    event.target.y(cpInPx.y);
+    return;
+  }
+
+  const oldCpInUOL = props.cp.toVector();
+
+  // UX: Calculate the position of the control point by the client mouse position
+  let cpInPx = props.fcc.getUnboundedPxFromEvent(event);
+  if (cpInPx === undefined) return;
+  let cpInUOL = props.fcc.toUOL(cpInPx);
+  // first set the position of the control point so we can calculate the position of the follower control points
+  props.cp.setXY(cpInUOL);
+
+  const isControlFollow = !evt.ctrlKey;
+
+  const [followers, remains] = getFollowersAndRemaining(app.paths, props.cp, app.selectedEntityIds, isControlFollow);
+
+  if (props.cp instanceof EndControl && isControlFollow) {
+    getSiblingControls(props.path, props.cp)
+      .filter(cp => cp.visible && !cp.lock)
+      .forEach(cp => {
+        if (!followers.includes(cp)) followers.push(cp);
+      });
+  }
+
+  if (enableMagnet) {
+    const references: MagnetReference[] = [];
+
+    references.push(...remains.flatMap(source => getHorizontalAndVerticalReferences(source, 0)));
+    references.push(...getHorizontalAndVerticalReferences(posBeforeDrag, 0));
+    references.push(...getSiblingReferences(props.path, props.cp, followers));
+
+    const [result, magnetRefs] = magnet(cpInUOL, references, app.gc.controlMagnetDistance);
+    cpInUOL.setXY(result);
+    app.magnet = magnetRefs;
+  } else {
+    app.magnet = [];
+  }
+
+  app.history.execute(
+    `Move control ${props.cp.uid} with ${followers.length} followers`,
+    new DragControls(props.cp, oldCpInUOL, cpInUOL, followers),
+    5000
+  );
+
+  cpInPx = props.fcc.toPx(cpInUOL);
+  event.target.x(cpInPx.x);
+  event.target.y(cpInPx.y);
+
+  app.fieldEditor.isTouchingControl = "drag";
+}
+
+class ControlVariables {
+  justSelected: boolean = false;
+  posBeforeDrag: Vector = new Vector(0, 0);
+  
+  constructor() {
+    makeAutoObservable(this);
+  }
+}
+
 class TouchInteractiveHandler extends TouchEventListener {
   private magnetPosition: Vector = new Vector(0, 0);
   private triggerMagnetTimer: NodeJS.Timeout | undefined;
   enableMagnet: boolean = false;
 
-  constructor(private props: ControlElementProps) {
+  constructor(public props: ControlElementProps, private variables: ControlVariables) {
     super();
     makeObservable(this, {
       enableMagnet: observable,
       onTouchStart: action,
       onTouchMove: action,
       onTouchEnd: action
+      // props is not observable
     });
   }
 
@@ -153,10 +229,12 @@ class TouchInteractiveHandler extends TouchEventListener {
   onTouchMove(event: Konva.KonvaEventObject<TouchEvent>) {
     super.onTouchMove(event);
 
+    const { app } = getAppStores();
+
     // ALGO: No need to check shouldInteract
 
     if (this.enableMagnet) {
-      if (this.pos(this.keys[0]).distance(this.magnetPosition) > 96) {
+      if (this.pos(this.keys[0]).distance(this.magnetPosition) > 96 && app.magnet.length === 0) {
         this.enableMagnet = false;
       }
     }
@@ -165,7 +243,10 @@ class TouchInteractiveHandler extends TouchEventListener {
     this.triggerMagnetTimer = setTimeout(() => {
       this.enableMagnet = true;
       this.magnetPosition = this.pos(this.keys[0]);
+      onDragMoveAnyControl(this.props, this.enableMagnet, this.variables.posBeforeDrag, event);
     }, 600);
+
+    onDragMoveAnyControl(this.props, this.enableMagnet, this.variables.posBeforeDrag, event);
   }
 
   onTouchEnd(event: Konva.KonvaEventObject<TouchEvent>) {
@@ -183,24 +264,26 @@ class TouchInteractiveHandler extends TouchEventListener {
 const ControlElement = observer((props: ControlElementProps) => {
   const { app } = getAppStores();
 
-  const [justSelected, setJustSelected] = React.useState(false);
-  const [posBeforeDrag, setPosBeforeDrag] = React.useState(new Vector(0, 0));
-  const tiHandler = React.useState(() => new TouchInteractiveHandler(props))[0];
+  // const [justSelected, setJustSelected] = React.useState(false);
+  // const [posBeforeDrag, setPosBeforeDrag] = React.useState(new Vector(0, 0));
+  const variables = React.useState(() => new ControlVariables())[0];
+  const tiHandler = React.useState(() => new TouchInteractiveHandler(props, variables))[0];
+  tiHandler.props = props;
 
   function interact(isShiftKey: boolean) {
-    setPosBeforeDrag(props.cp.toVector());
+    variables.posBeforeDrag = props.cp.toVector();
 
     if (isShiftKey) {
       // UX: Add selected control point if: left click + shift
       // UX: Prevent the control point from being removed when the mouse is released at the same round it is added
-      setJustSelected(app.select(props.cp));
+      variables.justSelected = app.select(props.cp);
       // UX: Expand the path as the same time to show the control points
       app.addExpanded(props.path);
     } else {
       if (app.isSelected(props.cp) === false) {
         // UX: Select one control point if: left click + not pressing shift and target not selected
         app.setSelected([props.cp]);
-        setJustSelected(false);
+        variables.justSelected = false;
       }
     }
   }
@@ -242,77 +325,17 @@ const ControlElement = observer((props: ControlElementProps) => {
     if (!shouldInteract(props, event)) return;
 
     // UX: Remove selected entity if: release left click + shift + not being added recently
-    if (evt.button === 0 && evt.shiftKey && !justSelected) {
-      if (!justSelected) app.unselect(props.cp); // TODO code review
+    if (evt.button === 0 && evt.shiftKey && !variables.justSelected) {
+      if (!variables.justSelected) app.unselect(props.cp); // TODO code review
     }
   }
 
   function onDragMove(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) {
-    if (event.evt instanceof TouchEvent) tiHandler.onTouchMove(event as any);
-
-    const evt = event.evt;
-
-    // UX: Do not interact with control points if itself or the path is locked
-    if (props.cp.lock || props.path.lock) {
-      evt.preventDefault();
-
-      const cpInUOL = props.cp.toVector(); // ALGO: Use toVector for better performance
-      const cpInPx = props.fcc.toPx(cpInUOL);
-
-      // UX: Set the position of the control point back to the original position
-      event.target.x(cpInPx.x);
-      event.target.y(cpInPx.y);
-      return;
-    }
-
-    const oldCpInUOL = props.cp.toVector();
-
-    // UX: Calculate the position of the control point by the client mouse position
-    let cpInPx = props.fcc.getUnboundedPxFromEvent(event);
-    if (cpInPx === undefined) return;
-    let cpInUOL = props.fcc.toUOL(cpInPx);
-    // first set the position of the control point so we can calculate the position of the follower control points
-    props.cp.setXY(cpInUOL);
-
-    const isControlFollow = !evt.ctrlKey;
-
-    const [followers, remains] = getFollowersAndRemaining(app.paths, props.cp, app.selectedEntityIds, isControlFollow);
-
-    if (props.cp instanceof EndControl && isControlFollow) {
-      getSiblingControls(props.path, props.cp)
-        .filter(cp => cp.visible && !cp.lock)
-        .forEach(cp => {
-          if (!followers.includes(cp)) followers.push(cp);
-        });
-    }
-
-    const enableMagnet = event.evt instanceof TouchEvent ? tiHandler.enableMagnet : evt.shiftKey;
-
-    if (enableMagnet) {
-      const references: MagnetReference[] = [];
-
-      references.push(...remains.flatMap(source => getHorizontalAndVerticalReferences(source, 0)));
-      references.push(...getHorizontalAndVerticalReferences(posBeforeDrag, 0));
-      references.push(...getSiblingReferences(props.path, props.cp, followers));
-
-      const [result, magnetRefs] = magnet(cpInUOL, references, app.gc.controlMagnetDistance);
-      cpInUOL.setXY(result);
-      app.magnet = magnetRefs;
+    if (event.evt instanceof TouchEvent) {
+      tiHandler.onTouchMove(event as any);
     } else {
-      app.magnet = [];
+      onDragMoveAnyControl(props, event.evt.shiftKey, variables.posBeforeDrag, event);
     }
-
-    app.history.execute(
-      `Move control ${props.cp.uid} with ${followers.length} followers`,
-      new DragControls(props.cp, oldCpInUOL, cpInUOL, followers),
-      5000
-    );
-
-    cpInPx = props.fcc.toPx(cpInUOL);
-    event.target.x(cpInPx.x);
-    event.target.y(cpInPx.y);
-
-    app.fieldEditor.isTouchingControl = "drag";
   }
 
   // function onDragEnd(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) { }

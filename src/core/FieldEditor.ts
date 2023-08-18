@@ -113,7 +113,7 @@ export class FieldEditor {
     return true;
   }
 
-  doShowRobot(posInPx: Vector): boolean {
+  showRobot(posInPx: Vector): boolean {
     const { app } = getAppStores();
 
     // UX: Show robot if: alt key is down and no other action is performed
@@ -162,7 +162,7 @@ export class FieldEditor {
     return true;
   }
 
-  doScaleField(variable: number, posInPx: Vector): boolean {
+  zooming(variable: number, posInPx: Vector): boolean {
     const oldScale = this.scale;
     const oldOffset = this.offset;
 

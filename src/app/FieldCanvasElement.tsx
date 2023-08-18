@@ -362,7 +362,7 @@ class TouchInteractiveHandler extends TouchEventListener {
         const t2 = this.pos(keys[1]);
         const scale = this.initialFieldScale * (t1.distance(t2) / this.initialDistanceBetweenTwoTouches);
         const middlePos = t1.add(t2).divide(2);
-        app.fieldEditor.doScaleField(scale, middlePos);
+        app.fieldEditor.zooming(scale, middlePos);
 
         const vecPos = this.vec(keys[0]).add(this.vec(keys[1])).divide(2);
         app.fieldEditor.panning(vecPos.divide(app.fieldEditor.scale));
@@ -500,7 +500,7 @@ const FieldCanvasElement = observer((props: {}) => {
       const pos = fcc.getUnboundedPxFromEvent(event, false, false);
       if (pos === undefined) return;
 
-      fieldEditor.doScaleField(scale * (1 - evt.deltaY / 1000), pos);
+      fieldEditor.zooming(scale * (1 - evt.deltaY / 1000), pos);
     }
   }
 
@@ -572,7 +572,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
       fieldEditor.updateAreaSelection(posInPx) ||
         fieldEditor.grabAndMove(posWithoutOffsetInPx) ||
-        fieldEditor.doShowRobot(posInPx);
+        fieldEditor.showRobot(posInPx);
     }
   }
 
