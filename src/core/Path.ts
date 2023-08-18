@@ -456,6 +456,14 @@ export class Path implements InteractiveEntity, InteractiveEntityParent {
 export type PathTreeItem = Path | EndControl | Control;
 export type AnyControl = EndControl | Control;
 
+export function isPathTreeItem(item: unknown): item is PathTreeItem {
+  return item instanceof Path || item instanceof EndControl || item instanceof Control;
+}
+
+export function isAnyControl(item: unknown): item is AnyControl {
+  return item instanceof EndControl || item instanceof Control;
+}
+
 export function traversal(paths: Path[]): PathTreeItem[] {
   return paths.reduce((acc, path) => {
     return [...acc, path, ...path.controls];

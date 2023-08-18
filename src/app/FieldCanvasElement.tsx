@@ -1,6 +1,6 @@
 import { action, makeObservable, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { EndControl, Path, SegmentVariant, Vector } from "../core/Path";
+import { EndControl, Path, SegmentVariant, Vector, isAnyControl } from "../core/Path";
 import Konva from "konva";
 import { Circle, Group, Image, Layer, Line, Stage } from "react-konva";
 import { SegmentElement } from "./SegmentElement";
@@ -331,7 +331,7 @@ class TouchInteractiveHandler extends TouchEventListener {
         this.touchAction = TouchAction.Start;
       }
     } else if (this.touchAction === TouchAction.PendingSelection) {
-      if (app.fieldEditor.isTouchingControl) {
+      if (isAnyControl(app.fieldEditor.interaction?.entity)) {
         this.touchAction = TouchAction.TouchingControl;
       } else if (keys.length >= 1) {
         const t = this.pos(keys[0]);
@@ -344,7 +344,7 @@ class TouchInteractiveHandler extends TouchEventListener {
         this.touchAction = TouchAction.Release;
       }
     } else if (this.touchAction === TouchAction.TouchingControl) {
-      if (app.fieldEditor.isTouchingControl === "drag") {
+      if (app.fieldEditor.interaction?.type === "drag") {
         this.touchAction = TouchAction.DraggingControl;
       } else if (keys.length === 0) {
         app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!.evt);
@@ -396,8 +396,8 @@ class TouchInteractiveHandler extends TouchEventListener {
       if (keys.length === 0) {
         app.fieldEditor.endAreaSelection();
         app.fieldEditor.endGrabAndMove();
-        // UX: Only reset isTouchingControl to false if: no finger is touching the screen
-        app.fieldEditor.isTouchingControl = false;
+        // UX: Only end interaction if: no finger is touching the screen
+        app.fieldEditor.endInteraction();
 
         // ALGO: Cancel selection if the user lifts the finger
         clearTimeout(this.startSelectionTimer);

@@ -176,7 +176,7 @@ function onDragMoveAnyControl(props: ControlElementProps, enableMagnet: boolean,
   event.target.x(cpInPx.x);
   event.target.y(cpInPx.y);
 
-  app.fieldEditor.isTouchingControl = "drag";
+  app.fieldEditor.interact(props.cp, "drag");
 }
 
 class ControlVariables {
@@ -217,8 +217,9 @@ class TouchInteractiveHandler extends TouchEventListener {
         app.setSelected([this.props.cp]);
       }
 
-      if (app.fieldEditor.isTouchingControl === false) {
-        app.fieldEditor.isTouchingControl = "touch";
+      // UX: Do not change the interaction type from drag back to touch
+      if (app.fieldEditor.interaction === undefined) {
+        app.fieldEditor.interact(this.props.cp, "touch");
       }
     } else {
       // UX: Do not interact with control points if multi-touch, e.g. pinch to zoom and drag control at the same time

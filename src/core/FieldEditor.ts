@@ -1,7 +1,7 @@
 import ReactDOM from "react-dom";
 import { action, makeAutoObservable } from "mobx";
 import { toDerivativeHeading, toHeading, firstDerivative } from "./Calculation";
-import { FieldCanvasConverter } from "./Canvas";
+import { CanvasEntity, FieldCanvasConverter } from "./Canvas";
 import { getAppStores } from "./MainApp";
 import { Vector } from "./Path";
 import { clamp } from "./Util";
@@ -9,17 +9,15 @@ import { clamp } from "./Util";
 export class FieldEditor {
   private _offset: Vector = new Vector(0, 0);
   private _scale: number = 1; // 1 = 100%, [1..3]
-  private _areaSelection: {
-    from: Vector;
-    to: Vector;
-  } | undefined = undefined;
+  private _areaSelection: { from: Vector; to: Vector } | undefined = undefined;
+  private _interaction: { entity: CanvasEntity; type: "touch" | "drag" } | undefined = undefined;
   private selectedBefore: string[] = []; // Selected controls before area selection
   private offsetStart: Vector | undefined = undefined;
 
   fcc!: FieldCanvasConverter;
 
   isAddingControl: boolean = false;
-  isTouchingControl: "touch" | "drag" | false = false;
+  // isTouchingControl: "touch" | "drag" | false = false;
   isPendingShowTooltip: boolean = false;
   tooltipPosition: Vector | undefined = undefined;
 
@@ -27,17 +25,19 @@ export class FieldEditor {
     makeAutoObservable(this, { fcc: false });
   }
 
-  startAreaSelection(fromPosInPx: Vector): void { // position with offset and scale
+  startAreaSelection(fromPosInPx: Vector): void {
+    // position with offset and scale
     const { app } = getAppStores();
 
     this._areaSelection = {
       from: fromPosInPx,
-      to: fromPosInPx,
+      to: fromPosInPx
     };
     this.selectedBefore = [...app.selectedEntityIds];
   }
 
-  updateAreaSelection(toPosInPx: Vector): boolean { // position with offset and scale
+  updateAreaSelection(toPosInPx: Vector): boolean {
+    // position with offset and scale
     const { app } = getAppStores();
 
     if (this._areaSelection === undefined) return false;
@@ -50,7 +50,7 @@ export class FieldEditor {
 
     const from = this.fcc.toUOL(this._areaSelection.from);
     const to = this.fcc.toUOL(toPosInPx);
-    
+
     const fixedFrom = new Vector(Math.min(from.x, to.x), Math.min(from.y, to.y));
     const fixedTo = new Vector(Math.max(from.x, to.x), Math.max(from.y, to.y));
 
@@ -79,12 +79,14 @@ export class FieldEditor {
     return true;
   }
 
-  startGrabAndMove(posInPx: Vector): void { // position with scale
+  startGrabAndMove(posInPx: Vector): void {
+    // position with scale
     // UX: Move field if: middle click
     this.offsetStart = posInPx;
   }
 
-  grabAndMove(posInPx: Vector): boolean { // position with scale
+  grabAndMove(posInPx: Vector): boolean {
+    // position with scale
     if (this.isGrabAndMove === false) return false;
 
     const vec = posInPx.subtract(this.offsetStart!);
@@ -189,6 +191,14 @@ export class FieldEditor {
     return true;
   }
 
+  interact(entity: CanvasEntity, type: "touch" | "drag") {
+    this._interaction = { entity, type };
+  }
+
+  endInteraction() {
+    this._interaction = undefined;
+  }
+
   reset() {
     this._areaSelection = undefined;
     this.selectedBefore = [];
@@ -222,6 +232,10 @@ export class FieldEditor {
 
   get isGrabAndMove() {
     return this.offsetStart !== undefined;
+  }
+
+  get interaction() {
+    return this._interaction;
   }
 }
 
