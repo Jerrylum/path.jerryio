@@ -6,19 +6,23 @@ import { getAppStores } from "./MainApp";
 import { Vector } from "./Path";
 import { clamp } from "./Util";
 
+export interface CanvasEntityInteraction {
+  entity: CanvasEntity;
+  type: "touch" | "drag";
+}
+
 export class FieldEditor {
   private _offset: Vector = new Vector(0, 0);
   private _scale: number = 1; // 1 = 100%, [1..3]
   private _areaSelection: { from: Vector; to: Vector } | undefined = undefined;
-  private _interaction: { entity: CanvasEntity; type: "touch" | "drag" } | undefined = undefined;
+  private _interaction: CanvasEntityInteraction | undefined = undefined;
+  private _lastInteraction: CanvasEntityInteraction | undefined = undefined;
   private selectedBefore: string[] = []; // Selected controls before area selection
   private offsetStart: Vector | undefined = undefined;
 
   fcc!: FieldCanvasConverter;
 
   isAddingControl: boolean = false;
-  // isTouchingControl: "touch" | "drag" | false = false;
-  isPendingShowTooltip: boolean = false;
   tooltipPosition: Vector | undefined = undefined;
 
   constructor() {
@@ -192,19 +196,22 @@ export class FieldEditor {
   }
 
   interact(entity: CanvasEntity, type: "touch" | "drag") {
+    this._lastInteraction = this._interaction;
     this._interaction = { entity, type };
   }
 
   endInteraction() {
+    this._lastInteraction = this._interaction;
     this._interaction = undefined;
   }
 
   reset() {
     this._areaSelection = undefined;
+    this._lastInteraction = undefined;
+    this._interaction = undefined;
     this.selectedBefore = [];
     this.offsetStart = undefined;
     this.isAddingControl = false;
-    this.isPendingShowTooltip = false;
     this.tooltipPosition = undefined;
     this.offset = new Vector(0, 0);
     this.scale = 1;
@@ -236,6 +243,10 @@ export class FieldEditor {
 
   get interaction() {
     return this._interaction;
+  }
+
+  get lastInteraction() {
+    return this._lastInteraction;
   }
 }
 

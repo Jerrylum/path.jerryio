@@ -240,6 +240,7 @@ class TouchInteractiveHandler extends TouchEventListener {
   initialPosition: Vector = new Vector(0, 0);
   initialDistanceBetweenTwoTouches: number = 0;
   lastEvent: Konva.KonvaEventObject<TouchEvent> | undefined = undefined;
+  isPendingShowTooltip: boolean = false;
 
   constructor() {
     super();
@@ -251,6 +252,7 @@ class TouchInteractiveHandler extends TouchEventListener {
       initialPosition: observable,
       initialDistanceBetweenTwoTouches: observable,
       lastEvent: observable,
+      isPendingShowTooltip: observable,
       interact: action,
       onTouchStart: action,
       onTouchMove: action,
@@ -305,9 +307,7 @@ class TouchInteractiveHandler extends TouchEventListener {
 
     const keys = this.keys;
     if (this.touchAction === TouchAction.Start) {
-      app.fieldEditor.isPendingShowTooltip =
-        app.fieldEditor.areaSelection === undefined && app.fieldEditor.tooltipPosition === undefined;
-      app.fieldEditor.endAreaSelection();
+      this.isPendingShowTooltip = app.fieldEditor.tooltipPosition === undefined;
       app.fieldEditor.tooltipPosition = undefined;
 
       if (keys.length >= 1) {
@@ -332,6 +332,8 @@ class TouchInteractiveHandler extends TouchEventListener {
       }
     } else if (this.touchAction === TouchAction.PendingSelection) {
       if (isAnyControl(app.fieldEditor.interaction?.entity)) {
+        console.log("touching control");
+        
         this.touchAction = TouchAction.TouchingControl;
       } else if (keys.length >= 1) {
         const t = this.pos(keys[0]);
@@ -382,11 +384,11 @@ class TouchInteractiveHandler extends TouchEventListener {
       if (Date.now() - this.initialTime < 600) {
         // UX: If click without moving the finger
 
-        if (app.fieldEditor.isPendingShowTooltip && app.selectedEntityCount !== 0) {
-          // UX: Clear selection first if no tooltip is shown and no entity is selected
+        if (this.isPendingShowTooltip && app.selectedEntityCount !== 0) {
+          // UX: Clear selection first if last interaction is clicking field and there is a selection
           app.setSelected([]);
-        } else if (app.fieldEditor.isPendingShowTooltip) {
-          // UX: Show tooltip if the selection is empty
+        } else if (this.isPendingShowTooltip) {
+          // UX: Show tooltip if last interaction is clicking field and no area selection and no tooltip is shown
           // this.pos(keys[0]) is undefined, use last event
           app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!.evt);
         }
@@ -583,6 +585,7 @@ const FieldCanvasElement = observer((props: {}) => {
     if (event.evt.button === 0) {
       // left click
       fieldEditor.endAreaSelection();
+      fieldEditor.endInteraction();
     } else if (event.evt.button === 1) {
       // middle click
       fieldEditor.endGrabAndMove();
@@ -611,6 +614,7 @@ const FieldCanvasElement = observer((props: {}) => {
     if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
       fieldEditor.endAreaSelection();
       fieldEditor.endGrabAndMove();
+      fieldEditor.endInteraction();
       app.magnet = [];
     }
   }
