@@ -1,6 +1,6 @@
 import { action, makeObservable, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { EndControl, Path, SegmentVariant, Vector, isAnyControl } from "../core/Path";
+import { EndControl, Path, Segment, SegmentVariant, Vector, isAnyControl } from "../core/Path";
 import Konva from "konva";
 import { Circle, Group, Image, Layer, Line, Stage } from "react-konva";
 import { SegmentElement } from "./SegmentElement";
@@ -13,22 +13,15 @@ import { AreaSelectionElement } from "./AreaSelectionElement";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { FieldCanvasConverter, getClientXY } from "../core/Canvas";
 import { clamp } from "../core/Util";
-import { AddPath, AddSegment, RemovePathsAndEndControls } from "../core/Command";
+import { AddPath, AddSegment, ConvertSegment, RemovePathsAndEndControls, SplitSegment } from "../core/Command";
 import { getAppStores } from "../core/MainApp";
 import { RobotElement } from "./RobotElement";
-import {
-  firstDerivative,
-  fromHeadingInDegreeToAngleInRadian,
-  toDerivativeHeading,
-  toHeading
-} from "../core/Calculation";
-import ReactDOM from "react-dom";
+import { fromHeadingInDegreeToAngleInRadian } from "../core/Calculation";
 import { MagnetReference } from "../core/Magnet";
 import { useWindowSize } from "../core/Hook";
 import { LayoutType } from "./Layout";
 import { Box, Tooltip, TooltipProps, Typography, styled, tooltipClasses } from "@mui/material";
 import { Instance } from "@popperjs/core";
-import { FieldEditor } from "../core/FieldEditor";
 import { TouchEventListener } from "../core/TouchEventListener";
 
 const Padding0Tooltip = styled(({ className, ...props }: TooltipProps) => (
@@ -60,8 +53,6 @@ const Label = function (props: { text: string; onClick: () => void }) {
 const FieldTooltipContent = observer((props: {}) => {
   const { app, clipboard } = getAppStores();
   const fieldEditor = app.fieldEditor;
-
-  if (fieldEditor.tooltipPosition === undefined) return <></>;
 
   function onAddCurve() {
     if (fieldEditor.tooltipPosition === undefined) return;
@@ -150,6 +141,52 @@ const ControlTooltipContent = observer((props: {}) => {
   );
 });
 
+const SegmentTooltipContent = observer((props: {}) => {
+  const { app } = getAppStores();
+  const interaction = app.fieldEditor.lastInteraction;
+  if (interaction?.entity instanceof Segment === false) return <></>;
+  const segment = interaction?.entity as Segment;
+  if (app.fieldEditor.tooltipPosition === undefined) return <></>;
+
+  const posInPx = app.fieldEditor.fcc.getUnboundedPx(app.fieldEditor.tooltipPosition);
+  if (posInPx === undefined) return <></>;
+
+  function onConvert() {
+    const path = app.paths.find(path => path.segments.includes(segment));
+    if (path === undefined) return;
+
+    if (segment.controls.length === 2)
+      app.history.execute(
+        `Convert segment ${segment.uid} to curve`,
+        new ConvertSegment(path, segment, SegmentVariant.CUBIC)
+      );
+    else
+      app.history.execute(
+        `Convert segment ${segment.uid} to line`,
+        new ConvertSegment(path, segment, SegmentVariant.LINEAR)
+      );
+  }
+
+  function onSplit() {
+    const path = app.paths.find(path => path.segments.includes(segment));
+    if (path === undefined) return;
+
+    const cpInUOL = app.fieldEditor.fcc.toUOL(new EndControl(posInPx!.x, posInPx!.y, 0));
+
+    app.history.execute(
+      `Split segment ${segment.uid} with control ${cpInUOL.uid}`,
+      new SplitSegment(path, segment, cpInUOL)
+    );
+  }
+
+  return (
+    <Box>
+      <Label text="Convert" onClick={onConvert} />
+      <Label text="Split" onClick={onSplit} />
+    </Box>
+  );
+});
+
 const MagnetReferenceLine = observer((props: { magnetRef: MagnetReference | undefined; fcc: FieldCanvasConverter }) => {
   const { magnetRef, fcc } = props;
   if (magnetRef === undefined) return null;
@@ -224,6 +261,7 @@ enum TouchAction {
   Start,
   PendingSelection,
   TouchingControl,
+  TouchingSegment,
   PanningAndScaling,
   Selection,
   Release,
@@ -332,9 +370,9 @@ class TouchInteractiveHandler extends TouchEventListener {
       }
     } else if (this.touchAction === TouchAction.PendingSelection) {
       if (isAnyControl(app.fieldEditor.interaction?.entity)) {
-        console.log("touching control");
-        
         this.touchAction = TouchAction.TouchingControl;
+      } else if (app.fieldEditor.interaction?.entity instanceof Segment) {
+        this.touchAction = TouchAction.TouchingSegment;
       } else if (keys.length >= 1) {
         const t = this.pos(keys[0]);
         if (t.distance(this.initialPosition) > 96 * 0.25) {
@@ -348,6 +386,19 @@ class TouchInteractiveHandler extends TouchEventListener {
     } else if (this.touchAction === TouchAction.TouchingControl) {
       if (app.fieldEditor.interaction?.type === "drag") {
         this.touchAction = TouchAction.DraggingControl;
+      } else if (keys.length === 0) {
+        app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!.evt);
+        this.touchAction = TouchAction.End;
+      }
+    } else if (this.touchAction === TouchAction.TouchingSegment) {
+      if (keys.length >= 1) {
+        // UX: Look like dragging if: touch segment and move finger
+        const t = this.pos(keys[0]);
+        if (t.distance(this.initialPosition) > 96 * 0.25) {
+          // 1/4 inch, magic number
+          this.initialFieldScale = app.fieldEditor.scale;
+          this.touchAction = TouchAction.PanningAndScaling;
+        }
       } else if (keys.length === 0) {
         app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!.evt);
         this.touchAction = TouchAction.End;
@@ -666,7 +717,12 @@ const FieldCanvasElement = observer((props: {}) => {
 
   return (
     <Padding0Tooltip
-      title={app.selectedEntityCount ? <ControlTooltipContent /> : <FieldTooltipContent />}
+      title={(() => {
+        const entity = fieldEditor.lastInteraction?.entity;
+        if (entity instanceof Segment) return <SegmentTooltipContent />;
+        if (app.selectedEntityCount !== 0) return <ControlTooltipContent />;
+        else return <FieldTooltipContent />;
+      })()}
       placement="top"
       arrow
       open={fieldEditor.tooltipPosition !== undefined}

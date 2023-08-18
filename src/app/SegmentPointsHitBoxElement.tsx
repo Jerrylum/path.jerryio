@@ -10,6 +10,16 @@ import { getAppStores } from "../core/MainApp";
 const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
   const { app } = getAppStores();
 
+  function onTouchStart(event: Konva.KonvaEventObject<TouchEvent>) {
+    event.evt.preventDefault();
+
+    app.fieldEditor.interact(props.segment, "touch");
+  }
+
+  function onTouchMove(event: Konva.KonvaEventObject<TouchEvent>) {
+    event.evt.preventDefault();
+  }
+
   function onLineClick(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
@@ -60,6 +70,8 @@ const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
       opacity={0}
       bezier={props.segment.controls.length > 2}
       onClick={action(onLineClick)}
+      onTouchStart={action(onTouchStart)}
+      onTouchEnd={action(onTouchMove)}
     />
   );
 });
