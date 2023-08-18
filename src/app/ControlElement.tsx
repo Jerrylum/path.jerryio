@@ -1,15 +1,16 @@
-import { action } from "mobx";
+import { makeObservable, action, observable } from "mobx";
 import { observer } from "mobx-react-lite";
 import { AnyControl, Control, EndControl, Path, Vector } from "../core/Path";
 import Konva from "konva";
 import { Circle, Line } from "react-konva";
 import { Portal } from "react-konva-utils";
-import { useState } from "react";
 import { SegmentElementProps } from "./SegmentElement";
 import { DragControls, RemovePathsAndEndControls, UpdatePathTreeItems } from "../core/Command";
 import { getAppStores } from "../core/MainApp";
 import { boundHeading, fromHeadingInDegreeToAngleInRadian, toHeading } from "../core/Calculation";
 import { MagnetReference, magnet } from "../core/Magnet";
+import React from "react";
+import { TouchEventListener } from "../core/TouchEventListener";
 
 export interface ControlElementProps extends SegmentElementProps {
   cp: AnyControl;
@@ -98,25 +99,93 @@ function getSiblingControls(path: Path, target: EndControl): Control[] {
   return siblingControls;
 }
 
+function shouldInteract(props: ControlElementProps, event: Konva.KonvaEventObject<MouseEvent | TouchEvent>): boolean {
+  const evt = event.evt;
+
+  // UX: Do not interact with control points if itself or the path is locked
+  // UX: Do not interact with control points if middle click
+  if (props.cp.lock || props.path.lock || props.isGrabAndMove) {
+    evt.preventDefault();
+    event.target.stopDrag();
+    return false;
+  }
+
+  return true;
+}
+
+class TouchInteractiveHandler extends TouchEventListener {
+  private magnetPosition: Vector = new Vector(0, 0);
+  private triggerMagnetTimer: NodeJS.Timeout | undefined;
+  enableMagnet: boolean = false;
+
+  constructor(private props: ControlElementProps) {
+    super();
+    makeObservable(this, {
+      enableMagnet: observable,
+      onTouchStart: action,
+      onTouchMove: action,
+      onTouchEnd: action
+    });
+  }
+
+  onTouchStart(event: Konva.KonvaEventObject<TouchEvent>) {
+    super.onTouchStart(event);
+
+    const { app } = getAppStores();
+
+    if (!shouldInteract(this.props, event)) return;
+
+    if (event.evt.touches.length === 1) {
+      // UX: Select one control point if: touch + target not selected
+      if (app.isSelected(this.props.cp) === false) {
+        app.setSelected([this.props.cp]);
+      }
+
+      if (app.fieldEditor.isTouchingControl === false) {
+        app.fieldEditor.isTouchingControl = "touch";
+      }
+    } else {
+      // UX: Do not interact with control points if multi-touch, e.g. pinch to zoom and drag control at the same time
+      event.target.stopDrag();
+    }
+  }
+
+  onTouchMove(event: Konva.KonvaEventObject<TouchEvent>) {
+    super.onTouchMove(event);
+
+    // ALGO: No need to check shouldInteract
+
+    if (this.enableMagnet) {
+      if (this.pos(this.keys[0]).distance(this.magnetPosition) > 96) {
+        this.enableMagnet = false;
+      }
+    }
+
+    clearTimeout(this.triggerMagnetTimer);
+    this.triggerMagnetTimer = setTimeout(() => {
+      this.enableMagnet = true;
+      this.magnetPosition = this.pos(this.keys[0]);
+    }, 600);
+  }
+
+  onTouchEnd(event: Konva.KonvaEventObject<TouchEvent>) {
+    super.onTouchEnd(event);
+
+    // ALGO: No need to check shouldInteract
+
+    clearTimeout(this.triggerMagnetTimer);
+
+    this.enableMagnet = false;
+    this.triggerMagnetTimer = undefined;
+  }
+}
+
 const ControlElement = observer((props: ControlElementProps) => {
   const { app } = getAppStores();
 
-  const [justSelected, setJustSelected] = useState(false);
-  const [posBeforeDrag, setPosBeforeDrag] = useState(new Vector(0, 0));
-
-  function shouldInteract(event: Konva.KonvaEventObject<MouseEvent | TouchEvent>): boolean {
-    const evt = event.evt;
-
-    // UX: Do not interact with control points if itself or the path is locked
-    // UX: Do not interact with control points if middle click
-    if (props.cp.lock || props.path.lock || props.isGrabAndMove) {
-      evt.preventDefault();
-      event.target.stopDrag();
-      return false;
-    }
-
-    return true;
-  }
+  const [justSelected, setJustSelected] = React.useState(false);
+  const [posBeforeDrag, setPosBeforeDrag] = React.useState(new Vector(0, 0));
+  const tiHandler = React.useState(() => new TouchInteractiveHandler(props))[0];
 
   function interact(isShiftKey: boolean) {
     setPosBeforeDrag(props.cp.toVector());
@@ -137,41 +206,25 @@ const ControlElement = observer((props: ControlElementProps) => {
   }
 
   function onTouchStart(event: Konva.KonvaEventObject<TouchEvent>) {
-    if (!shouldInteract(event)) return;
-
     event.evt.preventDefault();
 
-    if (event.evt.touches.length === 1) {
-      // UX: Select one control point if: touch + target not selected
-      if (app.isSelected(props.cp) === false) {
-        app.setSelected([props.cp]);
-      }
-
-      if (app.fieldEditor.isTouchingControl === false) {
-        app.fieldEditor.isTouchingControl = "touch";
-      }
-    } else {
-      // UX: Do not interact with control points if multi-touch, e.g. pinch to zoom and drag control at the same time
-      event.target.stopDrag();
-    }
+    tiHandler.onTouchStart(event);
   }
 
   function onTouchMove(event: Konva.KonvaEventObject<TouchEvent>) {
-    if (!shouldInteract(event)) return;
-
     event.evt.preventDefault();
+
+    tiHandler.onTouchMove(event);
   }
 
   function onTouchEnd(event: Konva.KonvaEventObject<TouchEvent>) {
-    if (!shouldInteract(event)) return;
-
-    const { app } = getAppStores();
+    tiHandler.onTouchEnd(event);
   }
 
   function onMouseDown(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
-    if (!shouldInteract(event)) return;
+    if (!shouldInteract(props, event)) return;
 
     if (evt.button === 0) {
       // left click
@@ -186,7 +239,7 @@ const ControlElement = observer((props: ControlElementProps) => {
   function onMouseClick(event: Konva.KonvaEventObject<MouseEvent>) {
     const evt = event.evt;
 
-    if (!shouldInteract(event)) return;
+    if (!shouldInteract(props, event)) return;
 
     // UX: Remove selected entity if: release left click + shift + not being added recently
     if (evt.button === 0 && evt.shiftKey && !justSelected) {
@@ -195,6 +248,8 @@ const ControlElement = observer((props: ControlElementProps) => {
   }
 
   function onDragMove(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) {
+    if (event.evt instanceof TouchEvent) tiHandler.onTouchMove(event as any);
+
     const evt = event.evt;
 
     // UX: Do not interact with control points if itself or the path is locked
@@ -231,7 +286,9 @@ const ControlElement = observer((props: ControlElementProps) => {
         });
     }
 
-    if (evt.shiftKey) {
+    const enableMagnet = event.evt instanceof TouchEvent ? tiHandler.enableMagnet : evt.shiftKey;
+
+    if (enableMagnet) {
       const references: MagnetReference[] = [];
 
       references.push(...remains.flatMap(source => getHorizontalAndVerticalReferences(source, 0)));
@@ -260,8 +317,8 @@ const ControlElement = observer((props: ControlElementProps) => {
 
   // function onDragEnd(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) { }
 
-  function onMouseUpControlPoint(event: Konva.KonvaEventObject<MouseEvent>) {
-    if (!shouldInteract(event)) return;
+  function onMouseUp(event: Konva.KonvaEventObject<MouseEvent>) {
+    if (!shouldInteract(props, event)) return;
 
     // Nothing to do
   }
@@ -270,7 +327,7 @@ const ControlElement = observer((props: ControlElementProps) => {
     const evt = event.evt;
 
     // UX: Do not interact with control points if it is zooming
-    if (!shouldInteract(event) || evt.ctrlKey) return;
+    if (!shouldInteract(props, event) || evt.ctrlKey) return;
 
     // UX: Do not interact with control points if it is not vertical scroll
     if (Math.abs(evt.deltaX) * 1.5 > Math.abs(evt.deltaY)) return;
@@ -295,7 +352,7 @@ const ControlElement = observer((props: ControlElementProps) => {
 
     onMouseClick(event);
 
-    if (!shouldInteract(event)) return;
+    if (!shouldInteract(props, event)) return;
 
     // UX: Remove end point from the path, selected and expanded list if: right click
     if (evt.button === 2) {
@@ -320,7 +377,7 @@ const ControlElement = observer((props: ControlElementProps) => {
         onWheel={isEndControl ? action(onWheel) : undefined}
         onMouseDown={action(onMouseDown)}
         // onMouseMove
-        onMouseUp={action(onMouseUpControlPoint)}
+        onMouseUp={action(onMouseUp)}
         onDragMove={action(onDragMove)}
         // onDragEnd={action(onDragEnd)}
         onClick={action(onClickFirstOrLastControlPoint)}
@@ -343,3 +400,4 @@ const ControlElement = observer((props: ControlElementProps) => {
 });
 
 export { ControlElement };
+

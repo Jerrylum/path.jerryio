@@ -1,4 +1,4 @@
-import { action, makeAutoObservable, reaction } from "mobx";
+import { action, makeObservable, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import { EndControl, Path, SegmentVariant, Vector } from "../core/Path";
 import Konva from "konva";
@@ -29,6 +29,7 @@ import { LayoutType } from "./Layout";
 import { Box, Tooltip, TooltipProps, Typography, styled, tooltipClasses } from "@mui/material";
 import { Instance } from "@popperjs/core";
 import { FieldEditor } from "../core/FieldEditor";
+import { TouchEventListener } from "../core/TouchEventListener";
 
 const Padding0Tooltip = styled(({ className, ...props }: TooltipProps) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -230,12 +231,10 @@ enum TouchAction {
   DraggingControl
 }
 
-class TouchInteractiveHandler {
+class TouchInteractiveHandler extends TouchEventListener {
   touchAction: TouchAction = TouchAction.Start;
-  touchesLastPosition: { [identifier: number]: Vector } = {};
-  touchesVector: { [identifier: number]: Vector } = {};
 
-  startSelectionTimer: NodeJS.Timer | undefined = undefined;
+  startSelectionTimer: NodeJS.Timeout | undefined = undefined;
   initialTime: number = 0;
   initialFieldScale: number = 0;
   initialPosition: Vector = new Vector(0, 0);
@@ -243,7 +242,20 @@ class TouchInteractiveHandler {
   lastEvent: Konva.KonvaEventObject<TouchEvent> | undefined = undefined;
 
   constructor() {
-    makeAutoObservable(this);
+    super();
+    makeObservable(this, {
+      touchAction: observable,
+      startSelectionTimer: observable,
+      initialTime: observable,
+      initialFieldScale: observable,
+      initialPosition: observable,
+      initialDistanceBetweenTwoTouches: observable,
+      lastEvent: observable,
+      interact: action,
+      onTouchStart: action,
+      onTouchMove: action,
+      onTouchEnd: action
+    });
 
     reaction(
       () => this.touchAction,
@@ -251,26 +263,15 @@ class TouchInteractiveHandler {
     );
   }
 
-  private toVector(t: Touch) {
-    return new Vector(t.clientX, t.clientY);
-  }
-
   onTouchStart(event: Konva.KonvaEventObject<TouchEvent>) {
-    const evt = event.evt;
-
-    [...evt.touches].forEach(t => {
-      const pos = this.toVector(t);
-      const lastPos = this.touchesLastPosition[t.identifier] ?? pos;
-      this.touchesVector[t.identifier] = pos.subtract(lastPos);
-      this.touchesLastPosition[t.identifier] = pos;
-    });
+    super.onTouchStart(event);
 
     const keys = this.keys;
 
-    if (evt.touches.length === 1) {
+    if (keys.length === 1) {
       this.initialTime = Date.now();
       this.initialPosition = this.pos(keys[0]);
-    } else if (evt.touches.length >= 2) {
+    } else if (keys.length >= 2) {
       const touch1 = this.pos(keys[0]);
       const touch2 = this.pos(keys[1]);
       const distance = touch1.distance(touch2);
@@ -282,27 +283,15 @@ class TouchInteractiveHandler {
   }
 
   onTouchMove(event: Konva.KonvaEventObject<TouchEvent>) {
-    const evt = event.evt;
-
-    [...evt.touches].forEach(t => {
-      const pos = this.toVector(t);
-      const lastPos = this.touchesLastPosition[t.identifier] ?? pos;
-      this.touchesVector[t.identifier] = pos.subtract(lastPos);
-      this.touchesLastPosition[t.identifier] = pos;
-    });
+    super.onTouchMove(event);
 
     this.interactWithEvent(event);
   }
 
   onTouchEnd(event: Konva.KonvaEventObject<TouchEvent>) {
-    const evt = event.evt;
+    super.onTouchEnd(event);
 
-    [...evt.changedTouches].forEach(t => {
-      delete this.touchesVector[t.identifier];
-      delete this.touchesLastPosition[t.identifier];
-    });
-
-    if (evt.touches.length === 0) {
+    if (this.keys.length === 0) {
       // TODO
       this.touchesVector = {};
       this.touchesLastPosition = {};
@@ -423,18 +412,6 @@ class TouchInteractiveHandler {
     this.lastEvent = event;
     this.interact();
   }
-
-  get keys() {
-    return Object.keys(this.touchesVector).map(k => parseInt(k));
-  }
-
-  pos(key: number) {
-    return this.touchesLastPosition[key];
-  }
-
-  vec(key: number) {
-    return this.touchesVector[key];
-  }
 }
 
 const FieldCanvasElement = observer((props: {}) => {
@@ -497,6 +474,8 @@ const FieldCanvasElement = observer((props: {}) => {
 
   function onTouchEndStage(event: Konva.KonvaEventObject<TouchEvent>) {
     tiHandler.onTouchEnd(event);
+
+    app.magnet = [];
   }
 
   function onWheelStage(event: Konva.KonvaEventObject<WheelEvent>) {
@@ -759,3 +738,4 @@ const FieldCanvasElement = observer((props: {}) => {
 });
 
 export { FieldCanvasElement };
+
