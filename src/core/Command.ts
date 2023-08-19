@@ -1,3 +1,4 @@
+import { makeAutoObservable } from "mobx";
 import { MainApp, getAppStores } from "./MainApp";
 import { Logger } from "./Logger";
 import {
@@ -31,7 +32,9 @@ export class CommandHistory {
   private redoHistory: CancellableCommand[] = [];
   private saveStepCounter: number = 0;
 
-  constructor(private app: MainApp) {}
+  constructor(private app: MainApp) {
+    makeAutoObservable(this);
+  }
 
   execute(title: string, command: CancellableCommand, mergeTimeout = 500): void {
     const result = command.execute();
@@ -148,6 +151,10 @@ export class CommandHistory {
 
   get canUndo() {
     return this.undoHistorySize !== 0 || this.lastExecution !== undefined;
+  }
+
+  get canRedo() {
+    return this.redoHistorySize !== 0;
   }
 
   get undoHistorySize() {
