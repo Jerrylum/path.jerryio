@@ -113,9 +113,14 @@ function shouldInteract(props: ControlElementProps, event: Konva.KonvaEventObjec
   return true;
 }
 
-function onDragMoveAnyControl(props: ControlElementProps, enableMagnet: boolean, posBeforeDrag: Vector, event: Konva.KonvaEventObject<DragEvent | TouchEvent>) {
+function onDragMoveAnyControl(
+  props: ControlElementProps,
+  enableMagnet: boolean,
+  posBeforeDrag: Vector,
+  event: Konva.KonvaEventObject<DragEvent | TouchEvent>
+) {
   const { app } = getAppStores();
-  
+
   const evt = event.evt;
 
   // UX: Do not interact with control points if itself or the path is locked
@@ -142,14 +147,15 @@ function onDragMoveAnyControl(props: ControlElementProps, enableMagnet: boolean,
 
   const isControlFollow = !evt.ctrlKey;
 
-  const [followers, remains] = getFollowersAndRemaining(app.paths, props.cp, app.selectedEntityIds, isControlFollow);
+  let [followers, remains] = getFollowersAndRemaining(app.paths, props.cp, app.selectedEntityIds, isControlFollow);
 
   if (props.cp instanceof EndControl && isControlFollow) {
-    getSiblingControls(props.path, props.cp)
+    const siblings = getSiblingControls(props.path, props.cp)
       .filter(cp => cp.visible && !cp.lock)
-      .forEach(cp => {
-        if (!followers.includes(cp)) followers.push(cp);
-      });
+      .filter(cp => !followers.includes(cp));
+
+    followers.push(...siblings);
+    remains = remains.filter(cp => !siblings.includes(cp as any));
   }
 
   if (enableMagnet) {
@@ -182,7 +188,7 @@ function onDragMoveAnyControl(props: ControlElementProps, enableMagnet: boolean,
 class ControlVariables {
   justSelected: boolean = false;
   posBeforeDrag: Vector = new Vector(0, 0);
-  
+
   constructor() {
     makeAutoObservable(this);
   }
@@ -241,11 +247,14 @@ class TouchInteractiveHandler extends TouchEventListener {
     }
 
     clearTimeout(this.triggerMagnetTimer);
-    this.triggerMagnetTimer = setTimeout(action(() => {
-      this.enableMagnet = true;
-      this.magnetPosition = this.pos(this.keys[0]);
-      onDragMoveAnyControl(this.props, this.enableMagnet, this.variables.posBeforeDrag, event);
-    }), 600);
+    this.triggerMagnetTimer = setTimeout(
+      action(() => {
+        this.enableMagnet = true;
+        this.magnetPosition = this.pos(this.keys[0]);
+        onDragMoveAnyControl(this.props, this.enableMagnet, this.variables.posBeforeDrag, event);
+      }),
+      600
+    );
 
     onDragMoveAnyControl(this.props, this.enableMagnet, this.variables.posBeforeDrag, event);
   }
@@ -424,4 +433,3 @@ const ControlElement = observer((props: ControlElementProps) => {
 });
 
 export { ControlElement };
-
