@@ -142,6 +142,7 @@ const CustomMenuItem = observer(
       const parentMenuCtr = React.useContext(CustomMenuControllerContext);
       const subMenuController = React.useState(() => new CustomMenuController(parentMenuCtr))[0];
       const menuItemSymbol = React.useState(() => Symbol())[0];
+      const dateOfActivation = React.useState(() => Date.now() + 100)[0]; // ALGO: Delay activation to prevent accidental opening of sub menu
 
       const menuItemRef = React.useRef<HTMLLIElement | null>(null);
       React.useImperativeHandle(ref, () => menuItemRef.current!); // eslint-disable-line @typescript-eslint/no-non-null-assertion
@@ -214,7 +215,9 @@ const CustomMenuItem = observer(
             if (hasSubMenu === false && isDisabled === false) parentMenuCtr.collapse();
             runInAction(() => onClick?.(e));
           }}
-          onMouseMove={() => parentMenuCtr.touch(menuItemSymbol, "focus/open-sub-menu")}
+          onMouseMove={() =>
+            Date.now() > dateOfActivation && parentMenuCtr.touch(menuItemSymbol, "focus/open-sub-menu")
+          }
           onKeyDown={handleKeyDown}>
           <DoneIcon className="menu-item-done" sx={{ visibility: !showLeftIcon ? "hidden" : "" }} />
           <ListItemText sx={{ marginRight: "1rem" }}>{label}</ListItemText>
@@ -655,3 +658,4 @@ const HelpMenuItems = () => {
 };
 
 export { MenuAccordion, MenuMainDropdown };
+
