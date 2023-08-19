@@ -30,6 +30,7 @@
   --bg-default-color: #ffffff;
   --bg-paper-color: #ffffff;
   --text-primary-color: rgba(0, 0, 0, 0.87);
+  --text-disabled-color: rgba(0, 0, 0, 0.6);
   --link-color: rgba(0, 0, 0, 0.87);
   --hover-color: rgba(0, 0, 0, 0.08);
   --focused-color: rgba(0, 0, 0, 0.12);
@@ -53,7 +54,8 @@
   --bg-body-color: #292929;
   --bg-default-color: #1e1e1e;
   --bg-paper-color: #353535;
-  --text-primary-color: #fff;
+  --text-primary-color: rgba(255, 255, 255, 1);
+  --text-disabled-color: rgba(255, 255, 255, 0.5);
   --link-color: rgba(255, 255, 255, 0.87);
   --hover-color: rgba(255, 255, 255, 0.04);
   --focused-color: rgba(255, 255, 255, 0.12);

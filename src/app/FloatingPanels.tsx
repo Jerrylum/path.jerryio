@@ -18,6 +18,10 @@ import { PathConfigFloatingPanel } from "./PathAccordion";
 import { GraphCanvasElement } from "./GraphCanvasElement";
 import { PathTreeFloatingPanel } from "./PathTreeAccordion";
 import { MenuMainDropdown } from "./MenuAccordion";
+import UndoIcon from '@mui/icons-material/Undo';
+import RedoIcon from '@mui/icons-material/Redo';
+import HomeIcon from '@mui/icons-material/Home';
+import classNames from "classnames";
 
 class FloatingPanelsVariables {
   private panelStates: { [key: string]: boolean } = {};
@@ -50,7 +54,7 @@ const FloatingPanels = observer((props: {}) => {
 
   return (
     <>
-      <Box id="panel-icon-box" style={{ left: "8px", top: "8px" }}>
+      <Box className="panel-icon-box" style={{ left: "8px", top: "8px" }}>
         <Box id="menu-icon" className="panel-icon" onClick={() => variables.togglePanel("menu")}>
           <MenuIcon fontSize="large" />
         </Box>
@@ -58,7 +62,7 @@ const FloatingPanels = observer((props: {}) => {
           <ViewListIcon fontSize="large" />
         </Box>
       </Box>
-      <Box id="panel-icon-box" style={{ right: "8px", top: "8px" }}>
+      <Box className="panel-icon-box" style={{ right: "8px", top: "8px" }}>
         <Box className="panel-icon" onClick={() => variables.togglePanel("general-config")}>
           <TuneIcon fontSize="large" />
         </Box>
@@ -73,6 +77,17 @@ const FloatingPanels = observer((props: {}) => {
         </Box> */}
         <Box className="panel-icon" onClick={() => variables.togglePanel("speed-graph")}>
           <TimelineIcon fontSize="large" />
+        </Box>
+      </Box>
+      <Box className="panel-icon-box" style={{ right: "8px", bottom: "0px" }}>
+        <Box className={classNames("panel-icon", {"disabled": !app.history.canUndo})} onClick={() => app.history.undo()}>
+          <UndoIcon fontSize="large" />
+        </Box>
+        <Box className={classNames("panel-icon", {"disabled": !app.history.canRedo})} onClick={() => app.history.redo()}>
+          <RedoIcon fontSize="large" />
+        </Box>
+        <Box className="panel-icon" onClick={() => app.resetFieldOffsetAndScale()}>
+          <HomeIcon fontSize="large" />
         </Box>
       </Box>
       <Box id="left-editor-panel">

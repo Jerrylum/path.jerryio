@@ -241,11 +241,11 @@ class TouchInteractiveHandler extends TouchEventListener {
     }
 
     clearTimeout(this.triggerMagnetTimer);
-    this.triggerMagnetTimer = setTimeout(() => {
+    this.triggerMagnetTimer = setTimeout(action(() => {
       this.enableMagnet = true;
       this.magnetPosition = this.pos(this.keys[0]);
       onDragMoveAnyControl(this.props, this.enableMagnet, this.variables.posBeforeDrag, event);
-    }, 600);
+    }), 600);
 
     onDragMoveAnyControl(this.props, this.enableMagnet, this.variables.posBeforeDrag, event);
   }

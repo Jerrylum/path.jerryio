@@ -1,10 +1,12 @@
+@import 'Essential.scss';
+
 #exclusive-field {
   width: 100svw;
   height: 100svh;
   margin: 0;
 }
 
-#panel-icon-box {
+.panel-icon-box {
   position: fixed;
   margin: 0;
 }
@@ -21,6 +23,15 @@
   margin-bottom: 8px;
   position: relative;
 
+  &.disabled {
+    cursor: auto;
+    color: var(--text-disabled-color);
+
+    @include on-hover {
+      background-color: var(--bg-paper-color) !important;
+    }
+  }
+
   > svg {
     font-size: 36px;
     // UX: Using vertical-align: middle with line-height can not center the icon with 1 px offset
@@ -29,10 +40,10 @@
     top: 50%;
     transform: translate(-50%, -50%);
   }
-}
 
-.panel-icon:hover {
-  background-color: var(--bg-default-color);
+  @include on-hover {
+    background-color: var(--bg-default-color);
+  }
 }
 
 #left-editor-panel {

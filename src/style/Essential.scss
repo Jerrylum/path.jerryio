@@ -83,3 +83,12 @@ th {
   padding-block: 0.6ex;
   padding-inline: 1ex;
 }
+
+// See: https://stackoverflow.com/questions/23885255/how-to-remove-ignore-hover-css-style-on-touch-devices
+@mixin on-hover {
+  @media (hover: hover) and (pointer: fine) {
+      &:hover {
+          @content;
+      }
+  }
+}

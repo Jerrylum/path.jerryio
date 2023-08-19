@@ -113,7 +113,6 @@ const FieldTooltipContent = observer((props: {}) => {
       <Label text="Curve" onClick={onAddCurve} />
       <Label text="Line" onClick={onAddLine} />
       {clipboard.hasData && <Label text="Paste" onClick={onPaste} />}
-      <Label text="Select" onClick={() => {}} />
     </Box>
   );
 });
