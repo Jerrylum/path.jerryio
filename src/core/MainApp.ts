@@ -353,6 +353,11 @@ export class MainApp {
     };
   }
 
+  resetFieldOffsetAndScale() {
+    this.fieldEditor.offset = new Vector(0, 0);
+    this.fieldEditor.scale = 1;
+  }
+
   private setPathFileData(format: Format, pfd: PathFileData): void {
     const purify = DOMPurify();
 

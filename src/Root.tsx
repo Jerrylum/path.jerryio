@@ -85,7 +85,7 @@ const Root = observer(() => {
 
   useCustomHotkeys("Mod+Add,Mod+Equal", () => (app.fieldEditor.scale += 0.5), ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Mod+Subtract,Mod+Minus", () => (app.fieldEditor.scale -= 0.5), ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+0", () => app.resetFieldEditor(), ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys("Mod+0", () => app.resetFieldOffsetAndScale(), ENABLE_ON_ALL_INPUT_FIELDS);
 
   useCustomHotkeys("R", () => (app.gc.showRobot = !app.gc.showRobot), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
 
