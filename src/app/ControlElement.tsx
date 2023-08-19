@@ -14,7 +14,6 @@ import { TouchEventListener } from "../core/TouchEventListener";
 
 export interface ControlElementProps extends SegmentElementProps {
   cp: AnyControl;
-  isGrabAndMove: boolean;
 }
 
 function getFollowersAndRemaining(
@@ -100,12 +99,17 @@ function getSiblingControls(path: Path, target: EndControl): Control[] {
 }
 
 function shouldInteract(props: ControlElementProps, event: Konva.KonvaEventObject<MouseEvent | TouchEvent>): boolean {
-  const evt = event.evt;
+  const { app } = getAppStores();
 
   // UX: Do not interact with control points if itself or the path is locked
   // UX: Do not interact with control points if middle click
-  if (props.cp.lock || props.path.lock || props.isGrabAndMove) {
-    evt.preventDefault();
+  if (
+    props.cp.lock ||
+    props.path.lock ||
+    app.fieldEditor.areaSelection !== undefined ||
+    app.fieldEditor.isGrabAndMove
+  ) {
+    event.evt.preventDefault();
     event.target.stopDrag();
     return false;
   }
@@ -123,8 +127,19 @@ function onDragMoveAnyControl(
 
   const evt = event.evt;
 
+  /* UX:
+  This could be true if the user first touch the field with one finger, then touch the control point with another
+  finger, then release the first finger. In this case, the touch event will be fired on the control point, but the
+  interaction is still on the field. So we need to stop the drag event.
+  */
+  // UX: Do not interact with control points if it is not the target of the interaction
   // UX: Do not interact with control points if itself or the path is locked
-  if (props.cp.lock || props.path.lock) {
+  if (
+    props.cp.lock ||
+    props.path.lock ||
+    app.fieldEditor.areaSelection !== undefined ||
+    app.fieldEditor.interact(props.cp, "drag") === false
+  ) {
     evt.preventDefault();
 
     const cpInUOL = props.cp.toVector(); // ALGO: Use toVector for better performance
@@ -133,6 +148,7 @@ function onDragMoveAnyControl(
     // UX: Set the position of the control point back to the original position
     event.target.x(cpInPx.x);
     event.target.y(cpInPx.y);
+    event.target.stopDrag();
     return;
   }
 
@@ -181,8 +197,6 @@ function onDragMoveAnyControl(
   cpInPx = props.fcc.toPx(cpInUOL);
   event.target.x(cpInPx.x);
   event.target.y(cpInPx.y);
-
-  app.fieldEditor.interact(props.cp, "drag");
 }
 
 class ControlVariables {
@@ -216,20 +230,11 @@ class TouchInteractiveHandler extends TouchEventListener {
     const { app } = getAppStores();
 
     if (!shouldInteract(this.props, event)) return;
+    if (!app.fieldEditor.interact(this.props.cp, "touch")) return;
 
-    if (event.evt.touches.length === 1) {
-      // UX: Select one control point if: touch + target not selected
-      if (app.isSelected(this.props.cp) === false) {
-        app.setSelected([this.props.cp]);
-      }
-
-      // UX: Do not change the interaction type from drag back to touch
-      if (app.fieldEditor.interaction === undefined) {
-        app.fieldEditor.interact(this.props.cp, "touch");
-      }
-    } else {
-      // UX: Do not interact with control points if multi-touch, e.g. pinch to zoom and drag control at the same time
-      event.target.stopDrag();
+    // UX: Select one control point if: touch + target not selected
+    if (app.isSelected(this.props.cp) === false) {
+      app.setSelected([this.props.cp]);
     }
   }
 
@@ -299,13 +304,13 @@ const ControlElement = observer((props: ControlElementProps) => {
   }
 
   function onTouchStart(event: Konva.KonvaEventObject<TouchEvent>) {
-    event.evt.preventDefault();
+    event.evt.preventDefault(); // ALGO: Prevent mouse click event from firing
 
     tiHandler.onTouchStart(event);
   }
 
   function onTouchMove(event: Konva.KonvaEventObject<TouchEvent>) {
-    event.evt.preventDefault();
+    event.evt.preventDefault(); // ALGO: Prevent mouse click event from firing
 
     tiHandler.onTouchMove(event);
   }
@@ -325,6 +330,7 @@ const ControlElement = observer((props: ControlElementProps) => {
     } else if (evt.button === 1) {
       // middle click
       // UX: Do not interact with control points if not left click
+      event.evt.preventDefault();
       event.target.stopDrag();
     }
   }
@@ -411,6 +417,7 @@ const ControlElement = observer((props: ControlElementProps) => {
         onMouseDown={action(onMouseDown)}
         // onMouseMove
         onMouseUp={action(onMouseUp)}
+        // onDragStart={action(onDragStart)}
         onDragMove={action(onDragMove)}
         // onDragEnd={action(onDragEnd)}
         onClick={action(onClickFirstOrLastControlPoint)}

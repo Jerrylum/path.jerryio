@@ -6,10 +6,15 @@ import { getAppStores } from "./MainApp";
 import { Vector } from "./Path";
 import { clamp } from "./Util";
 
-export interface CanvasEntityInteraction {
-  entity: CanvasEntity;
-  type: "touch" | "drag";
-}
+export type CanvasEntityInteraction =
+  | {
+      entity: CanvasEntity;
+      type: "touch" | "drag";
+    }
+  | {
+      entity: null;
+      type: "panning";
+    };
 
 export class FieldEditor {
   private _offset: Vector = new Vector(0, 0);
@@ -121,6 +126,10 @@ export class FieldEditor {
       this.fcc.pixelHeight * 0.9
     );
     app.fieldEditor.offset = newOffset;
+
+    // UX: This interaction is prioritized
+    this._lastInteraction = this._interaction;
+    this._interaction = { entity: null, type: "panning" };
     return true;
   }
 
@@ -201,8 +210,10 @@ export class FieldEditor {
   }
 
   interact(entity: CanvasEntity, type: "touch" | "drag") {
+    if (this._interaction !== undefined && this._interaction.entity !== entity) return false;
     this._lastInteraction = this._interaction;
     this._interaction = { entity, type };
+    return true;
   }
 
   endInteraction() {

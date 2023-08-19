@@ -195,7 +195,7 @@ const MagnetReferenceLine = observer((props: { magnetRef: MagnetReference | unde
   const theta = fromHeadingInDegreeToAngleInRadian(heading);
 
   const center = fcc.toPx(source);
-  const distance = Math.sqrt(fcc.pixelWidth ** 2 + fcc.pixelHeight ** 2) * 1.5 / fcc.scale;
+  const distance = (Math.sqrt(fcc.pixelWidth ** 2 + fcc.pixelHeight ** 2) * 1.5) / fcc.scale;
   const start: Vector = center.add(new Vector(-distance * Math.cos(theta), distance * Math.sin(theta)));
   const end: Vector = center.add(new Vector(distance * Math.cos(theta), -distance * Math.sin(theta)));
 
@@ -239,8 +239,8 @@ const PathSegments = observer((props: { path: Path; fcc: FieldCanvasConverter })
   );
 });
 
-const PathControls = observer((props: { path: Path; fcc: FieldCanvasConverter; isGrabAndMove: boolean }) => {
-  const { path, fcc, isGrabAndMove } = props;
+const PathControls = observer((props: { path: Path; fcc: FieldCanvasConverter }) => {
+  const { path, fcc } = props;
 
   return (
     <>
@@ -248,7 +248,7 @@ const PathControls = observer((props: { path: Path; fcc: FieldCanvasConverter; i
         segment.controls.map((cp, cpIdx) => {
           const isFirstSegment = path.segments[0] === segment;
           if (isFirstSegment === false && cpIdx === 0) return null;
-          return cp.visible && <ControlElement key={cp.uid} {...{ segment, path, fcc, cp, isGrabAndMove }} />;
+          return cp.visible && <ControlElement key={cp.uid} {...{ segment, path, fcc, cp }} />;
         })
       )}
     </>
@@ -260,6 +260,7 @@ enum TouchAction {
   PendingSelection,
   TouchingControl,
   TouchingSegment,
+  ShowRobot,
   PanningAndScaling,
   Selection,
   Release,
@@ -404,13 +405,28 @@ class TouchInteractiveHandler extends TouchEventListener {
         app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!.evt);
         this.touchAction = TouchAction.End;
       }
+    } else if (this.touchAction === TouchAction.ShowRobot) {
+      if (keys.length >= 2) {
+        this.initialFieldScale = app.fieldEditor.scale;
+        this.touchAction = TouchAction.PanningAndScaling;
+      } else if (keys.length === 1) {
+        const posInPx = app.fieldEditor.fcc.getUnboundedPx(this.pos(keys[0]));
+        if (posInPx === undefined) return;
+        app.fieldEditor.showRobot(posInPx);
+      } else if (keys.length === 0) {
+        this.touchAction = TouchAction.End;
+      }
     } else if (this.touchAction === TouchAction.DraggingControl) {
       if (keys.length === 0) {
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.PanningAndScaling) {
       if (keys.length === 1) {
-        app.fieldEditor.panning(this.touchesVector[this.keys[0]].divide(app.fieldEditor.scale));
+        if (app.gc.showRobot && app.fieldEditor.interaction?.entity instanceof Segment) {
+          this.touchAction = TouchAction.ShowRobot;
+        } else {
+          app.fieldEditor.panning(this.touchesVector[this.keys[0]].divide(app.fieldEditor.scale));
+        }
       } else if (keys.length >= 2) {
         const t1 = this.pos(keys[0]);
         const t2 = this.pos(keys[1]);
@@ -513,7 +529,7 @@ const FieldCanvasElement = observer((props: {}) => {
   function onTouchStartStage(event: Konva.KonvaEventObject<TouchEvent>) {
     const evt = event.evt;
 
-    evt.preventDefault();
+    evt.preventDefault(); // ALGO: Prevent mouse click event from firing
 
     tiHandler.onTouchStart(event);
   }
@@ -521,7 +537,7 @@ const FieldCanvasElement = observer((props: {}) => {
   function onTouchMoveStage(event: Konva.KonvaEventObject<TouchEvent>) {
     const evt = event.evt;
 
-    evt.preventDefault();
+    evt.preventDefault(); // ALGO: Prevent mouse click event from firing
 
     tiHandler.onTouchMove(event);
   }
@@ -780,7 +796,7 @@ const FieldCanvasElement = observer((props: {}) => {
               <PathSegments key={path.uid} path={path} fcc={fcc} />
             ))}
             {visiblePaths.map(path => (
-              <PathControls key={path.uid} path={path} fcc={fcc} isGrabAndMove={fieldEditor.isGrabAndMove} />
+              <PathControls key={path.uid} path={path} fcc={fcc} />
             ))}
             {app.gc.showRobot && app.robot.position.visible && (
               <RobotElement fcc={fcc} pos={app.robot.position} width={app.gc.robotWidth} height={app.gc.robotHeight} />
