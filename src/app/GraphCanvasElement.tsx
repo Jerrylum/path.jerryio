@@ -16,6 +16,8 @@ import { useWindowSize } from "../core/Hook";
 import { LayoutType } from "./Layout";
 import { getAppThemeInfo } from "./Theme";
 
+const FONT_FAMILY = '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+
 function showTooltip(variables: GraphCanvasVariables, ikf: KeyframeIndexing | undefined) {
   if (ikf === undefined) {
     variables.tooltip = undefined;
@@ -294,9 +296,9 @@ const GraphCanvasElement = observer((props: {}) => {
             <Text
               text={speedTo + ""}
               x={0}
-              y={gcc.axisLineTopX - fontSize / 3}
+              y={gcc.axisLineTopX - fontSize / 2}
               fontSize={fontSize}
-              fontFamily="Roboto"
+              fontFamily={FONT_FAMILY}
               fill={fgColor}
               align="right"
               width={gcc.axisTitleWidth * 0.9}
@@ -304,9 +306,9 @@ const GraphCanvasElement = observer((props: {}) => {
             <Text
               text={speedFrom + ""}
               x={0}
-              y={gcc.axisLineBottomX - fontSize / 3}
+              y={gcc.axisLineBottomX - fontSize / 2}
               fontSize={fontSize}
-              fontFamily="Roboto"
+              fontFamily={FONT_FAMILY}
               fill={fgColor}
               align="right"
               width={gcc.axisTitleWidth * 0.9}
@@ -322,18 +324,18 @@ const GraphCanvasElement = observer((props: {}) => {
             <Text
               text={bentRateHigh + ""}
               x={gcc.rightPaddingStart + gcc.pointWidth}
-              y={gcc.axisLineTopX - fontSize / 3}
+              y={gcc.axisLineTopX - fontSize / 2}
               fontSize={fontSize}
-              fontFamily="Roboto"
+              fontFamily={FONT_FAMILY}
               fill={fgColor}
               width={gcc.axisTitleWidth}
             />
             <Text
               text={bentRateLow + ""}
               x={gcc.rightPaddingStart + gcc.pointWidth}
-              y={gcc.axisLineBottomX - fontSize / 3}
+              y={gcc.axisLineBottomX - fontSize / 2}
               fontSize={fontSize}
-              fontFamily="Roboto"
+              fontFamily={FONT_FAMILY}
               fill={fgColor}
               width={gcc.axisTitleWidth}
             />
@@ -343,7 +345,7 @@ const GraphCanvasElement = observer((props: {}) => {
               x={0}
               y={gcc.pixelHeight}
               fontSize={fontSize}
-              fontFamily="Roboto"
+              fontFamily={FONT_FAMILY}
               fill={fgColor}
               width={gcc.pixelHeight}
               height={fontSize}
@@ -355,7 +357,7 @@ const GraphCanvasElement = observer((props: {}) => {
               x={gcc.pixelWidth - gcc.pointWidth}
               y={0}
               fontSize={fontSize}
-              fontFamily="Roboto"
+              fontFamily={FONT_FAMILY}
               fill={fgColor}
               width={gcc.pixelHeight}
               height={fontSize}
