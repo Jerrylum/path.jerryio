@@ -268,7 +268,7 @@ enum TouchAction {
 }
 
 class TouchInteractiveHandler extends TouchEventListener {
-  touchAction: TouchAction = TouchAction.Start;
+  touchAction: TouchAction = TouchAction.End;
 
   startSelectionTimer: NodeJS.Timeout | undefined = undefined;
   initialTime: number = 0;
@@ -343,6 +343,9 @@ class TouchInteractiveHandler extends TouchEventListener {
 
     const keys = this.keys;
     if (this.touchAction === TouchAction.Start) {
+      // UX: Clear hover effect from path tree if the user starts touching the field canvas
+      app.hoverItem = undefined;
+
       this.isPendingShowTooltip = app.fieldEditor.tooltipPosition === undefined;
       app.fieldEditor.tooltipPosition = undefined;
 
@@ -364,7 +367,7 @@ class TouchInteractiveHandler extends TouchEventListener {
           600
         ); // Magic number
       } else {
-        this.touchAction = TouchAction.Start;
+        this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.PendingSelection) {
       if (isAnyControl(app.fieldEditor.interaction?.entity)) {
