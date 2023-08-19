@@ -491,9 +491,6 @@ const FieldCanvasElement = observer((props: {}) => {
     action((newSize: Vector, oldSize: Vector) => {
       const ratio = (newSize.y + oldSize.y) / 2 / oldSize.y;
       app.fieldEditor.offset = app.fieldEditor.offset.multiply(ratio);
-
-      // UX: Hide tooltip when the window size changes
-      fieldEditor.tooltipPosition = undefined;
     })
   );
 

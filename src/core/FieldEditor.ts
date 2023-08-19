@@ -32,6 +32,22 @@ export class FieldEditor {
 
   constructor() {
     makeAutoObservable(this, { fcc: false });
+
+    // UX: Hide tooltip when the window size changes
+    window.addEventListener(
+      "resize",
+      action(() => (this.tooltipPosition = undefined))
+    );
+    // UX: Hide tooltip when the user clicks outside of the tooltip
+    document.addEventListener("touchstart", event => this.onTouchStartOrMouseDown(event));
+    document.addEventListener("mousedown", event => this.onTouchStartOrMouseDown(event));
+  }
+
+  private onTouchStartOrMouseDown(event: TouchEvent | MouseEvent) {
+    const fieldParent = this.fcc.container?.parentElement;
+    const tooltips = [...(fieldParent?.querySelectorAll("*[role='tooltip']") ?? [])];
+    const isUsingTooltip = tooltips.some(tooltip => tooltip.contains(event.target as Node));
+    if (isUsingTooltip === false) this.tooltipPosition = undefined;
   }
 
   startAreaSelection(fromPosInPx: Vector): void {
@@ -125,7 +141,7 @@ export class FieldEditor {
       -(this.fcc.pixelHeight / this.scale) + this.fcc.pixelHeight * 0.1,
       this.fcc.pixelHeight * 0.9
     );
-    app.fieldEditor.offset = newOffset;
+    this.offset = newOffset;
 
     // UX: This interaction is prioritized
     this._lastInteraction = this._interaction;
