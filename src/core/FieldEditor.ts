@@ -109,12 +109,17 @@ export class FieldEditor {
     const { app } = getAppStores();
 
     const newOffset = this.offset.subtract(vec);
+
     newOffset.x = clamp(
       newOffset.x,
-      -this.fcc.pixelWidth * 0.9 + this.fcc.viewOffset.x,
+      -(this.fcc.pixelWidth / this.scale) + this.fcc.pixelWidth * 0.1 + this.fcc.viewOffset.x,
       this.fcc.pixelWidth * 0.9 - this.fcc.viewOffset.x
     );
-    newOffset.y = clamp(newOffset.y, -this.fcc.pixelHeight * 0.9, this.fcc.pixelHeight * 0.9);
+    newOffset.y = clamp(
+      newOffset.y,
+      -(this.fcc.pixelHeight / this.scale) + this.fcc.pixelHeight * 0.1,
+      this.fcc.pixelHeight * 0.9
+    );
     app.fieldEditor.offset = newOffset;
     return true;
   }
@@ -172,7 +177,7 @@ export class FieldEditor {
     const oldScale = this.scale;
     const oldOffset = this.offset;
 
-    const newScale = clamp(variable, 1, 3);
+    const newScale = clamp(variable, 0.5, 3);
 
     // offset is offset in Konva coordinate system (KC)
     // offsetInCC is offset in HTML Canvas coordinate system (CC)
@@ -230,7 +235,7 @@ export class FieldEditor {
   }
 
   set scale(scale: number) {
-    this._scale = clamp(scale, 1, 3);
+    this._scale = clamp(scale, 0.5, 3);
   }
 
   get areaSelection() {
@@ -249,4 +254,3 @@ export class FieldEditor {
     return this._lastInteraction;
   }
 }
-

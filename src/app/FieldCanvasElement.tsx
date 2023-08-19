@@ -195,8 +195,7 @@ const MagnetReferenceLine = observer((props: { magnetRef: MagnetReference | unde
   const theta = fromHeadingInDegreeToAngleInRadian(heading);
 
   const center = fcc.toPx(source);
-  const distance =
-    Math.sqrt(fcc.pixelWidth ** 2 + fcc.pixelHeight ** 2) + source.distance(new Vector(0, 0)) * fcc.uol2pixel;
+  const distance = Math.sqrt(fcc.pixelWidth ** 2 + fcc.pixelHeight ** 2) * 1.5 / fcc.scale;
   const start: Vector = center.add(new Vector(-distance * Math.cos(theta), distance * Math.sin(theta)));
   const end: Vector = center.add(new Vector(distance * Math.cos(theta), -distance * Math.sin(theta)));
 
@@ -797,4 +796,3 @@ const FieldCanvasElement = observer((props: {}) => {
 });
 
 export { FieldCanvasElement };
-
