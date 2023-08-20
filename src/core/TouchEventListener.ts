@@ -47,6 +47,11 @@ export class TouchEventListener {
       delete this.touchesVector[t.identifier];
       delete this.touchesLastPosition[t.identifier];
     });
+    
+    if (event.evt.touches.length === 0) {
+      this.touchesVector = {};
+      this.touchesLastPosition = {};
+    }
   }
 
   get keys() {

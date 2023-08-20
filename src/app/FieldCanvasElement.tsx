@@ -330,12 +330,6 @@ class TouchInteractiveHandler extends TouchEventListener {
   onTouchEnd(event: Konva.KonvaEventObject<TouchEvent>) {
     super.onTouchEnd(event);
 
-    if (this.keys.length === 0) {
-      // TODO
-      this.touchesVector = {};
-      this.touchesLastPosition = {};
-    }
-
     this.interactWithEvent(event);
   }
 
