@@ -18,7 +18,7 @@ import { getAppStores } from "../core/MainApp";
 import { RobotElement } from "./RobotElement";
 import { fromHeadingInDegreeToAngleInRadian } from "../core/Calculation";
 import { MagnetReference } from "../core/Magnet";
-import { useWindowSize } from "../core/Hook";
+import { useMobxStorage, useTouchEvent, useWindowSize } from "../core/Hook";
 import { LayoutType } from "./Layout";
 import { Box, Tooltip, TooltipProps, Typography, styled, tooltipClasses } from "@mui/material";
 import { Instance } from "@popperjs/core";
@@ -276,7 +276,7 @@ class TouchInteractiveHandler extends TouchEventListener {
   initialFieldScale: number = 0;
   initialPosition: Vector = new Vector(0, 0);
   initialDistanceBetweenTwoTouches: number = 0;
-  lastEvent: Konva.KonvaEventObject<TouchEvent> | undefined = undefined;
+  lastEvent: TouchEvent | undefined = undefined;
   isPendingShowTooltip: boolean = false;
 
   constructor() {
@@ -302,8 +302,10 @@ class TouchInteractiveHandler extends TouchEventListener {
     );
   }
 
-  onTouchStart(event: Konva.KonvaEventObject<TouchEvent>) {
-    super.onTouchStart(event);
+  // destructor() {}
+
+  onTouchStart(evt: TouchEvent) {
+    super.onTouchStart(evt);
 
     const keys = this.keys;
 
@@ -318,19 +320,19 @@ class TouchInteractiveHandler extends TouchEventListener {
       this.initialDistanceBetweenTwoTouches = Math.max(distance, 0.1); // 0.1 pixel is the minimum distance
     }
 
-    this.interactWithEvent(event);
+    this.interactWithEvent(evt);
   }
 
-  onTouchMove(event: Konva.KonvaEventObject<TouchEvent>) {
-    super.onTouchMove(event);
+  onTouchMove(evt: TouchEvent) {
+    super.onTouchMove(evt);
 
-    this.interactWithEvent(event);
+    this.interactWithEvent(evt);
   }
 
-  onTouchEnd(event: Konva.KonvaEventObject<TouchEvent>) {
-    super.onTouchEnd(event);
+  onTouchEnd(evt: TouchEvent) {
+    super.onTouchEnd(evt);
 
-    this.interactWithEvent(event);
+    this.interactWithEvent(evt);
   }
 
   interact() {
@@ -353,7 +355,7 @@ class TouchInteractiveHandler extends TouchEventListener {
 
             app.setSelected([]);
 
-            const posInPx = app.fieldEditor.fcc.getUnboundedPxFromEvent(this.lastEvent!);
+            const posInPx = app.fieldEditor.fcc.getUnboundedPxFromNativeEvent(this.lastEvent!);
             if (posInPx === undefined) return;
 
             app.fieldEditor.startAreaSelection(posInPx);
@@ -383,7 +385,7 @@ class TouchInteractiveHandler extends TouchEventListener {
       if (app.fieldEditor.interaction?.type === "drag") {
         this.touchAction = TouchAction.DraggingControl;
       } else if (keys.length === 0) {
-        app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!.evt);
+        app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!);
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.TouchingSegment) {
@@ -396,7 +398,7 @@ class TouchInteractiveHandler extends TouchEventListener {
           this.touchAction = TouchAction.PanningAndScaling;
         }
       } else if (keys.length === 0) {
-        app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!.evt);
+        app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!);
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.ShowRobot) {
@@ -419,7 +421,7 @@ class TouchInteractiveHandler extends TouchEventListener {
         if (app.gc.showRobot && app.fieldEditor.interaction?.entity instanceof Segment) {
           this.touchAction = TouchAction.ShowRobot;
         } else {
-          app.fieldEditor.panning(this.touchesVector[this.keys[0]].divide(app.fieldEditor.scale));
+          app.fieldEditor.panning(this.vec(this.keys[0]).divide(app.fieldEditor.scale));
         }
       } else if (keys.length >= 2) {
         const t1 = this.pos(keys[0]);
@@ -435,7 +437,7 @@ class TouchInteractiveHandler extends TouchEventListener {
       }
     } else if (this.touchAction === TouchAction.Selection) {
       if (keys.length >= 1) {
-        const posInPx = app.fieldEditor.fcc.getUnboundedPxFromEvent(this.lastEvent!);
+        const posInPx = app.fieldEditor.fcc.getUnboundedPxFromNativeEvent(this.lastEvent!);
         if (posInPx === undefined) return;
 
         app.fieldEditor.updateAreaSelection(posInPx);
@@ -452,7 +454,7 @@ class TouchInteractiveHandler extends TouchEventListener {
         } else if (this.isPendingShowTooltip) {
           // UX: Show tooltip if last interaction is clicking field and no area selection and no tooltip is shown
           // this.pos(keys[0]) is undefined, use last event
-          app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!.evt);
+          app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!);
         }
       }
       this.touchAction = TouchAction.End;
@@ -462,6 +464,7 @@ class TouchInteractiveHandler extends TouchEventListener {
         app.fieldEditor.endGrabAndMove();
         // UX: Only end interaction if: no finger is touching the screen
         app.fieldEditor.endInteraction();
+        app.magnet = [];
 
         // ALGO: Cancel selection if the user lifts the finger
         clearTimeout(this.startSelectionTimer);
@@ -472,8 +475,8 @@ class TouchInteractiveHandler extends TouchEventListener {
     }
   }
 
-  interactWithEvent(event: Konva.KonvaEventObject<TouchEvent>) {
-    this.lastEvent = event;
+  interactWithEvent(evt: TouchEvent) {
+    this.lastEvent = evt;
     this.interact();
   }
 }
@@ -515,29 +518,8 @@ const FieldCanvasElement = observer((props: {}) => {
 
   app.fieldEditor.fcc = fcc;
   const fieldEditor = app.fieldEditor;
-  const tiHandler = React.useState(new TouchInteractiveHandler())[0];
-
-  function onTouchStartStage(event: Konva.KonvaEventObject<TouchEvent>) {
-    const evt = event.evt;
-
-    evt.preventDefault(); // ALGO: Prevent mouse click event from firing
-
-    tiHandler.onTouchStart(event);
-  }
-
-  function onTouchMoveStage(event: Konva.KonvaEventObject<TouchEvent>) {
-    const evt = event.evt;
-
-    evt.preventDefault(); // ALGO: Prevent mouse click event from firing
-
-    tiHandler.onTouchMove(event);
-  }
-
-  function onTouchEndStage(event: Konva.KonvaEventObject<TouchEvent>) {
-    tiHandler.onTouchEnd(event);
-
-    app.magnet = [];
-  }
+  const tiHandler = useMobxStorage(() => new TouchInteractiveHandler());
+  useTouchEvent(tiHandler, fcc.container);
 
   function onWheelStage(event: Konva.KonvaEventObject<WheelEvent>) {
     const evt = event.evt;
@@ -621,9 +603,7 @@ const FieldCanvasElement = observer((props: {}) => {
     // UX: It is not actually dragged "stage", reset the position to (0, 0)
     if (event.target instanceof Konva.Stage) event.target.setPosition(new Vector(0, 0));
 
-    if (event.evt instanceof TouchEvent) {
-      tiHandler.onTouchMove(event as Konva.KonvaEventObject<TouchEvent>);
-    } else {
+    if (event.evt instanceof TouchEvent === false) {
       fieldEditor.isAddingControl = false;
 
       const posInPx = fcc.getUnboundedPxFromEvent(event);
@@ -758,9 +738,9 @@ const FieldCanvasElement = observer((props: {}) => {
           offset={offset.subtract(fcc.viewOffset)}
           draggable
           style={{ cursor: fieldEditor.isGrabAndMove ? "grab" : "" }}
-          onTouchStart={action(onTouchStartStage)}
-          onTouchMove={action(onTouchMoveStage)}
-          onTouchEnd={action(onTouchEndStage)}
+          // onTouchStart={action(onTouchStartStage)}
+          // onTouchMove={action(onTouchMoveStage)}
+          // onTouchEnd={action(onTouchEndStage)}
           onContextMenu={e => e.evt.preventDefault()}
           onWheel={action(onWheelStage)}
           onMouseDown={action(onMouseDownStage)}

@@ -11,6 +11,7 @@ import { boundHeading, fromHeadingInDegreeToAngleInRadian, toHeading } from "../
 import { MagnetReference, magnet } from "../core/Magnet";
 import React from "react";
 import { TouchEventListener } from "../core/TouchEventListener";
+import { useMobxStorage } from "../core/Hook";
 
 export interface ControlElementProps extends SegmentElementProps {
   cp: AnyControl;
@@ -224,8 +225,8 @@ class TouchInteractiveHandler extends TouchEventListener {
     });
   }
 
-  onTouchStart(event: Konva.KonvaEventObject<TouchEvent>) {
-    super.onTouchStart(event);
+  onKonvaTouchStart(event: Konva.KonvaEventObject<TouchEvent>) {
+    super.onTouchStart(event.evt);
 
     const { app } = getAppStores();
 
@@ -238,8 +239,8 @@ class TouchInteractiveHandler extends TouchEventListener {
     }
   }
 
-  onTouchMove(event: Konva.KonvaEventObject<TouchEvent>) {
-    super.onTouchMove(event);
+  onKonvaTouchMove(event: Konva.KonvaEventObject<TouchEvent>) {
+    super.onTouchMove(event.evt);
 
     const { app } = getAppStores();
 
@@ -264,8 +265,8 @@ class TouchInteractiveHandler extends TouchEventListener {
     onDragMoveAnyControl(this.props, this.enableMagnet, this.variables.posBeforeDrag, event);
   }
 
-  onTouchEnd(event: Konva.KonvaEventObject<TouchEvent>) {
-    super.onTouchEnd(event);
+  onKonvaTouchEnd(event: Konva.KonvaEventObject<TouchEvent>) {
+    super.onTouchEnd(event.evt);
 
     // ALGO: No need to check shouldInteract
 
@@ -279,10 +280,8 @@ class TouchInteractiveHandler extends TouchEventListener {
 const ControlElement = observer((props: ControlElementProps) => {
   const { app } = getAppStores();
 
-  // const [justSelected, setJustSelected] = React.useState(false);
-  // const [posBeforeDrag, setPosBeforeDrag] = React.useState(new Vector(0, 0));
-  const variables = React.useState(() => new ControlVariables())[0];
-  const tiHandler = React.useState(() => new TouchInteractiveHandler(props, variables))[0];
+  const variables = useMobxStorage(() => new ControlVariables());
+  const tiHandler = useMobxStorage(() => new TouchInteractiveHandler(props, variables));
   tiHandler.props = props;
 
   function interact(isShiftKey: boolean) {
@@ -301,22 +300,6 @@ const ControlElement = observer((props: ControlElementProps) => {
         variables.justSelected = false;
       }
     }
-  }
-
-  function onTouchStart(event: Konva.KonvaEventObject<TouchEvent>) {
-    event.evt.preventDefault(); // ALGO: Prevent mouse click event from firing
-
-    tiHandler.onTouchStart(event);
-  }
-
-  function onTouchMove(event: Konva.KonvaEventObject<TouchEvent>) {
-    event.evt.preventDefault(); // ALGO: Prevent mouse click event from firing
-
-    tiHandler.onTouchMove(event);
-  }
-
-  function onTouchEnd(event: Konva.KonvaEventObject<TouchEvent>) {
-    tiHandler.onTouchEnd(event);
   }
 
   function onMouseDown(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -348,7 +331,7 @@ const ControlElement = observer((props: ControlElementProps) => {
 
   function onDragMove(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) {
     if (event.evt instanceof TouchEvent) {
-      tiHandler.onTouchMove(event as any);
+      tiHandler.onKonvaTouchMove(event as any);
     } else {
       onDragMoveAnyControl(props, event.evt.shiftKey, variables.posBeforeDrag, event);
     }
@@ -410,9 +393,9 @@ const ControlElement = observer((props: ControlElementProps) => {
         radius={isEndControl ? cpRadius : cpRadius / 2}
         fill={fillColor}
         draggable
-        onTouchStart={action(onTouchStart)}
-        onTouchMove={action(onTouchMove)}
-        onTouchEnd={action(onTouchEnd)}
+        onTouchStart={(event) => tiHandler.onKonvaTouchStart(event)}
+        onTouchMove={(event) => tiHandler.onKonvaTouchMove(event)}
+        onTouchEnd={(event) => tiHandler.onKonvaTouchEnd(event)}
         onWheel={isEndControl ? action(onWheel) : undefined}
         onMouseDown={action(onMouseDown)}
         // onMouseMove

@@ -5,6 +5,7 @@ import { RefType, HotkeyCallback, HotkeysEvent, Trigger } from "react-hotkeys-ho
 import { getAppStores } from "./MainApp";
 import { Vector } from "./Path";
 import { IS_MAC_OS } from "./Util";
+import { TouchEventListener } from "./TouchEventListener";
 
 export function useTimer(ms: number) {
   const [time, setTime] = React.useState(Date.now());
@@ -245,17 +246,17 @@ export namespace Custom {
 }
 
 export function useEventListener<TEventTarget extends EventTarget, TEventType extends Custom.EventType<TEventTarget>>(
-  eventTarget: TEventTarget,
+  eventTarget: TEventTarget | null,
   eventType: TEventType,
   listener: Custom.EventListener<TEventTarget, TEventType>,
   options?: boolean | AddEventListenerOptions
 ) {
   React.useEffect(() => {
     const eventListener = action(listener);
-    eventTarget.addEventListener(eventType, eventListener as any, options);
+    eventTarget?.addEventListener(eventType, eventListener as any, options);
 
     return () => {
-      eventTarget.removeEventListener(eventType, eventListener as any, options);
+      eventTarget?.removeEventListener(eventType, eventListener as any, options);
     };
   }, [eventTarget, eventType, listener, options]);
 }
@@ -272,4 +273,10 @@ export function useMobxStorage<T extends { destructor: () => void } | {}>(
   }, deps);
 
   return storage;
+}
+
+export function useTouchEvent(eventListener: TouchEventListener, element: HTMLElement | null) {
+  useEventListener(element, "touchstart", (e) => eventListener.onTouchStart(e), { capture: true, passive: false });
+  useEventListener(element, "touchmove", (e) => eventListener.onTouchMove(e), { capture: true, passive: false });
+  useEventListener(element, "touchend", (e) => eventListener.onTouchEnd(e), { capture: true, passive: false });
 }

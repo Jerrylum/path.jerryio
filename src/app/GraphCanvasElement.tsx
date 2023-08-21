@@ -245,7 +245,7 @@ const GraphCanvasElement = observer((props: {}) => {
         anchorEl: {
           getBoundingClientRect: () => {
             const div = stageBoxRef.current;
-            if (div === null || variables.tooltip === undefined) return new DOMRect(0, 0, 0, 0);
+            if (div === null || variables.tooltip === undefined) return new DOMRect(-200, -200, 0, 0);
 
             const canvasPos = div.getBoundingClientRect();
             const posInPx = gcc.toPx(variables.tooltip.pos);
@@ -287,6 +287,7 @@ const GraphCanvasElement = observer((props: {}) => {
               y={0}
               width={gcc.pixelWidth - gcc.twoSidePaddingWidth * 2}
               height={gcc.pixelHeight}
+              
               onClick={action(onGraphClick)}
             />
 

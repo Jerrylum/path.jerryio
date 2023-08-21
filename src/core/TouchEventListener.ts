@@ -3,13 +3,11 @@ import { Vector } from "./Path";
 import { makeObservable, action, computed, observable } from "mobx";
 
 export class TouchEventListener {
-  touchesLastPosition: { [identifier: number]: Vector } = {};
-  touchesVector: { [identifier: number]: Vector } = {};
+  touches: { [identifier: number]: { lastPosition: Vector; vector: Vector } } = {};
 
   constructor() {
     makeObservable(this, {
-      touchesLastPosition: observable,
-      touchesVector: observable,
+      touches: observable,
       keys: computed
     });
   }
@@ -18,52 +16,58 @@ export class TouchEventListener {
     return new Vector(t.clientX, t.clientY);
   }
 
-  onTouchStart(event: Konva.KonvaEventObject<TouchEvent>) {
-    const evt = event.evt;
-
-    [...evt.touches].forEach(t => {
+  onTouchStart(evt: TouchEvent) {
+    [...evt.targetTouches].forEach(t => {
       const pos = this.toVector(t);
-      const lastPos = this.touchesLastPosition[t.identifier] ?? pos;
-      this.touchesVector[t.identifier] = pos.subtract(lastPos);
-      this.touchesLastPosition[t.identifier] = pos;
+      const lastPos = this.touches[t.identifier]?.lastPosition ?? pos;
+      this.touches[t.identifier] = { lastPosition: pos, vector: pos.subtract(lastPos) };
     });
+
+    evt.preventDefault(); // ALGO: Prevent mouse click event from firing
   }
 
-  onTouchMove(event: Konva.KonvaEventObject<TouchEvent>) {
-    const evt = event.evt;
-
-    [...evt.touches].forEach(t => {
+  onTouchMove(evt: TouchEvent) {
+    [...evt.targetTouches].forEach(t => {
       const pos = this.toVector(t);
-      const lastPos = this.touchesLastPosition[t.identifier] ?? pos;
-      this.touchesVector[t.identifier] = pos.subtract(lastPos);
-      this.touchesLastPosition[t.identifier] = pos;
+      const lastPos = this.touches[t.identifier]?.lastPosition ?? pos;
+      this.touches[t.identifier] = { lastPosition: pos, vector: pos.subtract(lastPos) };
     });
+
+    evt.preventDefault(); // ALGO: Prevent mouse click event from firing
   }
 
-  onTouchEnd(event: Konva.KonvaEventObject<TouchEvent>) {
-    const evt = event.evt;
-
+  onTouchEnd(evt: TouchEvent) {
     [...evt.changedTouches].forEach(t => {
-      delete this.touchesVector[t.identifier];
-      delete this.touchesLastPosition[t.identifier];
+      delete this.touches[t.identifier];
     });
-    
-    if (event.evt.touches.length === 0) {
-      this.touchesVector = {};
-      this.touchesLastPosition = {};
+
+    if (evt.targetTouches.length === 0) {
+      this.touches = {};
     }
   }
 
+  /**
+   * Get the identifiers of all touches started on the target element
+   */
   get keys() {
-    return Object.keys(this.touchesVector).map(k => parseInt(k));
+    return Object.keys(this.touches).map(k => parseInt(k));
   }
 
+  /**
+   * Get the last position of the touch with the given identifier
+   * @param key The identifier of the touch
+   * @returns The last position of the touch
+   */
   pos(key: number) {
-    return this.touchesLastPosition[key];
+    return this.touches[key].lastPosition;
   }
 
+  /**
+   * Get the vector of the touch movement since the last frame
+   * @param key The identifier of the touch
+   * @returns The vector of the touch movement since the last frame
+   */
   vec(key: number) {
-    return this.touchesVector[key];
+    return this.touches[key].vector;
   }
 }
-
