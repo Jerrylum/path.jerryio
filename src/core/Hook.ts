@@ -259,3 +259,17 @@ export function useEventListener<TEventTarget extends EventTarget, TEventType ex
     };
   }, [eventTarget, eventType, listener, options]);
 }
+
+export function useMobxStorage<T extends { destructor: () => void } | {}>(
+  factory: () => T,
+  deps: React.DependencyList = []
+): T {
+  const storage = React.useMemo(() => factory(), deps);
+  React.useEffect(() => {
+    return () => {
+      if ("destructor" in storage && typeof storage.destructor === "function") storage.destructor?.();
+    };
+  }, deps);
+
+  return storage;
+}
