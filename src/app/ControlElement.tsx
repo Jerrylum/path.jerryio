@@ -218,9 +218,9 @@ class TouchInteractiveHandler extends TouchEventListener {
     super();
     makeObservable(this, {
       enableMagnet: observable,
-      onTouchStart: action,
-      onTouchMove: action,
-      onTouchEnd: action
+      onKonvaTouchStart: action,
+      onKonvaTouchMove: action,
+      onKonvaTouchEnd: action
       // props is not observable
     });
   }
@@ -393,9 +393,9 @@ const ControlElement = observer((props: ControlElementProps) => {
         radius={isEndControl ? cpRadius : cpRadius / 2}
         fill={fillColor}
         draggable
-        onTouchStart={(event) => tiHandler.onKonvaTouchStart(event)}
-        onTouchMove={(event) => tiHandler.onKonvaTouchMove(event)}
-        onTouchEnd={(event) => tiHandler.onKonvaTouchEnd(event)}
+        onTouchStart={event => tiHandler.onKonvaTouchStart(event)}
+        onTouchMove={event => tiHandler.onKonvaTouchMove(event)}
+        onTouchEnd={event => tiHandler.onKonvaTouchEnd(event)}
         onWheel={isEndControl ? action(onWheel) : undefined}
         onMouseDown={action(onMouseDown)}
         // onMouseMove

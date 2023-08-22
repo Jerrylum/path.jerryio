@@ -1,4 +1,4 @@
-import { makeAutoObservable, action } from "mobx";
+import { makeAutoObservable, makeObservable, action, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Point, Path, Vector, KeyframePos } from "../core/Path";
 import Konva from "konva";
@@ -9,12 +9,13 @@ import { clamp } from "../core/Util";
 import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateProperties } from "../core/Command";
 import { getAppStores } from "../core/MainApp";
 import { KeyframeIndexing } from "../core/Calculation";
-import { GraphCanvasConverter } from "../core/Canvas";
+import { GraphCanvasConverter, getClientXY } from "../core/Canvas";
 import { Box, Tooltip } from "@mui/material";
 import { Instance } from "@popperjs/core";
-import { useWindowSize } from "../core/Hook";
+import { useEventListener, useMobxStorage, useWindowSize } from "../core/Hook";
 import { LayoutType } from "./Layout";
 import { getAppThemeInfo } from "./Theme";
+import { TouchEventListener } from "../core/TouchEventListener";
 
 const FONT_FAMILY = '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
 
@@ -160,11 +161,139 @@ const KeyframeElement = observer((props: KeyframeElementProps) => {
 });
 
 class GraphCanvasVariables {
+  path: Path | undefined = undefined;
+  gcc!: GraphCanvasConverter;
+
   xOffset: number = 0;
   tooltip: { pos: KeyframePos; speed: number } | undefined = undefined;
 
   constructor() {
-    makeAutoObservable(this);
+    makeAutoObservable(this, { path: false, gcc: false });
+  }
+}
+
+enum TouchAction {
+  Start,
+  PendingScrolling,
+  Scrolling,
+  Release,
+  End
+}
+
+class TouchInteractiveHandler extends TouchEventListener {
+  touchAction: TouchAction = TouchAction.End;
+
+  initialTime: number = 0;
+  initialPosition: Vector = new Vector(0, 0);
+  lastEvent: TouchEvent | undefined = undefined;
+
+  constructor(private variables: GraphCanvasVariables) {
+    super();
+    makeObservable(this, {
+      touchAction: observable,
+      initialTime: observable,
+      initialPosition: observable,
+      lastEvent: observable,
+      onTouchStart: action,
+      onTouchMove: action,
+      onTouchEnd: action
+    });
+
+    reaction(
+      () => this.touchAction,
+      () => this.interact()
+    );
+  }
+
+  onTouchStart(evt: TouchEvent) {
+    super.onTouchStart(evt);
+
+    const keys = this.keys;
+    if (keys.length === 1) {
+      this.initialTime = Date.now();
+      this.initialPosition = this.pos(keys[0]);
+    }
+
+    this.interactWithEvent(evt);
+  }
+
+  onTouchMove(evt: TouchEvent) {
+    super.onTouchMove(evt);
+
+    this.interactWithEvent(evt);
+  }
+
+  onTouchEnd(evt: TouchEvent) {
+    super.onTouchEnd(evt);
+
+    this.interactWithEvent(evt);
+  }
+
+  interact() {
+    const { app } = getAppStores();
+
+    const keys = this.keys;
+    if (this.touchAction === TouchAction.Start) {
+      if (keys.length >= 1) {
+        this.touchAction = TouchAction.PendingScrolling;
+      } else {
+        this.touchAction = TouchAction.End;
+      }
+    } else if (this.touchAction === TouchAction.PendingScrolling) {
+      if (keys.length >= 1) {
+        const t = this.pos(keys[0]);
+        if (t.distance(this.initialPosition) > 96 * 0.25) {
+          // 1/4 inch, magic number
+          this.touchAction = TouchAction.Scrolling;
+        }
+      } else {
+        this.touchAction = TouchAction.Release;
+      }
+    } else if (this.touchAction === TouchAction.Scrolling) {
+      if (keys.length >= 1) {
+        const path = this.variables.path;
+        const gcc = this.variables.gcc;
+
+        const delta = -this.vec(keys[0]).x;
+
+        if (path === undefined) {
+          this.variables.xOffset = 0;
+        } else {
+          const maxScrollPos = gcc.pointWidth * (path.cachedResult.points.length - 2);
+          this.variables.xOffset = clamp(this.variables.xOffset + delta, 0, maxScrollPos);
+        }
+      } else {
+        this.touchAction = TouchAction.End;
+      }
+    } else if (this.touchAction === TouchAction.Release) {
+      const evt = this.lastEvent!;
+
+      const path = this.variables.path;
+      if (path === undefined) return;
+
+      const gcc = this.variables.gcc;
+
+      const canvasPos = gcc.container?.getBoundingClientRect();
+      if (canvasPos === undefined) return;
+
+      const kfPos = this.variables.gcc.toPos(getClientXY(evt).subtract(new Vector(canvasPos.x, canvasPos.y)));
+      if (kfPos === undefined) return;
+
+      app.history.execute(`Add speed keyframe to path ${path.uid}`, new AddKeyframe(path, kfPos));
+
+      this.touchAction = TouchAction.End;
+    } else if (this.touchAction === TouchAction.End) {
+      if (keys.length === 0) {
+        return;
+      } else if (keys.length >= 1) {
+        this.touchAction = TouchAction.Start;
+      }
+    }
+  }
+
+  interactWithEvent(evt: TouchEvent) {
+    this.lastEvent = evt;
+    this.interact();
   }
 }
 
@@ -176,7 +305,12 @@ const GraphCanvasElement = observer((props: {}) => {
   const popperRef = React.useRef<Instance>(null);
   const stageBoxRef = React.useRef<HTMLDivElement>(null);
 
-  const [variables] = React.useState(() => new GraphCanvasVariables());
+  const variables = useMobxStorage(() => new GraphCanvasVariables());
+  const tiHandler = useMobxStorage(() => new TouchInteractiveHandler(variables));
+
+  // ALGO: Using Konva touch events are not enough because it does not work outside of the graph.
+  useEventListener(stageBoxRef.current, "touchmove", e => tiHandler.onTouchMove(e), { capture: true, passive: false });
+  useEventListener(stageBoxRef.current, "touchend", e => tiHandler.onTouchEnd(e), { capture: true, passive: false });
 
   const path = app.interestedPath();
 
@@ -194,7 +328,7 @@ const GraphCanvasElement = observer((props: {}) => {
 
   const canvasHeight = isExclusiveLayout ? Math.max(windowSize.y * 0.12, 80) : windowSize.y * 0.12;
   const canvasWidth = isExclusiveLayout ? canvasHeight * 6.5 : windowSize.y * 0.78;
-  const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, variables.xOffset, path);
+  const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, variables.xOffset, path, stageBoxRef.current);
 
   const fontSize = canvasHeight / 8;
   const fgColor = getAppThemeInfo().foregroundColor;
@@ -205,6 +339,9 @@ const GraphCanvasElement = observer((props: {}) => {
 
   const bentRateHigh = path.pc.bentRateApplicableRange.to;
   const bentRateLow = path.pc.bentRateApplicableRange.from;
+
+  variables.path = path;
+  variables.gcc = gcc;
 
   const onGraphClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
     // UX: Allow to add keyframes only with left mouse button
@@ -287,7 +424,7 @@ const GraphCanvasElement = observer((props: {}) => {
               y={0}
               width={gcc.pixelWidth - gcc.twoSidePaddingWidth * 2}
               height={gcc.pixelHeight}
-              
+              onTouchStart={event => tiHandler.onTouchStart(event.evt)}
               onClick={action(onGraphClick)}
             />
 

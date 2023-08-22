@@ -105,7 +105,13 @@ export class GraphCanvasConverter {
   public bodyHeight: number;
   public axisLineBottomX: number;
 
-  constructor(public pixelWidth: number, public pixelHeight: number, public xOffset: number, public path: Path) {
+  constructor(
+    public pixelWidth: number,
+    public pixelHeight: number,
+    public xOffset: number,
+    public path: Path,
+    public container: HTMLElement | null
+  ) {
     this.pointWidth = pixelWidth / this.pointsOnPage;
     this.pointRadius = this.pointWidth / 2;
     this.twoSidePaddingWidth = this.pointWidth * 14;
@@ -166,4 +172,3 @@ export class GraphCanvasConverter {
     return new Vector(this.toPxNumber(x), y);
   }
 }
-
