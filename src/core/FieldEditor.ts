@@ -43,6 +43,7 @@ export class FieldEditor {
   }
 
   private onTouchStartOrMouseDown(event: TouchEvent | MouseEvent) {
+    if (this.fcc === undefined) return;
     const fieldParent = this.fcc.container?.parentElement;
     const tooltips = [...(fieldParent?.querySelectorAll("*[role='tooltip']") ?? [])];
     const isUsingTooltip = tooltips.some(tooltip => tooltip.contains(event.target as Node));
@@ -141,8 +142,7 @@ export class FieldEditor {
     this.offset = newOffset;
 
     // UX: This interaction is prioritized
-    this._lastInteraction = this._interaction;
-    this._interaction = { entity: null, type: "panning" };
+    this.interaction = { entity: null, type: "panning" };
     return true;
   }
 
@@ -224,14 +224,12 @@ export class FieldEditor {
 
   interact(entity: CanvasEntity, type: "touch" | "drag") {
     if (this._interaction !== undefined && this._interaction.entity !== entity) return false;
-    this._lastInteraction = this._interaction;
-    this._interaction = { entity, type };
+    this.interaction = { entity, type };
     return true;
   }
 
   endInteraction() {
-    this._lastInteraction = this._interaction;
-    this._interaction = undefined;
+    this.interaction = undefined;
   }
 
   reset() {
@@ -276,5 +274,19 @@ export class FieldEditor {
 
   get lastInteraction() {
     return this._lastInteraction;
+  }
+
+  private set interaction(newIt: CanvasEntityInteraction | undefined) {
+    const oldIt = this._interaction;
+    if ((oldIt === undefined) !== (newIt === undefined)) {
+      this._lastInteraction = oldIt;
+      this._interaction = newIt;
+    } else if (
+      oldIt !== undefined && newIt !== undefined &&
+      (oldIt.entity !== newIt.entity || oldIt.type !== newIt.type)
+    ) {
+      this._lastInteraction = oldIt;
+      this._interaction = newIt;
+    }
   }
 }

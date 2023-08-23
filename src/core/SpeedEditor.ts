@@ -1,4 +1,4 @@
-import { makeAutoObservable, reaction } from "mobx";
+import { makeAutoObservable, action } from "mobx";
 import { GraphCanvasConverter } from "./Canvas";
 import { Keyframe, KeyframePos, Path } from "./Path";
 import { getAppStores } from "./MainApp";
@@ -26,6 +26,24 @@ export class SpeedEditor {
 
   constructor() {
     makeAutoObservable(this, { path: false, gcc: false });
+
+    // UX: Hide tooltip when the window size changes
+    window.addEventListener(
+      "resize",
+      action(() => (this.tooltipPosition = undefined))
+    );
+    // UX: Hide tooltip when the user clicks outside of the tooltip
+    document.addEventListener("touchstart", event => this.onTouchStartOrMouseDown(event));
+    document.addEventListener("mousedown", event => this.onTouchStartOrMouseDown(event));
+  }
+
+  private onTouchStartOrMouseDown(event: TouchEvent | MouseEvent) {
+    if (this.gcc === undefined) return;
+    const fieldParent = this.gcc.container?.parentElement;
+    const tooltips = [...(fieldParent?.querySelectorAll("*[role='tooltip']") ?? [])];
+    
+    const isUsingTooltip = tooltips.some(tooltip => tooltip.contains(event.target as Node));
+    if (isUsingTooltip === false) this.tooltipPosition = undefined;
   }
 
   panning(vec: number) {
@@ -36,16 +54,17 @@ export class SpeedEditor {
       this.offset = clamp(this.offset - vec, 0, maxScrollPos);
     }
     // UX: This interaction is prioritized
-    this._interaction = { keyframe: null, type: "panning" };
+    this.interaction = { keyframe: null, type: "panning" };
   }
 
   interact(keyframe: Keyframe, type: "touch" | "drag") {
     if (this._interaction !== undefined && this._interaction.keyframe !== keyframe) return false;
-    this._interaction = { keyframe, type };
+    this.interaction = { keyframe, type };
+    return true;
   }
 
   endInteraction() {
-    this._interaction = undefined;
+    this.interaction = undefined;
   }
 
   reset() {
@@ -71,4 +90,19 @@ export class SpeedEditor {
   get lastInteraction() {
     return this._lastInteraction;
   }
+
+  private set interaction(newIt: KeyframeInteraction | undefined) {
+    const oldIt = this._interaction;
+    if ((oldIt === undefined) !== (newIt === undefined)) {
+      this._lastInteraction = oldIt;
+      this._interaction = newIt;
+    } else if (
+      oldIt !== undefined && newIt !== undefined &&
+      (oldIt.keyframe !== newIt.keyframe || oldIt.type !== newIt.type)
+    ) {
+      this._lastInteraction = oldIt;
+      this._interaction = newIt;
+    }
+  }
 }
+

@@ -20,35 +20,10 @@ import { fromHeadingInDegreeToAngleInRadian } from "../core/Calculation";
 import { MagnetReference } from "../core/Magnet";
 import { useMobxStorage, useTouchEvent, useWindowSize } from "../core/Hook";
 import { LayoutType } from "./Layout";
-import { Box, Tooltip, TooltipProps, Typography, styled, tooltipClasses } from "@mui/material";
+import { Box } from "@mui/material";
 import { Instance } from "@popperjs/core";
 import { TouchEventListener } from "../core/TouchEventListener";
-
-const Padding0Tooltip = styled(({ className, ...props }: TooltipProps) => (
-  <Tooltip {...props} classes={{ popper: className }} />
-))(({ theme }) => ({
-  [`& .${tooltipClasses.tooltip}`]: {
-    padding: "0",
-    marginBottom: "8px !important"
-  }
-}));
-
-const Label = function (props: { text: string; onClick: () => void }) {
-  const fieldEditor = getAppStores().app.fieldEditor;
-
-  return (
-    <Typography
-      variant="body2"
-      component="span"
-      className="field-canvas-tooltip-label"
-      onClick={action(() => {
-        props.onClick();
-        fieldEditor.tooltipPosition = undefined; // UX: Hide tooltip
-      })}>
-      {props.text}
-    </Typography>
-  );
-};
+import { Label, Padding0Tooltip } from "../component/TooltipLabel";
 
 const FieldTooltipContent = observer((props: {}) => {
   const { app, clipboard } = getAppStores();

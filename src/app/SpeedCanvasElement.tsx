@@ -1,21 +1,21 @@
-import { makeAutoObservable, makeObservable, action, observable, reaction } from "mobx";
+import { makeObservable, action, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Point, Path, Vector, KeyframePos, Keyframe } from "../core/Path";
+import { Point, Path, Vector, Keyframe } from "../core/Path";
 import Konva from "konva";
 import { Circle, Layer, Line, Rect, Stage, Text } from "react-konva";
 import React from "react";
 import { PathConfig } from "../format/Config";
-import { clamp } from "../core/Util";
 import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateProperties } from "../core/Command";
 import { getAppStores } from "../core/MainApp";
 import { KeyframeIndexing } from "../core/Calculation";
 import { GraphCanvasConverter, getClientXY } from "../core/Canvas";
-import { Box, Tooltip } from "@mui/material";
+import { Box } from "@mui/material";
 import { Instance } from "@popperjs/core";
-import { useEventListener, useMobxStorage, useTouchEvent, useWindowSize } from "../core/Hook";
+import { useMobxStorage, useTouchEvent, useWindowSize } from "../core/Hook";
 import { LayoutType } from "./Layout";
 import { getAppThemeInfo } from "./Theme";
 import { TouchEventListener } from "../core/TouchEventListener";
+import { Label, Padding0Tooltip } from "../component/TooltipLabel";
 
 const FONT_FAMILY = '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
 
@@ -80,14 +80,10 @@ const KeyframeElement = observer((props: KeyframeElementProps) => {
   const { ikf, gcc } = props;
 
   const onTouchStart = (event: Konva.KonvaEventObject<TouchEvent>) => {
-    event.evt.preventDefault();
-
     app.speedEditor.interact(ikf.keyframe, "touch");
   };
 
-  const onTouchMove = (event: Konva.KonvaEventObject<TouchEvent>) => {
-    event.evt.preventDefault();
-  };
+  const onTouchMove = (event: Konva.KonvaEventObject<TouchEvent>) => {};
 
   const onTouchEnd = (event: Konva.KonvaEventObject<TouchEvent>) => {
     const evt = event.evt;
@@ -357,19 +353,32 @@ const SpeedCanvasElement = observer((props: {}) => {
   };
 
   return (
-    <Tooltip
+    <Padding0Tooltip
       title={(() => {
         const pos = app.speedEditor.tooltipPosition;
-        if (pos !== undefined) {
-          return (speedFrom + pos.yPos * (speedTo - speedFrom)).toUser();
-        } else {
-          return "hi";
+        if (pos === undefined) return "";
+
+        const lastInteraction = app.speedEditor.lastInteraction;
+        const interaction = app.speedEditor.interaction;
+        if (interaction?.keyframe instanceof Keyframe && interaction?.type === "drag") {
+          return <Box sx={{ padding: "8px" }}>{(speedFrom + pos.yPos * (speedTo - speedFrom)).toUser()}</Box>;
+        } else if (lastInteraction?.keyframe instanceof Keyframe && lastInteraction?.type === "touch") {
+          return (
+            <Box>
+              <Label text="Toggle Bent Rate" onClick={() => {}} />
+              <Label text="Delete" onClick={() => {}} />
+            </Box>
+          );
         }
       })()}
       placement="right"
       arrow
-      followCursor
+      open={app.speedEditor.tooltipPosition !== undefined}
+      disableFocusListener
+      disableHoverListener
+      disableTouchListener
       PopperProps={{
+        disablePortal: true,
         popperRef,
         anchorEl: {
           getBoundingClientRect: () => {
@@ -497,7 +506,7 @@ const SpeedCanvasElement = observer((props: {}) => {
           </Layer>
         </Stage>
       </Box>
-    </Tooltip>
+    </Padding0Tooltip>
   );
 });
 
