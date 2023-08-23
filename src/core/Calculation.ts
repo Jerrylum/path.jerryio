@@ -1,4 +1,4 @@
-import { Keyframe, Path, Point, SamplePoint, Segment, Vector } from "./Path";
+import { Keyframe, KeyframePos, Path, Point, SamplePoint, Segment, Vector } from "./Path";
 import { Quantity, UnitOfLength } from "./Unit";
 
 /**
@@ -11,6 +11,11 @@ export class KeyframeIndexing {
    * @param keyframe The keyframe associated with the index.
    */
   constructor(public index: number, public segment: Segment | undefined, public keyframe: Keyframe) {}
+
+  toKeyframePos(): KeyframePos | undefined {
+    if (this.segment === undefined) return undefined;
+    else return { segment: this.segment, xPos: this.keyframe.xPos, yPos: this.keyframe.yPos };
+  }
 }
 
 /**

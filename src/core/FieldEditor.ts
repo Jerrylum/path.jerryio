@@ -1,4 +1,3 @@
-import ReactDOM from "react-dom";
 import { action, makeAutoObservable } from "mobx";
 import { toDerivativeHeading, toHeading, firstDerivative } from "./Calculation";
 import { CanvasEntity, FieldCanvasConverter } from "./Canvas";
@@ -127,8 +126,6 @@ export class FieldEditor {
   }
 
   panning(vec: Vector): boolean {
-    const { app } = getAppStores();
-
     const newOffset = this.offset.subtract(vec);
 
     newOffset.x = clamp(

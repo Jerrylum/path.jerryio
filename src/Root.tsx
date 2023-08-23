@@ -10,7 +10,7 @@ import { MenuAccordion } from "./app/MenuAccordion";
 import { GeneralConfigAccordion } from "./app/GeneralConfigAccordion";
 import { PathConfigAccordion } from "./app/PathAccordion";
 import { ControlAccordion } from "./app/ControlAccordion";
-import { GraphCanvasElement } from "./app/GraphCanvasElement";
+import { SpeedCanvasElement } from "./app/SpeedCanvasElement";
 import { FieldCanvasElement } from "./app/FieldCanvasElement";
 import { getAppStores } from "./core/MainApp";
 
@@ -133,8 +133,8 @@ const Root = observer(() => {
                 <FieldCanvasElement />
               </Card>
               {app.view.showSpeedCanvas && (
-                <Card id="graph-panel">
-                  <GraphCanvasElement />
+                <Card id="speed-panel">
+                  <SpeedCanvasElement />
                 </Card>
               )}
             </Box>

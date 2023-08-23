@@ -24,6 +24,7 @@ import { AppClipboard } from "./Clipboard";
 import { MagnetReference } from "./Magnet";
 import { validate } from "class-validator";
 import { FieldEditor } from "./FieldEditor";
+import { SpeedEditor } from "./SpeedEditor";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
@@ -38,7 +39,6 @@ export class MainApp {
   public paths: Path[] = [];
   public hoverItem: string | undefined = undefined;
   private selected: string[] = []; // ALGO: Not using Set because order matters
-  private selectedBefore: string[] = []; // ALGO: For area selection
   private lastInterestedPath: Path | undefined = undefined; // ALGO: For adding controls
   private expanded: string[] = []; // ALGO: Order doesn't matter but anyway
   public magnet: MagnetReference[] = [];
@@ -63,6 +63,7 @@ export class MainApp {
   };
 
   public fieldEditor = new FieldEditor();
+  public speedEditor = new SpeedEditor();
 
   public latestVersion: SemVer | null | undefined = undefined;
 

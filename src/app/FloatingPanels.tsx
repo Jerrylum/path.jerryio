@@ -15,7 +15,7 @@ import { GeneralConfigFloatingPanel } from "./GeneralConfigAccordion";
 import React from "react";
 import { ControlFloatingPanel } from "./ControlAccordion";
 import { PathConfigFloatingPanel } from "./PathAccordion";
-import { GraphCanvasElement } from "./GraphCanvasElement";
+import { SpeedCanvasElement } from "./SpeedCanvasElement";
 import { PathTreeFloatingPanel } from "./PathTreeAccordion";
 import { MenuMainDropdown } from "./MenuAccordion";
 import UndoIcon from '@mui/icons-material/Undo';
@@ -104,8 +104,8 @@ const FloatingPanels = observer((props: {}) => {
         {variables.isOpenPanel("path") && <PathConfigFloatingPanel />}
       </Box>
       {variables.isOpenPanel("speed-graph") && (
-        <Box id="graph-panel">
-          {app.interestedPath() ? <GraphCanvasElement /> : <Typography>(No path to display)</Typography>}
+        <Box id="speed-panel">
+          {app.interestedPath() ? <SpeedCanvasElement /> : <Typography>(No path to display)</Typography>}
         </Box>
       )}
     </>

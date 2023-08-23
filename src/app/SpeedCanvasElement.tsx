@@ -19,17 +19,6 @@ import { TouchEventListener } from "../core/TouchEventListener";
 
 const FONT_FAMILY = '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
 
-function showTooltip(variables: GraphCanvasVariables, ikf: KeyframeIndexing | undefined) {
-  if (ikf === undefined) {
-    variables.tooltip = undefined;
-  } else if (ikf.segment) {
-    variables.tooltip = {
-      pos: { segment: ikf.segment, xPos: ikf.keyframe.xPos, yPos: ikf.keyframe.yPos },
-      speed: ikf.keyframe.yPos
-    };
-  }
-}
-
 const PathPoints = observer((props: { path: Path; gcc: GraphCanvasConverter }) => {
   const { path, gcc } = props;
 
@@ -44,13 +33,13 @@ const PathPoints = observer((props: { path: Path; gcc: GraphCanvasConverter }) =
   );
 });
 
-const Keyframes = observer((props: { path: Path; gcc: GraphCanvasConverter; variables: GraphCanvasVariables }) => {
-  const { path, gcc, variables } = props;
+const Keyframes = observer((props: { path: Path; gcc: GraphCanvasConverter }) => {
+  const { path, gcc } = props;
 
   return (
     <>
       {path.cachedResult.keyframeIndexes.map(ikf => (
-        <KeyframeElement key={ikf.keyframe.uid} {...{ ikf, gcc, variables }} />
+        <KeyframeElement key={ikf.keyframe.uid} {...{ ikf, gcc }} />
       ))}
     </>
   );
@@ -84,22 +73,41 @@ const PointElement = observer((props: { point: Point; index: number; pc: PathCon
 interface KeyframeElementProps {
   ikf: KeyframeIndexing;
   gcc: GraphCanvasConverter;
-  variables: GraphCanvasVariables;
 }
 
 const KeyframeElement = observer((props: KeyframeElementProps) => {
   const { app } = getAppStores();
-  const { ikf, gcc, variables } = props;
+  const { ikf, gcc } = props;
+
+  const onTouchStart = (event: Konva.KonvaEventObject<TouchEvent>) => {
+    event.evt.preventDefault();
+
+    app.speedEditor.interact(ikf.keyframe, "touch");
+  };
+
+  const onTouchMove = (event: Konva.KonvaEventObject<TouchEvent>) => {
+    event.evt.preventDefault();
+  };
+
+  const onTouchEnd = (event: Konva.KonvaEventObject<TouchEvent>) => {
+    const evt = event.evt;
+
+    const canvasPos = event.target.getStage()?.container().getBoundingClientRect();
+    if (canvasPos === undefined) return;
+
+    const kfPos = gcc.toPos(getClientXY(evt).subtract(new Vector(canvasPos.x, canvasPos.y)));
+    if (kfPos !== undefined) app.speedEditor.tooltipPosition = kfPos;
+  };
 
   const onDragKeyframe = (event: Konva.KonvaEventObject<DragEvent>) => {
     const evt = event.evt;
 
-    let canvasPos = event.target.getStage()?.container().getBoundingClientRect();
+    const canvasPos = event.target.getStage()?.container().getBoundingClientRect();
     if (canvasPos === undefined) return;
 
     // UX: Calculate the position of the control point by the client mouse position
     // UX: Allow to drag the control point outside of the graph
-    const kfPos = gcc.toPos(new Vector(evt.clientX - canvasPos.left, evt.clientY - canvasPos.top));
+    const kfPos = gcc.toPos(getClientXY(evt).subtract(new Vector(canvasPos.x, canvasPos.y)));
     if (kfPos === undefined) {
       evt.preventDefault();
 
@@ -116,7 +124,8 @@ const KeyframeElement = observer((props: KeyframeElementProps) => {
     event.target.x(posInPx.x);
     event.target.y(posInPx.y);
 
-    showTooltip(variables, { index: ikf.index, segment: kfPos.segment, keyframe: ikf.keyframe });
+    app.speedEditor.interact(ikf.keyframe, "drag");
+    app.speedEditor.tooltipPosition = kfPos;
   };
 
   const onClickKeyframe = (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -137,7 +146,7 @@ const KeyframeElement = observer((props: KeyframeElementProps) => {
         new RemoveKeyframe(gcc.path, ikf.keyframe)
       );
 
-      showTooltip(variables, undefined);
+      app.speedEditor.tooltipPosition = undefined;
     }
   };
 
@@ -151,31 +160,23 @@ const KeyframeElement = observer((props: KeyframeElementProps) => {
       fill={"#D7B301"}
       opacity={0.75}
       draggable
+      onTouchStart={action(onTouchStart)}
+      onTouchMove={action(onTouchMove)}
+      onTouchEnd={action(onTouchEnd)}
       onDragMove={action(onDragKeyframe)}
       onClick={action(onClickKeyframe)}
-      onMouseEnter={action(() => showTooltip(variables, ikf))}
-      onMouseMove={action(() => showTooltip(variables, ikf))}
-      onMouseLeave={action(() => showTooltip(variables, undefined))}
+      onMouseEnter={action(() => (app.speedEditor.tooltipPosition = ikf.toKeyframePos()))}
+      onMouseMove={action(() => (app.speedEditor.tooltipPosition = ikf.toKeyframePos()))}
+      onMouseLeave={action(() => (app.speedEditor.tooltipPosition = undefined))}
     />
   );
 });
-
-class GraphCanvasVariables {
-  path: Path | undefined = undefined;
-  gcc!: GraphCanvasConverter;
-
-  xOffset: number = 0;
-  tooltip: { pos: KeyframePos; speed: number } | undefined = undefined;
-
-  constructor() {
-    makeAutoObservable(this, { path: false, gcc: false });
-  }
-}
 
 enum TouchAction {
   Start,
   PendingScrolling,
   Scrolling,
+  DraggingKeyframe,
   Release,
   End
 }
@@ -187,7 +188,7 @@ class TouchInteractiveHandler extends TouchEventListener {
   initialPosition: Vector = new Vector(0, 0);
   lastEvent: TouchEvent | undefined = undefined;
 
-  constructor(private variables: GraphCanvasVariables) {
+  constructor() {
     super();
     makeObservable(this, {
       touchAction: observable,
@@ -232,6 +233,9 @@ class TouchInteractiveHandler extends TouchEventListener {
   interact() {
     const { app } = getAppStores();
 
+    console.log(this.touchAction);
+    
+
     const keys = this.keys;
     if (this.touchAction === TouchAction.Start) {
       if (keys.length >= 1) {
@@ -240,7 +244,9 @@ class TouchInteractiveHandler extends TouchEventListener {
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.PendingScrolling) {
-      if (keys.length >= 1) {
+      if (app.speedEditor.interaction !== undefined) {
+        this.touchAction = TouchAction.DraggingKeyframe;
+      } else if (keys.length >= 1) {
         const t = this.pos(keys[0]);
         if (t.distance(this.initialPosition) > 96 * 0.25) {
           // 1/4 inch, magic number
@@ -250,33 +256,39 @@ class TouchInteractiveHandler extends TouchEventListener {
         this.touchAction = TouchAction.Release;
       }
     } else if (this.touchAction === TouchAction.Scrolling) {
-      if (keys.length >= 1) {
-        const path = this.variables.path;
-        const gcc = this.variables.gcc;
+      if (app.speedEditor.interaction !== undefined) {
+        this.touchAction = TouchAction.DraggingKeyframe;
+      } else if (keys.length >= 1) {
+        const path = app.speedEditor.path;
+        const gcc = app.speedEditor.gcc;
 
         const delta = -this.vec(keys[0]).x;
 
         if (path === undefined) {
-          this.variables.xOffset = 0;
+          app.speedEditor.offset = 0;
         } else {
           const maxScrollPos = gcc.pointWidth * (path.cachedResult.points.length - 2);
-          this.variables.xOffset = clamp(this.variables.xOffset + delta, 0, maxScrollPos);
+          app.speedEditor.offset = clamp(app.speedEditor.offset + delta, 0, maxScrollPos);
         }
       } else {
+        this.touchAction = TouchAction.End;
+      }
+    } else if (this.touchAction === TouchAction.DraggingKeyframe) {
+      if (keys.length === 0) {
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.Release) {
       const evt = this.lastEvent!;
 
-      const path = this.variables.path;
+      const path = app.speedEditor.path;
       if (path === undefined) return;
 
-      const gcc = this.variables.gcc;
+      const gcc = app.speedEditor.gcc;
 
       const canvasPos = gcc.container?.getBoundingClientRect();
       if (canvasPos === undefined) return;
 
-      const kfPos = this.variables.gcc.toPos(getClientXY(evt).subtract(new Vector(canvasPos.x, canvasPos.y)));
+      const kfPos = app.speedEditor.gcc.toPos(getClientXY(evt).subtract(new Vector(canvasPos.x, canvasPos.y)));
       if (kfPos === undefined) return;
 
       app.history.execute(`Add speed keyframe to path ${path.uid}`, new AddKeyframe(path, kfPos));
@@ -284,7 +296,7 @@ class TouchInteractiveHandler extends TouchEventListener {
       this.touchAction = TouchAction.End;
     } else if (this.touchAction === TouchAction.End) {
       if (keys.length === 0) {
-        return;
+        app.speedEditor.endInteraction();
       } else if (keys.length >= 1) {
         this.touchAction = TouchAction.Start;
       }
@@ -297,7 +309,7 @@ class TouchInteractiveHandler extends TouchEventListener {
   }
 }
 
-const GraphCanvasElement = observer((props: {}) => {
+const SpeedCanvasElement = observer((props: {}) => {
   const { app, appPreferences: preferences } = getAppStores();
 
   const windowSize = useWindowSize();
@@ -305,8 +317,7 @@ const GraphCanvasElement = observer((props: {}) => {
   const popperRef = React.useRef<Instance>(null);
   const stageBoxRef = React.useRef<HTMLDivElement>(null);
 
-  const variables = useMobxStorage(() => new GraphCanvasVariables());
-  const tiHandler = useMobxStorage(() => new TouchInteractiveHandler(variables));
+  const tiHandler = useMobxStorage(() => new TouchInteractiveHandler());
 
   // ALGO: Using Konva touch events are not enough because it does not work outside of the graph.
   useEventListener(stageBoxRef.current, "touchmove", e => tiHandler.onTouchMove(e), { capture: true, passive: false });
@@ -314,21 +325,13 @@ const GraphCanvasElement = observer((props: {}) => {
 
   const path = app.interestedPath();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  React.useEffect(
-    action(() => {
-      variables.xOffset = 0;
-    }),
-    [path]
-  );
-
   if (path === undefined) return null;
 
   const isExclusiveLayout = preferences.layoutType === LayoutType.EXCLUSIVE;
 
   const canvasHeight = isExclusiveLayout ? Math.max(windowSize.y * 0.12, 80) : windowSize.y * 0.12;
   const canvasWidth = isExclusiveLayout ? canvasHeight * 6.5 : windowSize.y * 0.78;
-  const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, variables.xOffset, path, stageBoxRef.current);
+  const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, app.speedEditor.offset, path, stageBoxRef.current);
 
   const fontSize = canvasHeight / 8;
   const fgColor = getAppThemeInfo().foregroundColor;
@@ -340,8 +343,7 @@ const GraphCanvasElement = observer((props: {}) => {
   const bentRateHigh = path.pc.bentRateApplicableRange.to;
   const bentRateLow = path.pc.bentRateApplicableRange.from;
 
-  variables.path = path;
-  variables.gcc = gcc;
+  app.speedEditor.gcc = gcc;
 
   const onGraphClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
     // UX: Allow to add keyframes only with left mouse button
@@ -361,18 +363,22 @@ const GraphCanvasElement = observer((props: {}) => {
     e.evt.preventDefault(); // UX: Disable swipe left action on touch pad
 
     if (path === undefined) {
-      variables.xOffset = 0;
+      app.speedEditor.offset = 0;
     } else {
       const maxScrollPos = gcc.pointWidth * (path.cachedResult.points.length - 2);
-      variables.xOffset = clamp(variables.xOffset + delta, 0, maxScrollPos);
+      app.speedEditor.offset = clamp(app.speedEditor.offset + delta, 0, maxScrollPos);
     }
   };
 
   return (
     <Tooltip
       title={(() => {
-        const rtn = variables.tooltip?.speed;
-        return rtn !== undefined && (speedFrom + rtn * (speedTo - speedFrom)).toUser();
+        const pos = app.speedEditor.tooltipPosition;
+        if (pos !== undefined) {
+          return (speedFrom + pos.yPos * (speedTo - speedFrom)).toUser();
+        } else {
+          return "hi";
+        }
       })()}
       placement="right"
       arrow
@@ -382,10 +388,10 @@ const GraphCanvasElement = observer((props: {}) => {
         anchorEl: {
           getBoundingClientRect: () => {
             const div = stageBoxRef.current;
-            if (div === null || variables.tooltip === undefined) return new DOMRect(-200, -200, 0, 0);
+            if (div === null || app.speedEditor.tooltipPosition === undefined) return new DOMRect(-200, -200, 0, 0);
 
             const canvasPos = div.getBoundingClientRect();
-            const posInPx = gcc.toPx(variables.tooltip.pos);
+            const posInPx = gcc.toPx(app.speedEditor.tooltipPosition);
             return new DOMRect(canvasPos.x + posInPx.x, canvasPos.y + posInPx.y, 0, 0);
           }
         }
@@ -428,7 +434,7 @@ const GraphCanvasElement = observer((props: {}) => {
               onClick={action(onGraphClick)}
             />
 
-            <Keyframes {...{ path, gcc, variables }} />
+            <Keyframes {...{ path, gcc }} />
 
             <Rect x={0} y={0} width={gcc.axisTitleWidth} height={gcc.pixelHeight} fill={bgColor} />
             <Text
@@ -509,4 +515,4 @@ const GraphCanvasElement = observer((props: {}) => {
   );
 });
 
-export { GraphCanvasElement };
+export { SpeedCanvasElement };

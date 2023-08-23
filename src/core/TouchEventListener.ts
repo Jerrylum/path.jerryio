@@ -17,7 +17,7 @@ export class TouchEventListener {
   }
 
   onTouchStart(evt: TouchEvent) {
-    [...evt.targetTouches].forEach(t => {
+    [...evt.changedTouches].forEach(t => {
       const pos = this.toVector(t);
       const lastPos = this.touches[t.identifier]?.lastPosition ?? pos;
       this.touches[t.identifier] = { lastPosition: pos, vector: pos.subtract(lastPos) };
@@ -27,10 +27,13 @@ export class TouchEventListener {
   }
 
   onTouchMove(evt: TouchEvent) {
-    [...evt.targetTouches].forEach(t => {
-      const pos = this.toVector(t);
-      const lastPos = this.touches[t.identifier]?.lastPosition ?? pos;
-      this.touches[t.identifier] = { lastPosition: pos, vector: pos.subtract(lastPos) };
+    this.keys.forEach(k => {
+      const t = evt.touches[k];
+      if (t) {
+        const pos = this.toVector(t);
+        const lastPos = this.touches[t.identifier]?.lastPosition ?? pos;
+        this.touches[t.identifier] = { lastPosition: pos, vector: pos.subtract(lastPos) };
+      }
     });
 
     evt.preventDefault(); // ALGO: Prevent mouse click event from firing
@@ -41,6 +44,7 @@ export class TouchEventListener {
       delete this.touches[t.identifier];
     });
 
+    // ALGO: Just in case any touchend event is not fired
     if (evt.targetTouches.length === 0) {
       this.touches = {};
     }
