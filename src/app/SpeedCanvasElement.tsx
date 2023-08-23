@@ -256,17 +256,7 @@ class TouchInteractiveHandler extends TouchEventListener {
       if (app.speedEditor.interaction?.keyframe instanceof Keyframe) {
         this.touchAction = TouchAction.DraggingKeyframe;
       } else if (keys.length >= 1) {
-        const path = app.speedEditor.path;
-        const gcc = app.speedEditor.gcc;
-
-        const delta = -this.vec(keys[0]).x;
-
-        if (path === undefined) {
-          app.speedEditor.offset = 0;
-        } else {
-          const maxScrollPos = gcc.pointWidth * (path.cachedResult.points.length - 2);
-          app.speedEditor.offset = clamp(app.speedEditor.offset + delta, 0, maxScrollPos);
-        }
+        app.speedEditor.panning(this.vec(keys[0]).x);
       } else {
         this.touchAction = TouchAction.End;
       }
@@ -276,19 +266,16 @@ class TouchInteractiveHandler extends TouchEventListener {
       }
     } else if (this.touchAction === TouchAction.Release) {
       const evt = this.lastEvent!;
-
       const path = app.speedEditor.path;
-      if (path === undefined) return;
-
       const gcc = app.speedEditor.gcc;
-
       const canvasPos = gcc.container?.getBoundingClientRect();
-      if (canvasPos === undefined) return;
 
-      const kfPos = app.speedEditor.gcc.toPos(getClientXY(evt).subtract(new Vector(canvasPos.x, canvasPos.y)));
-      if (kfPos === undefined) return;
-
-      app.history.execute(`Add speed keyframe to path ${path.uid}`, new AddKeyframe(path, kfPos));
+      if (path && canvasPos && app.speedEditor.isAddingKeyframe) {
+        const kfPos = gcc.toPos(getClientXY(evt).subtract(new Vector(canvasPos.x, canvasPos.y)));
+        if (kfPos) {
+          app.history.execute(`Add speed keyframe to path ${path.uid}`, new AddKeyframe(path, kfPos));
+        }
+      }
 
       this.touchAction = TouchAction.End;
     } else if (this.touchAction === TouchAction.End) {
@@ -366,12 +353,7 @@ const SpeedCanvasElement = observer((props: {}) => {
 
     e.evt.preventDefault(); // UX: Disable swipe left action on touch pad
 
-    if (path === undefined) {
-      app.speedEditor.offset = 0;
-    } else {
-      const maxScrollPos = gcc.pointWidth * (path.cachedResult.points.length - 2);
-      app.speedEditor.offset = clamp(app.speedEditor.offset + delta, 0, maxScrollPos);
-    }
+    app.speedEditor.panning(delta);
   };
 
   return (
@@ -434,7 +416,7 @@ const SpeedCanvasElement = observer((props: {}) => {
               y={0}
               width={gcc.pixelWidth - gcc.twoSidePaddingWidth * 2}
               height={gcc.pixelHeight}
-              onTouchStart={() => app.speedEditor.startPanning()}
+              onTouchStart={() => (app.speedEditor.isAddingKeyframe = true)}
               onClick={action(onGraphClick)}
             />
 
@@ -520,3 +502,4 @@ const SpeedCanvasElement = observer((props: {}) => {
 });
 
 export { SpeedCanvasElement };
+

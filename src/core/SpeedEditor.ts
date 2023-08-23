@@ -2,6 +2,7 @@ import { makeAutoObservable, reaction } from "mobx";
 import { GraphCanvasConverter } from "./Canvas";
 import { Keyframe, KeyframePos, Path } from "./Path";
 import { getAppStores } from "./MainApp";
+import { clamp } from "./Util";
 
 export type KeyframeInteraction =
   | {
@@ -17,6 +18,7 @@ export class SpeedEditor {
   private _offset: number = 0;
   private _interaction: KeyframeInteraction | undefined = undefined;
   private _lastInteraction: KeyframeInteraction | undefined = undefined;
+  isAddingKeyframe: boolean = false;
   tooltipPosition: KeyframePos | undefined = undefined;
 
   path: Path | undefined = undefined;
@@ -26,7 +28,13 @@ export class SpeedEditor {
     makeAutoObservable(this, { path: false, gcc: false });
   }
 
-  startPanning() {
+  panning(vec: number) {
+    if (this.path === undefined) {
+      this.offset = 0;
+    } else {
+      const maxScrollPos = this.gcc.pointWidth * (this.path.cachedResult.points.length - 2);
+      this.offset = clamp(this.offset - vec, 0, maxScrollPos);
+    }
     // UX: This interaction is prioritized
     this._interaction = { keyframe: null, type: "panning" };
   }
@@ -43,6 +51,7 @@ export class SpeedEditor {
   reset() {
     this._lastInteraction = undefined;
     this._interaction = undefined;
+    this.isAddingKeyframe = false;
     this.tooltipPosition = undefined;
     this.offset = 0;
   }
