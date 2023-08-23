@@ -1,6 +1,6 @@
 import { makeAutoObservable, makeObservable, action, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Point, Path, Vector, KeyframePos } from "../core/Path";
+import { Point, Path, Vector, KeyframePos, Keyframe } from "../core/Path";
 import Konva from "konva";
 import { Circle, Layer, Line, Rect, Stage, Text } from "react-konva";
 import React from "react";
@@ -12,7 +12,7 @@ import { KeyframeIndexing } from "../core/Calculation";
 import { GraphCanvasConverter, getClientXY } from "../core/Canvas";
 import { Box, Tooltip } from "@mui/material";
 import { Instance } from "@popperjs/core";
-import { useEventListener, useMobxStorage, useWindowSize } from "../core/Hook";
+import { useEventListener, useMobxStorage, useTouchEvent, useWindowSize } from "../core/Hook";
 import { LayoutType } from "./Layout";
 import { getAppThemeInfo } from "./Theme";
 import { TouchEventListener } from "../core/TouchEventListener";
@@ -175,7 +175,7 @@ const KeyframeElement = observer((props: KeyframeElementProps) => {
 enum TouchAction {
   Start,
   PendingScrolling,
-  Scrolling,
+  Panning,
   DraggingKeyframe,
   Release,
   End
@@ -233,9 +233,6 @@ class TouchInteractiveHandler extends TouchEventListener {
   interact() {
     const { app } = getAppStores();
 
-    console.log(this.touchAction);
-    
-
     const keys = this.keys;
     if (this.touchAction === TouchAction.Start) {
       if (keys.length >= 1) {
@@ -244,19 +241,19 @@ class TouchInteractiveHandler extends TouchEventListener {
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.PendingScrolling) {
-      if (app.speedEditor.interaction !== undefined) {
+      if (app.speedEditor.interaction?.keyframe instanceof Keyframe) {
         this.touchAction = TouchAction.DraggingKeyframe;
       } else if (keys.length >= 1) {
         const t = this.pos(keys[0]);
         if (t.distance(this.initialPosition) > 96 * 0.25) {
           // 1/4 inch, magic number
-          this.touchAction = TouchAction.Scrolling;
+          this.touchAction = TouchAction.Panning;
         }
       } else {
         this.touchAction = TouchAction.Release;
       }
-    } else if (this.touchAction === TouchAction.Scrolling) {
-      if (app.speedEditor.interaction !== undefined) {
+    } else if (this.touchAction === TouchAction.Panning) {
+      if (app.speedEditor.interaction?.keyframe instanceof Keyframe) {
         this.touchAction = TouchAction.DraggingKeyframe;
       } else if (keys.length >= 1) {
         const path = app.speedEditor.path;
@@ -319,11 +316,18 @@ const SpeedCanvasElement = observer((props: {}) => {
 
   const tiHandler = useMobxStorage(() => new TouchInteractiveHandler());
 
-  // ALGO: Using Konva touch events are not enough because it does not work outside of the graph.
-  useEventListener(stageBoxRef.current, "touchmove", e => tiHandler.onTouchMove(e), { capture: true, passive: false });
-  useEventListener(stageBoxRef.current, "touchend", e => tiHandler.onTouchEnd(e), { capture: true, passive: false });
+  useTouchEvent(tiHandler, stageBoxRef.current);
 
   const path = app.interestedPath();
+
+  React.useEffect(
+    action(() => {
+      app.speedEditor.offset = 0;
+    }),
+    [path]
+  );
+
+  app.speedEditor.path = path;
 
   if (path === undefined) return null;
 
@@ -430,7 +434,7 @@ const SpeedCanvasElement = observer((props: {}) => {
               y={0}
               width={gcc.pixelWidth - gcc.twoSidePaddingWidth * 2}
               height={gcc.pixelHeight}
-              onTouchStart={event => tiHandler.onTouchStart(event.evt)}
+              onTouchStart={() => app.speedEditor.startPanning()}
               onClick={action(onGraphClick)}
             />
 
