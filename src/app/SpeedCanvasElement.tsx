@@ -1,6 +1,6 @@
 import { makeObservable, action, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Point, Path, Vector, Keyframe } from "../core/Path";
+import { Point, Path, Vector, Keyframe, KeyframePos } from "../core/Path";
 import Konva from "konva";
 import { Circle, Layer, Line, Rect, Stage, Text } from "react-konva";
 import React from "react";
@@ -18,6 +18,53 @@ import { TouchEventListener } from "../core/TouchEventListener";
 import { Label, Padding0Tooltip } from "../component/TooltipLabel";
 
 const FONT_FAMILY = '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+
+const SpeedCanvasTooltipContent = observer((props: {}) => {
+  const { app } = getAppStores();
+  const speedEditor = app.speedEditor;
+
+  const path = speedEditor.path;
+  const pos = app.speedEditor.tooltipPosition;
+
+  if (path === undefined || pos === undefined) return <></>;
+
+  const speedFrom = path.pc.speedLimit.from;
+  const speedTo = path.pc.speedLimit.to;
+
+  const lastInteraction = app.speedEditor.lastInteraction;
+  const interaction = app.speedEditor.interaction;
+  if (interaction?.keyframe instanceof Keyframe && interaction?.type === "drag") {
+    return <Box sx={{ padding: "8px" }}>{(speedFrom + pos.yPos * (speedTo - speedFrom)).toUser()}</Box>;
+  } else if (lastInteraction?.keyframe instanceof Keyframe && lastInteraction?.type === "touch") {
+    const keyframe = lastInteraction.keyframe;
+    return (
+      <Box>
+        <Label
+          text="Toggle Bent Rate"
+          onClick={() => {
+            const setTo = !keyframe.followBentRate;
+            app.history.execute(
+              `Update keyframe ${keyframe.uid} followCurve to ${setTo}`,
+              new UpdateProperties(keyframe, { followBentRate: setTo }),
+              0
+            );
+          }}
+        />
+        <Label
+          text="Delete"
+          onClick={() => {
+            app.history.execute(
+              `Remove keyframe ${keyframe.uid} from path ${path.uid}`,
+              new RemoveKeyframe(path, keyframe)
+            );
+          }}
+        />
+      </Box>
+    );
+  } else {
+    return <></>;
+  }
+});
 
 const PathPoints = observer((props: { path: Path; gcc: GraphCanvasConverter }) => {
   const { path, gcc } = props;
@@ -83,18 +130,6 @@ const KeyframeElement = observer((props: KeyframeElementProps) => {
     app.speedEditor.interact(ikf.keyframe, "touch");
   };
 
-  const onTouchMove = (event: Konva.KonvaEventObject<TouchEvent>) => {};
-
-  const onTouchEnd = (event: Konva.KonvaEventObject<TouchEvent>) => {
-    const evt = event.evt;
-
-    const canvasPos = event.target.getStage()?.container().getBoundingClientRect();
-    if (canvasPos === undefined) return;
-
-    const kfPos = gcc.toPos(getClientXY(evt).subtract(new Vector(canvasPos.x, canvasPos.y)));
-    if (kfPos !== undefined) app.speedEditor.tooltipPosition = kfPos;
-  };
-
   const onDragKeyframe = (event: Konva.KonvaEventObject<DragEvent>) => {
     const evt = event.evt;
 
@@ -157,8 +192,6 @@ const KeyframeElement = observer((props: KeyframeElementProps) => {
       opacity={0.75}
       draggable
       onTouchStart={action(onTouchStart)}
-      onTouchMove={action(onTouchMove)}
-      onTouchEnd={action(onTouchEnd)}
       onDragMove={action(onDragKeyframe)}
       onClick={action(onClickKeyframe)}
       onMouseEnter={action(() => (app.speedEditor.tooltipPosition = ikf.toKeyframePos()))}
@@ -172,6 +205,7 @@ enum TouchAction {
   Start,
   PendingScrolling,
   Panning,
+  TouchingKeyframe,
   DraggingKeyframe,
   Release,
   End
@@ -183,6 +217,7 @@ class TouchInteractiveHandler extends TouchEventListener {
   initialTime: number = 0;
   initialPosition: Vector = new Vector(0, 0);
   lastEvent: TouchEvent | undefined = undefined;
+  wasShowingTooltip: boolean = false;
 
   constructor() {
     super();
@@ -191,6 +226,7 @@ class TouchInteractiveHandler extends TouchEventListener {
       initialTime: observable,
       initialPosition: observable,
       lastEvent: observable,
+      wasShowingTooltip: observable,
       onTouchStart: action,
       onTouchMove: action,
       onTouchEnd: action
@@ -226,11 +262,31 @@ class TouchInteractiveHandler extends TouchEventListener {
     this.interactWithEvent(evt);
   }
 
+  private getKeyframePos(): KeyframePos | undefined {
+    const { app } = getAppStores();
+
+    const evt = this.lastEvent!;
+    const path = app.speedEditor.path;
+    const gcc = app.speedEditor.gcc;
+    const canvasPos = gcc.container?.getBoundingClientRect();
+
+    if (path && canvasPos) {
+      const kfPos = gcc.toPos(getClientXY(evt).subtract(new Vector(canvasPos.x, canvasPos.y)));
+      if (kfPos) {
+        return kfPos;
+      }
+    }
+    return undefined;
+  }
+
   interact() {
     const { app } = getAppStores();
 
     const keys = this.keys;
     if (this.touchAction === TouchAction.Start) {
+      this.wasShowingTooltip = app.speedEditor.tooltipPosition !== undefined;
+      app.speedEditor.tooltipPosition = undefined;
+
       if (keys.length >= 1) {
         this.touchAction = TouchAction.PendingScrolling;
       } else {
@@ -238,7 +294,7 @@ class TouchInteractiveHandler extends TouchEventListener {
       }
     } else if (this.touchAction === TouchAction.PendingScrolling) {
       if (app.speedEditor.interaction?.keyframe instanceof Keyframe) {
-        this.touchAction = TouchAction.DraggingKeyframe;
+        this.touchAction = TouchAction.TouchingKeyframe;
       } else if (keys.length >= 1) {
         const t = this.pos(keys[0]);
         if (t.distance(this.initialPosition) > 96 * 0.25) {
@@ -250,32 +306,42 @@ class TouchInteractiveHandler extends TouchEventListener {
       }
     } else if (this.touchAction === TouchAction.Panning) {
       if (app.speedEditor.interaction?.keyframe instanceof Keyframe) {
-        this.touchAction = TouchAction.DraggingKeyframe;
+        this.touchAction = TouchAction.TouchingKeyframe;
       } else if (keys.length >= 1) {
         app.speedEditor.panning(this.vec(keys[0]).x);
       } else {
         this.touchAction = TouchAction.End;
       }
+    } else if (this.touchAction === TouchAction.TouchingKeyframe) {
+      if (app.speedEditor.interaction?.type === "drag") {
+        this.touchAction = TouchAction.DraggingKeyframe;
+      } else if (keys.length === 0) {
+        const kfPos = this.getKeyframePos();
+        if (kfPos) {
+          app.speedEditor.tooltipPosition = kfPos;
+        }
+        this.touchAction = TouchAction.End;
+      }
     } else if (this.touchAction === TouchAction.DraggingKeyframe) {
       if (keys.length === 0) {
+        app.speedEditor.tooltipPosition = undefined;
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.Release) {
-      const evt = this.lastEvent!;
-      const path = app.speedEditor.path;
-      const gcc = app.speedEditor.gcc;
-      const canvasPos = gcc.container?.getBoundingClientRect();
-
-      if (path && canvasPos && app.speedEditor.isAddingKeyframe) {
-        const kfPos = gcc.toPos(getClientXY(evt).subtract(new Vector(canvasPos.x, canvasPos.y)));
-        if (kfPos) {
-          app.history.execute(`Add speed keyframe to path ${path.uid}`, new AddKeyframe(path, kfPos));
+      if (this.wasShowingTooltip === false) {
+        const kfPos = this.getKeyframePos();
+        if (kfPos && app.speedEditor.isAddingKeyframe) {
+          app.history.execute(
+            `Add speed keyframe to path ${app.speedEditor.path?.uid}`,
+            new AddKeyframe(app.speedEditor.path!, kfPos)
+          );
         }
       }
 
       this.touchAction = TouchAction.End;
     } else if (this.touchAction === TouchAction.End) {
       if (keys.length === 0) {
+        app.speedEditor.isAddingKeyframe = false;
         app.speedEditor.endInteraction();
       } else if (keys.length >= 1) {
         this.touchAction = TouchAction.Start;
@@ -354,23 +420,7 @@ const SpeedCanvasElement = observer((props: {}) => {
 
   return (
     <Padding0Tooltip
-      title={(() => {
-        const pos = app.speedEditor.tooltipPosition;
-        if (pos === undefined) return "";
-
-        const lastInteraction = app.speedEditor.lastInteraction;
-        const interaction = app.speedEditor.interaction;
-        if (interaction?.keyframe instanceof Keyframe && interaction?.type === "drag") {
-          return <Box sx={{ padding: "8px" }}>{(speedFrom + pos.yPos * (speedTo - speedFrom)).toUser()}</Box>;
-        } else if (lastInteraction?.keyframe instanceof Keyframe && lastInteraction?.type === "touch") {
-          return (
-            <Box>
-              <Label text="Toggle Bent Rate" onClick={() => {}} />
-              <Label text="Delete" onClick={() => {}} />
-            </Box>
-          );
-        }
-      })()}
+      title={<SpeedCanvasTooltipContent />}
       placement="right"
       arrow
       open={app.speedEditor.tooltipPosition !== undefined}
@@ -511,4 +561,3 @@ const SpeedCanvasElement = observer((props: {}) => {
 });
 
 export { SpeedCanvasElement };
-

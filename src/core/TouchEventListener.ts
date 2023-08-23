@@ -28,7 +28,7 @@ export class TouchEventListener {
 
   onTouchMove(evt: TouchEvent) {
     this.keys.forEach(k => {
-      const t = evt.touches[k];
+      const t = [...evt.touches].find(t => t.identifier === k);
       if (t) {
         const pos = this.toVector(t);
         const lastPos = this.touches[t.identifier]?.lastPosition ?? pos;
