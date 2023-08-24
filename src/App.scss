@@ -131,9 +131,15 @@
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
 }
 
+.canvas-tooltip {
+  user-select: none;
+  pointer-events: none !important;
+}
+
 .canvas-tooltip-label {
   padding: 8px 12px;
   display: inline-block;
   cursor: pointer;
   user-select: none;
+  pointer-events: auto;
 }

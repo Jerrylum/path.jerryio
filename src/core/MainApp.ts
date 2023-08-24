@@ -346,8 +346,9 @@ export class MainApp {
     this.robot.position.visible = false;
   }
 
-  resetFieldEditor(): void {
+  resetAllEditors(): void {
     this.fieldEditor.reset();
+    this.speedEditor.reset();
     this.fieldDisplay = {
       wheelControlType: "panning",
       lastWheelControlTimestamp: 0
@@ -382,7 +383,7 @@ export class MainApp {
     this.paths = pfd.paths;
 
     this.resetUserControl();
-    this.resetFieldEditor();
+    this.resetAllEditors();
 
     this._history.clearHistory();
   }
@@ -435,7 +436,7 @@ export class MainApp {
     this.usingUOL = this.gc.uol;
     this.paths = [];
     this.resetUserControl();
-    this.resetFieldEditor();
+    this.resetAllEditors();
 
     this._history.clearHistory();
   }

@@ -615,7 +615,7 @@ const ViewMenuItems = () => {
       showLeftIcon={false}
       label="Zoom to Fit"
       hotkey="Mod+0"
-      onClick={() => app.resetFieldEditor()}
+      onClick={() => app.resetAllEditors()}
     />,
     <Divider key={makeId(10)} />,
     <CustomMenuItem

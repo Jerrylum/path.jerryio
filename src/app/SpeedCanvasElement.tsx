@@ -110,9 +110,9 @@ const PointElement = observer((props: { point: Point; index: number; pc: PathCon
 
   return (
     <>
-      {point.isLast && <Line points={[x, 0, x, gcc.pixelHeight]} stroke="grey" strokeWidth={gcc.lineWidth} />}
-      <Circle x={x} y={y1} radius={gcc.pointRadius} fill={"grey"} />
-      <Circle x={x} y={y2} radius={gcc.pointRadius} fill={color} />
+      {point.isLast && <Line points={[x, 0, x, gcc.pixelHeight]} stroke="grey" strokeWidth={gcc.lineWidth} listening={false} />}
+      <Circle x={x} y={y1} radius={gcc.pointRadius} fill={"grey"} listening={false} />
+      <Circle x={x} y={y2} radius={gcc.pointRadius} fill={color} listening={false} />
     </>
   );
 });
