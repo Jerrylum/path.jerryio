@@ -7,7 +7,7 @@ import { clamp } from "./Util";
 export type KeyframeInteraction =
   | {
       keyframe: Keyframe;
-      type: "touch" | "drag";
+      type: "touch" | "drag/hover";
     }
   | {
       keyframe: null;
@@ -57,7 +57,7 @@ export class SpeedEditor {
     this.interaction = { keyframe: null, type: "panning" };
   }
 
-  interact(keyframe: Keyframe, type: "touch" | "drag") {
+  interact(keyframe: Keyframe, type: "touch" | "drag/hover") {
     if (this._interaction !== undefined && this._interaction.keyframe !== keyframe) return false;
     this.interaction = { keyframe, type };
     return true;

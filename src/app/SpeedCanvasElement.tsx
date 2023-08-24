@@ -33,7 +33,7 @@ const SpeedCanvasTooltipContent = observer((props: {}) => {
 
   const lastInteraction = app.speedEditor.lastInteraction;
   const interaction = app.speedEditor.interaction;
-  if (interaction?.keyframe instanceof Keyframe && interaction?.type === "drag") {
+  if (interaction?.keyframe instanceof Keyframe && interaction?.type === "drag/hover") {
     return <Box sx={{ padding: "8px" }}>{(speedFrom + pos.yPos * (speedTo - speedFrom)).toUser()}</Box>;
   } else if (lastInteraction?.keyframe instanceof Keyframe && lastInteraction?.type === "touch") {
     const keyframe = lastInteraction.keyframe;
@@ -155,7 +155,7 @@ const KeyframeElement = observer((props: KeyframeElementProps) => {
     event.target.x(posInPx.x);
     event.target.y(posInPx.y);
 
-    app.speedEditor.interact(ikf.keyframe, "drag");
+    app.speedEditor.interact(ikf.keyframe, "drag/hover");
     app.speedEditor.tooltipPosition = kfPos;
   };
 
@@ -194,9 +194,15 @@ const KeyframeElement = observer((props: KeyframeElementProps) => {
       onTouchStart={action(onTouchStart)}
       onDragMove={action(onDragKeyframe)}
       onClick={action(onClickKeyframe)}
-      onMouseEnter={action(() => (app.speedEditor.tooltipPosition = ikf.toKeyframePos()))}
+      onMouseEnter={action(() => {
+        app.speedEditor.interact(ikf.keyframe, "drag/hover");
+        app.speedEditor.tooltipPosition = ikf.toKeyframePos();
+      })}
       onMouseMove={action(() => (app.speedEditor.tooltipPosition = ikf.toKeyframePos()))}
-      onMouseLeave={action(() => (app.speedEditor.tooltipPosition = undefined))}
+      onMouseLeave={action(() => {
+        app.speedEditor.endInteraction();
+        app.speedEditor.tooltipPosition = undefined;
+      })}
     />
   );
 });
@@ -313,7 +319,7 @@ class TouchInteractiveHandler extends TouchEventListener {
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.TouchingKeyframe) {
-      if (app.speedEditor.interaction?.type === "drag") {
+      if (app.speedEditor.interaction?.type === "drag/hover") {
         this.touchAction = TouchAction.DraggingKeyframe;
       } else if (keys.length === 0) {
         const kfPos = this.getKeyframePos();
