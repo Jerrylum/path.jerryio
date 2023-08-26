@@ -13,7 +13,7 @@
 }
 
 .App[data-layout="classic"] {
-  padding: 1svh;
+  padding: 8px;
 
   @import "style/ClassicLayout.scss";
 }
@@ -80,7 +80,7 @@
   flex-wrap: nowrap;
   justify-content: flex-start;
   align-items: center;
-  gap: 1svh;
+  gap: 8px;
 }
 
 .menu-item.MuiMenuItem-root {
