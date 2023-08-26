@@ -4,8 +4,6 @@ $qpg: 4px; // quarter panel gap
 $speed-panel-height: 12svh;
 $middle-panel-width: calc(100svh - $pg - $pg - $hpg - $speed-panel-height - $hpg - $pg);
 $middle-panel-height: calc(100svh - $pg - $pg);
-$field-panel-width: calc(100svh - $pg - $hpg - $hpg - $pg - $hpg - $speed-panel-height - $hpg - $pg);
-$field-panel-width-full-height: calc(100svh - $pg * 2 - $hpg * 2);
 
 & {
   padding: 8px;
@@ -24,31 +22,40 @@ $field-panel-width-full-height: calc(100svh - $pg * 2 - $hpg * 2);
 
 #middle-panel {
   display: flex;
-  width: $middle-panel-width;
-  height: $middle-panel-height;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-content: flex-start;
+  width: auto;
+  height: auto;
+  flex-direction: column;
 
   #field-panel {
-    width: $field-panel-width;
-    height: $field-panel-width;
-    padding: $hpg;
-    overflow: hidden;
+    width: $middle-panel-width;
+    height: auto;
+    position: relative;
+    display: inline-flex;
+
+    > svg {
+      height: 100%;
+      width: 100%;
+    }
+
+    > div {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      padding: $hpg;
+      overflow: hidden;
+    }
   }
-}
 
-#middle-panel.full-height {
-  width: $middle-panel-height;
-
-  #field-panel {
-    width: $field-panel-width-full-height;
-    height: $field-panel-width-full-height;
+  &.full-height #field-panel {
+    width: $middle-panel-height;
+    height: $middle-panel-height;
   }
 }
 
 #speed-panel {
-  width: $field-panel-width;
+  width: auto;
   height: $speed-panel-height;
   padding: $hpg;
   overflow: hidden;
@@ -66,7 +73,7 @@ $field-panel-width-full-height: calc(100svh - $pg * 2 - $hpg * 2);
   border-bottom: $qpg solid var(--bg-body-color);
   overflow-x: hidden;
   overflow-y: auto;
-  height: calc(100svh - $pg - $hpg);
+  height: calc(100% - $hpg - $hpg + $hpg);
 }
 
 #left-editor-panel {
@@ -77,7 +84,7 @@ $field-panel-width-full-height: calc(100svh - $pg * 2 - $hpg * 2);
   margin: calc($hpg - $qpg) !important;
   padding-top: $qpg;
   overflow-x: hidden;
-  height: calc(100svh - $pg - $hpg);
+  height: calc(100% - $hpg - $hpg + $hpg);
   border-radius: 4px;
 }
 
@@ -103,7 +110,7 @@ $field-panel-width-full-height: calc(100svh - $pg * 2 - $hpg * 2);
 }
 
 #path-tree {
-  height: calc(100svh - $pg - $hpg - (10px + 13px) - $hpg - $pg - $pg);
+  height: calc(100% - $qpg - $hpg - (10px + 13px) - $hpg - $pg);
   position: relative;
 
   .MuiAccordionSummary-root {

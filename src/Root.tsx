@@ -130,6 +130,7 @@ const Root = observer(() => {
 
             <Box id="middle-panel" className={app.view.showSpeedCanvas ? "" : "full-height"}>
               <Card id="field-panel">
+                <svg viewBox="0 0 1 1"></svg>
                 <FieldCanvasElement />
               </Card>
               {app.view.showSpeedCanvas && (
