@@ -88,8 +88,8 @@ th {
 // See: https://stackoverflow.com/questions/23885255/how-to-remove-ignore-hover-css-style-on-touch-devices
 @mixin on-hover {
   @media (hover: hover) and (pointer: fine) {
-      &:hover {
-          @content;
-      }
+    &:hover {
+      @content;
+    }
   }
 }

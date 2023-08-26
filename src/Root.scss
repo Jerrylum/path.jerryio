@@ -5,72 +5,72 @@
 @use "style/PathTree.scss";
 @use "style/PreferencesDialog.scss";
 
-.App {
-  display: flex;
-  width: 100svw;
-  height: 100svh;
-  box-sizing: border-box;
-}
+#root {
+  overflow: hidden; // UX: Fix potential issue on device emulator
 
-.App[data-layout="classic"] {
-  padding: 8px;
+  > * {
+    display: flex;
+    width: 100svw;
+    height: 100svh;
+    box-sizing: border-box;
 
-  @import "style/ClassicLayout.scss";
-}
+    &[data-layout="classic"] {
+      @import "style/ClassicLayout.scss";
+    }
 
-.App[data-layout="exclusive"] {
-  padding: 0;
+    &[data-layout="exclusive"] {
+      @import "style/ExclusiveLayout.scss";
+    }
 
-  @import "style/ExclusiveLayout.scss";
-}
+    &.light-theme {
+      --bg-body-color: #ffffff;
+      --bg-default-color: #ffffff;
+      --bg-paper-color: #ffffff;
+      --text-primary-color: rgba(0, 0, 0, 0.87);
+      --text-disabled-color: rgba(0, 0, 0, 0.6);
+      --link-color: rgba(0, 0, 0, 0.87);
+      --hover-color: rgba(0, 0, 0, 0.08);
+      --focused-color: rgba(0, 0, 0, 0.12);
+      background-color: var(--bg-body-color);
 
-.App.light-theme {
-  --bg-body-color: #ffffff;
-  --bg-default-color: #ffffff;
-  --bg-paper-color: #ffffff;
-  --text-primary-color: rgba(0, 0, 0, 0.87);
-  --text-disabled-color: rgba(0, 0, 0, 0.6);
-  --link-color: rgba(0, 0, 0, 0.87);
-  --hover-color: rgba(0, 0, 0, 0.08);
-  --focused-color: rgba(0, 0, 0, 0.12);
-  background-color: var(--bg-body-color);
+      code {
+        background-color: #e3e3e3;
+      }
 
-  code {
-    background-color: #e3e3e3;
-  }
+      td,
+      th {
+        border: 1px solid #e3e3e3;
+      }
 
-  td,
-  th {
-    border: 1px solid #e3e3e3;
-  }
+      th {
+        background-color: #f6f6f6;
+      }
+    }
 
-  th {
-    background-color: #f6f6f6;
-  }
-}
+    &.dark-theme {
+      --bg-body-color: #292929;
+      --bg-default-color: #1e1e1e;
+      --bg-paper-color: #353535;
+      --text-primary-color: rgba(255, 255, 255, 1);
+      --text-disabled-color: rgba(255, 255, 255, 0.5);
+      --link-color: rgba(255, 255, 255, 0.87);
+      --hover-color: rgba(255, 255, 255, 0.04);
+      --focused-color: rgba(255, 255, 255, 0.12);
+      background-color: var(--bg-body-color);
 
-.App.dark-theme {
-  --bg-body-color: #292929;
-  --bg-default-color: #1e1e1e;
-  --bg-paper-color: #353535;
-  --text-primary-color: rgba(255, 255, 255, 1);
-  --text-disabled-color: rgba(255, 255, 255, 0.5);
-  --link-color: rgba(255, 255, 255, 0.87);
-  --hover-color: rgba(255, 255, 255, 0.04);
-  --focused-color: rgba(255, 255, 255, 0.12);
-  background-color: var(--bg-body-color);
+      code {
+        background-color: var(--bg-default-color);
+      }
 
-  code {
-    background-color: var(--bg-default-color);
-  }
+      td,
+      th {
+        border: 1px solid #444444;
+      }
 
-  td,
-  th {
-    border: 1px solid #444444;
-  }
-
-  th {
-    background-color: #3c3c3c;
+      th {
+        background-color: #3c3c3c;
+      }
+    }
   }
 }
 

@@ -7,7 +7,13 @@ $middle-panel-height: calc(100svh - $pg - $pg);
 $field-panel-width: calc(100svh - $pg - $hpg - $hpg - $pg - $hpg - $speed-panel-height - $hpg - $pg);
 $field-panel-width-full-height: calc(100svh - $pg * 2 - $hpg * 2);
 
-#left-editor-panel, #middle-panel, #right-editor-panel {
+& {
+  padding: 8px;
+}
+
+#left-editor-panel,
+#middle-panel,
+#right-editor-panel {
   box-sizing: border-box;
   margin: $hpg;
 }

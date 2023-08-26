@@ -1,4 +1,4 @@
-import "./App.scss";
+import "./Root.scss";
 
 import { observer } from "mobx-react-lite";
 
@@ -115,7 +115,7 @@ const Root = observer(() => {
   return (
     <Box
       tabIndex={-1}
-      className={classNames("App", getAppThemeInfo().className)}
+      className={classNames(getAppThemeInfo().className)}
       data-layout={appPreferences.layoutType}
       {...{ onDragEnter, onDragOver, onDrop }}
       key={app.format.uid + "-" + app.gc.uol}>
