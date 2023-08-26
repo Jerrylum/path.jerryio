@@ -192,10 +192,7 @@ function createMessageFromData(data: Record<string, any>): CopyPathsMessage | Co
       const path = app.format.createPath();
       const pathPC = path.pc;
       plainToClassFromExist(path, pathRaw, { excludeExtraneousValues: true, exposeDefaultValues: true });
-      path.pc = plainToClassFromExist(pathPC, pathRaw.pc, {
-        excludeExtraneousValues: true,
-        exposeDefaultValues: true
-      });
+      path.pc = plainToClassFromExist(pathPC, pathRaw.pc, { exposeDefaultValues: true });
 
       message.items.push(path);
     }

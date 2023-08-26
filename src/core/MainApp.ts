@@ -438,7 +438,7 @@ export class MainApp {
       const path = format.createPath();
       const pathPC = path.pc;
       plainToClassFromExist(path, pathRaw, { excludeExtraneousValues: true, exposeDefaultValues: true });
-      path.pc = plainToClassFromExist(pathPC, pathRaw.pc, { excludeExtraneousValues: true, exposeDefaultValues: true });
+      path.pc = plainToClassFromExist(pathPC, pathRaw.pc, { exposeDefaultValues: true });
 
       paths.push(path);
     }
