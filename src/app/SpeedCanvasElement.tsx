@@ -389,7 +389,7 @@ const SpeedCanvasElement = observer((props: {}) => {
   const isExclusiveLayout = preferences.layoutType === LayoutType.EXCLUSIVE;
 
   const canvasHeight = isExclusiveLayout ? Math.max(windowSize.y * 0.12, 80) : windowSize.y * 0.12;
-  const canvasWidth = isExclusiveLayout ? canvasHeight * 6.5 : windowSize.y * 0.78;
+  const canvasWidth = isExclusiveLayout ? canvasHeight * 6.5 : (windowSize.y - 16 - 8 - 8 - 16 - 8 - windowSize.y * 0.12 - 8 - 16);
   const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, app.speedEditor.offset, path, stageBoxRef.current);
 
   const fontSize = canvasHeight / 8;

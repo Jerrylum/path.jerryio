@@ -472,7 +472,11 @@ const FieldCanvasElement = observer((props: {}) => {
   const uc = new UnitConverter(UnitOfLength.Millimeter, app.gc.uol);
   const isExclusiveLayout = appPreferences.layoutType === LayoutType.EXCLUSIVE;
 
-  const canvasHeightInPx = windowSize.y * (isExclusiveLayout ? 1 : app.view.showSpeedCanvas ? 0.78 : 0.94);
+  const canvasHeightInPx = (function () {
+    if (isExclusiveLayout) return windowSize.y;
+    if (app.view.showSpeedCanvas) return windowSize.y - 16 - 8 - 8 - 16 - 8 - windowSize.y * 0.12 - 8 - 16;
+    else return windowSize.y - 16 * 2 - 8 * 2;
+  })();
   const canvasWidthInPx = isExclusiveLayout ? windowSize.x : canvasHeightInPx;
   const canvasSizeInUOL = uc.fromAtoB(3683); // 3683 = 145*2.54*10 ~= 3676.528, the size of the field perimeter in Fusion 360
 

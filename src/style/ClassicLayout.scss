@@ -2,10 +2,10 @@ $pg: 16px; // panel gap
 $hpg: 8px; // half panel gap
 $qpg: 4px; // quarter panel gap
 $speed-panel-height: 12svh;
-$middle-panel-width: calc(100svh - $pg - $pg - $hpg - $speed-panel-height - $hpg - $pg); // 80svh
-$middle-panel-height: calc(100svh - $pg - $pg); // 96svh
-$field-panel-width: calc(100svh - $pg - $hpg - $hpg - $pg - $hpg - $speed-panel-height - $hpg - $pg); // 78svh
-$field-panel-width-full-height: calc(100svh - $pg * 2 - $hpg * 2); // 94svh
+$middle-panel-width: calc(100svh - $pg - $pg - $hpg - $speed-panel-height - $hpg - $pg);
+$middle-panel-height: calc(100svh - $pg - $pg);
+$field-panel-width: calc(100svh - $pg - $hpg - $hpg - $pg - $hpg - $speed-panel-height - $hpg - $pg);
+$field-panel-width-full-height: calc(100svh - $pg * 2 - $hpg * 2);
 
 #left-editor-panel, #middle-panel, #right-editor-panel {
   box-sizing: border-box;
@@ -60,7 +60,7 @@ $field-panel-width-full-height: calc(100svh - $pg * 2 - $hpg * 2); // 94svh
   border-bottom: $qpg solid var(--bg-body-color);
   overflow-x: hidden;
   overflow-y: auto;
-  height: calc(100svh - $pg - $hpg); // 97svh
+  height: calc(100svh - $pg - $hpg);
 }
 
 #left-editor-panel {
@@ -97,7 +97,7 @@ $field-panel-width-full-height: calc(100svh - $pg * 2 - $hpg * 2); // 94svh
 }
 
 #path-tree {
-  height: calc(100svh - $pg - $hpg - (10px + 13px) - $hpg - $pg - $pg); // 94svh - ...
+  height: calc(100svh - $pg - $hpg - (10px + 13px) - $hpg - $pg - $pg);
   position: relative;
 
   .MuiAccordionSummary-root {
