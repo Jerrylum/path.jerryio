@@ -8,7 +8,7 @@ import { ObserverEnumSelect } from "../component/ObserverEnumSelect";
 import { ObserverCheckbox } from "../component/ObserverCheckbox";
 import { ObserverInput } from "../component/ObserverInput";
 import { useBackdropDialog } from "../core/Hook";
-import { LayoutType } from "./Layout";
+import { LayoutType } from "../core/Layout";
 
 export class Preferences {
   private isDialogOpen: boolean = false;
@@ -19,6 +19,10 @@ export class Preferences {
   public isGoogleAnalyticsEnabled: boolean = false;
   public themeType: AppThemeType = AppThemeType.Dark;
   public layoutType: LayoutType = LayoutType.CLASSIC;
+
+  // Not in local storage
+  public isSpeedCanvasVisible: boolean = true; // In classic layout only
+  public isRightPanelVisible: boolean = true; // In classic layout only
 
   constructor() {
     makeAutoObservable(this);

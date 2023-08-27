@@ -24,7 +24,7 @@ import { AppThemeType } from "./Theme";
 import { RemovePathsAndEndControls } from "../core/Command";
 import { checkForUpdates } from "../core/Versioning";
 import { Path } from "../core/Path";
-import { LayoutType } from "./Layout";
+import { LayoutType } from "../core/Layout";
 
 const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
   const { hotkey } = props;
@@ -581,17 +581,17 @@ const ViewMenuItems = () => {
       ? [
           <CustomMenuItem
             key={makeId(10)}
-            showLeftIcon={app.view.showSpeedCanvas}
+            showLeftIcon={appPreferences.isSpeedCanvasVisible}
             label="Speed Graph"
             hotkey="Mod+B"
-            onClick={() => (app.view.showSpeedCanvas = !app.view.showSpeedCanvas)}
+            onClick={() => (appPreferences.isSpeedCanvasVisible = !appPreferences.isSpeedCanvasVisible)}
           />,
           <CustomMenuItem
             key={makeId(10)}
-            showLeftIcon={app.view.showRightPanel}
+            showLeftIcon={appPreferences.isRightPanelVisible}
             label="Right Panel"
             hotkey="Mod+J"
-            onClick={() => (app.view.showRightPanel = !app.view.showRightPanel)}
+            onClick={() => (appPreferences.isRightPanelVisible = !appPreferences.isRightPanelVisible)}
           />,
           <Divider key={makeId(10)} />
         ]

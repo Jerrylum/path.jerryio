@@ -49,11 +49,6 @@ export class MainApp {
     position: new EndControl(0, 0, 0)
   };
 
-  public view = {
-    showSpeedCanvas: true,
-    showRightPanel: true
-  };
-
   private fieldDisplay: {
     wheelControlType: "panning" | "change heading value";
     lastWheelControlTimestamp: number;

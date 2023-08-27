@@ -19,7 +19,7 @@ import { RobotElement } from "./RobotElement";
 import { fromHeadingInDegreeToAngleInRadian } from "../core/Calculation";
 import { MagnetReference } from "../core/Magnet";
 import { useMobxStorage, useTouchEvent, useWindowSize } from "../core/Hook";
-import { LayoutType } from "./Layout";
+import { LayoutType } from "../core/Layout";
 import { Box } from "@mui/material";
 import { Instance } from "@popperjs/core";
 import { TouchEventListener } from "../core/TouchEventListener";
@@ -474,7 +474,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
   const canvasHeightInPx = (function () {
     if (isExclusiveLayout) return windowSize.y;
-    if (app.view.showSpeedCanvas) return windowSize.y - 16 - 8 - 8 - 16 - 8 - windowSize.y * 0.12 - 8 - 16;
+    if (appPreferences.isSpeedCanvasVisible) return windowSize.y - 16 - 8 - 8 - 16 - 8 - windowSize.y * 0.12 - 8 - 16;
     else return windowSize.y - 16 * 2 - 8 * 2;
   })();
   const canvasWidthInPx = isExclusiveLayout ? windowSize.x : canvasHeightInPx;

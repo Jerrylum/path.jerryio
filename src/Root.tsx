@@ -25,7 +25,7 @@ import { RemovePathsAndEndControls } from "./core/Command";
 import React from "react";
 import { PathTreeAccordion } from "./app/PathTreeAccordion";
 import { FormTags } from "react-hotkeys-hook/dist/types";
-import { LayoutType } from "./app/Layout";
+import { LayoutType } from "./core/Layout";
 import { FloatingPanels } from "./app/FloatingPanels";
 import { getAppThemeInfo } from "./app/Theme";
 
@@ -80,8 +80,8 @@ const Root = observer(() => {
     ENABLE_ON_ALL_INPUT_FIELDS
   );
 
-  useCustomHotkeys("Mod+B", () => (app.view.showSpeedCanvas = !app.view.showSpeedCanvas), ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+J", () => (app.view.showRightPanel = !app.view.showRightPanel), ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys("Mod+B", () => (appPreferences.isSpeedCanvasVisible = !appPreferences.isSpeedCanvasVisible), ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys("Mod+J", () => (appPreferences.isRightPanelVisible = !appPreferences.isRightPanelVisible), ENABLE_ON_ALL_INPUT_FIELDS);
 
   useCustomHotkeys("Mod+Add,Mod+Equal", () => (app.fieldEditor.scale += 0.5), ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Mod+Subtract,Mod+Minus", () => (app.fieldEditor.scale -= 0.5), ENABLE_ON_ALL_INPUT_FIELDS);
@@ -128,18 +128,18 @@ const Root = observer(() => {
               <PathTreeAccordion />
             </Box>
 
-            <Box id="middle-panel" className={app.view.showSpeedCanvas ? "" : "full-height"}>
+            <Box id="middle-panel" className={classNames({"full-height": !appPreferences.isSpeedCanvasVisible})}>
               <Card id="field-panel">
                 <svg viewBox="0 0 1 1"></svg>
                 <FieldCanvasElement />
               </Card>
-              {app.view.showSpeedCanvas && (
+              {appPreferences.isSpeedCanvasVisible && (
                 <Card id="speed-panel">
                   <SpeedCanvasElement />
                 </Card>
               )}
             </Box>
-            {app.view.showRightPanel && (
+            {appPreferences.isRightPanelVisible && (
               <Box id="right-editor-panel">
                 <GeneralConfigAccordion />
                 <ControlAccordion />
