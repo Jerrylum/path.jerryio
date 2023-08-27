@@ -1,9 +1,12 @@
 $pg: 16px; // panel gap
 $hpg: 8px; // half panel gap
 $qpg: 4px; // quarter panel gap
-$speed-panel-height: 12svh;
-$middle-panel-width: calc(100svh - $pg - $pg - $hpg - $speed-panel-height - $hpg - $pg);
-$middle-panel-height: calc(100svh - $pg - $pg);
+$speed-panel-height-vh: 12vh;
+$speed-panel-height-svh: 12svh;
+$middle-panel-width-vh: calc(100vh - $pg - $pg - $hpg - $speed-panel-height-vh - $hpg - $pg);
+$middle-panel-width-svh: calc(100svh - $pg - $pg - $hpg - $speed-panel-height-svh - $hpg - $pg);
+$middle-panel-height-vh: calc(100vh - $pg - $pg);
+$middle-panel-height-svh: calc(100svh - $pg - $pg);
 
 & {
   padding: 8px;
@@ -27,7 +30,8 @@ $middle-panel-height: calc(100svh - $pg - $pg);
   flex-direction: column;
 
   #field-panel {
-    width: $middle-panel-width;
+    width: $middle-panel-width-vh;
+    width: $middle-panel-width-svh;
     height: auto;
     position: relative;
     display: inline-flex;
@@ -48,15 +52,20 @@ $middle-panel-height: calc(100svh - $pg - $pg);
     }
   }
 
-  &.full-height #field-panel {
-    width: $middle-panel-height;
-    height: $middle-panel-height;
+  &.full-height {
+    #field-panel {
+      width: $middle-panel-height-vh;
+      width: $middle-panel-height-svh;
+      height: $middle-panel-height-vh;
+      height: $middle-panel-height-svh;
+    }
   }
 }
 
 #speed-panel {
   width: auto;
-  height: $speed-panel-height;
+  height: $speed-panel-height-vh;
+  height: $speed-panel-height-svh;
   padding: $hpg;
   overflow: hidden;
   margin-top: $pg;
