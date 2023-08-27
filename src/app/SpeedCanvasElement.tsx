@@ -375,6 +375,7 @@ const SpeedCanvasElement = observer((props: {}) => {
 
   const path = app.interestedPath();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(
     action(() => {
       app.speedEditor.offset = 0;

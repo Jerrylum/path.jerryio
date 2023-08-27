@@ -1,6 +1,5 @@
-import Konva from "konva";
 import { Vector } from "./Path";
-import { makeObservable, action, computed, observable } from "mobx";
+import { makeObservable, computed, observable } from "mobx";
 
 export class TouchEventListener {
   touches: { [identifier: number]: { lastPosition: Vector; vector: Vector } } = {};

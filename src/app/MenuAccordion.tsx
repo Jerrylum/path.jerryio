@@ -212,7 +212,7 @@ const CustomMenuItem = observer(
           disabled={isDisabled}
           ref={menuItemRef}
           onClick={e => {
-            if (Date.now() > dateOfActivation === false) return;
+            if (!(Date.now() > dateOfActivation)) return;
             if (hasSubMenu === false && isDisabled === false) parentMenuCtr.collapse();
             runInAction(() => onClick?.(e));
           }}
@@ -659,4 +659,3 @@ const HelpMenuItems = () => {
 };
 
 export { MenuAccordion, MenuMainDropdown };
-

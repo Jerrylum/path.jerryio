@@ -1,7 +1,6 @@
 import { makeAutoObservable, action } from "mobx";
 import { GraphCanvasConverter } from "./Canvas";
 import { Keyframe, KeyframePos, Path } from "./Path";
-import { getAppStores } from "./MainApp";
 import { clamp } from "./Util";
 
 export type KeyframeInteraction =
