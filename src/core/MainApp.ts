@@ -21,7 +21,6 @@ import { onLatestVersionChange } from "./Versioning";
 import { enqueueSuccessSnackbar } from "../app/Notice";
 import * as SWR from "./ServiceWorkerRegistration";
 import { AppClipboard } from "./Clipboard";
-import { MagnetReference } from "./Magnet";
 import { validate } from "class-validator";
 import { FieldEditor } from "./FieldEditor";
 import { SpeedEditor } from "./SpeedEditor";
@@ -41,9 +40,6 @@ export class MainApp {
   private selected: string[] = []; // ALGO: Not using Set because order matters
   private lastInterestedPath: Path | undefined = undefined; // ALGO: For adding controls
   private expanded: string[] = []; // ALGO: Order doesn't matter but anyway
-  public magnet: MagnetReference[] = [];
-
-  private _history: CommandHistory = new CommandHistory(this);
 
   public robot = {
     position: new EndControl(0, 0, 0)
@@ -57,8 +53,9 @@ export class MainApp {
     lastWheelControlTimestamp: 0
   };
 
-  public fieldEditor = new FieldEditor();
-  public speedEditor = new SpeedEditor();
+  readonly history: CommandHistory = new CommandHistory(this);
+  readonly fieldEditor = new FieldEditor();
+  readonly speedEditor = new SpeedEditor();
 
   public latestVersion: SemVer | null | undefined = undefined;
 
@@ -114,7 +111,7 @@ export class MainApp {
 
         this.resetUserControl();
 
-        this._history.clearHistory();
+        this.history.clearHistory();
       })
     );
 
@@ -186,10 +183,6 @@ export class MainApp {
 
   @computed get gc(): GeneralConfig {
     return this.format.getGeneralConfig();
-  }
-
-  @computed get history(): CommandHistory {
-    return this._history;
   }
 
   isSelected(x: PathTreeItem | string): boolean {
@@ -337,7 +330,6 @@ export class MainApp {
     this.selected = [];
     this.expanded = [];
     this.lastInterestedPath = undefined;
-    this.magnet = [];
     this.robot.position.visible = false;
   }
 
@@ -380,7 +372,7 @@ export class MainApp {
     this.resetUserControl();
     this.resetAllEditors();
 
-    this._history.clearHistory();
+    this.history.clearHistory();
   }
 
   async importPathFileData(data: Record<string, any>): Promise<void> {
@@ -433,7 +425,7 @@ export class MainApp {
     this.resetUserControl();
     this.resetAllEditors();
 
-    this._history.clearHistory();
+    this.history.clearHistory();
   }
 
   async importPathFile(fileContent: string): Promise<void> {
@@ -507,4 +499,3 @@ export function getAppStores(): AppStores {
 window.unregisterSW = action(() => {
   SWR.unregister();
 });
-

@@ -439,7 +439,7 @@ class TouchInteractiveHandler extends TouchEventListener {
         app.fieldEditor.endGrabAndMove();
         // UX: Only end interaction if: no finger is touching the screen
         app.fieldEditor.endInteraction();
-        app.magnet = [];
+        app.fieldEditor.magnet = [];
 
         // ALGO: Cancel selection if the user lifts the finger
         clearTimeout(this.startSelectionTimer);
@@ -609,7 +609,7 @@ const FieldCanvasElement = observer((props: {}) => {
       fieldEditor.endGrabAndMove();
     }
 
-    app.magnet = [];
+    fieldEditor.magnet = [];
   }
 
   function onDragEndStage(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) {
@@ -633,7 +633,7 @@ const FieldCanvasElement = observer((props: {}) => {
       fieldEditor.endAreaSelection();
       fieldEditor.endGrabAndMove();
       fieldEditor.endInteraction();
-      app.magnet = [];
+      fieldEditor.magnet = [];
     }
   }
 
@@ -717,9 +717,6 @@ const FieldCanvasElement = observer((props: {}) => {
           offset={offset.subtract(fcc.viewOffset)}
           draggable
           style={{ cursor: fieldEditor.isGrabAndMove ? "grab" : "" }}
-          // onTouchStart={action(onTouchStartStage)}
-          // onTouchMove={action(onTouchMoveStage)}
-          // onTouchEnd={action(onTouchEndStage)}
           onContextMenu={e => e.evt.preventDefault()}
           onWheel={action(onWheelStage)}
           onMouseDown={action(onMouseDownStage)}
@@ -736,7 +733,7 @@ const FieldCanvasElement = observer((props: {}) => {
                 onClick={action(onClickFieldImage)}
               />
             )}
-            {app.magnet.map((magnetRef, idx) => (
+            {fieldEditor.magnet.map((magnetRef, idx) => (
               <MagnetReferenceLine key={idx} magnetRef={magnetRef} fcc={fcc} />
             ))}
             {visiblePaths.map(path => (

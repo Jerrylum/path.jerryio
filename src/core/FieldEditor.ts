@@ -4,6 +4,7 @@ import { CanvasEntity, FieldCanvasConverter } from "./Canvas";
 import { getAppStores } from "./MainApp";
 import { Vector } from "./Path";
 import { clamp } from "./Util";
+import { MagnetReference } from "./Magnet";
 
 export type CanvasEntityInteraction =
   | {
@@ -28,6 +29,7 @@ export class FieldEditor {
 
   isAddingControl: boolean = false;
   tooltipPosition: Vector | undefined = undefined;
+  magnet: MagnetReference[] = [];
 
   constructor() {
     makeAutoObservable(this, { fcc: false });
@@ -282,7 +284,8 @@ export class FieldEditor {
       this._lastInteraction = oldIt;
       this._interaction = newIt;
     } else if (
-      oldIt !== undefined && newIt !== undefined &&
+      oldIt !== undefined &&
+      newIt !== undefined &&
       (oldIt.entity !== newIt.entity || oldIt.type !== newIt.type)
     ) {
       this._lastInteraction = oldIt;

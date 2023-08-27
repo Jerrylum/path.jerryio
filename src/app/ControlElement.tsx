@@ -184,9 +184,9 @@ function onDragMoveAnyControl(
 
     const [result, magnetRefs] = magnet(cpInUOL, references, app.gc.controlMagnetDistance);
     cpInUOL.setXY(result);
-    app.magnet = magnetRefs;
+    app.fieldEditor.magnet = magnetRefs;
   } else {
-    app.magnet = [];
+    app.fieldEditor.magnet = [];
   }
 
   app.history.execute(
@@ -247,7 +247,7 @@ class TouchInteractiveHandler extends TouchEventListener {
     // ALGO: No need to check shouldInteract
 
     if (this.enableMagnet) {
-      if (this.pos(this.keys[0]).distance(this.magnetPosition) > 96 && app.magnet.length === 0) {
+      if (this.pos(this.keys[0]).distance(this.magnetPosition) > 96 && app.fieldEditor.magnet.length === 0) {
         this.enableMagnet = false;
       }
     }
