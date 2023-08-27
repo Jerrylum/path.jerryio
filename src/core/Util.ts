@@ -2,6 +2,7 @@ import { runInAction } from "mobx";
 import { ValidationArguments, ValidationOptions, registerDecorator } from "class-validator";
 import { TokenParser, NumberWithUnit, CodePointBuffer, Computation } from "../token/Tokens";
 import { Unit } from "./Unit";
+import { Vector } from "./Path";
 
 export const IS_MAC_OS = (() => {
   const os = navigator.userAgent;
@@ -62,6 +63,14 @@ export function parseFormula<U extends Unit>(
   numParser: TokenParser<NumberWithUnit<U>>
 ): Computation<U> | null {
   return Computation.parseWith(new CodePointBuffer(input), numParser);
+}
+
+export function getFieldCanvasHalfHeight(windowSize: Vector) {
+  return windowSize.y - 16 - 8 - 8 - 16 - 8 - windowSize.y * 0.12 - 8 - 16;
+}
+
+export function getFieldCanvasFullHeight(windowSize: Vector) {
+  return windowSize.y - 16 * 2 - 8 * 2;
 }
 
 declare global {

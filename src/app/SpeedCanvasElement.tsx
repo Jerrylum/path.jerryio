@@ -16,6 +16,7 @@ import { LayoutType } from "../core/Layout";
 import { getAppThemeInfo } from "./Theme";
 import { TouchEventListener } from "../core/TouchEventListener";
 import { Label, Padding0Tooltip } from "../component/TooltipLabel";
+import { getFieldCanvasHalfHeight } from "../core/Util";
 
 const FONT_FAMILY = '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
 
@@ -390,7 +391,7 @@ const SpeedCanvasElement = observer((props: {}) => {
   const isExclusiveLayout = preferences.layoutType === LayoutType.EXCLUSIVE;
 
   const canvasHeight = isExclusiveLayout ? Math.max(windowSize.y * 0.12, 80) : windowSize.y * 0.12;
-  const canvasWidth = isExclusiveLayout ? canvasHeight * 6.5 : (windowSize.y - 16 - 8 - 8 - 16 - 8 - windowSize.y * 0.12 - 8 - 16);
+  const canvasWidth = isExclusiveLayout ? canvasHeight * 6.5 : getFieldCanvasHalfHeight(windowSize);
   const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, app.speedEditor.offset, path, stageBoxRef.current);
 
   const fontSize = canvasHeight / 8;

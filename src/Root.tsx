@@ -5,7 +5,7 @@ import { observer } from "mobx-react-lite";
 import { ThemeProvider } from "@mui/material/styles";
 
 import { Box, Card } from "@mui/material";
-import { useClipboardPasteText, useCustomHotkeys, useDragDropFile, useUnsavedChangesPrompt } from "./core/Hook";
+import { useClipboardPasteText, useCustomHotkeys, useDragDropFile, useUnsavedChangesPrompt, useWindowSize } from "./core/Hook";
 import { MenuAccordion } from "./app/MenuAccordion";
 import { GeneralConfigAccordion } from "./app/GeneralConfigAccordion";
 import { PathConfigAccordion } from "./app/PathAccordion";
@@ -25,9 +25,11 @@ import { RemovePathsAndEndControls } from "./core/Command";
 import React from "react";
 import { PathTreeAccordion } from "./app/PathTreeAccordion";
 import { FormTags } from "react-hotkeys-hook/dist/types";
-import { LayoutType } from "./core/Layout";
+import { LayoutType, getAvailableLayouts } from "./core/Layout";
 import { FloatingPanels } from "./app/FloatingPanels";
 import { getAppThemeInfo } from "./app/Theme";
+import { Vector } from "./core/Path";
+import { action } from "mobx";
 
 const Root = observer(() => {
   const { app, confirmation, help, appPreferences, clipboard } = getAppStores();
@@ -108,6 +110,12 @@ const Root = observer(() => {
     if (e.target instanceof HTMLElement && e.target.isContentEditable) return;
     clipboard.paste(text);
   });
+
+  useWindowSize(
+    action((newSize: Vector) => {
+      console.log(getAvailableLayouts(newSize));
+    })
+  );
 
   React.useEffect(() => app.onUIReady(), [app]);
 

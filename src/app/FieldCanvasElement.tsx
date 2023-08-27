@@ -12,7 +12,7 @@ import { ControlElement } from "./ControlElement";
 import { AreaSelectionElement } from "./AreaSelectionElement";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { FieldCanvasConverter, getClientXY } from "../core/Canvas";
-import { clamp } from "../core/Util";
+import { clamp, getFieldCanvasFullHeight, getFieldCanvasHalfHeight } from "../core/Util";
 import { AddPath, AddSegment, ConvertSegment, RemovePathsAndEndControls, SplitSegment } from "../core/Command";
 import { getAppStores } from "../core/MainApp";
 import { RobotElement } from "./RobotElement";
@@ -474,8 +474,8 @@ const FieldCanvasElement = observer((props: {}) => {
 
   const canvasHeightInPx = (function () {
     if (isExclusiveLayout) return windowSize.y;
-    if (appPreferences.isSpeedCanvasVisible) return windowSize.y - 16 - 8 - 8 - 16 - 8 - windowSize.y * 0.12 - 8 - 16;
-    else return windowSize.y - 16 * 2 - 8 * 2;
+    if (appPreferences.isSpeedCanvasVisible) return getFieldCanvasHalfHeight(windowSize);
+    else return getFieldCanvasFullHeight(windowSize);
   })();
   const canvasWidthInPx = isExclusiveLayout ? windowSize.x : canvasHeightInPx;
   const canvasSizeInUOL = uc.fromAtoB(3683); // 3683 = 145*2.54*10 ~= 3676.528, the size of the field perimeter in Fusion 360
