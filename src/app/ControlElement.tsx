@@ -355,7 +355,7 @@ const ControlElement = observer((props: ControlElementProps) => {
     if (Math.abs(evt.deltaX) * 1.5 > Math.abs(evt.deltaY)) return;
 
     // UX: Do not interact with control points if it is panning
-    if (!app.wheelControl("change heading value")) return;
+    if (!app.fieldEditor.wheelInteraction("change heading value")) return;
 
     const epc = props.cp as EndControl;
     app.history.execute(

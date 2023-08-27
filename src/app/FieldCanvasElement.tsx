@@ -507,7 +507,7 @@ const FieldCanvasElement = observer((props: {}) => {
       evt.ctrlKey === false &&
       (evt.deltaX !== 0 || evt.deltaY !== 0) &&
       fieldEditor.isGrabAndMove === false &&
-      app.wheelControl("panning")
+      fieldEditor.wheelInteraction("panning")
     ) {
       // UX: Panning if: ctrl key up + wheel/mouse pad + no "Grab & Move" + not changing heading value with scroll wheel in the last 300ms
 

@@ -24,6 +24,10 @@ export class FieldEditor {
   private _lastInteraction: CanvasEntityInteraction | undefined = undefined;
   private selectedBefore: string[] = []; // Selected controls before area selection
   private offsetStart: Vector | undefined = undefined;
+  private wheelInteractionState: {
+    type: "panning" | "change heading value";
+    lastTimestamp: number;
+  } = { type: "panning", lastTimestamp: 0 };
 
   fcc!: FieldCanvasConverter;
 
@@ -234,6 +238,24 @@ export class FieldEditor {
     this.interaction = undefined;
   }
 
+  wheelInteraction(type: "panning" | "change heading value"): boolean {
+    const now = Date.now();
+
+    if (this.wheelInteractionState.type === type) {
+      this.wheelInteractionState.lastTimestamp = now;
+      return true;
+    } else {
+      // 300 is the time between two wheel events, it is a magic number
+      if (now - this.wheelInteractionState.lastTimestamp < 300) {
+        return false;
+      } else {
+        this.wheelInteractionState.type = type;
+        this.wheelInteractionState.lastTimestamp = now;
+        return true;
+      }
+    }
+  }
+
   reset() {
     this._areaSelection = undefined;
     this._lastInteraction = undefined;
@@ -244,6 +266,7 @@ export class FieldEditor {
     this.tooltipPosition = undefined;
     this.offset = new Vector(0, 0);
     this.scale = 1;
+    this.wheelInteractionState = { type: "panning", lastTimestamp: 0 };
   }
 
   get offset() {

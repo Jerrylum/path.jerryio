@@ -45,18 +45,11 @@ export class MainApp {
     position: new EndControl(0, 0, 0)
   };
 
-  private fieldDisplay: {
-    wheelControlType: "panning" | "change heading value";
-    lastWheelControlTimestamp: number;
-  } = {
-    wheelControlType: "panning",
-    lastWheelControlTimestamp: 0
-  };
-
   readonly history: CommandHistory = new CommandHistory(this);
   readonly fieldEditor = new FieldEditor();
   readonly speedEditor = new SpeedEditor();
 
+  // null = loading, undefined = not available
   public latestVersion: SemVer | null | undefined = undefined;
 
   constructor() {
@@ -308,24 +301,6 @@ export class MainApp {
     return rtn;
   }
 
-  wheelControl(type: "panning" | "change heading value"): boolean {
-    const now = Date.now();
-
-    if (this.fieldDisplay.wheelControlType === type) {
-      this.fieldDisplay.lastWheelControlTimestamp = now;
-      return true;
-    } else {
-      // 300 is the time between two wheel events, it is a magic number
-      if (now - this.fieldDisplay.lastWheelControlTimestamp < 300) {
-        return false;
-      } else {
-        this.fieldDisplay.wheelControlType = type;
-        this.fieldDisplay.lastWheelControlTimestamp = now;
-        return true;
-      }
-    }
-  }
-
   resetUserControl(): void {
     this.selected = [];
     this.expanded = [];
@@ -336,10 +311,6 @@ export class MainApp {
   resetAllEditors(): void {
     this.fieldEditor.reset();
     this.speedEditor.reset();
-    this.fieldDisplay = {
-      wheelControlType: "panning",
-      lastWheelControlTimestamp: 0
-    };
   }
 
   resetFieldOffsetAndScale() {
