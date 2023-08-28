@@ -15,6 +15,14 @@ export interface InteractiveEntityParent extends InteractiveEntity {
   children: InteractiveEntity[];
 }
 
+export function isKonvaTouchEvent(event: Konva.KonvaEventObject<unknown>): event is Konva.KonvaEventObject<TouchEvent> {
+  return window.TouchEvent && event.evt instanceof TouchEvent;
+}
+
+export function isTouchEvent(event: unknown): event is TouchEvent {
+  return window.TouchEvent && event instanceof TouchEvent;
+}
+
 export function getClientXY(event: DragEvent | MouseEvent | TouchEvent): Vector {
   if (window.TouchEvent && event instanceof TouchEvent) {
     const touch = event.touches[0] || event.changedTouches[0];

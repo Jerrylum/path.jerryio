@@ -11,7 +11,7 @@ import fieldImageUrl from "../static/field2023.png";
 import { ControlElement } from "./ControlElement";
 import { AreaSelectionElement } from "./AreaSelectionElement";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
-import { FieldCanvasConverter, getClientXY } from "../core/Canvas";
+import { FieldCanvasConverter, getClientXY, isKonvaTouchEvent } from "../core/Canvas";
 import { clamp, getFieldCanvasFullHeight, getFieldCanvasHalfHeight } from "../core/Util";
 import { AddPath, AddSegment, ConvertSegment, RemovePathsAndEndControls, SplitSegment } from "../core/Command";
 import { getAppStores } from "../core/MainApp";
@@ -582,7 +582,7 @@ const FieldCanvasElement = observer((props: {}) => {
     // UX: It is not actually dragged "stage", reset the position to (0, 0)
     if (event.target instanceof Konva.Stage) event.target.setPosition(new Vector(0, 0));
 
-    if (event.evt instanceof TouchEvent === false) {
+    if (isKonvaTouchEvent(event) === false) {
       fieldEditor.isAddingControl = false;
 
       const posInPx = fcc.getUnboundedPxFromEvent(event);

@@ -12,6 +12,7 @@ import { MagnetReference, magnet } from "../core/Magnet";
 import React from "react";
 import { TouchEventListener } from "../core/TouchEventListener";
 import { useMobxStorage } from "../core/Hook";
+import { isKonvaTouchEvent } from "../core/Canvas";
 
 export interface ControlElementProps extends SegmentElementProps {
   cp: AnyControl;
@@ -330,8 +331,8 @@ const ControlElement = observer((props: ControlElementProps) => {
   }
 
   function onDragMove(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) {
-    if (event.evt instanceof TouchEvent) {
-      tiHandler.onKonvaTouchMove(event as any);
+    if (isKonvaTouchEvent(event)) {
+      tiHandler.onKonvaTouchMove(event);
     } else {
       onDragMoveAnyControl(props, event.evt.shiftKey, variables.posBeforeDrag, event);
     }
