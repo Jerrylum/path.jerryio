@@ -24,7 +24,9 @@ import { AppThemeType } from "./Theme";
 import { RemovePathsAndEndControls } from "../core/Command";
 import { checkForUpdates } from "../core/Versioning";
 import { Path } from "../core/Path";
-import { LayoutType } from "../core/Layout";
+import { LayoutType, getAvailableLayouts } from "../core/Layout";
+import { LayoutContext } from "./Layouts";
+import { useWindowSize } from "../core/Hook";
 
 const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
   const { hotkey } = props;
@@ -563,21 +565,36 @@ const EditMenuItems = () => {
 
 const ViewMenuItems = () => {
   const { app, appPreferences } = getAppStores();
+
+  const windowSize = useWindowSize();
+  const currentLayoutType = React.useContext(LayoutContext);
+
+  const availableLayouts = getAvailableLayouts(windowSize);
+
   return [
     <CustomMenuItem
       key={makeId(10)}
-      showLeftIcon={appPreferences.layoutType === LayoutType.CLASSIC}
+      showLeftIcon={currentLayoutType === LayoutType.CLASSIC}
       label="Classic Layout"
+      disabled={availableLayouts.includes(LayoutType.CLASSIC) === false && "The current window size is too small"}
       onClick={() => (appPreferences.layoutType = LayoutType.CLASSIC)}
     />,
     <CustomMenuItem
       key={makeId(10)}
-      showLeftIcon={appPreferences.layoutType === LayoutType.EXCLUSIVE}
+      showLeftIcon={currentLayoutType === LayoutType.EXCLUSIVE}
       label="Exclusive Layout"
+      disabled={availableLayouts.includes(LayoutType.EXCLUSIVE) === false && "The current window size is too small"}
       onClick={() => (appPreferences.layoutType = LayoutType.EXCLUSIVE)}
     />,
+    <CustomMenuItem
+      key={makeId(10)}
+      showLeftIcon={currentLayoutType === LayoutType.MOBILE}
+      label="Mobile Layout"
+      disabled={availableLayouts.includes(LayoutType.MOBILE) === false && "The current window size is too small"}
+      onClick={() => (appPreferences.layoutType = LayoutType.MOBILE)}
+    />,
     <Divider key={makeId(10)} />,
-    ...(appPreferences.layoutType === LayoutType.CLASSIC
+    ...(currentLayoutType === LayoutType.CLASSIC
       ? [
           <CustomMenuItem
             key={makeId(10)}
