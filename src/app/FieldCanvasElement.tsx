@@ -24,6 +24,7 @@ import { Box } from "@mui/material";
 import { Instance } from "@popperjs/core";
 import { TouchEventListener } from "../core/TouchEventListener";
 import { Label, Padding0Tooltip } from "../component/TooltipLabel";
+import { LayoutContext } from "./Layouts";
 
 const FieldTooltipContent = observer((props: {}) => {
   const { app, clipboard } = getAppStores();
@@ -458,6 +459,7 @@ class TouchInteractiveHandler extends TouchEventListener {
 
 const FieldCanvasElement = observer((props: {}) => {
   const { app, appPreferences } = getAppStores();
+  const fieldEditor = app.fieldEditor;
 
   const windowSize = useWindowSize(
     action((newSize: Vector, oldSize: Vector) => {
@@ -468,16 +470,24 @@ const FieldCanvasElement = observer((props: {}) => {
 
   const popperRef = React.useRef<Instance>(null);
   const stageBoxRef = React.useRef<HTMLDivElement>(null);
+  const currentLayoutType = React.useContext(LayoutContext);
+
+  React.useEffect(() => {
+    // UX: Scale down the field editor if mobile layout is used
+    if (currentLayoutType === LayoutType.MOBILE) fieldEditor.scale = 0.5;
+  }, [currentLayoutType, fieldEditor]);
 
   const uc = new UnitConverter(UnitOfLength.Millimeter, app.gc.uol);
-  const isExclusiveLayout = appPreferences.layoutType === LayoutType.EXCLUSIVE;
 
   const canvasHeightInPx = (function () {
-    if (isExclusiveLayout) return windowSize.y;
-    if (appPreferences.isSpeedCanvasVisible) return getFieldCanvasHalfHeight(windowSize);
-    else return getFieldCanvasFullHeight(windowSize);
+    if (currentLayoutType === LayoutType.CLASSIC) {
+      if (appPreferences.isSpeedCanvasVisible) return getFieldCanvasHalfHeight(windowSize);
+      else return getFieldCanvasFullHeight(windowSize);
+    } else {
+      return windowSize.y;
+    }
   })();
-  const canvasWidthInPx = isExclusiveLayout ? windowSize.x : canvasHeightInPx;
+  const canvasWidthInPx = currentLayoutType === LayoutType.CLASSIC ? canvasHeightInPx : windowSize.x;
   const canvasSizeInUOL = uc.fromAtoB(3683); // 3683 = 145*2.54*10 ~= 3676.528, the size of the field perimeter in Fusion 360
 
   const [fieldImage] = useImage(fieldImageUrl);
@@ -496,7 +506,6 @@ const FieldCanvasElement = observer((props: {}) => {
   );
 
   app.fieldEditor.fcc = fcc;
-  const fieldEditor = app.fieldEditor;
   const tiHandler = useMobxStorage(() => new TouchInteractiveHandler());
   useTouchEvent(tiHandler, fcc.container);
 
