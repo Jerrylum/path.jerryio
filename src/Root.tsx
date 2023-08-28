@@ -20,7 +20,7 @@ import React from "react";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 import { LayoutType, getUsableLayout } from "./core/Layout";
 import { getAppThemeInfo } from "./app/Theme";
-import { ClassisLayout, ExclusiveLayout, LayoutProvider } from "./app/Layouts";
+import { ClassisLayout, ExclusiveLayout, LayoutProvider, MobileLayout } from "./app/Layouts";
 
 const Root = observer(() => {
   const { app, confirmation, help, appPreferences, clipboard } = getAppStores();
@@ -119,6 +119,7 @@ const Root = observer(() => {
         <LayoutProvider value={usingLayout}>
           {usingLayout === LayoutType.CLASSIC && <ClassisLayout />}
           {usingLayout === LayoutType.EXCLUSIVE && <ExclusiveLayout />}
+          {usingLayout === LayoutType.MOBILE && <MobileLayout />}
           <ConfirmationDialog />
           <HelpDialog />
           <PreferencesDialog />

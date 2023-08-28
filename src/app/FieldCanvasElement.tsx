@@ -474,7 +474,10 @@ const FieldCanvasElement = observer((props: {}) => {
 
   React.useEffect(() => {
     // UX: Scale down the field editor if mobile layout is used
-    if (currentLayoutType === LayoutType.MOBILE) fieldEditor.scale = 0.5;
+    if (currentLayoutType === LayoutType.MOBILE) {
+      fieldEditor.scale = 0.5;
+      fieldEditor.offset = windowSize.divide(-2);
+    }
   }, [currentLayoutType, fieldEditor]);
 
   const uc = new UnitConverter(UnitOfLength.Millimeter, app.gc.uol);

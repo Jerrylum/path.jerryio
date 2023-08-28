@@ -25,9 +25,9 @@ import { ControlFloatingPanel } from "./ControlAccordion";
 import { PathConfigFloatingPanel } from "./PathAccordion";
 import { PathTreeFloatingPanel } from "./PathTreeAccordion";
 import { MenuMainDropdown } from "./MenuAccordion";
-import UndoIcon from '@mui/icons-material/Undo';
-import RedoIcon from '@mui/icons-material/Redo';
-import HomeIcon from '@mui/icons-material/Home';
+import UndoIcon from "@mui/icons-material/Undo";
+import RedoIcon from "@mui/icons-material/Redo";
+import HomeIcon from "@mui/icons-material/Home";
 
 export const LayoutContext = React.createContext<LayoutType>(LayoutType.CLASSIC);
 export const LayoutProvider = LayoutContext.Provider;
@@ -124,10 +124,14 @@ export const ExclusiveLayout = observer(() => {
         </Box>
       </Box>
       <Box className="panel-icon-box" style={{ right: "8px", bottom: "0px" }}>
-        <Box className={classNames("panel-icon", {"disabled": !app.history.canUndo})} onClick={() => app.history.undo()}>
+        <Box
+          className={classNames("panel-icon", { disabled: !app.history.canUndo })}
+          onClick={() => app.history.undo()}>
           <UndoIcon fontSize="large" />
         </Box>
-        <Box className={classNames("panel-icon", {"disabled": !app.history.canRedo})} onClick={() => app.history.redo()}>
+        <Box
+          className={classNames("panel-icon", { disabled: !app.history.canRedo })}
+          onClick={() => app.history.redo()}>
           <RedoIcon fontSize="large" />
         </Box>
         <Box className="panel-icon" onClick={() => app.resetFieldOffsetAndScale()}>
@@ -152,6 +156,16 @@ export const ExclusiveLayout = observer(() => {
           {app.interestedPath() ? <SpeedCanvasElement /> : <Typography>(No path to display)</Typography>}
         </Box>
       )}
+    </>
+  );
+});
+
+export const MobileLayout = observer(() => {
+  return (
+    <>
+      <Box id="exclusive-field">
+        <FieldCanvasElement />
+      </Box>
     </>
   );
 });
