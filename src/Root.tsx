@@ -4,14 +4,8 @@ import { observer } from "mobx-react-lite";
 
 import { ThemeProvider } from "@mui/material/styles";
 
-import { Box, Card } from "@mui/material";
+import { Box } from "@mui/material";
 import { useClipboardPasteText, useCustomHotkeys, useDragDropFile, useUnsavedChangesPrompt, useWindowSize } from "./core/Hook";
-import { MenuAccordion } from "./app/MenuAccordion";
-import { GeneralConfigAccordion } from "./app/GeneralConfigAccordion";
-import { PathConfigAccordion } from "./app/PathAccordion";
-import { ControlAccordion } from "./app/ControlAccordion";
-import { SpeedCanvasElement } from "./app/SpeedCanvasElement";
-import { FieldCanvasElement } from "./app/FieldCanvasElement";
 import { getAppStores } from "./core/MainApp";
 
 import classNames from "classnames";
@@ -23,18 +17,14 @@ import { PreferencesDialog } from "./app/Preferences";
 import { DragDropBackdrop } from "./app/DragDropBackdrop";
 import { RemovePathsAndEndControls } from "./core/Command";
 import React from "react";
-import { PathTreeAccordion } from "./app/PathTreeAccordion";
 import { FormTags } from "react-hotkeys-hook/dist/types";
-import { LayoutType, getAvailableLayouts } from "./core/Layout";
-import { FloatingPanels } from "./app/FloatingPanels";
+import { LayoutType, getUsableLayout } from "./core/Layout";
 import { getAppThemeInfo } from "./app/Theme";
-import { Vector } from "./core/Path";
-import { action } from "mobx";
+import { ClassisLayout, ExclusiveLayout, LayoutProvider } from "./app/Layouts";
 
 const Root = observer(() => {
   const { app, confirmation, help, appPreferences, clipboard } = getAppStores();
 
-  const isExclusiveLayout = appPreferences.layoutType === LayoutType.EXCLUSIVE;
   const isUsingEditor = !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen;
   const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(isUsingEditor, onDropFile);
 
@@ -111,12 +101,9 @@ const Root = observer(() => {
     clipboard.paste(text);
   });
 
-  useWindowSize(
-    action((newSize: Vector) => {
-      console.log(getAvailableLayouts(newSize));
-    })
-  );
-
+  const windowSize = useWindowSize();
+  const usingLayout = getUsableLayout(windowSize, appPreferences.layoutType);
+  
   React.useEffect(() => app.onUIReady(), [app]);
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
@@ -124,49 +111,18 @@ const Root = observer(() => {
     <Box
       tabIndex={-1}
       className={classNames(getAppThemeInfo().className)}
-      data-layout={appPreferences.layoutType}
+      data-layout={usingLayout}
       {...{ onDragEnter, onDragOver, onDrop }}
       key={app.format.uid + "-" + app.gc.uol}>
       <ThemeProvider theme={getAppThemeInfo().theme}>
         <NoticeProvider />
-        {!isExclusiveLayout && (
-          <>
-            <Box id="left-editor-panel">
-              <MenuAccordion />
-              <PathTreeAccordion />
-            </Box>
-
-            <Box id="middle-panel" className={classNames({"full-height": !appPreferences.isSpeedCanvasVisible})}>
-              <Card id="field-panel">
-                <svg viewBox="0 0 1 1"></svg>
-                <FieldCanvasElement />
-              </Card>
-              {appPreferences.isSpeedCanvasVisible && (
-                <Card id="speed-panel">
-                  <SpeedCanvasElement />
-                </Card>
-              )}
-            </Box>
-            {appPreferences.isRightPanelVisible && (
-              <Box id="right-editor-panel">
-                <GeneralConfigAccordion />
-                <ControlAccordion />
-                <PathConfigAccordion />
-              </Box>
-            )}
-          </>
-        )}
-        {isExclusiveLayout && (
-          <>
-            <Box id="exclusive-field">
-              <FieldCanvasElement />
-            </Box>
-            <FloatingPanels />
-          </>
-        )}
-        <ConfirmationDialog />
-        <HelpDialog />
-        <PreferencesDialog />
+        <LayoutProvider value={usingLayout}>
+          {usingLayout === LayoutType.CLASSIC && <ClassisLayout />}
+          {usingLayout === LayoutType.EXCLUSIVE && <ExclusiveLayout />}
+          <ConfirmationDialog />
+          <HelpDialog />
+          <PreferencesDialog />
+        </LayoutProvider>
         {isUsingEditor && isDraggingFile && <DragDropBackdrop {...{ onDragEnter, onDragLeave, onDragOver, onDrop }} />}
       </ThemeProvider>
     </Box>

@@ -2,9 +2,9 @@ import { Vector } from "./Path";
 import { getFieldCanvasHalfHeight } from "./Util";
 
 export enum LayoutType {
-  CLASSIC = "classic",
-  EXCLUSIVE = "exclusive", // UX: Default layout
-  MOBILE = "mobile" // UX: Default layout
+  CLASSIC = "classic", // UX: Default layout
+  EXCLUSIVE = "exclusive",
+  MOBILE = "mobile"
 }
 
 export function getAvailableLayouts(windowSize: Vector): LayoutType[] {
@@ -19,4 +19,10 @@ export function getAvailableLayouts(windowSize: Vector): LayoutType[] {
     return [LayoutType.EXCLUSIVE, LayoutType.MOBILE];
 
   return [LayoutType.MOBILE];
+}
+
+export function getUsableLayout(windowSize: Vector, preferred: LayoutType): LayoutType {
+  const available = getAvailableLayouts(windowSize);
+  if (available.includes(preferred)) return preferred;
+  return available[0];
 }

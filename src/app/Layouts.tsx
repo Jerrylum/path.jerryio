@@ -1,8 +1,17 @@
-import { makeAutoObservable } from "mobx";
+import { Card } from "@mui/material";
+import classNames from "classnames";
 import { observer } from "mobx-react-lite";
-
+import React from "react";
+import { LayoutType } from "../core/Layout";
+import { ControlAccordion } from "./ControlAccordion";
+import { FieldCanvasElement } from "./FieldCanvasElement";
+import { GeneralConfigAccordion } from "./GeneralConfigAccordion";
+import { MenuAccordion } from "./MenuAccordion";
+import { PathConfigAccordion } from "./PathAccordion";
+import { PathTreeAccordion } from "./PathTreeAccordion";
+import { SpeedCanvasElement } from "./SpeedCanvasElement";
 import { getAppStores } from "../core/MainApp";
-
+import { makeAutoObservable } from "mobx";
 import MenuIcon from "@mui/icons-material/Menu";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import TuneIcon from "@mui/icons-material/Tune";
@@ -12,18 +21,50 @@ import LinearScaleIcon from "@mui/icons-material/LinearScale";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import { Box, Typography } from "@mui/material";
 import { GeneralConfigFloatingPanel } from "./GeneralConfigAccordion";
-import React from "react";
 import { ControlFloatingPanel } from "./ControlAccordion";
 import { PathConfigFloatingPanel } from "./PathAccordion";
-import { SpeedCanvasElement } from "./SpeedCanvasElement";
 import { PathTreeFloatingPanel } from "./PathTreeAccordion";
 import { MenuMainDropdown } from "./MenuAccordion";
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
 import HomeIcon from '@mui/icons-material/Home';
-import classNames from "classnames";
 
-class FloatingPanelsVariables {
+export const LayoutContext = React.createContext<LayoutType>(LayoutType.CLASSIC);
+export const LayoutProvider = LayoutContext.Provider;
+
+export const ClassisLayout = observer(() => {
+  const { appPreferences } = getAppStores();
+
+  return (
+    <>
+      <Box id="left-editor-panel">
+        <MenuAccordion />
+        <PathTreeAccordion />
+      </Box>
+
+      <Box id="middle-panel" className={classNames({ "full-height": !appPreferences.isSpeedCanvasVisible })}>
+        <Card id="field-panel">
+          <svg viewBox="0 0 1 1"></svg>
+          <FieldCanvasElement />
+        </Card>
+        {appPreferences.isSpeedCanvasVisible && (
+          <Card id="speed-panel">
+            <SpeedCanvasElement />
+          </Card>
+        )}
+      </Box>
+      {appPreferences.isRightPanelVisible && (
+        <Box id="right-editor-panel">
+          <GeneralConfigAccordion />
+          <ControlAccordion />
+          <PathConfigAccordion />
+        </Box>
+      )}
+    </>
+  );
+});
+
+class ExclusiveLayoutVariables {
   private panelStates: { [key: string]: boolean } = {};
 
   isOpenPanel(panel: string): boolean {
@@ -47,13 +88,16 @@ class FloatingPanelsVariables {
   }
 }
 
-const FloatingPanels = observer((props: {}) => {
+export const ExclusiveLayout = observer(() => {
   const { app } = getAppStores();
 
-  const [variables] = React.useState(() => new FloatingPanelsVariables());
+  const [variables] = React.useState(() => new ExclusiveLayoutVariables());
 
   return (
     <>
+      <Box id="exclusive-field">
+        <FieldCanvasElement />
+      </Box>
       <Box className="panel-icon-box" style={{ left: "8px", top: "8px" }}>
         <Box id="menu-icon" className="panel-icon" onClick={() => variables.togglePanel("menu")}>
           <MenuIcon fontSize="large" />
@@ -111,5 +155,3 @@ const FloatingPanels = observer((props: {}) => {
     </>
   );
 });
-
-export { FloatingPanels };
