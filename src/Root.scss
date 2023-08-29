@@ -24,6 +24,10 @@
       @import "style/ExclusiveLayout.scss";
     }
 
+    &[data-layout="mobile"] {
+      @import "style/Mobilelayout.scss";
+    }
+
     &.light-theme {
       --bg-body-color: #ffffff;
       --bg-default-color: #ffffff;

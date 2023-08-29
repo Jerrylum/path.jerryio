@@ -88,6 +88,22 @@ class ExclusiveLayoutVariables {
   }
 }
 
+class MobileLayoutVariables {
+  public currentPanel: string | null = null;
+
+  isOpenPanel(panel: string): boolean {
+    return this.currentPanel === panel;
+  }
+
+  openPanel(panel: string) {
+    this.currentPanel = panel;
+  }
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+}
+
 export const ExclusiveLayout = observer(() => {
   const { app } = getAppStores();
 
@@ -161,11 +177,49 @@ export const ExclusiveLayout = observer(() => {
 });
 
 export const MobileLayout = observer(() => {
+  const { app } = getAppStores();
+
+  const [variables] = React.useState(() => new MobileLayoutVariables());
+
   return (
     <>
       <Box id="exclusive-field">
         <FieldCanvasElement />
       </Box>
+      <Box id="top-nav">
+        {variables.currentPanel !== null && (
+          <Typography id="done-button" onClick={() => (variables.currentPanel = null)}>
+            Done
+          </Typography>
+        )}
+      </Box>
+      {variables.currentPanel !== null && (
+        <Box id="bottom-panel">
+          {variables.isOpenPanel("paths") && <PathTreeFloatingPanel />}
+          {variables.isOpenPanel("general-config") && <GeneralConfigFloatingPanel />}
+          {variables.isOpenPanel("control") && <ControlFloatingPanel />}
+          {variables.isOpenPanel("path") && <PathConfigFloatingPanel />}
+        </Box>
+      )}
+      {variables.currentPanel === null && (
+        <Box id="bottom-nav">
+          <Box className="panel-icon" onClick={() => variables.openPanel("paths")}>
+            <ViewListIcon fontSize="large" />
+          </Box>
+          <Box className="panel-icon" onClick={() => variables.openPanel("general-config")}>
+            <TuneIcon fontSize="large" />
+          </Box>
+          <Box className="panel-icon" onClick={() => variables.openPanel("control")}>
+            <FiberManualRecordIcon fontSize="large" />
+          </Box>
+          <Box className="panel-icon" onClick={() => variables.openPanel("path")}>
+            <LinearScaleIcon fontSize="large" />
+          </Box>
+          <Box className="panel-icon" onClick={() => variables.openPanel("speed-graph")}>
+            <TimelineIcon fontSize="large" />
+          </Box>
+        </Box>
+      )}
     </>
   );
 });
