@@ -11,7 +11,7 @@ import { PathConfigAccordion } from "./PathAccordion";
 import { PathTreeAccordion } from "./PathTreeAccordion";
 import { SpeedCanvasElement } from "./SpeedCanvasElement";
 import { getAppStores } from "../core/MainApp";
-import { makeAutoObservable } from "mobx";
+import { action, makeAutoObservable } from "mobx";
 import MenuIcon from "@mui/icons-material/Menu";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import TuneIcon from "@mui/icons-material/Tune";
@@ -90,6 +90,7 @@ class ExclusiveLayoutVariables {
 
 class MobileLayoutVariables {
   public currentPanel: string | null = null;
+  public isMenuOpen: boolean = false;
 
   isOpenPanel(panel: string): boolean {
     return this.currentPanel === panel;
@@ -187,11 +188,35 @@ export const MobileLayout = observer(() => {
         <FieldCanvasElement />
       </Box>
       <Box id="top-nav">
-        {variables.currentPanel !== null && (
-          <Typography id="done-button" onClick={() => (variables.currentPanel = null)}>
-            Done
-          </Typography>
-        )}
+        <Box id="left-div">
+          <Box className="panel-icon" onClick={action(() => (variables.isMenuOpen = true))}>
+            <MenuIcon fontSize="large" />
+          </Box>
+        </Box>
+        <Box id="undo-redo-div">
+          <Box
+            className={classNames("panel-icon", { disabled: !app.history.canUndo })}
+            onClick={() => app.history.undo()}>
+            <UndoIcon fontSize="large" />
+          </Box>
+          <Box
+            className={classNames("panel-icon", { disabled: !app.history.canRedo })}
+            onClick={() => app.history.redo()}>
+            <RedoIcon fontSize="large" />
+          </Box>
+          <MenuMainDropdown
+            anchor={{ top: 8, left: 48 + 8 + 8 }}
+            isOpen={variables.isMenuOpen}
+            onClose={action(() => (variables.isMenuOpen = false))}
+          />
+        </Box>
+        <Box id="right-div">
+          {variables.currentPanel !== null && (
+            <Typography id="done-button" onClick={() => (variables.currentPanel = null)}>
+              Done
+            </Typography>
+          )}
+        </Box>
       </Box>
       {variables.currentPanel !== null && (
         <Box id="bottom-panel">

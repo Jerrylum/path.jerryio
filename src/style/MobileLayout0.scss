@@ -30,7 +30,6 @@
     .floating-panel-title {
       font-size: 18px;
       margin-bottom: 16px;
-      // display: none;
     }
   }
 }
@@ -42,16 +41,33 @@
   left: 0;
   right: 0;
   height: 42px;
-}
+  padding-left: 16px;
+  display: flex;
 
-#done-button {
-  height: 42px;
-  line-height: 42px;
-  font-size: 18px;
-  padding: 0 16px;
-  float: right;
-  cursor: pointer;
-  color: var(--text-primary-color);
+  #left-div {
+    display: flex;
+  }
+
+  #undo-redo-div {
+    display: flex;
+    flex-grow: 1;
+    padding: 0 16px;
+  }
+
+  #right-div {
+    display: flex;
+
+    #done-button {
+      height: 42px;
+      line-height: 42px;
+      padding: 0 16px;
+      font-size: 18px;
+      float: right;
+      cursor: pointer;
+      user-select: none;
+      color: var(--text-primary-color);
+    }
+  }
 }
 
 #path-tree {
