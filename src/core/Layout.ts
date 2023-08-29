@@ -13,7 +13,7 @@ export function getAvailableLayouts(windowSize: Vector): LayoutType[] {
   if (windowSize.x >= widthForClassic && windowSize.y >= heightForClassic)
     return [LayoutType.CLASSIC, LayoutType.EXCLUSIVE, LayoutType.MOBILE];
 
-  const widthForExclusive = 8 + 48 + 8 + 16 + Math.max(windowSize.y * 0.12, 80) * 6.5 + 16 + 8 + 48 + 8;
+  const widthForExclusive = 560;
   const heightForExclusive = 480;
   if (windowSize.x >= widthForExclusive && windowSize.y >= heightForExclusive)
     return [LayoutType.EXCLUSIVE, LayoutType.MOBILE];

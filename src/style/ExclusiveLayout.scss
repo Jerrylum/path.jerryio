@@ -102,6 +102,10 @@
   color: var(--text-primary-color);
   box-sizing: border-box;
   border: 0.5px solid var(--bg-default-color);
+
+  &.extended {
+    bottom: 0;
+  }
 }
 
 .floating-panel {

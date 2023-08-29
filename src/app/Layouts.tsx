@@ -28,6 +28,7 @@ import { MenuMainDropdown } from "./MenuAccordion";
 import UndoIcon from "@mui/icons-material/Undo";
 import RedoIcon from "@mui/icons-material/Redo";
 import HomeIcon from "@mui/icons-material/Home";
+import { useWindowSize } from "../core/Hook";
 
 export const LayoutContext = React.createContext<LayoutType>(LayoutType.CLASSIC);
 export const LayoutProvider = LayoutContext.Provider;
@@ -49,7 +50,7 @@ export const ClassisLayout = observer(() => {
         </Card>
         {appPreferences.isSpeedCanvasVisible && (
           <Card id="speed-panel">
-            <SpeedCanvasElement />
+            <SpeedCanvasElement extended={false} />
           </Card>
         )}
       </Box>
@@ -110,6 +111,15 @@ export const ExclusiveLayout = observer(() => {
 
   const [variables] = React.useState(() => new ExclusiveLayoutVariables());
 
+  const windowSize = useWindowSize();
+
+  const expectedWindowWithIfSpeedCanvasIsFloating = 8 + 48 + 8 + 16 + windowSize.y * 0.12 * 6.5 + 16 + 8 + 48 + 8;
+  const isSpeedCanvasExtended = windowSize.x < expectedWindowWithIfSpeedCanvasIsFloating;
+  const alpha =
+    isSpeedCanvasExtended && variables.isOpenPanel("speed-graph") && app.interestedPath() !== undefined
+      ? windowSize.y * 0.12 + 8 + 16 + 8
+      : 0;
+
   return (
     <>
       <Box id="exclusive-field">
@@ -140,7 +150,7 @@ export const ExclusiveLayout = observer(() => {
           <TimelineIcon fontSize="large" />
         </Box>
       </Box>
-      <Box className="panel-icon-box" style={{ right: "8px", bottom: "0px" }}>
+      <Box className="panel-icon-box" style={{ right: "8px", bottom: alpha + "px" }}>
         <Box
           className={classNames("panel-icon", { disabled: !app.history.canUndo })}
           onClick={() => app.history.undo()}>
@@ -169,8 +179,12 @@ export const ExclusiveLayout = observer(() => {
         {variables.isOpenPanel("path") && <PathConfigFloatingPanel />}
       </Box>
       {variables.isOpenPanel("speed-graph") && (
-        <Box id="speed-panel">
-          {app.interestedPath() ? <SpeedCanvasElement /> : <Typography>(No path to display)</Typography>}
+        <Box id="speed-panel" className={classNames({ extended: isSpeedCanvasExtended })}>
+          {app.interestedPath() ? (
+            <SpeedCanvasElement extended={isSpeedCanvasExtended} />
+          ) : (
+            <Typography>(No path to display)</Typography>
+          )}
         </Box>
       )}
     </>

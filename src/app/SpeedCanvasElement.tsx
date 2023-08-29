@@ -111,7 +111,9 @@ const PointElement = observer((props: { point: Point; index: number; pc: PathCon
 
   return (
     <>
-      {point.isLast && <Line points={[x, 0, x, gcc.pixelHeight]} stroke="grey" strokeWidth={gcc.lineWidth} listening={false} />}
+      {point.isLast && (
+        <Line points={[x, 0, x, gcc.pixelHeight]} stroke="grey" strokeWidth={gcc.lineWidth} listening={false} />
+      )}
       <Circle x={x} y={y1} radius={gcc.pointRadius} fill={"grey"} listening={false} />
       <Circle x={x} y={y2} radius={gcc.pointRadius} fill={color} listening={false} />
     </>
@@ -362,8 +364,8 @@ class TouchInteractiveHandler extends TouchEventListener {
   }
 }
 
-const SpeedCanvasElement = observer((props: {}) => {
-  const { app, appPreferences: preferences } = getAppStores();
+const SpeedCanvasElement = observer((props: { extended: boolean }) => {
+  const { app } = getAppStores();
 
   const windowSize = useWindowSize();
 
@@ -388,10 +390,8 @@ const SpeedCanvasElement = observer((props: {}) => {
 
   if (path === undefined) return null;
 
-  const isExclusiveLayout = preferences.layoutType === LayoutType.EXCLUSIVE;
-
-  const canvasHeight = isExclusiveLayout ? Math.max(windowSize.y * 0.12, 80) : windowSize.y * 0.12;
-  const canvasWidth = isExclusiveLayout ? canvasHeight * 6.5 : getFieldCanvasHalfHeight(windowSize);
+  const canvasHeight = windowSize.y * 0.12;
+  const canvasWidth = props.extended ? windowSize.x - 16 : getFieldCanvasHalfHeight(windowSize);
   const gcc = new GraphCanvasConverter(canvasWidth, canvasHeight, app.speedEditor.offset, path, stageBoxRef.current);
 
   const fontSize = canvasHeight / 8;
