@@ -256,6 +256,8 @@ class TouchInteractiveHandler extends TouchEventListener {
     clearTimeout(this.triggerMagnetTimer);
     this.triggerMagnetTimer = setTimeout(
       action(() => {
+        // ALGO: This check is necessary just in case clearTimeout is not called
+        if (this.keys.length === 0) return;
         this.enableMagnet = true;
         this.magnetPosition = this.pos(this.keys[0]);
         onDragMoveAnyControl(this.props, this.enableMagnet, this.variables.posBeforeDrag, event);
