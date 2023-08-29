@@ -115,7 +115,7 @@ export const ExclusiveLayout = observer(() => {
         <FieldCanvasElement />
       </Box>
       <Box className="panel-icon-box" style={{ left: "8px", top: "8px" }}>
-        <Box id="menu-icon" className="panel-icon" onClick={() => variables.togglePanel("menu")}>
+        <Box className="panel-icon" onClick={() => variables.togglePanel("menu")}>
           <MenuIcon fontSize="large" />
         </Box>
         <Box className="panel-icon" onClick={() => variables.togglePanel("paths")}>
@@ -156,7 +156,7 @@ export const ExclusiveLayout = observer(() => {
       </Box>
       <Box id="left-editor-panel">
         <MenuMainDropdown
-          anchor={document.getElementById("menu-icon")!}
+          anchor={{ top: 8, left: 48 + 8 + 8 }}
           isOpen={variables.isOpenPanel("menu")}
           onClose={variables.closePanel.bind(variables, "menu")}
         />

@@ -10,6 +10,7 @@ import {
   MenuItem,
   MenuItemProps,
   MenuProps,
+  PopoverPosition,
   Tooltip,
   Typography
 } from "@mui/material";
@@ -402,12 +403,12 @@ const MenuAccordion = observer((props: {}) => {
   );
 });
 
-const MenuMainDropdown = observer((props: { anchor: HTMLElement; isOpen: boolean; onClose: () => void }) => {
+const MenuMainDropdown = observer((props: { anchor: PopoverPosition; isOpen: boolean; onClose: () => void }) => {
   return (
     <>
       <CustomMenuRoot
         anchorReference="anchorPosition"
-        anchorPosition={{ top: 8, left: 48 + 8 + 8 }}
+        anchorPosition={props.anchor}
         open={props.isOpen}
         onClose={props.onClose}>
         <CustomMenuItem showLeftIcon={false} label="File">
