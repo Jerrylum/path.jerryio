@@ -238,6 +238,15 @@ export const MobileLayout = observer(() => {
           {variables.isOpenPanel("general-config") && <GeneralConfigFloatingPanel />}
           {variables.isOpenPanel("control") && <ControlFloatingPanel />}
           {variables.isOpenPanel("path") && <PathConfigFloatingPanel />}
+          {variables.isOpenPanel("speed-graph") && (
+            <Box id="speed-panel">
+              {app.interestedPath() ? (
+                <SpeedCanvasElement extended={true} />
+              ) : (
+                <Typography sx={{textAlign: "center"}}>(No path to display)</Typography>
+              )}
+            </Box>
+          )}
         </Box>
       )}
       {variables.currentPanel === null && (

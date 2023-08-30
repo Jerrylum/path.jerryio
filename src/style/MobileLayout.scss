@@ -14,7 +14,6 @@
 #bottom-panel {
   background-color: var(--bg-paper-color);
   color: var(--text-primary-color);
-  padding: 16px;
   position: fixed;
   bottom: 0;
   left: 0;
@@ -26,11 +25,16 @@
   .floating-panel {
     color: var(--text-primary-color);
     box-sizing: border-box;
+    margin: 16px;
 
     .floating-panel-title {
       font-size: 18px;
       margin-bottom: 16px;
     }
+  }
+
+  #speed-panel {
+    margin: 8px;
   }
 }
 
