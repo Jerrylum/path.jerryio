@@ -49,7 +49,7 @@ export class FieldEditor {
 
   private onTouchStartOrMouseDown(event: TouchEvent | MouseEvent) {
     if (this.fcc === undefined) return;
-    const fieldParent = this.fcc.container?.parentElement;
+    const fieldParent = this.fcc.container?.parentElement?.parentElement;
     const tooltips = [...(fieldParent?.querySelectorAll("*[role='tooltip']") ?? [])];
     const isUsingTooltip = tooltips.some(tooltip => tooltip.contains(event.target as Node));
     if (isUsingTooltip === false) this.tooltipPosition = undefined;
