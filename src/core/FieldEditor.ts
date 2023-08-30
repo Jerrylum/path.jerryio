@@ -31,7 +31,6 @@ export class FieldEditor {
 
   fcc!: FieldCanvasConverter;
 
-  isAddingControl: boolean = false;
   tooltipPosition: Vector | undefined = undefined;
   magnet: MagnetReference[] = [];
 
@@ -277,7 +276,6 @@ export class FieldEditor {
     this._interaction = undefined;
     this.selectedBefore = [];
     this.offsetStart = undefined;
-    this.isAddingControl = false;
     this.tooltipPosition = undefined;
     this.offset = new Vector(0, 0);
     this.scale = 1;

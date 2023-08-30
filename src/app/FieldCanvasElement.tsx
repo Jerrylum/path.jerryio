@@ -1,4 +1,4 @@
-import { action, makeObservable, observable, reaction } from "mobx";
+import { action, makeAutoObservable, makeObservable, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import { EndControl, Path, Segment, SegmentVariant, Vector, isAnyControl } from "../core/Path";
 import Konva from "konva";
@@ -313,14 +313,15 @@ class TouchInteractiveHandler extends TouchEventListener {
 
   interact() {
     const { app } = getAppStores();
+    const fieldEditor = app.fieldEditor;
 
     const keys = this.keys;
     if (this.touchAction === TouchAction.Start) {
       // UX: Clear hover effect from path tree if the user starts touching the field canvas
       app.hoverItem = undefined;
 
-      this.isPendingShowTooltip = app.fieldEditor.tooltipPosition === undefined;
-      app.fieldEditor.tooltipPosition = undefined;
+      this.isPendingShowTooltip = fieldEditor.tooltipPosition === undefined;
+      fieldEditor.tooltipPosition = undefined;
 
       if (keys.length >= 1) {
         this.touchAction = TouchAction.PendingSelection;
@@ -331,10 +332,10 @@ class TouchInteractiveHandler extends TouchEventListener {
 
             app.setSelected([]);
 
-            const posInPx = app.fieldEditor.fcc.getUnboundedPxFromNativeEvent(this.lastEvent!);
+            const posInPx = fieldEditor.fcc.getUnboundedPxFromNativeEvent(this.lastEvent!);
             if (posInPx === undefined) return;
 
-            app.fieldEditor.startAreaSelection(posInPx);
+            fieldEditor.startAreaSelection(posInPx);
             this.touchAction = TouchAction.Selection;
           }),
           600
@@ -343,25 +344,25 @@ class TouchInteractiveHandler extends TouchEventListener {
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.PendingSelection) {
-      if (isAnyControl(app.fieldEditor.interaction?.entity)) {
+      if (isAnyControl(fieldEditor.interaction?.entity)) {
         this.touchAction = TouchAction.TouchingControl;
-      } else if (app.fieldEditor.interaction?.entity instanceof Segment) {
+      } else if (fieldEditor.interaction?.entity instanceof Segment) {
         this.touchAction = TouchAction.TouchingSegment;
       } else if (keys.length >= 1) {
         const t = this.pos(keys[0]);
         if (t.distance(this.initialPosition) > 96 * 0.25) {
           // 1/4 inch, magic number
-          this.initialFieldScale = app.fieldEditor.scale;
+          this.initialFieldScale = fieldEditor.scale;
           this.touchAction = TouchAction.PanningAndScaling;
         }
       } else {
         this.touchAction = TouchAction.Release;
       }
     } else if (this.touchAction === TouchAction.TouchingControl) {
-      if (app.fieldEditor.interaction?.type === "drag") {
+      if (fieldEditor.interaction?.type === "drag") {
         this.touchAction = TouchAction.DraggingControl;
       } else if (keys.length === 0) {
-        app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!);
+        fieldEditor.tooltipPosition = getClientXY(this.lastEvent!);
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.TouchingSegment) {
@@ -370,21 +371,21 @@ class TouchInteractiveHandler extends TouchEventListener {
         const t = this.pos(keys[0]);
         if (t.distance(this.initialPosition) > 96 * 0.25) {
           // 1/4 inch, magic number
-          this.initialFieldScale = app.fieldEditor.scale;
+          this.initialFieldScale = fieldEditor.scale;
           this.touchAction = TouchAction.PanningAndScaling;
         }
       } else if (keys.length === 0) {
-        app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!);
+        fieldEditor.tooltipPosition = getClientXY(this.lastEvent!);
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.ShowRobot) {
       if (keys.length >= 2) {
-        this.initialFieldScale = app.fieldEditor.scale;
+        this.initialFieldScale = fieldEditor.scale;
         this.touchAction = TouchAction.PanningAndScaling;
       } else if (keys.length === 1) {
-        const posInPx = app.fieldEditor.fcc.getUnboundedPx(this.pos(keys[0]));
+        const posInPx = fieldEditor.fcc.getUnboundedPx(this.pos(keys[0]));
         if (posInPx === undefined) return;
-        app.fieldEditor.showRobot(posInPx);
+        fieldEditor.showRobot(posInPx);
       } else if (keys.length === 0) {
         this.touchAction = TouchAction.End;
       }
@@ -394,29 +395,29 @@ class TouchInteractiveHandler extends TouchEventListener {
       }
     } else if (this.touchAction === TouchAction.PanningAndScaling) {
       if (keys.length === 1) {
-        if (app.gc.showRobot && app.fieldEditor.interaction?.entity instanceof Segment) {
+        if (app.gc.showRobot && fieldEditor.interaction?.entity instanceof Segment) {
           this.touchAction = TouchAction.ShowRobot;
         } else {
-          app.fieldEditor.panning(this.vec(this.keys[0]).divide(app.fieldEditor.scale));
+          fieldEditor.panning(this.vec(this.keys[0]).divide(fieldEditor.scale));
         }
       } else if (keys.length >= 2) {
         const t1 = this.pos(keys[0]);
         const t2 = this.pos(keys[1]);
         const scale = this.initialFieldScale * (t1.distance(t2) / this.initialDistanceBetweenTwoTouches);
         const middlePos = t1.add(t2).divide(2);
-        app.fieldEditor.zooming(scale, middlePos);
+        fieldEditor.zooming(scale, middlePos);
 
         const vecPos = this.vec(keys[0]).add(this.vec(keys[1])).divide(2);
-        app.fieldEditor.panning(vecPos.divide(app.fieldEditor.scale));
+        fieldEditor.panning(vecPos.divide(fieldEditor.scale));
       } else {
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.Selection) {
       if (keys.length >= 1) {
-        const posInPx = app.fieldEditor.fcc.getUnboundedPxFromNativeEvent(this.lastEvent!);
+        const posInPx = fieldEditor.fcc.getUnboundedPxFromNativeEvent(this.lastEvent!);
         if (posInPx === undefined) return;
 
-        app.fieldEditor.updateAreaSelection(posInPx);
+        fieldEditor.updateAreaSelection(posInPx);
       } else {
         this.touchAction = TouchAction.End;
       }
@@ -430,17 +431,17 @@ class TouchInteractiveHandler extends TouchEventListener {
         } else if (this.isPendingShowTooltip) {
           // UX: Show tooltip if last interaction is clicking field and no area selection and no tooltip is shown
           // this.pos(keys[0]) is undefined, use last event
-          app.fieldEditor.tooltipPosition = getClientXY(this.lastEvent!);
+          fieldEditor.tooltipPosition = getClientXY(this.lastEvent!);
         }
       }
       this.touchAction = TouchAction.End;
     } else if (this.touchAction === TouchAction.End) {
       if (keys.length === 0) {
-        app.fieldEditor.endAreaSelection();
-        app.fieldEditor.endGrabAndMove();
+        fieldEditor.endAreaSelection();
+        fieldEditor.endGrabAndMove();
         // UX: Only end interaction if: no finger is touching the screen
-        app.fieldEditor.endInteraction();
-        app.fieldEditor.magnet = [];
+        fieldEditor.endInteraction();
+        fieldEditor.magnet = [];
 
         // ALGO: Cancel selection if the user lifts the finger
         clearTimeout(this.startSelectionTimer);
@@ -457,6 +458,123 @@ class TouchInteractiveHandler extends TouchEventListener {
   }
 }
 
+class MouseInteractiveHandler {
+  isAddingControl: boolean = false;
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  onWheelStage(event: Konva.KonvaEventObject<WheelEvent>) {
+    const { app } = getAppStores();
+    const fieldEditor = app.fieldEditor;
+
+    const evt = event.evt;
+
+    if (
+      evt.ctrlKey === false &&
+      (evt.deltaX !== 0 || evt.deltaY !== 0) &&
+      fieldEditor.isGrabAndMove === false &&
+      fieldEditor.wheelInteraction("panning")
+    ) {
+      // UX: Panning if: ctrl key up + wheel/mouse pad + no "Grab & Move" + not changing heading value with scroll wheel in the last 300ms
+
+      evt.preventDefault();
+
+      fieldEditor.panning(new Vector(evt.deltaX * -0.5, evt.deltaY * -0.5));
+    } else if (evt.ctrlKey === true && evt.deltaY !== 0) {
+      // UX: Zoom in/out if: wheel while ctrl key down
+
+      evt.preventDefault();
+
+      const pos = fieldEditor.fcc.getUnboundedPxFromEvent(event, false, false);
+      if (pos === undefined) return;
+
+      fieldEditor.zooming(fieldEditor.scale * (1 - evt.deltaY / 1000), pos);
+    }
+  }
+
+  onMouseDownStage(event: Konva.KonvaEventObject<MouseEvent>) {
+    const { app } = getAppStores();
+    const fieldEditor = app.fieldEditor;
+
+    const evt = event.evt;
+
+    if ((evt.button === 0 || evt.button === 2) && event.target instanceof Konva.Image) {
+      // UX: A flag to indicate that the user is adding a control, this will set to false if mouse is moved
+      // UX: onClickFieldImage will check this state, control can only be added inside the field image because of this
+      this.isAddingControl = true;
+    }
+
+    if (
+      evt.button === 0 &&
+      fieldEditor.isGrabAndMove === false &&
+      (event.target instanceof Konva.Stage || event.target instanceof Konva.Image)
+    ) {
+      // left click
+      // UX: Only start selection if: left click on the canvas or field image
+      // UX: Do not start selection if it is in "Grab & Move"
+
+      if (evt.shiftKey === false) {
+        // UX: Clear selection if: left click without shift
+        app.clearSelected();
+      }
+
+      // UX: selectedBefore is empty if: left click without shift
+      const posInPx = fieldEditor.fcc.getUnboundedPxFromEvent(event);
+      if (posInPx === undefined) return;
+      fieldEditor.startAreaSelection(posInPx);
+    } else if (evt.button === 1 && fieldEditor.areaSelection === undefined) {
+      // middle click
+      // UX: Start "Grab & Move" if: middle click at any position
+      evt.preventDefault(); // UX: Prevent default action (scrolling)
+
+      const posWithoutOffsetInPx = fieldEditor.fcc.getUnboundedPxFromEvent(event, false);
+      if (posWithoutOffsetInPx === undefined) return;
+      fieldEditor.startGrabAndMove(posWithoutOffsetInPx);
+    } else if (evt.button === 1 && fieldEditor.areaSelection !== undefined) {
+      // middle click
+      // UX: Do not start "Grab & Move" if it is in area selection, but still prevent default
+      evt.preventDefault(); // UX: Prevent default action (scrolling)
+    }
+  }
+
+  onMouseMoveOrDragStage(event: Konva.KonvaEventObject<DragEvent | MouseEvent>) {
+    const { app } = getAppStores();
+    const fieldEditor = app.fieldEditor;
+
+    this.isAddingControl = false;
+
+    const posInPx = fieldEditor.fcc.getUnboundedPxFromEvent(event);
+    if (posInPx === undefined) return;
+    const posWithoutOffsetInPx = fieldEditor.fcc.getUnboundedPxFromEvent(event, false);
+    if (posWithoutOffsetInPx === undefined) return;
+
+    fieldEditor.updateAreaSelection(posInPx) ||
+      fieldEditor.grabAndMove(posWithoutOffsetInPx) ||
+      fieldEditor.showRobot(posInPx);
+  }
+
+  onMouseUpStage(event: Konva.KonvaEventObject<MouseEvent>) {
+    const { app } = getAppStores();
+    const fieldEditor = app.fieldEditor;
+
+    // UX: This event is triggered only if the mouse is up inside the canvas.
+    // UX: Only reset selection or "Grab & Move" if: left click or middle click released respectively
+
+    if (event.evt.button === 0) {
+      // left click
+      fieldEditor.endAreaSelection();
+      fieldEditor.endInteraction();
+    } else if (event.evt.button === 1) {
+      // middle click
+      fieldEditor.endGrabAndMove();
+    }
+
+    fieldEditor.magnet = [];
+  }
+}
+
 const FieldCanvasElement = observer((props: {}) => {
   const { app, appPreferences } = getAppStores();
   const fieldEditor = app.fieldEditor;
@@ -464,12 +582,12 @@ const FieldCanvasElement = observer((props: {}) => {
   const windowSize = useWindowSize(
     action((newSize: Vector, oldSize: Vector) => {
       const ratio = (newSize.y + oldSize.y) / 2 / oldSize.y;
-      app.fieldEditor.offset = app.fieldEditor.offset.multiply(ratio);
+      fieldEditor.offset = fieldEditor.offset.multiply(ratio);
     })
   );
 
   const popperRef = React.useRef<Instance>(null);
-  const stageBoxRef = React.useRef<HTMLDivElement>(null);
+  const stageRef = React.useRef<Konva.Stage>(null);
   const currentLayoutType = React.useContext(LayoutContext);
 
   const uc = new UnitConverter(UnitOfLength.Millimeter, app.gc.uol);
@@ -501,82 +619,15 @@ const FieldCanvasElement = observer((props: {}) => {
     canvasSizeInUOL,
     offset,
     scale,
-    stageBoxRef.current
+    stageRef.current?.container() ?? null
   );
 
   app.fieldEditor.fcc = fcc;
   const tiHandler = useMobxStorage(() => new TouchInteractiveHandler());
   useTouchEvent(tiHandler, fcc.container);
+  const miHandler = useMobxStorage(() => new MouseInteractiveHandler());
 
-  function onWheelStage(event: Konva.KonvaEventObject<WheelEvent>) {
-    const evt = event.evt;
-
-    if (
-      evt.ctrlKey === false &&
-      (evt.deltaX !== 0 || evt.deltaY !== 0) &&
-      fieldEditor.isGrabAndMove === false &&
-      fieldEditor.wheelInteraction("panning")
-    ) {
-      // UX: Panning if: ctrl key up + wheel/mouse pad + no "Grab & Move" + not changing heading value with scroll wheel in the last 300ms
-
-      evt.preventDefault();
-
-      fieldEditor.panning(new Vector(evt.deltaX * -0.5, evt.deltaY * -0.5));
-    } else if (evt.ctrlKey === true && evt.deltaY !== 0) {
-      // UX: Zoom in/out if: wheel while ctrl key down
-
-      evt.preventDefault();
-
-      const pos = fcc.getUnboundedPxFromEvent(event, false, false);
-      if (pos === undefined) return;
-
-      fieldEditor.zooming(scale * (1 - evt.deltaY / 1000), pos);
-    }
-  }
-
-  function onMouseDownStage(event: Konva.KonvaEventObject<MouseEvent>) {
-    const evt = event.evt;
-
-    if ((evt.button === 0 || evt.button === 2) && event.target instanceof Konva.Image) {
-      // UX: A flag to indicate that the user is adding a control, this will set to false if mouse is moved
-      // UX: onClickFieldImage will check this state, control can only be added inside the field image because of this
-      fieldEditor.isAddingControl = true;
-    }
-
-    if (
-      evt.button === 0 &&
-      fieldEditor.isGrabAndMove === false &&
-      (event.target instanceof Konva.Stage || event.target instanceof Konva.Image)
-    ) {
-      // left click
-      // UX: Only start selection if: left click on the canvas or field image
-      // UX: Do not start selection if it is in "Grab & Move"
-
-      if (evt.shiftKey === false) {
-        // UX: Clear selection if: left click without shift
-        app.clearSelected();
-      }
-
-      // UX: selectedBefore is empty if: left click without shift
-      const posInPx = fcc.getUnboundedPxFromEvent(event);
-      if (posInPx === undefined) return;
-      fieldEditor.startAreaSelection(posInPx);
-    } else if (evt.button === 1 && fieldEditor.areaSelection === undefined) {
-      // middle click
-      // UX: Start "Grab & Move" if: middle click at any position
-      evt.preventDefault(); // UX: Prevent default action (scrolling)
-
-      const posWithoutOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
-      if (posWithoutOffsetInPx === undefined) return;
-      fieldEditor.startGrabAndMove(posWithoutOffsetInPx);
-    } else if (evt.button === 1 && fieldEditor.areaSelection !== undefined) {
-      // middle click
-      // UX: Do not start "Grab & Move" if it is in area selection, but still prevent default
-      evt.preventDefault(); // UX: Prevent default action (scrolling)
-    }
-  }
-
-  function onMouseMoveOrDragStage(event: Konva.KonvaEventObject<DragEvent | MouseEvent | TouchEvent>) {
+  function onMouseMoveOrMouseDragOrTouchDragStage(event: Konva.KonvaEventObject<DragEvent | MouseEvent | TouchEvent>) {
     /*
     UX:
     Both mouse move and drag events will trigger this function. it allows users to perform area selection and 
@@ -585,39 +636,16 @@ const FieldCanvasElement = observer((props: {}) => {
     Normally, both events will be triggered at the same time. (but I don't know why onDragMove returns MouseEvent)
     After the mouse is dragged outside the canvas, only drag event will be triggered. Also, the dragging state will 
     come to an end when any mouse button is down. When it is happened only mouse move event will be triggered.
+
+    In addition, touch drag event will also trigger this function. 
     */
 
     // UX: It is not actually dragged "stage", reset the position to (0, 0)
     if (event.target instanceof Konva.Stage) event.target.setPosition(new Vector(0, 0));
 
     if (isKonvaTouchEvent(event) === false) {
-      fieldEditor.isAddingControl = false;
-
-      const posInPx = fcc.getUnboundedPxFromEvent(event);
-      if (posInPx === undefined) return;
-      const posWithoutOffsetInPx = fcc.getUnboundedPxFromEvent(event, false);
-      if (posWithoutOffsetInPx === undefined) return;
-
-      fieldEditor.updateAreaSelection(posInPx) ||
-        fieldEditor.grabAndMove(posWithoutOffsetInPx) ||
-        fieldEditor.showRobot(posInPx);
+      miHandler.onMouseMoveOrDragStage(event as any);
     }
-  }
-
-  function onMouseUpStage(event: Konva.KonvaEventObject<MouseEvent>) {
-    // UX: This event is triggered only if the mouse is up inside the canvas.
-    // UX: Only reset selection or "Grab & Move" if: left click or middle click released respectively
-
-    if (event.evt.button === 0) {
-      // left click
-      fieldEditor.endAreaSelection();
-      fieldEditor.endInteraction();
-    } else if (event.evt.button === 1) {
-      // middle click
-      fieldEditor.endGrabAndMove();
-    }
-
-    fieldEditor.magnet = [];
   }
 
   function onDragEndStage(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) {
@@ -630,7 +658,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
     // UX: No need to call touchend event handler here
 
-    const rect = event.target.getStage()?.container().getBoundingClientRect();
+    const rect = stageRef.current?.container().getBoundingClientRect();
     if (rect === undefined) return;
 
     if (event.evt === undefined) return; // XXX: Drag end event from segment control
@@ -649,9 +677,9 @@ const FieldCanvasElement = observer((props: {}) => {
     const evt = event.evt;
 
     // UX: Add control point if: left click or right click without moving the mouse
-    if (!(fieldEditor.isAddingControl && (evt.button === 0 || evt.button === 2))) return;
+    if (!(miHandler.isAddingControl && (evt.button === 0 || evt.button === 2))) return;
 
-    fieldEditor.isAddingControl = false;
+    miHandler.isAddingControl = false;
 
     const posInPx = fcc.getUnboundedPxFromEvent(event);
     if (posInPx === undefined) return;
@@ -709,16 +737,17 @@ const FieldCanvasElement = observer((props: {}) => {
         popperRef,
         anchorEl: {
           getBoundingClientRect: () => {
-            const div = stageBoxRef.current;
+            const div = stageRef.current;
             if (div === null || fieldEditor.tooltipPosition === undefined) return new DOMRect(-200, -200, 0, 0);
 
             return new DOMRect(fieldEditor.tooltipPosition.x, fieldEditor.tooltipPosition.y, 0, 0);
           }
         }
       }}>
-      <Box ref={stageBoxRef}>
+      <Box>
         <Stage
           className="field-canvas"
+          ref={stageRef}
           width={fcc.widthInPx}
           height={fcc.heightInPx}
           scale={new Vector(scale, scale)}
@@ -726,11 +755,11 @@ const FieldCanvasElement = observer((props: {}) => {
           draggable
           style={{ cursor: fieldEditor.isGrabAndMove ? "grab" : "" }}
           onContextMenu={e => e.evt.preventDefault()}
-          onWheel={action(onWheelStage)}
-          onMouseDown={action(onMouseDownStage)}
-          onMouseMove={action(onMouseMoveOrDragStage)}
-          onMouseUp={action(onMouseUpStage)}
-          onDragMove={action(onMouseMoveOrDragStage)}
+          onWheel={action(event => miHandler.onWheelStage(event))}
+          onMouseDown={action(event => miHandler.onMouseDownStage(event))}
+          onMouseMove={action(onMouseMoveOrMouseDragOrTouchDragStage)}
+          onMouseUp={action(event => miHandler.onMouseUpStage(event))}
+          onDragMove={action(onMouseMoveOrMouseDragOrTouchDragStage)}
           onDragEnd={action(onDragEndStage)}>
           <Layer>
             {fieldImage && (
