@@ -459,7 +459,7 @@ class TouchInteractiveHandler extends TouchEventListener {
 }
 
 class MouseInteractiveHandler {
-  isAddingControl: boolean = false;
+  mouseDownPosForAddingControl: Vector = new Vector(0, 0);
 
   constructor() {
     makeAutoObservable(this);
@@ -501,9 +501,7 @@ class MouseInteractiveHandler {
     const evt = event.evt;
 
     if ((evt.button === 0 || evt.button === 2) && event.target instanceof Konva.Image) {
-      // UX: A flag to indicate that the user is adding a control, this will set to false if mouse is moved
-      // UX: onClickFieldImage will check this state, control can only be added inside the field image because of this
-      this.isAddingControl = true;
+      this.mouseDownPosForAddingControl = new Vector(evt.clientX, evt.clientY);
     }
 
     if (
@@ -542,8 +540,6 @@ class MouseInteractiveHandler {
   onMouseMoveOrDragStage(event: Konva.KonvaEventObject<DragEvent | MouseEvent>) {
     const { app } = getAppStores();
     const fieldEditor = app.fieldEditor;
-
-    this.isAddingControl = false;
 
     const posInPx = fieldEditor.fcc.getUnboundedPxFromEvent(event);
     if (posInPx === undefined) return;
@@ -677,9 +673,10 @@ const FieldCanvasElement = observer((props: {}) => {
     const evt = event.evt;
 
     // UX: Add control point if: left click or right click without moving the mouse
-    if (!(miHandler.isAddingControl && (evt.button === 0 || evt.button === 2))) return;
-
-    miHandler.isAddingControl = false;
+    const currentPos = new Vector(evt.clientX, evt.clientY);
+    const distance = currentPos.distance(miHandler.mouseDownPosForAddingControl);
+    if (distance > 96 * 0.25) return; // 1/4 inch, magic number
+    if (!(evt.button === 0 || evt.button === 2)) return;
 
     const posInPx = fcc.getUnboundedPxFromEvent(event);
     if (posInPx === undefined) return;
