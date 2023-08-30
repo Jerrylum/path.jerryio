@@ -324,6 +324,8 @@ class TouchInteractiveHandler extends TouchEventListener {
       fieldEditor.tooltipPosition = undefined;
 
       if (keys.length >= 1) {
+        fieldEditor.startInteraction();
+
         this.touchAction = TouchAction.PendingSelection;
 
         this.startSelectionTimer = setTimeout(

@@ -140,7 +140,7 @@ function onDragMoveAnyControl(
     props.cp.lock ||
     props.path.lock ||
     app.fieldEditor.areaSelection !== undefined ||
-    app.fieldEditor.interact(props.cp, "drag") === false
+    app.fieldEditor.interactWithEntity(props.cp, "drag") === false
   ) {
     evt.preventDefault();
 
@@ -232,7 +232,7 @@ class TouchInteractiveHandler extends TouchEventListener {
     const { app } = getAppStores();
 
     if (!shouldInteract(this.props, event)) return;
-    if (!app.fieldEditor.interact(this.props.cp, "touch")) return;
+    if (!app.fieldEditor.interactWithEntity(this.props.cp, "touch")) return;
 
     // UX: Select one control point if: touch + target not selected
     if (app.isSelected(this.props.cp) === false) {

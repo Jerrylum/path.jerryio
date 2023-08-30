@@ -13,7 +13,7 @@ export type CanvasEntityInteraction =
     }
   | {
       entity: null;
-      type: "panning";
+      type: "start" | "panning";
     };
 
 export class FieldEditor {
@@ -242,10 +242,22 @@ export class FieldEditor {
     this.offset = newOffsetInKC;
   }
 
-  interact(entity: CanvasEntity, type: "touch" | "drag") {
-    if (this._interaction !== undefined && this._interaction.entity !== entity) return false;
-    this.interaction = { entity, type };
-    return true;
+  startInteraction() {
+    this.interaction = { entity: null, type: "start" };
+  }
+
+  interactWithEntity(entity: CanvasEntity, type: "touch" | "drag") {
+    const oldIt = this.interaction;
+    if (
+      oldIt === undefined ||
+      (oldIt !== undefined && oldIt.entity === null && oldIt.type === "start") ||
+      (oldIt !== undefined && oldIt.entity === entity)
+    ) {
+      this.interaction = { entity, type };
+      return true;
+    } else {
+      return false;
+    }
   }
 
   endInteraction() {

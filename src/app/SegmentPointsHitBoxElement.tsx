@@ -13,7 +13,7 @@ const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
   function onTouchStart(event: Konva.KonvaEventObject<TouchEvent>) {
     event.evt.preventDefault();
 
-    app.fieldEditor.interact(props.segment, "touch");
+    app.fieldEditor.interactWithEntity(props.segment, "touch");
   }
 
   function onTouchMove(event: Konva.KonvaEventObject<TouchEvent>) {
