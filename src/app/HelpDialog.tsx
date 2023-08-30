@@ -1,5 +1,5 @@
 import { Backdrop, Box, Button, Card, Typography } from "@mui/material";
-import { makeAutoObservable, action } from "mobx";
+import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { APP_VERSION, getAppStores } from "../core/MainApp";
 import { useBackdropDialog } from "../core/Hook";
@@ -8,36 +8,7 @@ import Welcome from "./Welcome.mdx";
 import { MarkdownOverwrittenComponents } from "./MarkdownSupport";
 import { LayoutContext } from "./Layouts";
 import { LayoutType } from "../core/Layout";
-
-export enum HelpPage {
-  None,
-  Welcome,
-  About
-}
-
-export class Help {
-  private page: HelpPage = HelpPage.None;
-
-  constructor() {
-    makeAutoObservable(this);
-  }
-
-  close() {
-    this.page = HelpPage.None;
-  }
-
-  open(page: HelpPage) {
-    this.page = page;
-  }
-
-  get isOpen() {
-    return this.page !== HelpPage.None;
-  }
-
-  get currentPage() {
-    return this.page;
-  }
-}
+import { HelpPage } from "../core/Help";
 
 const HelpDialog = observer((props: {}) => {
   const { help, appPreferences } = getAppStores();

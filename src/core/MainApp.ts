@@ -10,7 +10,6 @@ import { Quantity, UnitConverter, UnitOfLength } from "./Unit";
 import { CommandHistory } from "./Command";
 import { SemVer } from "semver";
 import { Confirmation } from "../app/Confirmation";
-import { Help } from "../app/HelpDialog";
 import { Preferences } from "../app/Preferences";
 import { GoogleAnalytics } from "./GoogleAnalytics";
 import { IOFileHandle } from "./InputOutput";
@@ -24,6 +23,7 @@ import { AppClipboard } from "./Clipboard";
 import { validate } from "class-validator";
 import { FieldEditor } from "./FieldEditor";
 import { SpeedEditor } from "./SpeedEditor";
+import { Help } from "./Help";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
