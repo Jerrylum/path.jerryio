@@ -460,6 +460,7 @@ class TouchInteractiveHandler extends TouchEventListener {
 
 class MouseInteractiveHandler {
   mouseDownPosForAddingControl: Vector = new Vector(0, 0);
+  shouldCancelAddingControl: boolean = false;
 
   constructor() {
     makeAutoObservable(this);
@@ -502,6 +503,7 @@ class MouseInteractiveHandler {
 
     if ((evt.button === 0 || evt.button === 2) && event.target instanceof Konva.Image) {
       this.mouseDownPosForAddingControl = new Vector(evt.clientX, evt.clientY);
+      this.shouldCancelAddingControl = false;
     }
 
     if (
@@ -514,6 +516,8 @@ class MouseInteractiveHandler {
       // UX: Do not start selection if it is in "Grab & Move"
 
       if (evt.shiftKey === false) {
+        if (app.selectedEntityCount > 1) this.shouldCancelAddingControl = true;
+
         // UX: Clear selection if: left click without shift
         app.clearSelected();
       }
@@ -677,6 +681,7 @@ const FieldCanvasElement = observer((props: {}) => {
     const distance = currentPos.distance(miHandler.mouseDownPosForAddingControl);
     if (distance > 96 * 0.25) return; // 1/4 inch, magic number
     if (!(evt.button === 0 || evt.button === 2)) return;
+    if (miHandler.shouldCancelAddingControl) return;
 
     const posInPx = fcc.getUnboundedPxFromEvent(event);
     if (posInPx === undefined) return;
