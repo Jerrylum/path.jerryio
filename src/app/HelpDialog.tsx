@@ -1,4 +1,4 @@
-import { Backdrop, Card, Typography } from "@mui/material";
+import { Backdrop, Box, Button, Card, Typography } from "@mui/material";
 import { makeAutoObservable, action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { APP_VERSION, getAppStores } from "../core/MainApp";
@@ -6,6 +6,8 @@ import { useBackdropDialog } from "../core/Hook";
 import React from "react";
 import Welcome from "./Welcome.mdx";
 import { MarkdownOverwrittenComponents } from "./MarkdownSupport";
+import { LayoutContext } from "./Layouts";
+import { LayoutType } from "../core/Layout";
 
 export enum HelpPage {
   None,
@@ -55,6 +57,8 @@ const HelpDialog = observer((props: {}) => {
 
   useBackdropDialog(help.isOpen, onClose);
 
+  const isMobileLayout = React.useContext(LayoutContext) === LayoutType.MOBILE;
+
   if (!help.isOpen) return null;
 
   return (
@@ -66,7 +70,17 @@ const HelpDialog = observer((props: {}) => {
       tabIndex={-1}>
       {help.currentPage === HelpPage.Welcome && (
         <Card className="help-welcome-page" onClick={e => e.stopPropagation()} tabIndex={1000}>
+          {isMobileLayout && (
+            <Box sx={{ textAlign: "right" }}>
+              <Button onClick={onClose}>Continue</Button>
+            </Box>
+          )}
           <Welcome {...{ isGAEnabled, setIsGAEnabled }} components={MarkdownOverwrittenComponents} />
+          {isMobileLayout && (
+            <Box sx={{ textAlign: "center" }}>
+              <Button onClick={onClose}>Begin</Button>
+            </Box>
+          )}
         </Card>
       )}
       {help.currentPage === HelpPage.About && (
