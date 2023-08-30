@@ -11,9 +11,7 @@ export class GoogleAnalytics {
     if (this.loaded) return;
     this.loaded = true;
 
-    // @ts-ignore
     if (window.dataLayer !== undefined) return;
-    // @ts-ignore
     window.dataLayer = window.dataLayer || [];
 
     // load GA script
@@ -43,8 +41,7 @@ export class GoogleAnalytics {
   public gtag(...args: any[]) {
     if (!this.loaded) return;
 
-    // @ts-ignore
-    dataLayer.push(arguments);
+    window.dataLayer?.push(arguments);
   }
 
   constructor() {
@@ -52,5 +49,11 @@ export class GoogleAnalytics {
 
     // ALGO: Do not use init() here, because it will be called before appStores is initialized
     setTimeout(this.init.bind(this), 0);
+  }
+}
+
+declare global {
+  interface Window {
+    dataLayer: any[] | undefined;
   }
 }
