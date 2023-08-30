@@ -171,7 +171,7 @@ const MagnetReferenceLine = observer((props: { magnetRef: MagnetReference | unde
   const theta = fromHeadingInDegreeToAngleInRadian(heading);
 
   const center = fcc.toPx(source);
-  const distance = (Math.sqrt(fcc.pixelWidth ** 2 + fcc.pixelHeight ** 2) * 1.5) / fcc.scale;
+  const distance = (Math.sqrt(fcc.widthInPx ** 2 + fcc.heightInPx ** 2) * 1.5) / fcc.scale;
   const start: Vector = center.add(new Vector(-distance * Math.cos(theta), distance * Math.sin(theta)));
   const end: Vector = center.add(new Vector(distance * Math.cos(theta), -distance * Math.sin(theta)));
 
@@ -186,7 +186,7 @@ const PathPoints = observer((props: { path: Path; fcc: FieldCanvasConverter }) =
   const pc = path.pc;
   const speedFrom = pc.speedLimit.from;
   const speedTo = pc.speedLimit.to;
-  const pointRadius = fcc.pixelHeight / 320;
+  const pointRadius = fcc.heightInPx / 320;
 
   // ALGO: This is a separate component because it is expensive to render.
 
@@ -472,14 +472,6 @@ const FieldCanvasElement = observer((props: {}) => {
   const stageBoxRef = React.useRef<HTMLDivElement>(null);
   const currentLayoutType = React.useContext(LayoutContext);
 
-  React.useEffect(() => {
-    // UX: Scale down the field editor if mobile layout is used
-    if (currentLayoutType === LayoutType.MOBILE) {
-      fieldEditor.scale = 0.5;
-      fieldEditor.offset = windowSize.divide(-2);
-    }
-  }, [currentLayoutType, fieldEditor]);
-
   const uc = new UnitConverter(UnitOfLength.Millimeter, app.gc.uol);
 
   const canvasHeightInPx = (function () {
@@ -492,6 +484,10 @@ const FieldCanvasElement = observer((props: {}) => {
   })();
   const canvasWidthInPx = currentLayoutType === LayoutType.CLASSIC ? canvasHeightInPx : windowSize.x;
   const canvasSizeInUOL = uc.fromAtoB(3683); // 3683 = 145*2.54*10 ~= 3676.528, the size of the field perimeter in Fusion 360
+
+  React.useEffect(() => {
+    fieldEditor.zoomToFit();
+  }, [currentLayoutType, fieldEditor]);
 
   const [fieldImage] = useImage(fieldImageUrl);
 
@@ -723,8 +719,8 @@ const FieldCanvasElement = observer((props: {}) => {
       <Box ref={stageBoxRef}>
         <Stage
           className="field-canvas"
-          width={fcc.pixelWidth}
-          height={fcc.pixelHeight}
+          width={fcc.widthInPx}
+          height={fcc.heightInPx}
           scale={new Vector(scale, scale)}
           offset={offset.subtract(fcc.viewOffset)}
           draggable
@@ -740,8 +736,8 @@ const FieldCanvasElement = observer((props: {}) => {
             {fieldImage && (
               <Image
                 image={fieldImage}
-                width={(fieldImage.width / fieldImage.height) * fcc.pixelHeight}
-                height={fcc.pixelHeight}
+                width={(fieldImage.width / fieldImage.height) * fcc.heightInPx}
+                height={fcc.heightInPx}
                 onClick={action(onClickFieldImage)}
               />
             )}

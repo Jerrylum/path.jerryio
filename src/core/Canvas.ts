@@ -34,39 +34,39 @@ export function getClientXY(event: DragEvent | MouseEvent | TouchEvent): Vector 
 }
 
 export class FieldCanvasConverter {
-  public pixelWidthHalf: number;
-  public pixelHeightHalf: number;
+  public halfWidthInPx: number;
+  public halfHeightInPx: number;
   public uol2pixel: number; // in pixel/uol
   public pixel2uol: number; // in uol/pixel
   public viewOffset: Vector;
 
   constructor(
-    public pixelWidth: number,
-    public pixelHeight: number,
-    public fieldWidth: number,
-    public fieldHeight: number,
+    public widthInPx: number,
+    public heightInPx: number,
+    public widthInUOL: number,
+    public heightInUOL: number,
     public offset: Vector,
     public scale: number,
     public container: HTMLElement | null
   ) {
-    this.pixelWidthHalf = pixelWidth / 2;
-    this.pixelHeightHalf = pixelHeight / 2;
-    this.uol2pixel = pixelHeight / fieldHeight;
-    this.pixel2uol = fieldHeight / pixelHeight;
-    this.viewOffset = new Vector((pixelWidth - pixelHeight) / 2, 0);
+    this.halfWidthInPx = widthInPx / 2;
+    this.halfHeightInPx = heightInPx / 2;
+    this.uol2pixel = heightInPx / heightInUOL;
+    this.pixel2uol = heightInUOL / heightInPx;
+    this.viewOffset = new Vector((widthInPx - heightInPx) / 2, 0);
   }
 
   toPx<T extends Vector>(inUOL: T): T {
     let rtn = inUOL.clone();
-    rtn.x = inUOL.x * this.uol2pixel + this.pixelWidthHalf - this.viewOffset.x;
-    rtn.y = -inUOL.y * this.uol2pixel + this.pixelHeightHalf;
+    rtn.x = inUOL.x * this.uol2pixel + this.halfWidthInPx - this.viewOffset.x;
+    rtn.y = -inUOL.y * this.uol2pixel + this.halfHeightInPx;
     return rtn;
   }
 
   toUOL<T extends Vector>(inPx: T): T {
     let rtn = inPx.clone();
-    rtn.x = (inPx.x - this.pixelWidthHalf + this.viewOffset.x) * this.pixel2uol;
-    rtn.y = -(inPx.y - this.pixelHeightHalf) * this.pixel2uol;
+    rtn.x = (inPx.x - this.halfWidthInPx + this.viewOffset.x) * this.pixel2uol;
+    rtn.y = -(inPx.y - this.halfHeightInPx) * this.pixel2uol;
     return rtn;
   }
 

@@ -7,7 +7,7 @@ const SegmentControlVisualLineElement = observer((props: { start: Vector; end: V
   const startInPx = props.fcc.toPx(props.start);
   const endInPx = props.fcc.toPx(props.end);
 
-  const lineWidth = props.fcc.pixelHeight / 600;
+  const lineWidth = props.fcc.heightInPx / 600;
 
   return (
     <Line

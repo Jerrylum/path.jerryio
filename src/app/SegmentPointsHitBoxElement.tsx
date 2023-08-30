@@ -57,7 +57,7 @@ const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
     }
   }
 
-  const pointWidth = (props.fcc.pixelHeight / 320) * 8;
+  const pointWidth = (props.fcc.heightInPx / 320) * 8;
 
   return (
     <Line

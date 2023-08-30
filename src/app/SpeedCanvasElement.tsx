@@ -12,7 +12,6 @@ import { GraphCanvasConverter, getClientXY } from "../core/Canvas";
 import { Box } from "@mui/material";
 import { Instance } from "@popperjs/core";
 import { useMobxStorage, useTouchEvent, useWindowSize } from "../core/Hook";
-import { LayoutType } from "../core/Layout";
 import { getAppThemeInfo } from "./Theme";
 import { TouchEventListener } from "../core/TouchEventListener";
 import { Label, Padding0Tooltip } from "../component/TooltipLabel";

@@ -137,13 +137,13 @@ export class FieldEditor {
 
     newOffset.x = clamp(
       newOffset.x,
-      -(this.fcc.pixelWidth / this.scale) + this.fcc.pixelWidth * 0.1 + this.fcc.viewOffset.x,
-      this.fcc.pixelWidth * 0.9 - this.fcc.viewOffset.x
+      -(this.fcc.widthInPx / this.scale) + this.fcc.widthInPx * 0.1 + this.fcc.viewOffset.x,
+      this.fcc.widthInPx * 0.9 - this.fcc.viewOffset.x
     );
     newOffset.y = clamp(
       newOffset.y,
-      -(this.fcc.pixelHeight / this.scale) + this.fcc.pixelHeight * 0.1,
-      this.fcc.pixelHeight * 0.9
+      -(this.fcc.heightInPx / this.scale) + this.fcc.heightInPx * 0.1,
+      this.fcc.heightInPx * 0.9
     );
     this.offset = newOffset;
 
@@ -211,8 +211,8 @@ export class FieldEditor {
     // offsetInCC is offset in HTML Canvas coordinate system (CC)
     const offsetInCC = oldOffset.multiply(oldScale).multiply(-1);
 
-    const canvasHalfSizeWithScale = (this.fcc.pixelHeight * oldScale) / 2;
-    const newCanvasHalfSizeWithScale = (this.fcc.pixelHeight * newScale) / 2;
+    const canvasHalfSizeWithScale = (this.fcc.heightInPx * oldScale) / 2;
+    const newCanvasHalfSizeWithScale = (this.fcc.heightInPx * newScale) / 2;
 
     // UX: Maintain zoom center at mouse pointer
     const fieldCenter = offsetInCC.add(canvasHalfSizeWithScale);
@@ -226,6 +226,21 @@ export class FieldEditor {
     this.offset = newOffsetInKC;
 
     return true;
+  }
+
+  zoomToFit() {
+    // UX: Scale down the field editor to fit the canvas
+    this.scale = Math.min(1, Math.max(0.5, this.fcc.widthInPx / this.fcc.heightInPx));
+
+    // KC is Konva coordinate system (KC)
+    // CC is HTML Canvas coordinate system (CC)
+
+    const canvasSize = new Vector(this.fcc.widthInPx, this.fcc.heightInPx);
+    const fieldSize = canvasSize.multiply(this.scale);
+    const newOffsetInCC = canvasSize.subtract(fieldSize).divide(2);
+    const newOffsetInKC = newOffsetInCC.multiply(-1).divide(this.scale);
+
+    this.offset = newOffsetInKC;
   }
 
   interact(entity: CanvasEntity, type: "touch" | "drag") {
