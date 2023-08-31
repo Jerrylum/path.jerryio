@@ -1,6 +1,6 @@
 import { action, makeAutoObservable, makeObservable, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { EndControl, Path, Segment, SegmentVariant, Vector, isAnyControl } from "../core/Path";
+import { Control, EndControl, Path, Segment, SegmentVariant, Vector, isAnyControl } from "../core/Path";
 import Konva from "konva";
 import { Circle, Group, Image, Layer, Line, Stage } from "react-konva";
 import { SegmentElement } from "./SegmentElement";
@@ -25,6 +25,34 @@ import { Instance } from "@popperjs/core";
 import { TouchEventListener } from "../core/TouchEventListener";
 import { Label, Padding0Tooltip } from "../component/TooltipLabel";
 import { LayoutContext } from "./Layouts";
+
+function fixControlTooCloseToTheEndControl() {
+  // UX: Fix control point too close to the end control point when adding the first new curve segment
+  const { app } = getAppStores();
+
+  if (app.paths.length !== 1) return;
+  const path = app.paths[0];
+
+  if (path.segments.length !== 1) return;
+  const segment = path.segments[0];
+
+  if (segment.controls.length !== 4) return;
+  
+  function fix(control: Control, endControl: EndControl) {
+    const uc = new UnitConverter(app.gc.uol, UnitOfLength.Millimeter);
+    const offset = control.y - endControl.y;
+    const distance = Math.abs(offset);
+    const distanceInMm = uc.fromAtoB(distance);
+
+    if (distanceInMm >= 200) return;
+    
+    const margin = uc.fromBtoA(200 - distanceInMm) * (offset > 0 ? 1 : -1);
+    control.y += margin;
+  }
+
+  fix(segment.controls[1], segment.controls[0]);
+  fix(segment.controls[2], segment.controls[3]);
+}
 
 const FieldTooltipContent = observer((props: {}) => {
   const { app, clipboard } = getAppStores();
@@ -52,6 +80,8 @@ const FieldTooltipContent = observer((props: {}) => {
         `Add curve segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
         new AddSegment(targetPath, cpInUOL, SegmentVariant.CUBIC)
       );
+
+      fixControlTooCloseToTheEndControl();
     }
   }
 
@@ -705,6 +735,8 @@ const FieldCanvasElement = observer((props: {}) => {
           `Add curve segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
           new AddSegment(targetPath, cpInUOL, SegmentVariant.CUBIC)
         );
+
+        fixControlTooCloseToTheEndControl();
       } else if (evt.button === 2) {
         // UX: Add straight line if: right click
         app.history.execute(
