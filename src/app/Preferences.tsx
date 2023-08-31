@@ -18,7 +18,7 @@ export class Preferences {
   public maxHistory: number = 50;
   public isGoogleAnalyticsEnabled: boolean = false;
   public themeType: AppThemeType = AppThemeType.Dark;
-  public layoutType: LayoutType = LayoutType.CLASSIC;
+  public layoutType: LayoutType = LayoutType.Classic;
 
   // Not in local storage
   public isSpeedCanvasVisible: boolean = true; // In classic layout only

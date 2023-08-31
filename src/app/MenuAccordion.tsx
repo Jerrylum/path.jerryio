@@ -575,27 +575,27 @@ const ViewMenuItems = () => {
   return [
     <CustomMenuItem
       key={makeId(10)}
-      showLeftIcon={currentLayoutType === LayoutType.CLASSIC}
+      showLeftIcon={currentLayoutType === LayoutType.Classic}
       label="Classic Layout"
-      disabled={availableLayouts.includes(LayoutType.CLASSIC) === false && "The current window size is too small"}
-      onClick={() => (appPreferences.layoutType = LayoutType.CLASSIC)}
+      disabled={availableLayouts.includes(LayoutType.Classic) === false && "The current window size is too small"}
+      onClick={() => (appPreferences.layoutType = LayoutType.Classic)}
     />,
     <CustomMenuItem
       key={makeId(10)}
-      showLeftIcon={currentLayoutType === LayoutType.EXCLUSIVE}
+      showLeftIcon={currentLayoutType === LayoutType.Exclusive}
       label="Exclusive Layout"
-      disabled={availableLayouts.includes(LayoutType.EXCLUSIVE) === false && "The current window size is too small"}
-      onClick={() => (appPreferences.layoutType = LayoutType.EXCLUSIVE)}
+      disabled={availableLayouts.includes(LayoutType.Exclusive) === false && "The current window size is too small"}
+      onClick={() => (appPreferences.layoutType = LayoutType.Exclusive)}
     />,
     <CustomMenuItem
       key={makeId(10)}
-      showLeftIcon={currentLayoutType === LayoutType.MOBILE}
+      showLeftIcon={currentLayoutType === LayoutType.Mobile}
       label="Mobile Layout"
-      disabled={availableLayouts.includes(LayoutType.MOBILE) === false && "The current window size is too small"}
-      onClick={() => (appPreferences.layoutType = LayoutType.MOBILE)}
+      disabled={availableLayouts.includes(LayoutType.Mobile) === false && "The current window size is too small"}
+      onClick={() => (appPreferences.layoutType = LayoutType.Mobile)}
     />,
     <Divider key={makeId(10)} />,
-    ...(currentLayoutType === LayoutType.CLASSIC
+    ...(currentLayoutType === LayoutType.Classic
       ? [
           <CustomMenuItem
             key={makeId(10)}

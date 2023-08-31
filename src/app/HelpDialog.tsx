@@ -28,7 +28,7 @@ const HelpDialog = observer((props: {}) => {
 
   useBackdropDialog(help.isOpen, onClose);
 
-  const isMobileLayout = React.useContext(LayoutContext) === LayoutType.MOBILE;
+  const isMobileLayout = React.useContext(LayoutContext) === LayoutType.Mobile;
 
   if (!help.isOpen) return null;
 

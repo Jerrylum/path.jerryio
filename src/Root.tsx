@@ -117,9 +117,9 @@ const Root = observer(() => {
       <ThemeProvider theme={getAppThemeInfo().theme}>
         <NoticeProvider />
         <LayoutProvider value={usingLayout}>
-          {usingLayout === LayoutType.CLASSIC && <ClassisLayout />}
-          {usingLayout === LayoutType.EXCLUSIVE && <ExclusiveLayout />}
-          {usingLayout === LayoutType.MOBILE && <MobileLayout />}
+          {usingLayout === LayoutType.Classic && <ClassisLayout />}
+          {usingLayout === LayoutType.Exclusive && <ExclusiveLayout />}
+          {usingLayout === LayoutType.Mobile && <MobileLayout />}
           <ConfirmationDialog />
           <HelpDialog />
           <PreferencesDialog />

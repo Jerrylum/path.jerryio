@@ -30,7 +30,7 @@ import RedoIcon from "@mui/icons-material/Redo";
 import HomeIcon from "@mui/icons-material/Home";
 import { useWindowSize } from "../core/Hook";
 
-export const LayoutContext = React.createContext<LayoutType>(LayoutType.CLASSIC);
+export const LayoutContext = React.createContext<LayoutType>(LayoutType.Classic);
 export const LayoutProvider = LayoutContext.Provider;
 
 export const ClassisLayout = observer(() => {
