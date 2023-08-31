@@ -335,8 +335,8 @@ export class Keyframe implements CanvasEntity {
 }
 
 export enum SegmentVariant {
-  LINEAR = "linear",
-  CUBIC = "cubic"
+  Linear = "linear",
+  Cubic = "cubic"
 }
 
 export type LinearSegmentControls = [EndControl, EndControl];

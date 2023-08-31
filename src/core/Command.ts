@@ -340,9 +340,9 @@ export class AddSegment implements CancellableCommand, AddPathTreeItemsCommand {
   }
 
   execute(): void {
-    if (this.variant === SegmentVariant.LINEAR) {
+    if (this.variant === SegmentVariant.Linear) {
       this.addLine();
-    } else if (this.variant === SegmentVariant.CUBIC) {
+    } else if (this.variant === SegmentVariant.Cubic) {
       this.addCurve();
     }
   }
@@ -405,9 +405,9 @@ export class ConvertSegment implements CancellableCommand, AddPathTreeItemsComma
 
   execute(): void {
     this.previousControls = [...this.segment.controls];
-    if (this.variant === SegmentVariant.LINEAR) {
+    if (this.variant === SegmentVariant.Linear) {
       this.convertToLine();
-    } else if (this.variant === SegmentVariant.CUBIC) {
+    } else if (this.variant === SegmentVariant.Cubic) {
       this.convertToCurve();
     }
     this.newControls = [...this.segment.controls];
@@ -422,11 +422,11 @@ export class ConvertSegment implements CancellableCommand, AddPathTreeItemsComma
   }
 
   get addedItems(): readonly PathTreeItem[] {
-    return this.variant === SegmentVariant.LINEAR ? [] : this.segment.controls.slice(1, -1);
+    return this.variant === SegmentVariant.Linear ? [] : this.segment.controls.slice(1, -1);
   }
 
   get removedItems(): readonly PathTreeItem[] {
-    return this.variant === SegmentVariant.LINEAR ? this.segment.controls.slice(1, -1) : [];
+    return this.variant === SegmentVariant.Linear ? this.segment.controls.slice(1, -1) : [];
   }
 }
 

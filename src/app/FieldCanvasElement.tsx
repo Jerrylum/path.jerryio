@@ -78,7 +78,7 @@ const FieldTooltipContent = observer((props: {}) => {
       // UX: Add control point if: path is selected and visible and not locked
       app.history.execute(
         `Add curve segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-        new AddSegment(targetPath, cpInUOL, SegmentVariant.CUBIC)
+        new AddSegment(targetPath, cpInUOL, SegmentVariant.Cubic)
       );
 
       fixControlTooCloseToTheEndControl();
@@ -105,7 +105,7 @@ const FieldTooltipContent = observer((props: {}) => {
       // UX: Add control point if: path is selected and visible and not locked
       app.history.execute(
         `Add linear segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-        new AddSegment(targetPath, cpInUOL, SegmentVariant.LINEAR)
+        new AddSegment(targetPath, cpInUOL, SegmentVariant.Linear)
       );
     }
   }
@@ -163,12 +163,12 @@ const SegmentTooltipContent = observer((props: {}) => {
     if (segment.controls.length === 2)
       app.history.execute(
         `Convert segment ${segment.uid} to curve`,
-        new ConvertSegment(path, segment, SegmentVariant.CUBIC)
+        new ConvertSegment(path, segment, SegmentVariant.Cubic)
       );
     else
       app.history.execute(
         `Convert segment ${segment.uid} to line`,
-        new ConvertSegment(path, segment, SegmentVariant.LINEAR)
+        new ConvertSegment(path, segment, SegmentVariant.Linear)
       );
   }
 
@@ -733,7 +733,7 @@ const FieldCanvasElement = observer((props: {}) => {
         // UX: Add 4-controls curve if: left click
         app.history.execute(
           `Add curve segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-          new AddSegment(targetPath, cpInUOL, SegmentVariant.CUBIC)
+          new AddSegment(targetPath, cpInUOL, SegmentVariant.Cubic)
         );
 
         fixControlTooCloseToTheEndControl();
@@ -741,7 +741,7 @@ const FieldCanvasElement = observer((props: {}) => {
         // UX: Add straight line if: right click
         app.history.execute(
           `Add linear segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-          new AddSegment(targetPath, cpInUOL, SegmentVariant.LINEAR)
+          new AddSegment(targetPath, cpInUOL, SegmentVariant.Linear)
         );
       }
     }

@@ -47,12 +47,12 @@ const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
       if (props.segment.controls.length === 2)
         app.history.execute(
           `Convert segment ${props.segment.uid} to curve`,
-          new ConvertSegment(props.path, props.segment, SegmentVariant.CUBIC)
+          new ConvertSegment(props.path, props.segment, SegmentVariant.Cubic)
         );
       else
         app.history.execute(
           `Convert segment ${props.segment.uid} to line`,
-          new ConvertSegment(props.path, props.segment, SegmentVariant.LINEAR)
+          new ConvertSegment(props.path, props.segment, SegmentVariant.Linear)
         );
     }
   }
