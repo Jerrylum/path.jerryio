@@ -213,6 +213,7 @@ class ControlVariables {
 class TouchInteractiveHandler extends TouchEventListener {
   private magnetPosition: Vector = new Vector(0, 0);
   private triggerMagnetTimer: NodeJS.Timeout | undefined;
+  private initialTime: number = 0;
   enableMagnet: boolean = false;
 
   constructor(public props: ControlElementProps, private variables: ControlVariables) {
@@ -238,12 +239,19 @@ class TouchInteractiveHandler extends TouchEventListener {
     if (app.isSelected(this.props.cp) === false) {
       app.setSelected([this.props.cp]);
     }
+
+    this.initialTime = Date.now();
   }
 
   onKonvaTouchMove(event: Konva.KonvaEventObject<TouchEvent>) {
     super.onTouchMove(event.evt);
 
     const { app } = getAppStores();
+
+    // UX: Ignore the first touch move event within 100ms
+    // In some devices, after the touch start event, the first touch move event is fired immediately with a different
+    // touch position
+    if (Date.now() - this.initialTime < 100) return;
 
     // ALGO: No need to check shouldInteract
 
@@ -340,8 +348,6 @@ const ControlElement = observer((props: ControlElementProps) => {
     }
   }
 
-  // function onDragEnd(event: Konva.KonvaEventObject<DragEvent | TouchEvent>) { }
-
   function onMouseUp(event: Konva.KonvaEventObject<MouseEvent>) {
     if (!shouldInteract(props, event)) return;
 
@@ -403,9 +409,9 @@ const ControlElement = observer((props: ControlElementProps) => {
         onMouseDown={action(onMouseDown)}
         // onMouseMove
         onMouseUp={action(onMouseUp)}
-        // onDragStart={action(onDragStart)}
+        // onDragStart
         onDragMove={action(onDragMove)}
-        // onDragEnd={action(onDragEnd)}
+        // onDragEnd
         onClick={action(onClickFirstOrLastControlPoint)}
       />
       {isEndControl && (
@@ -426,3 +432,4 @@ const ControlElement = observer((props: ControlElementProps) => {
 });
 
 export { ControlElement };
+
