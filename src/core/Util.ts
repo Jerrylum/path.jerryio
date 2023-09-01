@@ -108,3 +108,7 @@ export function ValidateNumber(validateFunc: (num: number) => boolean, validatio
     });
   };
 }
+
+export function hex(input: Uint8Array) {
+  return [...input].map(x => x.toString(16).padStart(2, "0")).join("");
+}
