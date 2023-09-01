@@ -20,9 +20,11 @@ import { ObserverEnumSelect } from "../component/ObserverEnumSelect";
 import { ObserverCheckbox } from "../component/ObserverCheckbox";
 import { NumberUOL } from "../token/Tokens";
 import { parseFormula } from "../core/Util";
+import { ObserverItemsSelect } from "../component/ObserverItemsSelect";
+import { FieldImageAsset } from "../core/Asset";
 
 const GeneralConfigPanel = observer((props: {}) => {
-  const { app, confirmation } = getAppStores();
+  const { app, assetManager, confirmation } = getAppStores();
 
   const gc = app.gc;
 
@@ -146,6 +148,20 @@ const GeneralConfigPanel = observer((props: {}) => {
           checked={gc.robotIsHolonomic}
           onCheckedChange={c => {
             app.history.execute(`Change robot is holonomic drive`, new UpdateProperties(gc, { robotIsHolonomic: c }));
+          }}
+        />
+      </Box>
+      <Typography sx={{ marginTop: "16px" }} gutterBottom>
+        Field Layer
+      </Typography>
+      <Box className="flex-editor-panel">
+        <ObserverItemsSelect
+          sx={{ width: "auto" }}
+          label=""
+          selected={gc.fieldImage.signature}
+          items={assetManager.assets.map(asset => ({ key: asset.signature, value: asset, label: asset.displayName }))}
+          onSelectItem={(asset: FieldImageAsset | undefined) => {
+            gc.fieldImage = asset?.getSignatureAndOrigin() ?? gc.fieldImage;
           }}
         />
       </Box>
