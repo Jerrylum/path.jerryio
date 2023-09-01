@@ -32,7 +32,7 @@ precacheAndRoute(MANIFEST);
 
 // Runtime caching route for requests that aren't handled by the precache
 registerRoute(
-  ({ url }) => url.origin === self.location.origin && url.pathname.startsWith("/api/") === false,
+  ({ url }) => (url.origin === self.location.origin && url.pathname.startsWith("/api/")) === false,
   new StaleWhileRevalidate({
     cacheName: "non-precache",
     plugins: [new ExpirationPlugin({ maxEntries: 50 })]
