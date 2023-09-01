@@ -7,11 +7,12 @@ import { Format, PathFileData } from "./Format";
 import { NumberRange, RangeSlider, ValidateNumberRange } from "../component/RangeSlider";
 import { Box, Typography } from "@mui/material";
 import { UpdateProperties } from "../core/Command";
-import { Exclude, Expose } from "class-transformer";
+import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsPositive } from "class-validator";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
 import { Path, Segment } from "../core/Path";
 import { isCoordinateWithHeading } from "../core/Coordinate";
+import { FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -36,6 +37,9 @@ class GeneralConfigImpl implements GeneralConfig {
   @IsPositive()
   @Expose()
   controlMagnetDistance: number = 5;
+  @Type(() => FieldImageSignatureAndOrigin)
+  @Expose()
+  fieldImage: FieldImageSignatureAndOrigin = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
 
   @Exclude()
   private format_: PathDotJerryioFormatV0_1;

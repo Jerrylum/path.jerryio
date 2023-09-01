@@ -7,7 +7,6 @@ import { SegmentElement } from "./SegmentElement";
 import React from "react";
 import useImage from "use-image";
 
-import fieldImageUrl from "../static/field2023.png";
 import { ControlElement } from "./ControlElement";
 import { AreaSelectionElement } from "./AreaSelectionElement";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
@@ -25,6 +24,7 @@ import { Instance } from "@popperjs/core";
 import { TouchEventListener } from "../core/TouchEventListener";
 import { Label, Padding0Tooltip } from "../component/TooltipLabel";
 import { LayoutContext } from "./Layouts";
+import { getDefaultBuiltInFieldImage } from "../core/Asset";
 
 function fixControlTooCloseToTheEndControl() {
   // UX: Fix control point too close to the end control point when adding the first new curve segment
@@ -608,7 +608,7 @@ class MouseInteractiveHandler {
 }
 
 const FieldCanvasElement = observer((props: {}) => {
-  const { app, appPreferences } = getAppStores();
+  const { app, appPreferences, assetManager } = getAppStores();
   const fieldEditor = app.fieldEditor;
 
   const windowSize = useWindowSize(
@@ -624,6 +624,8 @@ const FieldCanvasElement = observer((props: {}) => {
 
   const uc = new UnitConverter(UnitOfLength.Millimeter, app.gc.uol);
 
+  const fieldImageAsset = assetManager.getAssetBySignature(app.gc.fieldImage.signature) ?? getDefaultBuiltInFieldImage();
+
   const canvasHeightInPx = (function () {
     if (currentLayoutType === LayoutType.Classic) {
       if (appPreferences.isSpeedCanvasVisible) return getFieldCanvasHalfHeight(windowSize);
@@ -633,13 +635,13 @@ const FieldCanvasElement = observer((props: {}) => {
     }
   })();
   const canvasWidthInPx = currentLayoutType === LayoutType.Classic ? canvasHeightInPx : windowSize.x;
-  const canvasSizeInUOL = uc.fromAtoB(3683); // 3683 = 145*2.54*10 ~= 3676.528, the size of the field perimeter in Fusion 360
+  const canvasHeightInUOL = uc.fromAtoB(fieldImageAsset.heightInMM);
 
   React.useEffect(() => {
     fieldEditor.zoomToFit();
   }, [currentLayoutType, fieldEditor]);
 
-  const [fieldImage] = useImage(fieldImageUrl);
+  const [fieldImage] = useImage(fieldImageAsset.imageSource());
 
   const offset = app.fieldEditor.offset;
   const scale = app.fieldEditor.scale;
@@ -647,8 +649,7 @@ const FieldCanvasElement = observer((props: {}) => {
   const fcc = new FieldCanvasConverter(
     canvasWidthInPx,
     canvasHeightInPx,
-    canvasSizeInUOL,
-    canvasSizeInUOL,
+    canvasHeightInUOL,
     offset,
     scale,
     stageRef.current?.container() ?? null

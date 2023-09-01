@@ -8,9 +8,10 @@ import { Format, PathFileData } from "./Format";
 import { Box, Slider, Typography } from "@mui/material";
 import { NumberRange, RangeSlider, ValidateNumberRange } from "../component/RangeSlider";
 import { UpdateProperties } from "../core/Command";
-import { Exclude, Expose } from "class-transformer";
+import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsPositive } from "class-validator";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
+import { FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -35,6 +36,9 @@ class GeneralConfigImpl implements GeneralConfig {
   @IsPositive()
   @Expose()
   controlMagnetDistance: number = 5 / 2.54;
+  @Type(() => FieldImageSignatureAndOrigin)
+  @Expose()
+  fieldImage: FieldImageSignatureAndOrigin = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
 
   @Exclude()
   private format_: LemLibFormatV0_4;

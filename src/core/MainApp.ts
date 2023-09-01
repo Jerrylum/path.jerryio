@@ -24,6 +24,7 @@ import { validate } from "class-validator";
 import { FieldEditor } from "./FieldEditor";
 import { SpeedEditor } from "./SpeedEditor";
 import { Help } from "./Help";
+import { AssetManager } from "./Asset";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
@@ -429,6 +430,7 @@ export class MainApp {
 
 export interface AppStores {
   app: MainApp;
+  assetManager: AssetManager;
   confirmation: Confirmation;
   help: Help;
   appPreferences: Preferences;
@@ -438,6 +440,7 @@ export interface AppStores {
 
 const appStores: AppStores = {
   app: new MainApp(),
+  assetManager: new AssetManager(),
   confirmation: new Confirmation(),
   help: new Help(),
   appPreferences: new Preferences(),

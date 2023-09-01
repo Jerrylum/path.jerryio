@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 
-import { Expose, Exclude, plainToClassFromExist } from "class-transformer";
+import { Expose, Exclude, plainToClassFromExist, Type } from "class-transformer";
 import { IsBoolean, IsPositive, validate } from "class-validator";
 import { NumberRange, ValidateNumberRange } from "../component/RangeSlider";
 import { Path } from "../core/Path";
@@ -9,6 +9,7 @@ import { GeneralConfig, PathConfig } from "./Config";
 import { Format } from "./Format";
 import { ValidateNumber } from "../core/Util";
 import { CustomFormat } from "./Format.test";
+import { FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
 
 export class CustomGeneralConfig implements GeneralConfig {
   public custom: string = "custom";
@@ -34,6 +35,9 @@ export class CustomGeneralConfig implements GeneralConfig {
   @IsPositive()
   @Expose()
   controlMagnetDistance: number = 5 / 2.54;
+  @Type(() => FieldImageSignatureAndOrigin)
+  @Expose()
+  fieldImage: FieldImageSignatureAndOrigin = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
 
   constructor() {
     makeAutoObservable(this);

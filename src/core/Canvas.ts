@@ -43,7 +43,6 @@ export class FieldCanvasConverter {
   constructor(
     public widthInPx: number,
     public heightInPx: number,
-    public widthInUOL: number,
     public heightInUOL: number,
     public offset: Vector,
     public scale: number,
