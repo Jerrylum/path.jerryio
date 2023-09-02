@@ -226,7 +226,7 @@ export const MobileLayout = observer(() => {
         </Box>
         <Box id="right-div">
           {variables.currentPanel !== null && (
-            <Typography id="done-button" onClick={() => (variables.currentPanel = null)}>
+            <Typography id="done-button" onClick={action(() => (variables.currentPanel = null))}>
               Done
             </Typography>
           )}
@@ -243,7 +243,7 @@ export const MobileLayout = observer(() => {
               {app.interestedPath() ? (
                 <SpeedCanvasElement extended={true} />
               ) : (
-                <Typography sx={{textAlign: "center"}}>(No path to display)</Typography>
+                <Typography sx={{ textAlign: "center" }}>(No path to display)</Typography>
               )}
             </Box>
           )}
