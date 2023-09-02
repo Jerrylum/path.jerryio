@@ -1,10 +1,11 @@
-import { Backdrop, Box, Button, Card, Typography } from "@mui/material";
+import { Box, Button, Card, Typography } from "@mui/material";
 import React from "react";
 import { getAppStores } from "../core/MainApp";
-import { makeAutoObservable, action, when } from "mobx";
+import { makeAutoObservable, action, when, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useBackdropDialog } from "../core/Hook";
+import { useMobxStorage } from "../core/Hook";
 import { ObserverInput } from "../component/ObserverInput";
+import { Modal } from "../component/Modal";
 
 export interface ConfirmationButton {
   label: string;
@@ -34,10 +35,13 @@ export class Confirmation {
   }
 
   close() {
+    const { modals } = getAppStores();
+    modals.close(ConfirmationModalSymbol);
+
     this.data = undefined;
   }
 
-  async prompt(data: ConfirmationPromptData | ConfirmationInputPromptData) {
+  async prompt(data: ConfirmationPromptData | ConfirmationInputPromptData, priority: number = 1) {
     if (data.buttons.length === 0) {
       data.buttons.push({ label: "OK" });
     }
@@ -50,13 +54,18 @@ export class Confirmation {
       this.input = undefined;
     }
 
+    const { modals } = getAppStores();
+    modals.open(ConfirmationModalSymbol, priority);
+
     await when(() => this.data === undefined);
 
     return this.input;
   }
 
   get isOpen() {
-    return this.data !== undefined;
+    const { modals } = getAppStores();
+
+    return this.data !== undefined && modals.opening === ConfirmationModalSymbol;
   }
 
   get title() {
@@ -90,32 +99,28 @@ export class Confirmation {
   }
 }
 
-const ConfirmationDialog = observer((props: {}) => {
+const ConfirmationModalSymbol = Symbol("ConfirmationModalSymbol");
+
+export const ConfirmationModal = observer(() => {
   const { confirmation: cfm } = getAppStores();
 
-  const buttons = React.useRef<HTMLButtonElement[]>([]);
-
-  const getElements = React.useCallback((): (HTMLInputElement | HTMLButtonElement | null)[] => {
-    const rtn: (HTMLInputElement | HTMLButtonElement | null)[] = [];
-    if (cfm.input !== undefined) rtn.push(document.querySelector(".confirmation-card .input-box input"));
-    rtn.push(...buttons.current);
-    return rtn;
-  }, [cfm.input]);
-
-  if (buttons.current.length !== cfm.buttons.length) {
-    buttons.current = [];
-  }
+  const buttons = useMobxStorage(() => observable([] as (HTMLButtonElement | null)[]), [cfm.isOpen]);
+  const [renderCount, setRenderCount] = React.useState(0);
 
   React.useEffect(() => {
-    if (cfm.isOpen === false) return;
+    return reaction(
+      () => buttons.length,
+      () => setRenderCount(renderCount => renderCount + 1)
+    );
+  }, [buttons]);
 
-    getElements()[0]?.focus();
-  }, [cfm.isOpen, getElements]);
-
-  // UX: Disable tab globally when there is only one button
-  useBackdropDialog(cfm.isOpen && cfm.buttons.length === 1);
+  React.useEffect(() => {
+    (document.querySelector("*[data-testid=sentinelStart]") as HTMLElement | undefined)?.focus();
+  }, [renderCount]);
 
   if (cfm.isOpen === false) return null;
+
+  const focusOnButton = (offset: number) => buttons[buttons.indexOf(document.activeElement as any) + offset]?.focus();
 
   function onClick(idx: number) {
     if (idx < 0 || idx >= cfm.buttons.length) idx = cfm.buttons.length - 1;
@@ -127,45 +132,13 @@ const ConfirmationDialog = observer((props: {}) => {
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
-    if (e.key === "Escape") {
-      onClick(-1); // UX: Escape key always triggers the last button
-    } else if (e.key === "ArrowLeft") {
-      for (let i = 1; i < buttons.current.length; i++) {
-        if (document.activeElement === buttons.current[i]) {
-          buttons.current[i - 1].focus();
-          break;
-        }
-      }
+    if (e.key === "ArrowLeft") {
+      focusOnButton(-1);
     } else if (e.key === "ArrowRight") {
-      for (let i = 0; i < buttons.current.length - 1; i++) {
-        if (document.activeElement === buttons.current[i]) {
-          buttons.current[i + 1].focus();
-          break;
-        }
-      }
-    } else if (e.key === "Tab") {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const elms = getElements();
-      const index = elms.findIndex(elm => elm === document.activeElement);
-      let next;
-      if (index === -1) {
-        next = e.shiftKey ? elms.length - 1 : 0;
-      } else {
-        next = e.shiftKey ? index - 1 : index + 1;
-        if (next < 0) next = elms.length - 1;
-        if (next >= elms.length) next = 0;
-      }
-
-      elms[next]?.focus();
+      focusOnButton(1);
     } else {
-      for (let i = 0; i < cfm.buttons.length; i++) {
-        if (e.key === cfm.buttons[i].hotkey) {
-          onClick(i);
-          break;
-        }
-      }
+      const index = cfm.buttons.findIndex(btn => btn.hotkey === e.key);
+      index !== -1 && onClick(index);
     }
 
     cfm.onKeyDown?.(e, onClick);
@@ -177,16 +150,9 @@ const ConfirmationDialog = observer((props: {}) => {
     }
   }
 
-  // UX: tabIndex is important to make the dialog focusable, allow keyboard navigation, and disallow tab focus on other elements
-
   return (
-    <Backdrop
-      className="confirmation-dialog"
-      sx={{ zIndex: theme => theme.zIndex.drawer + 1 }}
-      open={true}
-      onClick={action(onClick.bind(null, -1))}
-      onKeyDown={action(onKeyDown)}>
-      <Card className="confirmation-card" onClick={e => e.stopPropagation()} tabIndex={-1}>
+    <Modal symbol={ConfirmationModalSymbol} onClose={action(onClick.bind(null, -1))}>
+      <Card id="confirmation-modal" className="modal-container" onKeyDown={action(onKeyDown)}>
         <Typography variant="h2" gutterBottom>
           {cfm.title}
         </Typography>
@@ -204,8 +170,6 @@ const ConfirmationDialog = observer((props: {}) => {
               setValue={value => (cfm.input = value)}
               isValidIntermediate={() => true}
               isValidValue={() => true}
-              tabIndex={1000}
-              autoFocus
               onKeyDown={onInputKeyDown}
             />
           </Box>
@@ -218,9 +182,7 @@ const ConfirmationDialog = observer((props: {}) => {
                 disableRipple
                 variant="text"
                 color={btn.color ?? "inherit"}
-                tabIndex={1000}
-                autoFocus={i === 0 && cfm.input === undefined}
-                ref={element => (buttons.current[i] = element!)}
+                ref={action((element: HTMLButtonElement | null) => (buttons[i] = element))}
                 onClick={action(onClick.bind(null, i))}>
                 {btn.label}
                 {btn.hotkey ? `(${btn.hotkey.toUpperCase()})` : ""}
@@ -229,8 +191,6 @@ const ConfirmationDialog = observer((props: {}) => {
           })}
         </Box>
       </Card>
-    </Backdrop>
+    </Modal>
   );
 });
-
-export { ConfirmationDialog };

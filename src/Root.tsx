@@ -17,7 +17,7 @@ import { getAppStores } from "./core/MainApp";
 import classNames from "classnames";
 import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./core/InputOutput";
 import { NoticeProvider } from "./app/Notice";
-import { ConfirmationDialog } from "./app/Confirmation";
+import { ConfirmationModal } from "./app/Confirmation";
 import { DragDropBackdrop } from "./app/DragDropBackdrop";
 import { RemovePathsAndEndControls } from "./core/Command";
 import React from "react";
@@ -136,8 +136,8 @@ const Root = observer(() => {
           {usingLayout === LayoutType.Classic && <ClassisLayout />}
           {usingLayout === LayoutType.Exclusive && <ExclusiveLayout />}
           {usingLayout === LayoutType.Mobile && <MobileLayout />}
-          <ConfirmationDialog />
 
+          <ConfirmationModal />
           <PreferencesModal />
           <WelcomeModal />
           <AboutModal />
