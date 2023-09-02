@@ -23,8 +23,8 @@ import { AppClipboard } from "./Clipboard";
 import { validate } from "class-validator";
 import { FieldEditor } from "./FieldEditor";
 import { SpeedEditor } from "./SpeedEditor";
-import { Help } from "./Help";
 import { AssetManager } from "./Asset";
+import { Modals } from "../component/Modal";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
@@ -428,25 +428,17 @@ export class MainApp {
   }
 }
 
-export interface AppStores {
-  app: MainApp;
-  assetManager: AssetManager;
-  confirmation: Confirmation;
-  help: Help;
-  appPreferences: Preferences;
-  ga: GoogleAnalytics;
-  clipboard: AppClipboard;
-}
+export type AppStores = typeof appStores;
 
-const appStores: AppStores = {
+const appStores = {
   app: new MainApp(),
   assetManager: new AssetManager(),
   confirmation: new Confirmation(),
-  help: new Help(),
+  modals: new Modals(),
   appPreferences: new Preferences(),
   ga: new GoogleAnalytics(),
   clipboard: new AppClipboard()
-};
+} as const;
 
 export function getAppStores(): AppStores {
   return appStores;

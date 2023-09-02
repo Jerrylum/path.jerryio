@@ -5,14 +5,19 @@ import { observer } from "mobx-react-lite";
 import { ThemeProvider } from "@mui/material/styles";
 
 import { Box } from "@mui/material";
-import { useClipboardPasteText, useCustomHotkeys, useDragDropFile, useUnsavedChangesPrompt, useWindowSize } from "./core/Hook";
+import {
+  useClipboardPasteText,
+  useCustomHotkeys,
+  useDragDropFile,
+  useUnsavedChangesPrompt,
+  useWindowSize
+} from "./core/Hook";
 import { getAppStores } from "./core/MainApp";
 
 import classNames from "classnames";
 import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./core/InputOutput";
 import { NoticeProvider } from "./app/Notice";
 import { ConfirmationDialog } from "./app/Confirmation";
-import { HelpDialog } from "./app/HelpDialog";
 import { PreferencesDialog } from "./app/Preferences";
 import { DragDropBackdrop } from "./app/DragDropBackdrop";
 import { RemovePathsAndEndControls } from "./core/Command";
@@ -21,11 +26,13 @@ import { FormTags } from "react-hotkeys-hook/dist/types";
 import { LayoutType, getUsableLayout } from "./core/Layout";
 import { getAppThemeInfo } from "./app/Theme";
 import { ClassisLayout, ExclusiveLayout, LayoutProvider, MobileLayout } from "./app/Layouts";
+import { AboutModal } from "./app/AboutModal";
+import { WelcomeModal } from "./app/Welcome";
 
 const Root = observer(() => {
-  const { app, confirmation, help, appPreferences, clipboard } = getAppStores();
+  const { app, confirmation, modals, appPreferences, clipboard } = getAppStores();
 
-  const isUsingEditor = !confirmation.isOpen && !help.isOpen && !appPreferences.isOpen;
+  const isUsingEditor = !confirmation.isOpen && !modals.isOpen && !appPreferences.isOpen;
   const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(isUsingEditor, onDropFile);
 
   const ENABLE_EXCEPT_INPUT_FIELDS = { enabled: isUsingEditor && !isDraggingFile };
@@ -72,8 +79,16 @@ const Root = observer(() => {
     ENABLE_ON_ALL_INPUT_FIELDS
   );
 
-  useCustomHotkeys("Mod+B", () => (appPreferences.isSpeedCanvasVisible = !appPreferences.isSpeedCanvasVisible), ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+J", () => (appPreferences.isRightPanelVisible = !appPreferences.isRightPanelVisible), ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys(
+    "Mod+B",
+    () => (appPreferences.isSpeedCanvasVisible = !appPreferences.isSpeedCanvasVisible),
+    ENABLE_ON_ALL_INPUT_FIELDS
+  );
+  useCustomHotkeys(
+    "Mod+J",
+    () => (appPreferences.isRightPanelVisible = !appPreferences.isRightPanelVisible),
+    ENABLE_ON_ALL_INPUT_FIELDS
+  );
 
   useCustomHotkeys("Mod+Add,Mod+Equal", () => (app.fieldEditor.scale += 0.5), ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Mod+Subtract,Mod+Minus", () => (app.fieldEditor.scale -= 0.5), ENABLE_ON_ALL_INPUT_FIELDS);
@@ -103,13 +118,14 @@ const Root = observer(() => {
 
   const windowSize = useWindowSize();
   const usingLayout = getUsableLayout(windowSize, appPreferences.layoutType);
-  
+
   React.useEffect(() => app.onUIReady(), [app]);
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
     <Box
       tabIndex={-1}
+      id="root-container"
       className={classNames(getAppThemeInfo().className)}
       data-layout={usingLayout}
       {...{ onDragEnter, onDragOver, onDrop }}
@@ -121,8 +137,10 @@ const Root = observer(() => {
           {usingLayout === LayoutType.Exclusive && <ExclusiveLayout />}
           {usingLayout === LayoutType.Mobile && <MobileLayout />}
           <ConfirmationDialog />
-          <HelpDialog />
           <PreferencesDialog />
+
+          <WelcomeModal />
+          <AboutModal />
         </LayoutProvider>
         {isUsingEditor && isDraggingFile && <DragDropBackdrop {...{ onDragEnter, onDragLeave, onDragOver, onDrop }} />}
       </ThemeProvider>

@@ -27,7 +27,8 @@ import { Path } from "../core/Path";
 import { LayoutType, getAvailableLayouts } from "../core/Layout";
 import { LayoutContext } from "./Layouts";
 import { useWindowSize } from "../core/Hook";
-import { HelpPage } from "../core/Help";
+import { AboutModalSymbol } from "./AboutModal";
+import { WelcomeModalSymbol } from "./Welcome";
 
 const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
   const { hotkey } = props;
@@ -652,13 +653,13 @@ const ViewMenuItems = () => {
 };
 
 const HelpMenuItems = () => {
-  const { help } = getAppStores();
+  const { modals } = getAppStores();
   return [
     <CustomMenuItem
       key={makeId(10)}
       showLeftIcon={false}
       label="Welcome"
-      onClick={() => help.open(HelpPage.Welcome)}
+      onClick={() => modals.open(WelcomeModalSymbol)}
     />,
     <CustomMenuItem
       key={makeId(10)}
@@ -672,7 +673,7 @@ const HelpMenuItems = () => {
       label="Check for Updates"
       onClick={() => checkForUpdates()}
     />,
-    <CustomMenuItem key={makeId(10)} showLeftIcon={false} label="About" onClick={() => help.open(HelpPage.About)} />
+    <CustomMenuItem key={makeId(10)} showLeftIcon={false} label="About" onClick={() => modals.open(AboutModalSymbol)} />
   ];
 };
 

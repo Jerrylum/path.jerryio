@@ -1,0 +1,49 @@
+.modal-backdrop {
+  margin: 0;
+  background-color: transparent !important;
+  backdrop-filter: blur(12px);
+  outline: none !important;
+}
+
+.modal-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-primary-color);
+}
+
+#welcome-modal {
+  padding: 16px;
+  width: 768px;
+  max-width: 80%;
+  min-height: 96px;
+  outline: none !important;
+  height: 80%;
+  overflow-y: auto;
+
+  .logo {
+    margin: auto;
+    width: 128px;
+    display: block;
+  }
+}
+
+#about-modal {
+  padding: 32px;
+  width: 512px;
+  max-width: 80%;
+  min-height: 96px;
+  outline: none !important;
+
+  > img {
+    margin: auto;
+    width: 128px;
+    display: block;
+  }
+
+  a {
+    display: inline-block;
+    margin: 0 8px;
+  }
+}

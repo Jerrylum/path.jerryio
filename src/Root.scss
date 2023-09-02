@@ -1,14 +1,14 @@
 @use "style/Essential.scss";
 @use "style/ConfirmationDialog.scss";
 @use "style/DragDropBackdrop.scss";
-@use "style/HelpDialog.scss";
 @use "style/PathTree.scss";
 @use "style/PreferencesDialog.scss";
+@use "style/Modals.scss";
 
 #root {
   overflow: hidden; // UX: Fix potential issue on device emulator
 
-  > * {
+  > #root-container {
     display: flex;
     width: 100vw;
     width: 100svw;
