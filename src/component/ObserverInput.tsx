@@ -3,7 +3,7 @@ import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
 import { clamp } from "../core/Util";
-import React from "react";
+import React, { forwardRef } from "react";
 
 export function clampQuantity(
   value: number,
@@ -17,16 +17,16 @@ export function clampQuantity(
   return clamp(value, minInUOL, maxInUOL).toUser();
 }
 
+export type ObserverInputProps = TextFieldProps & {
+  getValue: () => string;
+  setValue: (value: string, payload: any) => void;
+  isValidIntermediate: (candidate: string) => boolean;
+  isValidValue: (candidate: string) => boolean | [boolean, any];
+  numeric?: boolean; // default false
+};
+
 const ObserverInput = observer(
-  (
-    props: TextFieldProps & {
-      getValue: () => string;
-      setValue: (value: string, payload: any) => void;
-      isValidIntermediate: (candidate: string) => boolean;
-      isValidValue: (candidate: string) => boolean | [boolean, any];
-      numeric?: boolean; // default false
-    }
-  ) => {
+  forwardRef<HTMLInputElement | null, ObserverInputProps>((props: ObserverInputProps, ref) => {
     // rest is used to send props to TextField without custom attributes
     const { getValue, setValue, isValidIntermediate, isValidValue, numeric: isNumeric, ...rest } = props;
 
@@ -34,6 +34,8 @@ const ObserverInput = observer(
     const inputRef = React.useRef<HTMLInputElement>(null);
     const lastValidValue = React.useRef(initialValue);
     const lastValidIntermediate = React.useRef(initialValue);
+
+    React.useImperativeHandle(ref, () => inputRef.current!);
 
     function onChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
       const element = event.nativeEvent.target as HTMLInputElement;
@@ -93,7 +95,8 @@ const ObserverInput = observer(
       }
 
       setValue(rtn, payload);
-      inputRef.current && (inputRef.current.value = lastValidValue.current = lastValidIntermediate.current = getValue());
+      inputRef.current &&
+        (inputRef.current.value = lastValidValue.current = lastValidIntermediate.current = getValue());
     }
 
     const value = getValue();
@@ -120,7 +123,7 @@ const ObserverInput = observer(
         onBlur={action(onBlur)}
       />
     );
-  }
+  })
 );
 
 export { ObserverInput };
