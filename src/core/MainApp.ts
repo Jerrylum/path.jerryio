@@ -10,7 +10,6 @@ import { Quantity, UnitConverter, UnitOfLength } from "./Unit";
 import { CommandHistory } from "./Command";
 import { SemVer } from "semver";
 import { Confirmation } from "../app/Confirmation";
-import { Preferences } from "../app/Preferences";
 import { GoogleAnalytics } from "./GoogleAnalytics";
 import { IOFileHandle } from "./InputOutput";
 import { getPathSamplePoints, getUniformPointsFromSamples } from "./Calculation";
@@ -25,6 +24,7 @@ import { FieldEditor } from "./FieldEditor";
 import { SpeedEditor } from "./SpeedEditor";
 import { AssetManager } from "./Asset";
 import { Modals } from "../component/Modal";
+import { Preferences } from "./Preferences";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 

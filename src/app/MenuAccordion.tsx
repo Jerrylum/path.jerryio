@@ -29,6 +29,7 @@ import { LayoutContext } from "./Layouts";
 import { useWindowSize } from "../core/Hook";
 import { AboutModalSymbol } from "./AboutModal";
 import { WelcomeModalSymbol } from "./Welcome";
+import { PreferencesModalSymbol } from "./PreferencesModal";
 
 const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
   const { hotkey } = props;
@@ -430,7 +431,7 @@ const MenuMainDropdown = observer((props: { anchor: PopoverPosition; isOpen: boo
 });
 
 const FileMenuItems = () => {
-  const { appPreferences } = getAppStores();
+  const { modals } = getAppStores();
   return [
     <CustomMenuItem key={makeId(10)} showLeftIcon={false} label="New File" hotkey="Mod+P" onClick={() => onNew()} />,
     <Divider key={makeId(10)} />,
@@ -471,7 +472,7 @@ const FileMenuItems = () => {
       showLeftIcon={false}
       label="Preferences"
       hotkey="Mod+,"
-      onClick={() => appPreferences.open()}
+      onClick={() => modals.open(PreferencesModalSymbol)}
     />
   ];
 };

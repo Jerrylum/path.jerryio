@@ -18,7 +18,6 @@ import classNames from "classnames";
 import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./core/InputOutput";
 import { NoticeProvider } from "./app/Notice";
 import { ConfirmationDialog } from "./app/Confirmation";
-import { PreferencesDialog } from "./app/Preferences";
 import { DragDropBackdrop } from "./app/DragDropBackdrop";
 import { RemovePathsAndEndControls } from "./core/Command";
 import React from "react";
@@ -28,11 +27,12 @@ import { getAppThemeInfo } from "./app/Theme";
 import { ClassisLayout, ExclusiveLayout, LayoutProvider, MobileLayout } from "./app/Layouts";
 import { AboutModal } from "./app/AboutModal";
 import { WelcomeModal } from "./app/Welcome";
+import { PreferencesModal, PreferencesModalSymbol } from "./app/PreferencesModal";
 
 const Root = observer(() => {
   const { app, confirmation, modals, appPreferences, clipboard } = getAppStores();
 
-  const isUsingEditor = !confirmation.isOpen && !modals.isOpen && !appPreferences.isOpen;
+  const isUsingEditor = !confirmation.isOpen && !modals.isOpen;
   const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(isUsingEditor, onDropFile);
 
   const ENABLE_EXCEPT_INPUT_FIELDS = { enabled: isUsingEditor && !isDraggingFile };
@@ -65,7 +65,7 @@ const Root = observer(() => {
   useCustomHotkeys("Shift+Mod+S", onSaveAs, ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Mod+D", onDownload, ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Shift+Mod+D", onDownloadAs, ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+Comma", () => appPreferences.open(), ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys("Mod+Comma", () => modals.open(PreferencesModalSymbol), ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Mod+X", () => clipboard.cut(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
   useCustomHotkeys("Mod+C", () => clipboard.copy(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
 
@@ -137,8 +137,8 @@ const Root = observer(() => {
           {usingLayout === LayoutType.Exclusive && <ExclusiveLayout />}
           {usingLayout === LayoutType.Mobile && <MobileLayout />}
           <ConfirmationDialog />
-          <PreferencesDialog />
 
+          <PreferencesModal />
           <WelcomeModal />
           <AboutModal />
         </LayoutProvider>
