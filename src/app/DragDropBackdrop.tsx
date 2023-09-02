@@ -5,7 +5,7 @@ import { observer } from "mobx-react-lite";
 const DragDropBackdrop = observer((props: Omit<DefaultComponentProps<BackdropTypeMap>, "open">) => {
   return (
     <Backdrop
-      className="drag-drop-backdrop"
+      className="modal-backdrop"
       sx={{ zIndex: theme => theme.zIndex.drawer + 1 }}
       open={true}
       tabIndex={-1}

@@ -10,7 +10,7 @@ export interface AppThemeInfo {
   name: string;
   foregroundColor: string; // UX: Default card background color
   backgroundColor: string;
-  className: string;
+  styleName: string;
   theme: Theme;
 }
 
@@ -44,7 +44,7 @@ export const themes = {
     name: "Light",
     foregroundColor: "grey",
     backgroundColor: "#ffffff",
-    className: "light-theme",
+    styleName: "light",
     theme: createMuiTheme({
       palette: {
         mode: "light",
@@ -59,7 +59,7 @@ export const themes = {
     name: "Dark",
     foregroundColor: "#a4a4a4",
     backgroundColor: "#353535",
-    className: "dark-theme",
+    styleName: "dark",
     theme: createMuiTheme({
       palette: {
         mode: "dark",

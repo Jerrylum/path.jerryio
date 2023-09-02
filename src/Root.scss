@@ -1,5 +1,4 @@
 @use "style/Essential.scss";
-@use "style/DragDropBackdrop.scss";
 @use "style/PathTree.scss";
 @use "style/Modals.scss";
 
@@ -26,7 +25,7 @@
       @import "style/MobileLayout.scss";
     }
 
-    &.light-theme {
+    &[data-theme="light"] {
       --bg-body-color: #ffffff;
       --bg-default-color: #ffffff;
       --bg-paper-color: #f3f3f3;
@@ -51,7 +50,7 @@
       }
     }
 
-    &.dark-theme {
+    &[data-theme="dark"] {
       --bg-body-color: #292929;
       --bg-default-color: #1e1e1e;
       --bg-paper-color: #353535;
@@ -90,6 +89,20 @@
 .menu-item.MuiMenuItem-root {
   padding-left: 4px !important;
 
+  &.Mui-disabled {
+    pointer-events: auto !important;
+
+    &:hover {
+      // UX: don't change background color on hover
+      background-color: transparent !important;
+    }
+
+    &:active {
+      // https://moshfeu.github.io/show-tooltip-on-pointer-events-none-element/
+      pointer-events: none !important;
+    }
+  }
+
   svg.menu-item-done {
     height: 16px;
     margin-right: 4px;
@@ -103,21 +116,6 @@
     top: -1px;
     right: -8px;
   }
-}
-
-.menu-item.MuiMenuItem-root.Mui-disabled {
-  pointer-events: auto !important;
-}
-
-.menu-item.MuiMenuItem-root.Mui-disabled:hover {
-  // UX: don't change background color on hover
-  background-color: transparent !important;
-}
-
-.menu-item.MuiMenuItem-root.Mui-disabled:active {
-  // https://moshfeu.github.io/show-tooltip-on-pointer-events-none-element/
-
-  pointer-events: none !important;
 }
 
 // For menu list
