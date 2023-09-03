@@ -1,5 +1,6 @@
 import { observer } from "mobx-react-lite";
 import { Modal } from "../component/Modal";
+import { MuiFileInput } from "mui-file-input";
 import { Box, Card, Chip, IconButton, List, ListItem, ListItemButton, ListItemText, Typography } from "@mui/material";
 import { action, makeAutoObservable } from "mobx";
 import { FieldImageAsset, FieldImageOriginType, getFieldImageOriginTypeDescription } from "../core/Asset";
@@ -16,8 +17,13 @@ import { Vector } from "../core/Path";
 
 export const AssetManagerModalSymbol = Symbol("AssetManagerModalSymbol");
 
-class AssetManagerVariables {
+class FieldImageManagerVariables {
   selected: FieldImageAsset<FieldImageOriginType> | null = null;
+
+  newName: string = "My Custom Field Image";
+  newHeightInMM: number = 100;
+  newUrl: string = "";
+  newUpload: File | null = null;
 
   constructor() {
     makeAutoObservable(this);
@@ -28,7 +34,7 @@ class AssetManagerVariables {
 }
 
 export const FieldImageAssetItem = observer(
-  (props: { variables: AssetManagerVariables; asset: FieldImageAsset<FieldImageOriginType> }) => {
+  (props: { variables: FieldImageManagerVariables; asset: FieldImageAsset<FieldImageOriginType> }) => {
     const { variables, asset } = props;
 
     return (
@@ -141,7 +147,7 @@ export const FieldImagePreview = observer((props: { preview: FieldImageAsset<Fie
 export const AssetManagerModal = observer(() => {
   const { assetManager } = getAppStores();
 
-  const variables = useMobxStorage(() => new AssetManagerVariables(), []);
+  const variables = useMobxStorage(() => new FieldImageManagerVariables(), []);
 
   const selected = variables.selected;
 
@@ -194,7 +200,70 @@ export const AssetManagerModal = observer(() => {
                 </List>
               </Box>
             </Box>
-            <Typography variant="h4">New image</Typography>
+            <Typography variant="h4" gutterBottom>
+              New image
+            </Typography>
+            <Box
+              sx={{
+                marginTop: "1em",
+                display: "flex",
+                gap: "12px",
+                flexWrap: "wrap",
+                alignItems: "center",
+                width: "100%"
+              }}>
+              <ObserverInput
+                label="Name"
+                getValue={() => variables.newName}
+                setValue={(value: string) => (variables.newName = value)}
+                isValidIntermediate={() => true}
+                isValidValue={value => value !== ""}
+                sx={{ flexGrow: 1 }}
+                onKeyDown={e => e.stopPropagation()}
+              />
+              <ObserverInput
+                label="Height (mm)"
+                getValue={() => variables.newHeightInMM + ""}
+                setValue={(value: string) => {
+                  const setValue = parseFormula(value, NumberUOL.parse)!.compute(UnitOfLength.Millimeter);
+                  variables.newHeightInMM = Math.max(100, setValue);
+                }}
+                isValidIntermediate={() => true}
+                isValidValue={(candidate: string) => parseFormula(candidate, NumberUOL.parse) !== null}
+                numeric
+                sx={{ width: "100px" }}
+                onKeyDown={e => e.stopPropagation()}
+              />
+            </Box>
+            <Box
+              sx={{
+                marginTop: "1em",
+                display: "flex",
+                gap: "12px",
+                flexWrap: "nowrap",
+                alignItems: "center",
+                width: "100%"
+              }}>
+              <ObserverInput
+                label="URL"
+                getValue={() => variables.newUrl}
+                setValue={(value: string) => (variables.newUrl = value)}
+                isValidIntermediate={() => true}
+                isValidValue={value => value !== ""} // TODO
+                sx={{ flexGrow: 1 }}
+                onKeyDown={e => e.stopPropagation()}
+              />
+              <Typography variant="body1" sx={{}}>
+                or
+              </Typography>
+              <MuiFileInput
+                sx={{ flexGrow: 1 }}
+                placeholder="File Upload"
+                value={variables.newUpload}
+                onChange={action((file: File | null) => (variables.newUpload = file))}
+                size="small"
+              />
+            </Box>
           </Box>
           {selected && <FieldImagePreview preview={selected} />}
         </Box>

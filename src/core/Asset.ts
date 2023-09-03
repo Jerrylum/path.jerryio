@@ -47,7 +47,7 @@ export class FieldImageExternalOrigin {
   @Exclude()
   readonly discriminator = FieldImageOriginType.External;
 
-  @ValidateNumber(num => num > 1)
+  @ValidateNumber(num => num >= 100)
   @Expose()
   public heightInMM: number; // in MM
 
@@ -67,7 +67,7 @@ export class FieldImageLocalOrigin {
   @Exclude()
   readonly discriminator = FieldImageOriginType.Local;
 
-  @ValidateNumber(num => num >= 1)
+  @ValidateNumber(num => num >= 100)
   @Expose()
   public heightInMM: number; // in MM
 
@@ -172,7 +172,7 @@ export class FieldImageLocalAsset extends FieldImageAsset<FieldImageOriginType.L
       data: observable
     });
 
-    localforage.getItem<Blob | null>(this.location).then(data => (this.data = data));
+    // localforage.getItem<Blob | null>(this.location).then(data => (this.data = data));
   }
 
   imageSource(): string {

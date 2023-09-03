@@ -11,7 +11,7 @@ export class Modals {
   private opening_: {
     symbol: Symbol;
     priority: number;
-  } | null = { symbol: AssetManagerModalSymbol, priority: 0 };
+  } | null = null; // { symbol: AssetManagerModalSymbol, priority: 0 };
 
   get opening(): Symbol | null {
     return this.opening_?.symbol ?? null;

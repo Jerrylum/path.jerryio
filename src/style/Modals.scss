@@ -121,6 +121,7 @@
 
     #assets-list-add {
       flex-grow: 1;
+      max-width: calc(60% - 16px);
 
       #assets-list {
         flex-grow: 1;
