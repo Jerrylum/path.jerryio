@@ -1,4 +1,5 @@
-import * as MuiModal from "@mui/material/Modal";
+import Modal from "@mui/material/Modal";
+
 import { makeAutoObservable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
@@ -10,7 +11,7 @@ export class Modals {
   private opening_: {
     symbol: Symbol;
     priority: number;
-  } | null = {symbol: AssetManagerModalSymbol, priority: 0};
+  } | null = { symbol: AssetManagerModalSymbol, priority: 0 };
 
   get opening(): Symbol | null {
     return this.opening_?.symbol ?? null;
@@ -42,7 +43,7 @@ export class Modals {
   }
 }
 
-export const Modal = observer(
+export const CustomModal = observer(
   (props: {
     symbol: Symbol; //
     children: React.ReactElement;
@@ -66,13 +67,15 @@ export const Modal = observer(
     }, []);
 
     return (
-      <MuiModal.default
+      <Modal
         slotProps={{ backdrop: { className: "modal-backdrop" } }}
         container={document.getElementById("root-container")!}
         open={modals.opening === props.symbol}
         onClose={() => modals.close(props.symbol)}>
         {props.children}
-      </MuiModal.default>
+      </Modal>
     );
   }
 );
+
+export { CustomModal as Modal };
