@@ -28,6 +28,7 @@ import { ClassisLayout, ExclusiveLayout, LayoutProvider, MobileLayout } from "./
 import { AboutModal } from "./app/AboutModal";
 import { WelcomeModal } from "./app/Welcome";
 import { PreferencesModal, PreferencesModalSymbol } from "./app/PreferencesModal";
+import { AssetManagerModal } from "./app/AssetManagerModal";
 
 const Root = observer(() => {
   const { app, confirmation, modals, appPreferences, clipboard } = getAppStores();
@@ -141,6 +142,7 @@ const Root = observer(() => {
           <PreferencesModal />
           <WelcomeModal />
           <AboutModal />
+          <AssetManagerModal />
         </LayoutProvider>
         {isUsingEditor && isDraggingFile && <DragDropBackdrop {...{ onDragEnter, onDragLeave, onDragOver, onDrop }} />}
       </ThemeProvider>

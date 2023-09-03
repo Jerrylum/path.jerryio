@@ -22,9 +22,10 @@ import { NumberUOL } from "../token/Tokens";
 import { parseFormula } from "../core/Util";
 import { ObserverItemsSelect } from "../component/ObserverItemsSelect";
 import { FieldImageAsset } from "../core/Asset";
+import { AssetManagerModalSymbol } from "./AssetManagerModal";
 
 const GeneralConfigPanel = observer((props: {}) => {
-  const { app, assetManager, confirmation } = getAppStores();
+  const { app, assetManager, confirmation, modals } = getAppStores();
 
   const gc = app.gc;
 
@@ -159,9 +160,16 @@ const GeneralConfigPanel = observer((props: {}) => {
           sx={{ width: "auto" }}
           label=""
           selected={gc.fieldImage.signature}
-          items={assetManager.assets.map(asset => ({ key: asset.signature, value: asset, label: asset.displayName }))}
-          onSelectItem={(asset: FieldImageAsset | undefined) => {
-            gc.fieldImage = asset?.getSignatureAndOrigin() ?? gc.fieldImage;
+          items={[
+            ...assetManager.assets.map(asset => ({ key: asset.signature, value: asset, label: asset.displayName })),
+            { key: "open-asset-manager", value: "open-asset-manager", label: "(Custom)" }
+          ]}
+          onSelectItem={(asset: FieldImageAsset | string | undefined) => {
+            if (asset === "open-asset-manager") {
+              modals.open(AssetManagerModalSymbol);
+            } else if (asset instanceof FieldImageAsset) {
+              gc.fieldImage = asset?.getSignatureAndOrigin();
+            }
           }}
         />
       </Box>

@@ -3,13 +3,14 @@ import { makeAutoObservable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import { getAppStores } from "../core/MainApp";
+import { AssetManagerModalSymbol } from "../app/AssetManagerModal";
 
 export class Modals {
   // TEST ONLY
   private opening_: {
     symbol: Symbol;
     priority: number;
-  } | null = null;
+  } | null = {symbol: AssetManagerModalSymbol, priority: 0};
 
   get opening(): Symbol | null {
     return this.opening_?.symbol ?? null;
