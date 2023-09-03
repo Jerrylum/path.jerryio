@@ -64,9 +64,9 @@ export const FieldImagePreview = observer((props: { preview: FieldImageAsset<Fie
 
   const { assetManager } = getAppStores();
 
-  const imageRef = React.useRef<HTMLImageElement>(null);
-  const imageState = useImageState(imageRef);
+  const imageRef = React.useRef<HTMLImageElement | null>(null);
   const [imageKey, setImageKey] = React.useState(makeId(10));
+  const imageState = useImageState(imageRef, [imageKey]);
 
   const size = React.useMemo(() => {
     const image = imageRef.current;
@@ -194,7 +194,7 @@ export const AssetManagerModal = observer(() => {
                 </List>
               </Box>
             </Box>
-            <Typography variant="body1">New image</Typography>
+            <Typography variant="h4">New image</Typography>
           </Box>
           {selected && <FieldImagePreview preview={selected} />}
         </Box>

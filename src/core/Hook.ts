@@ -281,7 +281,7 @@ export function useTouchEvent(eventListener: TouchEventListener, element: HTMLEl
   useEventListener(element, "touchend", e => eventListener.onTouchEnd(e), { capture: true, passive: false });
 }
 
-export function useImageState(imageRef: React.RefObject<HTMLImageElement>) {
+export function useImageState(imageRef: React.RefObject<HTMLImageElement>, dependencies?: DependencyList) {
   // This implementation is adopted from https://github.com/konvajs/use-image under MIT license
 
   // lets use refs for image and status
@@ -291,7 +291,7 @@ export function useImageState(imageRef: React.RefObject<HTMLImageElement>) {
 
   // we are not going to use token
   // but we need to just to trigger state update
-  const [_, setStateToken] = React.useState(0);
+  const [, setStateToken] = React.useState(0);
 
   // keep track of old props to trigger changes
   const url = imageRef.current?.src ?? null;
@@ -299,14 +299,11 @@ export function useImageState(imageRef: React.RefObject<HTMLImageElement>) {
 
   React.useEffect(() => {
     const img = imageRef.current;
+
+    statusRef.current = img?.complete ? "loaded" : "loading";
+    oldUrl.current = img?.src ?? null;
+
     if (!img) return;
-
-    const url = img.src;
-
-    if (oldUrl.current !== url) {
-      statusRef.current = "loading";
-      oldUrl.current = url;
-    }
 
     function onload() {
       statusRef.current = "loaded";
@@ -325,7 +322,7 @@ export function useImageState(imageRef: React.RefObject<HTMLImageElement>) {
       img.removeEventListener("load", onload);
       img.removeEventListener("error", onerror);
     };
-  }, [imageRef.current?.src]);
+  }, [imageRef.current?.src, ...(dependencies ?? [])]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return statusRef.current;
 }
