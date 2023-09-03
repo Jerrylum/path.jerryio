@@ -13,7 +13,20 @@ export enum FieldImageOriginType {
   Local = "local"
 }
 
-type FieldImageOriginClass<TType = FieldImageOriginType> = TType extends FieldImageOriginType.BuiltIn
+export function getFieldImageOriginTypeDescription(type: FieldImageOriginType): string {
+  switch (type) {
+    case FieldImageOriginType.BuiltIn:
+      return "Built-in";
+    case FieldImageOriginType.External:
+      return "External";
+    case FieldImageOriginType.Local:
+      return "Local";
+    default:
+      return "";
+  }
+}
+
+export type FieldImageOriginClass<TType = FieldImageOriginType> = TType extends FieldImageOriginType.BuiltIn
   ? FieldImageBuiltInOrigin
   : TType extends FieldImageOriginType.External
   ? FieldImageExternalOrigin

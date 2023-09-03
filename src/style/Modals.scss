@@ -116,17 +116,45 @@
   #field-image-assets {
     display: flex;
     width: 100%;
+    gap: 16px;
     // background-color: red;
 
-    #assets-list {
+    #assets-list-add {
       flex-grow: 1;
-      // background-color: blue;
+
+      #assets-list {
+        flex-grow: 1;
+        min-height: calc(256px - 8px);
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-bottom: 8px; // maybe 16px
+        position: relative;
+
+        #assets-list-content {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+
+          .asset-item {
+            .asset-item-delete {
+              visibility: hidden;
+            }
+          }
+
+          .asset-item:hover {
+            .asset-item-delete {
+              visibility: inherit;
+            }
+          }
+        }
+      }
     }
 
     #asset-preview {
-      width: 256px;
-      // min-height: 256px;
-      // background-color: green;
+      width: 40%;
+      min-width: 256px;
 
       #asset-image-preview {
         width: 100%;

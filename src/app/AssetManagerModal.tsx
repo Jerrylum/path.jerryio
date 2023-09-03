@@ -1,10 +1,11 @@
 import { observer } from "mobx-react-lite";
 import { Modal } from "../component/Modal";
-import { Box, Card, Typography } from "@mui/material";
-import { makeAutoObservable } from "mobx";
-import { FieldImageAsset, FieldImageOriginType } from "../core/Asset";
+import { Box, Card, Chip, IconButton, List, ListItem, ListItemButton, ListItemText, Typography } from "@mui/material";
+import { action, makeAutoObservable } from "mobx";
+import { FieldImageAsset, FieldImageOriginType, getFieldImageOriginTypeDescription } from "../core/Asset";
 import { getAppStores } from "../core/MainApp";
 import { useImageState, useMobxStorage } from "../core/Hook";
+import DeleteIcon from "@mui/icons-material/Delete";
 import useImage from "use-image";
 import { ObserverInput } from "../component/ObserverInput";
 import { NumberUOL } from "../token/Tokens";
@@ -26,124 +27,37 @@ class AssetManagerVariables {
   }
 }
 
-// export const BuiltInFieldImagePreview = observer(
-//   (props: { preview: FieldImageAsset<FieldImageOriginType.BuiltIn> }) => {
-//     const { preview } = props;
+export const FieldImageAssetItem = observer(
+  (props: { variables: AssetManagerVariables; asset: FieldImageAsset<FieldImageOriginType> }) => {
+    const { variables, asset } = props;
 
-//     const imageRef = React.useRef<HTMLImageElement>(null);
-//     const imageState = useImageState(imageRef);
-
-//     const size = React.useMemo(() => {
-//       const image = imageRef.current;
-
-//       if (imageState === "loaded") {
-//         const widthInPx = image?.naturalWidth ?? 0;
-//         const heightInPx = image?.naturalHeight ?? 0;
-//         const heightInMM = preview.heightInMM;
-//         const widthInMM = (widthInPx / heightInPx) * heightInMM;
-
-//         return [new Vector(widthInPx, heightInPx), new Vector(widthInMM, heightInMM)];
-//       } else {
-//         return null;
-//       }
-//     }, [imageState, preview.heightInMM]);
-
-//     return (
-//       <Box id="asset-preview">
-//         <Box id="asset-image-preview">
-//           <svg viewBox="0 0 1 1"></svg>
-//           {imageState === "failed" ? (
-//             <Box id="failed-message">
-//               <Typography variant="body1">
-//                 Can't load this image. Check your internet connection and try again.
-//               </Typography>
-//             </Box>
-//           ) : (
-//             <img ref={imageRef} src={preview?.imageSource() ?? ""} />
-//           )}
-//         </Box>
-//         <Box sx={{ marginTop: "1em" }}>
-//           <Typography variant="body1">{preview.displayName}</Typography>
-//         </Box>
-//         {size !== null && (
-//           <Box sx={{ marginTop: "0.5em" }}>
-//             <Typography variant="body1">
-//               Width: {size[0].x.toUser()}px ({size[1].x.toUser()}mm)
-//               <br />
-//               Height: {size[0].y.toUser()}px ({size[1].y.toUser()}mm)
-//             </Typography>
-//           </Box>
-//         )}
-//       </Box>
-//     );
-//   }
-// );
-
-// export const ExternalFieldImagePreview = observer(
-//   (props: { preview: FieldImageAsset<FieldImageOriginType.External> }) => {
-//     const { preview } = props;
-
-//     const { assetManager } = getAppStores();
-
-//     const imageRef = React.useRef<HTMLImageElement>(null);
-//     const imageState = useImageState(imageRef);
-
-//     const size = React.useMemo(() => {
-//       const image = imageRef.current;
-
-//       if (imageState === "loaded") {
-//         const widthInPx = image?.naturalWidth ?? 0;
-//         const heightInPx = image?.naturalHeight ?? 0;
-//         const heightInMM = preview.heightInMM;
-//         const widthInMM = (widthInPx / heightInPx) * heightInMM;
-
-//         return [new Vector(widthInPx, heightInPx), new Vector(widthInMM, heightInMM)];
-//       } else {
-//         return null;
-//       }
-//     }, [imageState, preview.heightInMM]);
-
-//     return (
-//       <Box id="asset-preview">
-//         <Box id="asset-image-preview">
-//           <svg viewBox="0 0 1 1"></svg>
-//           {imageState === "failed" ? (
-//             <Box id="failed-message">
-//               <Typography variant="body1">
-//                 Can't load this image. Check your internet connection and try again.
-//               </Typography>
-//             </Box>
-//           ) : (
-//             <img ref={imageRef} src={preview?.imageSource() ?? ""} />
-//           )}
-//         </Box>
-//         <Box sx={{ marginTop: "1em" }}>
-//           <ObserverInput
-//             label="Name"
-//             fullWidth
-//             getValue={() => preview.displayName}
-//             setValue={(value: string) => {
-//               preview.displayName = value;
-//               assetManager.saveAssets();
-//             }}
-//             isValidIntermediate={() => true}
-//             isValidValue={value => value !== ""}
-//             onKeyDown={e => e.stopPropagation()}
-//           />
-//         </Box>
-//         {size !== null && (
-//           <Box sx={{ marginTop: "0.5em" }}>
-//             <Typography variant="body1">
-//               Width: {size[0].x.toUser()}px ({size[1].x.toUser()}mm)
-//               <br />
-//               Height: {size[0].y.toUser()}px ({size[1].y.toUser()}mm)
-//             </Typography>
-//           </Box>
-//         )}
-//       </Box>
-//     );
-//   }
-// );
+    return (
+      <ListItem
+        className="asset-item"
+        disablePadding
+        secondaryAction={
+          <IconButton edge="end" className="asset-item-delete">
+            <DeleteIcon />
+          </IconButton>
+        }>
+        <ListItemButton
+          onClick={action(() => {
+            variables.selected = asset;
+          })}>
+          <ListItemText
+            sx={{ textWrap: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+            primary={
+              <>
+                {asset.displayName}
+                <Chip label={getFieldImageOriginTypeDescription(asset.type)} size="small" sx={{ marginLeft: "8px" }} />
+              </>
+            }
+          />
+        </ListItemButton>
+      </ListItem>
+    );
+  }
+);
 
 export const FieldImagePreview = observer((props: { preview: FieldImageAsset<FieldImageOriginType> }) => {
   const { preview } = props;
@@ -167,7 +81,7 @@ export const FieldImagePreview = observer((props: { preview: FieldImageAsset<Fie
     } else {
       return null;
     }
-  }, [imageState, preview.heightInMM]);
+  }, [imageState, preview.heightInMM, imageKey]);
 
   return (
     <Box id="asset-preview">
@@ -211,15 +125,15 @@ export const FieldImagePreview = observer((props: { preview: FieldImageAsset<Fie
           />
         )}
       </Box>
-      {size !== null && (
-        <Box sx={{ marginTop: "0.5em" }}>
+      <Box sx={{ marginTop: "0.5em", minHeight: "60px" }}>
+        {size !== null && (
           <Typography variant="body1">
             Width: {size[0].x.toUser()}px ({size[1].x.toUser()}mm)
             <br />
             Height: {size[0].y.toUser()}px ({size[1].y.toUser()}mm)
           </Typography>
-        </Box>
-      )}
+        )}
+      </Box>
     </Box>
   );
 });
@@ -264,19 +178,26 @@ export const AssetManagerModal = observer(() => {
   return (
     <Modal symbol={AssetManagerModalSymbol}>
       <Card id="asset-manager-modal" className="modal-container">
-        <Typography variant="h2" gutterBottom>
-          Asset Manager
-        </Typography>
-        <Typography variant="h3" gutterBottom>
+        <Typography variant="h3" fontSize={18} gutterBottom>
           Field Image
         </Typography>
-
-        {/* Display Name | Height */}
         <Box id="field-image-assets">
-          <Box id="assets-list"></Box>
-          <Box id="asset-preview">{selected && <FieldImagePreview preview={selected} />}</Box>
+          <Box id="assets-list-add">
+            <Box id="assets-list">
+              {/* Using the SVG viewBox solution to allow the use of min-height */}
+              <svg viewBox="0 0 0.6 0.4"></svg>
+              <Box id="assets-list-content">
+                <List dense>
+                  {assetManager.assets.map(asset => (
+                    <FieldImageAssetItem key={asset.signature} variables={variables} asset={asset} />
+                  ))}
+                </List>
+              </Box>
+            </Box>
+            <Typography variant="body1">New image</Typography>
+          </Box>
+          {selected && <FieldImagePreview preview={selected} />}
         </Box>
-        <Typography variant="body1">New image</Typography>
       </Card>
     </Modal>
   );
