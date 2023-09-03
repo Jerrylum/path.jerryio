@@ -1,5 +1,4 @@
-import { Button } from "@mui/base";
-import { Card } from "@mui/material";
+import { Button, Card } from "@mui/material";
 import { Box } from "@mui/system";
 import { observer } from "mobx-react-lite";
 import { Modal } from "../component/Modal";
@@ -25,7 +24,10 @@ export const WelcomeModal = observer(() => {
   }, [modals, rawGAEnabled]);
 
   // UX: Save user preference when user closes the modal
-  const onClose = () => setIsGAEnabled(action((curr: boolean) => (appPreferences.isGoogleAnalyticsEnabled = curr)));
+  const onClose = () => {
+    setIsGAEnabled(action((curr: boolean) => (appPreferences.isGoogleAnalyticsEnabled = curr)));
+    modals.close(WelcomeModalSymbol);
+  };
 
   const isMobileLayout = React.useContext(LayoutContext) === LayoutType.Mobile;
 
