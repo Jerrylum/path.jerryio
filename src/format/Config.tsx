@@ -3,7 +3,7 @@ import { NumberRange } from "../component/RangeSlider";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { Format } from "./Format";
 import { Path } from "../core/Path";
-import { FieldImageSignatureAndOrigin } from "../core/Asset";
+import { FieldImageOriginType, FieldImageSignatureAndOrigin } from "../core/Asset";
 
 export function convertGeneralConfigUOL(gc: GeneralConfig, fromUOL: UnitOfLength) {
   const toUOL = gc.uol;
@@ -40,7 +40,7 @@ export interface GeneralConfig extends ConfigSection {
   uol: UnitOfLength;
   pointDensity: number;
   controlMagnetDistance: number;
-  fieldImage: FieldImageSignatureAndOrigin;
+  fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType>;
 }
 
 export interface PathConfig extends ConfigSection {

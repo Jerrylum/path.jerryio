@@ -12,7 +12,7 @@ import { IsBoolean, IsPositive } from "class-validator";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
 import { Path, Segment } from "../core/Path";
 import { isCoordinateWithHeading } from "../core/Coordinate";
-import { FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
+import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -39,7 +39,7 @@ class GeneralConfigImpl implements GeneralConfig {
   controlMagnetDistance: number = 5;
   @Type(() => FieldImageSignatureAndOrigin)
   @Expose()
-  fieldImage: FieldImageSignatureAndOrigin = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
+  fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
 
   @Exclude()
   private format_: PathDotJerryioFormatV0_1;

@@ -9,7 +9,7 @@ import { GeneralConfig, PathConfig } from "./Config";
 import { Format } from "./Format";
 import { ValidateNumber } from "../core/Util";
 import { CustomFormat } from "./Format.test";
-import { FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
+import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
 
 export class CustomGeneralConfig implements GeneralConfig {
   public custom: string = "custom";
@@ -37,7 +37,7 @@ export class CustomGeneralConfig implements GeneralConfig {
   controlMagnetDistance: number = 5 / 2.54;
   @Type(() => FieldImageSignatureAndOrigin)
   @Expose()
-  fieldImage: FieldImageSignatureAndOrigin = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
+  fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
 
   constructor() {
     makeAutoObservable(this);

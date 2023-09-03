@@ -21,7 +21,7 @@ import { ObserverCheckbox } from "../component/ObserverCheckbox";
 import { NumberUOL } from "../token/Tokens";
 import { parseFormula } from "../core/Util";
 import { ObserverItemsSelect } from "../component/ObserverItemsSelect";
-import { FieldImageAsset } from "../core/Asset";
+import { FieldImageAsset, FieldImageOriginType } from "../core/Asset";
 import { AssetManagerModalSymbol } from "./AssetManagerModal";
 
 const GeneralConfigPanel = observer((props: {}) => {
@@ -164,7 +164,7 @@ const GeneralConfigPanel = observer((props: {}) => {
             ...assetManager.assets.map(asset => ({ key: asset.signature, value: asset, label: asset.displayName })),
             { key: "open-asset-manager", value: "open-asset-manager", label: "(Custom)" }
           ]}
-          onSelectItem={(asset: FieldImageAsset | string | undefined) => {
+          onSelectItem={(asset: FieldImageAsset<FieldImageOriginType> | string | undefined) => {
             if (asset === "open-asset-manager") {
               modals.open(AssetManagerModalSymbol);
             } else if (asset instanceof FieldImageAsset) {

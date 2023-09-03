@@ -130,8 +130,24 @@
 
       #asset-image-preview {
         width: 100%;
+        line-height: 0;
         border: 1px solid var(--text-primary-color);
         position: relative;
+
+        > #failed-message {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          padding: 16px;
+          text-align: center;
+          display: flex;
+          align-content: center;
+          flex-wrap: wrap;
+          user-select: none;
+          pointer-events: none;
+        }
 
         > img {
           position: absolute;
@@ -140,6 +156,37 @@
           width: 100%;
           height: 100%;
           object-fit: contain;
+          user-select: none;
+          cursor: pointer;
+        }
+
+        > #reload-button {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          text-align: center;
+          display: flex;
+          align-content: center;
+          flex-wrap: wrap;
+          background-color: rgba(255, 255, 255, 0.2);
+          opacity: 0;
+          transition: opacity 0.2s ease-in-out;
+          user-select: none;
+          cursor: pointer;
+
+          > * {
+            width: 100%;
+          }
+
+          &:hover {
+            opacity: 1;
+
+            & + #failed-message {
+              display: none;
+            }
+          }
         }
       }
     }

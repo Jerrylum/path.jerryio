@@ -276,7 +276,56 @@ export function useMobxStorage<T extends { destructor: () => void } | {}>(
 }
 
 export function useTouchEvent(eventListener: TouchEventListener, element: HTMLElement | null) {
-  useEventListener(element, "touchstart", (e) => eventListener.onTouchStart(e), { capture: true, passive: false });
-  useEventListener(element, "touchmove", (e) => eventListener.onTouchMove(e), { capture: true, passive: false });
-  useEventListener(element, "touchend", (e) => eventListener.onTouchEnd(e), { capture: true, passive: false });
+  useEventListener(element, "touchstart", e => eventListener.onTouchStart(e), { capture: true, passive: false });
+  useEventListener(element, "touchmove", e => eventListener.onTouchMove(e), { capture: true, passive: false });
+  useEventListener(element, "touchend", e => eventListener.onTouchEnd(e), { capture: true, passive: false });
+}
+
+export function useImageState(imageRef: React.RefObject<HTMLImageElement>) {
+  // This implementation is adopted from https://github.com/konvajs/use-image under MIT license
+
+  // lets use refs for image and status
+  // so we can update them during render
+  // to have instant update in status/image when new data comes in
+  const statusRef = React.useRef<"loading" | "loaded" | "failed">("loading");
+
+  // we are not going to use token
+  // but we need to just to trigger state update
+  const [_, setStateToken] = React.useState(0);
+
+  // keep track of old props to trigger changes
+  const url = imageRef.current?.src ?? null;
+  const oldUrl = React.useRef<string | null>(url);
+
+  React.useEffect(() => {
+    const img = imageRef.current;
+    if (!img) return;
+
+    const url = img.src;
+
+    if (oldUrl.current !== url) {
+      statusRef.current = "loading";
+      oldUrl.current = url;
+    }
+
+    function onload() {
+      statusRef.current = "loaded";
+      setStateToken(Math.random());
+    }
+
+    function onerror() {
+      statusRef.current = "failed";
+      setStateToken(Math.random());
+    }
+
+    img.addEventListener("load", onload);
+    img.addEventListener("error", onerror);
+
+    return function cleanup() {
+      img.removeEventListener("load", onload);
+      img.removeEventListener("error", onerror);
+    };
+  }, [imageRef.current?.src]);
+
+  return statusRef.current;
 }

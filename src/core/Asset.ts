@@ -7,20 +7,19 @@ import localforage from "localforage";
 import builtInFieldImage2024 from "../static/field2024.png";
 import builtInFieldPerimeter from "../static/field-perimeter.png";
 
-export enum FieldImageAssetType {
-  OfficialPreCached = "official-pre-cached",
-  OfficialDownload = "official-download",
-  ExternalDownload = "external-download",
-  Local = "local"
-}
-
 export enum FieldImageOriginType {
   BuiltIn = "built-in",
   External = "external",
   Local = "local"
 }
 
-type FieldImageOrigin = FieldImageBuiltInOrigin | FieldImageExternalOrigin | FieldImageLocalOrigin;
+type FieldImageOriginClass<TType = FieldImageOriginType> = TType extends FieldImageOriginType.BuiltIn
+  ? FieldImageBuiltInOrigin
+  : TType extends FieldImageOriginType.External
+  ? FieldImageExternalOrigin
+  : TType extends FieldImageOriginType.Local
+  ? FieldImageLocalOrigin
+  : never;
 
 export class FieldImageBuiltInOrigin {
   @Exclude()
@@ -65,7 +64,7 @@ export class FieldImageLocalOrigin {
   }
 }
 
-export class FieldImageSignatureAndOrigin {
+export class FieldImageSignatureAndOrigin<TOrigin extends FieldImageOriginType> {
   @Expose()
   @IsString()
   @MinLength(1)
@@ -74,7 +73,7 @@ export class FieldImageSignatureAndOrigin {
   @Expose()
   @IsString()
   @MinLength(1)
-  public signature: string; // heightInMM + image data
+  public signature: string;
 
   @Expose()
   @Type(() => FieldImageBuiltInOrigin, {
@@ -88,9 +87,9 @@ export class FieldImageSignatureAndOrigin {
     },
     keepDiscriminatorProperty: true
   })
-  public origin: FieldImageOrigin;
+  public origin: FieldImageOriginClass<TOrigin>;
 
-  constructor(displayName: string, signature: string, origin: FieldImageOrigin) {
+  constructor(displayName: string, signature: string, origin: FieldImageOriginClass<TOrigin>) {
     makeAutoObservable(this);
     this.displayName = displayName;
     this.signature = signature;
@@ -98,22 +97,15 @@ export class FieldImageSignatureAndOrigin {
   }
 }
 
-export class FieldImageAsset {
-  readonly type: FieldImageOriginType;
+export class FieldImageAsset<TOrigin extends FieldImageOriginType> {
+  readonly type: TOrigin;
 
   public displayName: string;
   public heightInMM: number; // in MM
   public location: string;
   public signature: string;
 
-  constructor(
-    type: FieldImageOriginType,
-    displayName: string,
-    heightInMM: number,
-    location: string,
-    signature: string
-  ) {
-    // makeAutoObservable(this);
+  constructor(type: TOrigin, displayName: string, heightInMM: number, location: string, signature: string) {
     makeObservable(this, {
       displayName: observable,
       heightInMM: observable,
@@ -134,7 +126,8 @@ export class FieldImageAsset {
     return this.location;
   }
 
-  getOrigin(): FieldImageOrigin {
+  getOrigin(): FieldImageOriginClass<TOrigin>;
+  getOrigin() {
     switch (this.type) {
       case FieldImageOriginType.BuiltIn:
         return new FieldImageBuiltInOrigin();
@@ -142,15 +135,21 @@ export class FieldImageAsset {
         return new FieldImageExternalOrigin(this.heightInMM, this.location);
       case FieldImageOriginType.Local:
         return new FieldImageLocalOrigin(this.heightInMM);
+      default:
+        throw new Error("Invalid origin type"); // should never happen
     }
   }
 
-  getSignatureAndOrigin(): FieldImageSignatureAndOrigin {
+  getSignatureAndOrigin(): FieldImageSignatureAndOrigin<TOrigin> {
     return new FieldImageSignatureAndOrigin(this.displayName, this.signature, this.getOrigin());
+  }
+
+  isOriginType<TCompare extends FieldImageOriginType>(compare: TCompare): this is FieldImageAsset<TCompare> {
+    return this.type === (compare as unknown);
   }
 }
 
-export class FieldImageLocalAsset extends FieldImageAsset {
+export class FieldImageLocalAsset extends FieldImageAsset<FieldImageOriginType.Local> {
   public data: Blob | null | undefined = null;
 
   constructor(displayName: string, heightInMM: number, location: string, signature: string) {
@@ -172,7 +171,11 @@ export class FieldImageLocalAsset extends FieldImageAsset {
   }
 }
 
-export function createBuiltInFieldImage(displayName: string, heightInMM: number, location: string): FieldImageAsset {
+export function createBuiltInFieldImage(
+  displayName: string,
+  heightInMM: number,
+  location: string
+): FieldImageAsset<FieldImageOriginType.BuiltIn> {
   // displayName is the signature
   return new FieldImageAsset(FieldImageOriginType.BuiltIn, displayName, heightInMM, location, displayName);
 }
@@ -181,15 +184,14 @@ export async function createExternalFieldImage(
   displayName: string,
   heightInMM: number,
   location: string
-): Promise<FieldImageAsset | undefined> {
+): Promise<FieldImageAsset<FieldImageOriginType.External> | undefined> {
   try {
     const response = await fetch(location, { cache: "no-cache" });
     if (response.ok === false) return undefined;
-    const data = new Uint8Array(await response.arrayBuffer());
+    // const data = new Uint8Array(await response.arrayBuffer());
 
     const hash = new Hash();
-    hash.update(new TextEncoder().encode(`${heightInMM}`));
-    hash.update(data);
+    hash.update(new TextEncoder().encode(`${heightInMM} ${location}`));
     const calculatedSignature = hex(hash.digest());
 
     return new FieldImageAsset(FieldImageOriginType.External, displayName, heightInMM, location, calculatedSignature);
@@ -219,7 +221,7 @@ export async function createLocalFieldImage(
 }
 
 export class AssetManager {
-  private userAssets: FieldImageAsset[] = [];
+  private userAssets: FieldImageAsset<FieldImageOriginType>[] = [];
 
   constructor() {
     makeAutoObservable(this);
@@ -238,12 +240,12 @@ export class AssetManager {
     localStorage.setItem("assets", JSON.stringify(assetsInObj));
   }
 
-  addAsset(asset: FieldImageAsset) {
+  addAsset(asset: FieldImageAsset<FieldImageOriginType>) {
     this.userAssets.push(asset);
     this.saveAssets();
   }
 
-  removeAsset(asset: FieldImageAsset) {
+  removeAsset(asset: FieldImageAsset<FieldImageOriginType>) {
     const index = this.userAssets.indexOf(asset);
     if (index !== -1) {
       this.userAssets.splice(index, 1);
@@ -251,21 +253,21 @@ export class AssetManager {
     }
   }
 
-  getAssetBySignature(signature: string): FieldImageAsset | undefined {
+  getAssetBySignature(signature: string): FieldImageAsset<FieldImageOriginType> | undefined {
     return this.assets.find(asset => asset.signature === signature);
   }
 
-  get assets(): Readonly<FieldImageAsset[]> {
+  get assets(): Readonly<FieldImageAsset<FieldImageOriginType>[]> {
     return [...builtInAssets, ...this.userAssets];
   }
 }
 
-const builtInAssets: FieldImageAsset[] = [
+const builtInAssets: FieldImageAsset<FieldImageOriginType>[] = [
   // 3683 = 145*2.54*10 ~= 3676.528, the size of the field perimeter in Fusion 360
   createBuiltInFieldImage("VRC 2024 - Over Under", 3683, builtInFieldImage2024),
   createBuiltInFieldImage("VRC Field Perimeter", 3683, builtInFieldPerimeter)
 ];
 
-export function getDefaultBuiltInFieldImage(): FieldImageAsset {
+export function getDefaultBuiltInFieldImage(): FieldImageAsset<FieldImageOriginType> {
   return builtInAssets[0];
 }
