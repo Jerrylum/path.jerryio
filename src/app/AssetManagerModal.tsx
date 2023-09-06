@@ -133,7 +133,7 @@ export const FieldImagePreview = observer((props: { preview: FieldImageAsset<Fie
           </>
         ) : (
           <>
-            <img key={imageKey} ref={imageRef} src={preview?.imageSource() ?? ""} />
+            <img key={imageKey} ref={imageRef} alt="The field image preview" src={preview?.imageSource() ?? ""} />
             <Box id="reload-button" onClick={() => setImageKey(makeId(10))}>
               <Typography variant="body1">Click To Reload</Typography>
             </Box>
@@ -246,45 +246,11 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
           onKeyDown={e => e.stopPropagation()}
         />
       </Box>
-
-      {/* <Typography variant="h4" gutterBottom>
-        Source
-      </Typography> */}
-      {/* <Box
-        sx={{
-          marginTop: "1em",
-          display: "flex",
-          gap: "12px",
-          flexWrap: "nowrap",
-          alignItems: "center",
-          width: "100%"
-        }}>
-        <ObserverInput
-          label="URL"
-          getValue={() => draft.url}
-          setValue={(value: string) => (draft.url = value)}
-          isValidIntermediate={() => true}
-          isValidValue={value => value !== ""} // TODO
-          sx={{ flexGrow: 1 }}
-          onKeyDown={e => e.stopPropagation()}
-        />
-        <Typography variant="body1" sx={{}}>
-          or
-        </Typography>
-        <MuiFileInput
-          sx={{ flexGrow: 1 }}
-          placeholder="File Upload"
-          value={draft.upload}
-          onChange={action((file: File | null) => (draft.upload = file))}
-          size="small"
-        />
-      </Box> */}
-      <Box
-        sx={{
-          marginTop: "1em"
-        }}>
+      <Box sx={{ marginTop: "1em" }}>
         <FormControl>
-          <FormLabel id="demo-radio-buttons-group-label">Source</FormLabel>
+          <FormLabel id="demo-radio-buttons-group-label" sx={{ marginBottom: "4px" }}>
+            Source (Choose 1)
+          </FormLabel>
           <RadioGroup aria-labelledby="demo-radio-buttons-group-label" defaultValue="" row name="radio-buttons-group">
             <FormControlLabel
               value="url"
@@ -292,27 +258,31 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
               label={
                 <ObserverInput
                   label="URL"
+                  fullWidth
                   getValue={() => draft.url}
                   setValue={(value: string) => (draft.url = value)}
                   isValidIntermediate={() => true}
                   isValidValue={value => value !== ""} // TODO
-                  // sx={{ flexGrow: 1 }}
                   onKeyDown={e => e.stopPropagation()}
                 />
               }
+              componentsProps={{ typography: { sx: { flexGrow: 1 } } }}
+              sx={{ margin: "4px 0", flexGrow: 1 }}
             />
             <FormControlLabel
-              value="male"
+              value="file"
               control={<Radio />}
               label={
                 <MuiFileInput
-                  // sx={{ flexGrow: 1 }}
+                  fullWidth
                   placeholder="File Upload"
                   value={draft.upload}
                   onChange={action((file: File | null) => (draft.upload = file))}
                   size="small"
                 />
               }
+              componentsProps={{ typography: { sx: { flexGrow: 1 } } }}
+              sx={{ margin: "4px 0", flexGrow: 1 }}
             />
           </RadioGroup>
         </FormControl>
@@ -382,3 +352,4 @@ export const AssetManagerModal = observer(() => {
     </Modal>
   );
 });
+
