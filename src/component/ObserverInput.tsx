@@ -112,7 +112,6 @@ const ObserverInput = observer(
 
     return (
       <TextField
-        id="outlined-size-small"
         InputLabelProps={{ shrink: true }}
         inputRef={inputRef}
         size="small"

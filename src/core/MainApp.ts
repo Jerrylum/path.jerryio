@@ -23,7 +23,7 @@ import { validate } from "class-validator";
 import { FieldEditor } from "./FieldEditor";
 import { SpeedEditor } from "./SpeedEditor";
 import { AssetManager } from "./Asset";
-import { Modals } from "../component/Modal";
+import { Modals } from "../core/Modals";
 import { Preferences } from "./Preferences";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);

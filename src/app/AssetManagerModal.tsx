@@ -16,6 +16,7 @@ import {
   ListItemText,
   Radio,
   RadioGroup,
+  TextField,
   Typography
 } from "@mui/material";
 import { action, makeAutoObservable } from "mobx";
@@ -23,7 +24,6 @@ import { FieldImageAsset, FieldImageOriginType, getFieldImageOriginTypeDescripti
 import { getAppStores } from "../core/MainApp";
 import { useImageState, useMobxStorage } from "../core/Hook";
 import DeleteIcon from "@mui/icons-material/Delete";
-import useImage from "use-image";
 import { ObserverInput } from "../component/ObserverInput";
 import { NumberUOL } from "../token/Tokens";
 import { makeId, parseFormula } from "../core/Util";
@@ -114,7 +114,7 @@ export const FieldImagePreview = observer((props: { preview: FieldImageAsset<Fie
     } else {
       return null;
     }
-  }, [imageState, preview.heightInMM, imageKey]);
+  }, [imageState, preview.heightInMM, imageKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Box id="asset-preview">
@@ -133,7 +133,7 @@ export const FieldImagePreview = observer((props: { preview: FieldImageAsset<Fie
           </>
         ) : (
           <>
-            <img key={imageKey} ref={imageRef} alt="The field image preview" src={preview?.imageSource() ?? ""} />
+            <img key={imageKey} ref={imageRef} alt="The field preview" src={preview?.imageSource() ?? ""} />
             <Box id="reload-button" onClick={() => setImageKey(makeId(10))}>
               <Typography variant="body1">Click To Reload</Typography>
             </Box>
@@ -202,8 +202,6 @@ export const FieldImageList = observer((props: { variables: FieldImageManagerVar
 });
 
 export const NewFieldImageForm = observer((props: { variables: FieldImageManagerVariables }) => {
-  const { assetManager } = getAppStores();
-
   const { variables } = props;
 
   const draft = variables.draft;
@@ -256,14 +254,12 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
               value="url"
               control={<Radio />}
               label={
-                <ObserverInput
-                  label="URL"
+                <TextField
                   fullWidth
-                  getValue={() => draft.url}
-                  setValue={(value: string) => (draft.url = value)}
-                  isValidIntermediate={() => true}
-                  isValidValue={value => value !== ""} // TODO
-                  onKeyDown={e => e.stopPropagation()}
+                  InputLabelProps={{ shrink: true }}
+                  size="small"
+                  value={draft.url}
+                  onChange={action((event: React.ChangeEvent<HTMLInputElement>) => (draft.url = event.target.value))}
                 />
               }
               componentsProps={{ typography: { sx: { flexGrow: 1 } } }}
@@ -298,8 +294,6 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
 });
 
 export const FieldImageSection = observer(() => {
-  const { assetManager } = getAppStores();
-
   const variables = useMobxStorage(() => new FieldImageManagerVariables(), []);
 
   const selected = variables.selected;

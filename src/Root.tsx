@@ -14,7 +14,6 @@ import {
 } from "./core/Hook";
 import { getAppStores } from "./core/MainApp";
 
-import classNames from "classnames";
 import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./core/InputOutput";
 import { NoticeProvider } from "./app/Notice";
 import { ConfirmationModal } from "./app/Confirmation";
