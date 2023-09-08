@@ -19,7 +19,7 @@ import { NoticeProvider } from "./app/Notice";
 import { ConfirmationModal } from "./app/Confirmation";
 import { DragDropBackdrop } from "./app/DragDropBackdrop";
 import { RemovePathsAndEndControls } from "./core/Command";
-import React from "react";
+import React, { useEffect } from "react";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 import { LayoutType, getUsableLayout } from "./core/Layout";
 import { getAppThemeInfo } from "./app/Theme";
@@ -27,7 +27,7 @@ import { ClassisLayout, ExclusiveLayout, LayoutProvider, MobileLayout } from "./
 import { AboutModal } from "./app/AboutModal";
 import { WelcomeModal } from "./app/Welcome";
 import { PreferencesModal, PreferencesModalSymbol } from "./app/PreferencesModal";
-import { AssetManagerModal } from "./app/AssetManagerModal";
+import { AssetManagerModal, AssetManagerModalSymbol } from "./app/AssetManagerModal";
 
 const Root = observer(() => {
   const { app, confirmation, modals, appPreferences, clipboard } = getAppStores();
@@ -58,6 +58,10 @@ const Root = observer(() => {
       else return true;
     }
   };
+
+  useEffect(() => {
+    modals.open(AssetManagerModalSymbol);
+  }, []);
 
   useCustomHotkeys("Mod+P", onNew, ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Mod+O", onOpen, ENABLE_ON_ALL_INPUT_FIELDS);

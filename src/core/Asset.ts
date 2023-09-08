@@ -233,6 +233,51 @@ export async function createLocalFieldImage(
   }
 }
 
+/**
+ * Validate and purify a field image URL
+ *
+ * @param untrusted The untrusted URL
+ * @param enforceSecure Whether the URL must be HTTPS
+ * @param acceptFileExt The accepted file extensions, including the dot. For example, [".png", ".jpg", ".jpeg", ".gif"].
+ * Passing an empty array will accept all file extensions.
+ * @returns [trusted, feedback | null] if valid, [null, error] if invalid
+ */
+export function validateAndPurifyFieldImageURL(
+  untrusted: string,
+  enforceSecure: boolean = false,
+  acceptFileExt: string[] = [".png", ".jpg", ".jpeg", ".gif"]
+): [URL, null] | [URL, string] | [null, string] {
+  try {
+    const untrustedUrl = new URL(untrusted); // throw TypeError if invalid
+
+    if (untrustedUrl.protocol !== "http:" && untrustedUrl.protocol !== "https:")
+      return [null, "The protocol of the URL must be HTTP or HTTPS"];
+
+    if (enforceSecure && untrustedUrl.protocol !== "https:") return [null, "The URL must be HTTPS"];
+
+    if (acceptFileExt.length > 0) {
+      const ext = untrustedUrl.pathname.substring(untrustedUrl.pathname.lastIndexOf("."));
+      if (acceptFileExt.includes(ext) === false)
+        return [null, `The URL must have one of the following extensions: ${acceptFileExt.join(", ")}`];
+    }
+
+    ///////////////////////////////////////////////////////////
+    // The URL is valid at this point, but we need to purify it
+    ///////////////////////////////////////////////////////////
+
+    let feedback: string | null = null;
+
+    if (untrustedUrl.search !== "") feedback = "The query string of the URL will be removed";
+    untrustedUrl.search = "";
+
+    const trustedUrl = untrustedUrl;
+
+    return [trustedUrl, feedback];
+  } catch (e) {
+    return [null, "Invalid URL"];
+  }
+}
+
 export class AssetManager {
   private userAssets: FieldImageAsset<FieldImageOriginType>[] = [];
 

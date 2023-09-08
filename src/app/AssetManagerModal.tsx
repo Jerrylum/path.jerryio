@@ -20,7 +20,12 @@ import {
   Typography
 } from "@mui/material";
 import { action, makeAutoObservable } from "mobx";
-import { FieldImageAsset, FieldImageOriginType, getFieldImageOriginTypeDescription } from "../core/Asset";
+import {
+  FieldImageAsset,
+  FieldImageOriginType,
+  getFieldImageOriginTypeDescription,
+  validateAndPurifyFieldImageURL
+} from "../core/Asset";
 import { getAppStores } from "../core/MainApp";
 import { useImageState, useMobxStorage } from "../core/Hook";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -40,6 +45,7 @@ class FieldImageManagerVariables {
     name: string;
     heightInMM: number;
     url: string;
+    urlValidateResult: ReturnType<typeof validateAndPurifyFieldImageURL> | null;
     upload: File | null;
   } | null = null;
 
@@ -48,6 +54,7 @@ class FieldImageManagerVariables {
       name: "My Custom Field Image",
       heightInMM: 100,
       url: "",
+      urlValidateResult: null,
       upload: null
     };
   }
@@ -204,6 +211,8 @@ export const FieldImageList = observer((props: { variables: FieldImageManagerVar
 export const NewFieldImageForm = observer((props: { variables: FieldImageManagerVariables }) => {
   const { variables } = props;
 
+  const [sourceType, setSourceType] = React.useState<"" | "url" | "file">("");
+
   const draft = variables.draft;
   if (draft === null) return null;
 
@@ -246,10 +255,14 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
       </Box>
       <Box sx={{ marginTop: "1em" }}>
         <FormControl>
-          <FormLabel id="demo-radio-buttons-group-label" sx={{ marginBottom: "4px" }}>
+          <FormLabel id="source-radio-buttons-group-label" sx={{ marginBottom: "4px" }}>
             Source (Choose 1)
           </FormLabel>
-          <RadioGroup aria-labelledby="demo-radio-buttons-group-label" defaultValue="" row name="radio-buttons-group">
+          <RadioGroup
+            aria-labelledby="source-radio-buttons-group-label"
+            value={sourceType}
+            row
+            name="radio-buttons-group">
             <FormControlLabel
               value="url"
               control={<Radio />}
@@ -259,7 +272,15 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
                   InputLabelProps={{ shrink: true }}
                   size="small"
                   value={draft.url}
-                  onChange={action((event: React.ChangeEvent<HTMLInputElement>) => (draft.url = event.target.value))}
+                  onChange={action((event: React.ChangeEvent<HTMLInputElement>) => {
+                    draft.url = event.target.value;
+                    draft.upload = null;
+                    draft.urlValidateResult = validateAndPurifyFieldImageURL(
+                      draft.url,
+                      window.location.protocol === "https:"
+                    );
+                    setSourceType("url");
+                  })}
                 />
               }
               componentsProps={{ typography: { sx: { flexGrow: 1 } } }}
@@ -273,7 +294,12 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
                   fullWidth
                   placeholder="File Upload"
                   value={draft.upload}
-                  onChange={action((file: File | null) => (draft.upload = file))}
+                  onChange={action((file: File | null) => {
+                    draft.url = "";
+                    draft.upload = file;
+                    draft.urlValidateResult = null;
+                    setSourceType("file");
+                  })}
                   size="small"
                 />
               }
@@ -283,10 +309,8 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
           </RadioGroup>
         </FormControl>
 
-        <Typography variant="body1" sx={{}}>
-          If the url is provided, the image will be downloaded and cached in your computer. The url will also be
-          included in the path file. The image will be automatically downloaded when the path file is opened on a
-          different computer.
+        <Typography variant="body1" sx={{ marginTop: "0.5em" }}>
+          {draft.urlValidateResult?.[1]}
         </Typography>
       </Box>
     </Box>
@@ -346,4 +370,3 @@ export const AssetManagerModal = observer(() => {
     </Modal>
   );
 });
-
