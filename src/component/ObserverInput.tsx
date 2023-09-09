@@ -116,7 +116,7 @@ const ObserverInput = observer(
         inputRef={inputRef}
         size="small"
         defaultValue={initialValue}
-        onChange={onChange}
+        onChange={action(onChange)}
         {...rest}
         onKeyDown={action(onKeyDown)}
         onBlur={action(onBlur)}
