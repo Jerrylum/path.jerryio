@@ -6,6 +6,7 @@ import { getAppStores } from "./MainApp";
 import { Vector } from "./Path";
 import { IS_MAC_OS } from "./Util";
 import { TouchEventListener } from "./TouchEventListener";
+import { FieldImageAsset, FieldImageOriginType } from "./Asset";
 
 export function useTimer(ms: number) {
   const [time, setTime] = React.useState(Date.now());
@@ -325,4 +326,15 @@ export function useImageState(imageRef: React.RefObject<HTMLImageElement>, depen
   }, [imageRef.current?.src, ...(dependencies ?? [])]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return statusRef.current;
+}
+
+export function useFieldImageAsset(fieldImageAsset: FieldImageAsset<FieldImageOriginType>) {
+  const [source, setSource] = React.useState<string>("");
+
+  React.useEffect(() => {
+    setSource("");
+    fieldImageAsset.imageSource().then(rtn => setSource(curr => (curr === "" ? rtn : curr)));
+  }, [fieldImageAsset]);
+
+  return source;
 }
