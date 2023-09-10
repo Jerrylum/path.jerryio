@@ -168,7 +168,10 @@ const GeneralConfigPanel = observer((props: {}) => {
             if (asset === "open-asset-manager") {
               modals.open(AssetManagerModalSymbol);
             } else if (asset instanceof FieldImageAsset) {
-              gc.fieldImage = asset?.getSignatureAndOrigin();
+              app.history.execute(
+                `Change field layer`,
+                new UpdateProperties(gc, { fieldImage: asset?.getSignatureAndOrigin() })
+              );
             }
           }}
         />
