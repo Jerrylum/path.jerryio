@@ -135,7 +135,7 @@ export class FieldImageAsset<TOrigin extends FieldImageOriginType> {
     this.signature = signature;
   }
 
-  imageSource(): string {
+  async imageSource() {
     return this.location;
   }
 
@@ -163,10 +163,13 @@ export class FieldImageAsset<TOrigin extends FieldImageOriginType> {
 }
 
 export class FieldImageLocalAsset extends FieldImageAsset<FieldImageOriginType.Local> {
-  public data: Blob | null | undefined = null;
+  @Exclude()
+  public data: Blob | null | undefined = undefined;
+  @Exclude()
+  public objectUrl: string = "";
 
-  constructor(displayName: string, heightInMM: number, location: string, signature: string) {
-    super(FieldImageOriginType.Local, displayName, heightInMM, location, signature);
+  constructor(displayName: string, heightInMM: number, storageKey: string, signature: string) {
+    super(FieldImageOriginType.Local, displayName, heightInMM, storageKey, signature);
 
     makeObservable(this, {
       data: observable
@@ -175,12 +178,29 @@ export class FieldImageLocalAsset extends FieldImageAsset<FieldImageOriginType.L
     // localforage.getItem<Blob | null>(this.location).then(data => (this.data = data));
   }
 
-  imageSource(): string {
-    if (this.data === undefined) {
-      this.data = null;
-      localforage.getItem<Blob | null>(this.location).then(data => (this.data = data));
+  // imageSource(): string {
+  //   if (this.data === undefined) {
+  //     this.data = null;
+  //     localforage.getItem<Blob | null>(this.location).then(data => {
+  //       this.data = data;
+  //       this.objectUrl = data ? URL.createObjectURL(data) : "";
+  //     });
+  //   }
+  //   console.log(this.data, this.location);
+
+  //   return this.objectUrl;
+  // }
+  async imageSource() {
+    if (this.objectUrl === "") {
+      this.data = await localforage.getItem<Blob | null>(this.location);
+      this.objectUrl = this.data ? URL.createObjectURL(this.data) : "";
     }
-    return this.data ? URL.createObjectURL(this.data) : "";
+
+    return this.objectUrl;
+  }
+
+  removeFromStorage() {
+    localforage.removeItem(this.location);
   }
 }
 
@@ -251,7 +271,7 @@ export function validateAndPurifyFieldImageURL(
     const untrustedUrl = new URL(untrusted); // throw TypeError if invalid
 
     if (untrustedUrl.protocol !== "http:" && untrustedUrl.protocol !== "https:")
-      return [null, "The protocol of the URL must be HTTP or HTTPS"];
+      return [null, "The protocol must be HTTP or HTTPS"];
 
     if (enforceSecure && untrustedUrl.protocol !== "https:") return [null, "The URL must be HTTPS"];
 
@@ -289,12 +309,16 @@ export class AssetManager {
   }
 
   loadAssets() {
-    const assets: unknown[] = JSON.parse(localStorage.getItem("assets") ?? "[]");
-    this.userAssets = plainToInstance(FieldImageAsset, assets, { excludeExtraneousValues: true });
+    // ALGO: Assume the assets are valid
+
+    const assets: Record<string, unknown>[] = JSON.parse(localStorage.getItem("assets") ?? "[]");
+    this.userAssets = assets.map(asset =>
+      plainToInstance(asset["type"] === FieldImageOriginType.Local ? FieldImageLocalAsset : FieldImageAsset, asset)
+    );
   }
 
   saveAssets() {
-    const assetsInObj = instanceToPlain(this.userAssets, { excludeExtraneousValues: true });
+    const assetsInObj = instanceToPlain(this.userAssets);
     localStorage.setItem("assets", JSON.stringify(assetsInObj));
   }
 
@@ -304,6 +328,8 @@ export class AssetManager {
   }
 
   removeAsset(asset: FieldImageAsset<FieldImageOriginType>) {
+    if (asset instanceof FieldImageLocalAsset) asset.removeFromStorage();
+
     const index = this.userAssets.indexOf(asset);
     if (index !== -1) {
       this.userAssets.splice(index, 1);
