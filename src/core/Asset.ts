@@ -205,8 +205,8 @@ export async function createExternalFieldImage(
   location: string
 ): Promise<FieldImageAsset<FieldImageOriginType.External> | undefined> {
   try {
-    const response = await fetch(location, { cache: "no-cache" });
-    if (response.ok === false) return undefined;
+    // const response = await fetch(location, { cache: "no-cache" });
+    // if (response.ok === false) return undefined;
     // const data = new Uint8Array(await response.arrayBuffer());
 
     const hash = new Hash();
