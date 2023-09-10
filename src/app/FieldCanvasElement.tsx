@@ -17,7 +17,7 @@ import { getAppStores } from "../core/MainApp";
 import { RobotElement } from "./RobotElement";
 import { fromHeadingInDegreeToAngleInRadian } from "../core/Calculation";
 import { MagnetReference } from "../core/Magnet";
-import { useMobxStorage, useTouchEvent, useWindowSize } from "../core/Hook";
+import { useFieldImageAsset, useMobxStorage, useTouchEvent, useWindowSize } from "../core/Hook";
 import { LayoutType } from "../core/Layout";
 import { Box } from "@mui/material";
 import { Instance } from "@popperjs/core";
@@ -641,7 +641,7 @@ const FieldCanvasElement = observer((props: {}) => {
     fieldEditor.zoomToFit();
   }, [currentLayoutType, fieldEditor]);
 
-  const [fieldImage] = useImage(fieldImageAsset.imageSource());
+  const [fieldImage] = useImage(useFieldImageAsset(fieldImageAsset));
 
   const offset = app.fieldEditor.offset;
   const scale = app.fieldEditor.scale;
