@@ -174,22 +174,8 @@ export class FieldImageLocalAsset extends FieldImageAsset<FieldImageOriginType.L
     makeObservable(this, {
       data: observable
     });
-
-    // localforage.getItem<Blob | null>(this.location).then(data => (this.data = data));
   }
 
-  // imageSource(): string {
-  //   if (this.data === undefined) {
-  //     this.data = null;
-  //     localforage.getItem<Blob | null>(this.location).then(data => {
-  //       this.data = data;
-  //       this.objectUrl = data ? URL.createObjectURL(data) : "";
-  //     });
-  //   }
-  //   console.log(this.data, this.location);
-
-  //   return this.objectUrl;
-  // }
   async imageSource() {
     if (this.objectUrl === "") {
       this.data = await localforage.getItem<Blob | null>(this.location);
@@ -322,12 +308,12 @@ export class AssetManager {
     localStorage.setItem("assets", JSON.stringify(assetsInObj));
   }
 
-  addAsset(asset: FieldImageAsset<FieldImageOriginType>) {
+  addAsset(asset: FieldImageAsset<FieldImageOriginType.External | FieldImageOriginType.Local>) {
     this.userAssets.push(asset);
     this.saveAssets();
   }
 
-  removeAsset(asset: FieldImageAsset<FieldImageOriginType>) {
+  removeAsset(asset: FieldImageAsset<FieldImageOriginType.External | FieldImageOriginType.Local>) {
     if (asset instanceof FieldImageLocalAsset) asset.removeFromStorage();
 
     const index = this.userAssets.indexOf(asset);

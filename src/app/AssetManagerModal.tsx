@@ -27,6 +27,7 @@ import {
   FieldImageOriginType,
   createExternalFieldImage,
   createLocalFieldImage,
+  getDefaultBuiltInFieldImage,
   getFieldImageOriginTypeDescription,
   validateAndPurifyFieldImageURL
 } from "../core/Asset";
@@ -78,16 +79,15 @@ export const FieldImageAssetItem = observer(
 
     const onDelete = () => {
       if (variables.selected === asset) variables.selected = null;
-      // if (app.gc.fieldImage.signature === asset.signature) {
-      //   app.history.execute(
-      //     `Use default field layer`,
-      //     new UpdateProperties(app.gc, { fieldImage: assetManager.assets[0].getSignatureAndOrigin() })
-      //   );
-      // }
+      if (app.gc.fieldImage.signature === asset.signature) {
+        app.history.execute(
+          `Use default field layer`,
+          new UpdateProperties(app.gc, { fieldImage: getDefaultBuiltInFieldImage().getSignatureAndOrigin() })
+        );
+      }
 
-      // TODO history issue
-
-      assetManager.removeAsset(asset);
+      if (asset.isOriginType(FieldImageOriginType.External) || asset.isOriginType(FieldImageOriginType.Local))
+        assetManager.removeAsset(asset);
     };
 
     return (

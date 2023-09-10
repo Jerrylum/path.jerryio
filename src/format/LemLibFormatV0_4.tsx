@@ -1,4 +1,4 @@
-import { makeAutoObservable, reaction, action } from "mobx";
+import { makeAutoObservable, reaction, action, intercept } from "mobx";
 import { getAppStores } from "../core/MainApp";
 import { ValidateNumber, clamp, makeId } from "../core/Util";
 import { Control, EndControl, Path, Segment, Vector } from "../core/Path";
@@ -38,7 +38,8 @@ class GeneralConfigImpl implements GeneralConfig {
   controlMagnetDistance: number = 5 / 2.54;
   @Type(() => FieldImageSignatureAndOrigin)
   @Expose()
-  fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
+  fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> =
+    getDefaultBuiltInFieldImage().getSignatureAndOrigin();
 
   @Exclude()
   private format_: LemLibFormatV0_4;
@@ -53,6 +54,16 @@ class GeneralConfigImpl implements GeneralConfig {
         convertGeneralConfigUOL(this, oldUOL);
       })
     );
+
+    intercept(this, "fieldImage", change => {
+      const { assetManager } = getAppStores();
+
+      if (assetManager.getAssetBySignature(change.newValue.signature) === undefined) {
+        change.newValue = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
+      }
+
+      return change;
+    });
   }
 
   get format() {
