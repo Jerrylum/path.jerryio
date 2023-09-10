@@ -37,7 +37,7 @@ function fixControlTooCloseToTheEndControl() {
   const segment = path.segments[0];
 
   if (segment.controls.length !== 4) return;
-  
+
   function fix(control: Control, endControl: EndControl) {
     const uc = new UnitConverter(app.gc.uol, UnitOfLength.Millimeter);
     const offset = control.y - endControl.y;
@@ -45,7 +45,7 @@ function fixControlTooCloseToTheEndControl() {
     const distanceInMm = uc.fromAtoB(distance);
 
     if (distanceInMm >= 200) return;
-    
+
     const margin = uc.fromBtoA(200 - distanceInMm) * (offset > 0 ? 1 : -1);
     control.y += margin;
   }
@@ -624,7 +624,8 @@ const FieldCanvasElement = observer((props: {}) => {
 
   const uc = new UnitConverter(UnitOfLength.Millimeter, app.gc.uol);
 
-  const fieldImageAsset = assetManager.getAssetBySignature(app.gc.fieldImage.signature) ?? getDefaultBuiltInFieldImage();
+  const fieldImageAsset =
+    assetManager.getAssetBySignature(app.gc.fieldImage.signature) ?? getDefaultBuiltInFieldImage();
 
   const canvasHeightInPx = (function () {
     if (currentLayoutType === LayoutType.Classic) {
@@ -802,6 +803,7 @@ const FieldCanvasElement = observer((props: {}) => {
             {fieldImage && (
               <Image
                 image={fieldImage}
+                offset={new Vector(((fieldImage.width / fieldImage.height) * fcc.heightInPx - fcc.heightInPx) / 2, 0)}
                 width={(fieldImage.width / fieldImage.height) * fcc.heightInPx}
                 height={fcc.heightInPx}
                 onClick={action(onClickFieldImage)}
