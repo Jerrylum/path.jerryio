@@ -1,8 +1,12 @@
 import { runInAction } from "mobx";
+import { TextEncoder as NodeTextEncoder, TextDecoder as NodeTextDecoder,  } from "util";
 import { ValidationArguments, ValidationOptions, registerDecorator } from "class-validator";
 import { TokenParser, NumberWithUnit, CodePointBuffer, Computation } from "../token/Tokens";
 import { Unit } from "./Unit";
 import { Vector } from "./Path";
+
+export const TextEncoder = "TextEncoder" in window ? window.TextEncoder : NodeTextEncoder;
+export const TextDecoder = "TextDecoder" in window ? window.TextDecoder : NodeTextDecoder;
 
 export const IS_MAC_OS = (() => {
   const os = navigator.userAgent;
