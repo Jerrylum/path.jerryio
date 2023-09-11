@@ -23,6 +23,7 @@ module.exports = async env => {
     },
     plugins: [
       { plugin: require("./craco-copy-webpack-plugin.js") },
+      { plugin: require("./craco-fallback-util-plugin.js") },
       { plugin: require("./craco-service-worker-dev-plugin.js") }
     ]
   };
