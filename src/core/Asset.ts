@@ -1,11 +1,21 @@
+import "reflect-metadata";
 import { Exclude, Expose, Type, instanceToPlain, plainToInstance } from "class-transformer";
-import { IsString, MinLength, ValidationArguments, ValidationOptions, registerDecorator } from "class-validator";
+import {
+  IsString,
+  MinLength,
+  ValidateNested,
+  ValidationArguments,
+  ValidationOptions,
+  registerDecorator
+} from "class-validator";
 import { Hash } from "fast-sha256";
 import { makeAutoObservable, makeObservable, observable } from "mobx";
-import { ValidateNumber, hex, makeId } from "./Util";
+import { ValidateNumber, hex, makeId, TextEncoder } from "./Util";
 import localforage from "localforage";
 import builtInFieldImage2024 from "../static/field2024.png";
 import builtInFieldPerimeter from "../static/field-perimeter.png";
+
+export const DEFAULT_ACCEPT_FILE_EXT = [".png", ".jpg", ".jpeg", ".gif"] as const;
 
 export enum FieldImageOriginType {
   BuiltIn = "built-in",
@@ -53,7 +63,7 @@ export class FieldImageExternalOrigin {
 
   @IsString()
   @MinLength(1)
-  @ValidateFieldImageURL("location" in globalThis ? location.protocol === "https:" : false)
+  @ValidateFieldImageURL("location" in globalThis ? globalThis.location.protocol === "https:" : false)
   @Expose()
   public location: string;
 
@@ -87,9 +97,11 @@ export class FieldImageSignatureAndOrigin<TOrigin extends FieldImageOriginType> 
   @Expose()
   @IsString()
   @MinLength(1)
+  @ValidateSignature()
   public signature: string;
 
   @Expose()
+  @ValidateNested()
   @Type(() => FieldImageBuiltInOrigin, {
     discriminator: {
       property: "__type",
@@ -242,7 +254,7 @@ export async function createLocalFieldImage(
 
 export function ValidateFieldImageURL(
   enforceSecure: boolean = false,
-  acceptFileExt: string[] = [".png", ".jpg", ".jpeg", ".gif"],
+  acceptFileExt: string[] = DEFAULT_ACCEPT_FILE_EXT.slice(),
   validationOptions?: ValidationOptions
 ) {
   return function (target: Object, propertyName: string) {
@@ -261,7 +273,7 @@ export function ValidateFieldImageURL(
 
           const [, feedback] = validateAndPurifyFieldImageURL(value, enforceSecure, acceptFileExt);
 
-          return feedback !== null;
+          return feedback === null;
         },
         defaultMessage(args: ValidationArguments) {
           return `The ${args.property} must be a valid URL`;
@@ -281,11 +293,21 @@ export function ValidateSignature(validationOptions?: ValidationOptions) {
       constraints: [],
       validator: {
         validate(value: unknown, args: ValidationArguments) {
-          if (typeof value !== "string") return false;
+          const obj = args.object;
+          if (obj instanceof FieldImageSignatureAndOrigin) {
+            const origin = obj.origin;
 
-          // TODO
-
-          return true;
+            if (origin instanceof FieldImageBuiltInOrigin) return obj.displayName === obj.signature;
+            if (origin instanceof FieldImageExternalOrigin) {
+              const hash = new Hash();
+              hash.update(new TextEncoder().encode(`${origin.heightInMM} ${origin.location}`));
+              return hex(hash.digest()) === obj.signature;
+            } else {
+              return true;
+            }
+          } else {
+            return false;
+          }
         },
         defaultMessage(args: ValidationArguments) {
           return `The ${args.property} must be a valid signature`;
@@ -307,7 +329,7 @@ export function ValidateSignature(validationOptions?: ValidationOptions) {
 export function validateAndPurifyFieldImageURL(
   untrusted: string,
   enforceSecure: boolean = false,
-  acceptFileExt: string[] = [".png", ".jpg", ".jpeg", ".gif"]
+  acceptFileExt: string[] = DEFAULT_ACCEPT_FILE_EXT.slice()
 ): [URL, null] | [URL, string] | [null, string] {
   try {
     const untrustedUrl = new URL(untrusted); // throw TypeError if invalid
