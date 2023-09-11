@@ -1,5 +1,5 @@
 import { Exclude, Expose, Type, instanceToPlain, plainToInstance } from "class-transformer";
-import { IsString, MinLength } from "class-validator";
+import { IsString, MinLength, ValidationArguments, ValidationOptions, registerDecorator } from "class-validator";
 import { Hash } from "fast-sha256";
 import { makeAutoObservable, makeObservable, observable } from "mobx";
 import { ValidateNumber, hex, makeId } from "./Util";
@@ -53,6 +53,7 @@ export class FieldImageExternalOrigin {
 
   @IsString()
   @MinLength(1)
+  @ValidateFieldImageURL("location" in globalThis ? location.protocol === "https:" : false)
   @Expose()
   public location: string;
 
@@ -239,6 +240,61 @@ export async function createLocalFieldImage(
   }
 }
 
+export function ValidateFieldImageURL(
+  enforceSecure: boolean = false,
+  acceptFileExt: string[] = [".png", ".jpg", ".jpeg", ".gif"],
+  validationOptions?: ValidationOptions
+) {
+  return function (target: Object, propertyName: string) {
+    registerDecorator({
+      name: "ValidateFieldImageURL",
+      target: target.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      constraints: [enforceSecure, acceptFileExt],
+      validator: {
+        validate(value: unknown, args: ValidationArguments) {
+          const enforceSecure: boolean = args.constraints[0];
+          const acceptFileExt: string[] = args.constraints[1];
+
+          if (typeof value !== "string") return false;
+
+          const [, feedback] = validateAndPurifyFieldImageURL(value, enforceSecure, acceptFileExt);
+
+          return feedback !== null;
+        },
+        defaultMessage(args: ValidationArguments) {
+          return `The ${args.property} must be a valid URL`;
+        }
+      }
+    });
+  };
+}
+
+export function ValidateSignature(validationOptions?: ValidationOptions) {
+  return function (target: Object, propertyName: string) {
+    registerDecorator({
+      name: "ValidateSignature",
+      target: target.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      constraints: [],
+      validator: {
+        validate(value: unknown, args: ValidationArguments) {
+          if (typeof value !== "string") return false;
+
+          // TODO
+
+          return true;
+        },
+        defaultMessage(args: ValidationArguments) {
+          return `The ${args.property} must be a valid signature`;
+        }
+      }
+    });
+  };
+}
+
 /**
  * Validate and purify a field image URL
  *
@@ -262,8 +318,7 @@ export function validateAndPurifyFieldImageURL(
     if (enforceSecure && untrustedUrl.protocol !== "https:") return [null, "The URL must be HTTPS"];
 
     if (acceptFileExt.length > 0) {
-      const ext = untrustedUrl.pathname.substring(untrustedUrl.pathname.lastIndexOf("."));
-      if (acceptFileExt.includes(ext) === false)
+      if (acceptFileExt.some(ext => untrustedUrl.pathname.endsWith(ext)) === false)
         return [null, `The URL must have one of the following extensions: ${acceptFileExt.join(", ")}`];
     }
 
