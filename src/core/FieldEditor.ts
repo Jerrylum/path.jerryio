@@ -341,5 +341,9 @@ export class FieldEditor {
       this._lastInteraction = oldIt;
       this._interaction = newIt;
     }
+
+    if (this.interaction === undefined) {
+      this.mousePosInUOL = undefined;
+    }
   }
 }
