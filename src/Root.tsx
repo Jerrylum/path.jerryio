@@ -27,8 +27,8 @@ import { ClassisLayout, ExclusiveLayout, LayoutProvider, MobileLayout } from "./
 import { AboutModal } from "./app/AboutModal";
 import { WelcomeModal } from "./app/Welcome";
 import { PreferencesModal, PreferencesModalSymbol } from "./app/PreferencesModal";
-import { AssetManagerModal, AssetManagerModalSymbol } from "./app/AssetManagerModal";
-import { RequireLocalFieldImageModal } from "./format/Format";
+import { AssetManagerModal } from "./app/AssetManagerModal";
+import { RequireLocalFieldImageModal } from "./app/RequireLocalFieldImageModal";
 
 const Root = observer(() => {
   const { app, confirmation, modals, appPreferences, clipboard } = getAppStores();

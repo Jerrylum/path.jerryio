@@ -51,7 +51,7 @@ test("Vector manipulation functions", () => {
   expect(v1.y).toBe(2);
   expect(v8.x).toBe(1 / 3);
   expect(v8.y).toBe(2 / 4);
-  
+
   const v9 = v1.divide(4);
   expect(v1.x).toBe(1);
   expect(v1.y).toBe(2);
@@ -323,7 +323,7 @@ test("construct removal", () => {
 
 test("relatedPaths", () => {
   const c = new CustomPathConfig();
-  
+
   const i0 = new EndControl(0, 0, 0);
   const i1 = new Control(1, 0);
   const i2 = new Control(2, 0);
@@ -335,7 +335,7 @@ test("relatedPaths", () => {
   const i8 = new EndControl(8, 0, 0);
   const p1 = new Path(new CustomPathConfig(), new Segment(i0, i1, i2, i3), new Segment(i3, i4));
   const p2 = new Path(new CustomPathConfig(), new Segment(i5, i6, i7, i8));
-  
+
   expect(relatedPaths([p1, p2], [i0])).toEqual([p1]);
   expect(relatedPaths([p1, p2], [i1])).toEqual([p1]);
   expect(relatedPaths([p1, p2], [i5])).toEqual([p2]);

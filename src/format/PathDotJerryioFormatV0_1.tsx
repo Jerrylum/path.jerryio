@@ -7,7 +7,7 @@ import { Format, PathFileData } from "./Format";
 import { NumberRange, RangeSlider, ValidateNumberRange } from "../component/RangeSlider";
 import { Box, Typography } from "@mui/material";
 import { UpdateProperties } from "../core/Command";
-import { Exclude, Expose, Type } from "class-transformer";
+import { Exclude, Expose } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
 import { Path, Segment } from "../core/Path";

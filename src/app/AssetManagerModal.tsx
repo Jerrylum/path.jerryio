@@ -17,7 +17,6 @@ import {
   ListItemText,
   Radio,
   RadioGroup,
-  TextField,
   Typography
 } from "@mui/material";
 import { action, makeAutoObservable } from "mobx";

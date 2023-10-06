@@ -17,7 +17,6 @@ import {
 import { Control, EndControl, Path, Segment, Vector } from "./Path";
 import { Quantity, UnitOfLength } from "./Unit";
 
-
 test("getPathSamplePoints", () => {
   const path = new Path(new CustomPathConfig(), new Segment(new EndControl(60, 60, 0), new EndControl(66, 60, 90)));
   
