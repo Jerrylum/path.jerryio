@@ -8,11 +8,18 @@ const PathConfigAccordion = observer((props: {}) => {
 
   const pc = app.selectedPath?.pc;
   return (
-    <Accordion defaultExpanded>
+    <Accordion defaultExpanded sx={{ position: "relative" }}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography>Path</Typography>
       </AccordionSummary>
       <AccordionDetails>{pc?.getConfigPanel()}</AccordionDetails>
+      {app.fieldEditor.mousePosInUOL && (
+        <Box id="mouse-position-presentation">
+          <Typography>
+            X: {app.fieldEditor.mousePosInUOL.x.toUser()}, Y: {app.fieldEditor.mousePosInUOL.y.toUser()}
+          </Typography>
+        </Box>
+      )}
     </Accordion>
   );
 });

@@ -165,6 +165,13 @@ export const ExclusiveLayout = observer(() => {
           <HomeIcon fontSize="large" />
         </Box>
       </Box>
+      {app.fieldEditor.mousePosInUOL && (
+        <Box id="mouse-position-presentation" style={{ left: "8px", bottom: alpha + "px" }}>
+          <Typography>
+            X: {app.fieldEditor.mousePosInUOL.x.toUser()}, Y: {app.fieldEditor.mousePosInUOL.y.toUser()}
+          </Typography>
+        </Box>
+      )}
       <Box id="left-editor-panel">
         <MenuMainDropdown
           anchor={{ top: 8, left: 48 + 8 + 8 }}

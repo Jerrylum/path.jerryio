@@ -83,6 +83,14 @@ $middle-panel-height-svh: calc(100svh - $pg - $pg);
   overflow-x: hidden;
   overflow-y: auto;
   height: calc(100% - $hpg - $hpg + $hpg);
+  position: relative;
+
+  #mouse-position-presentation {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 16px);
+  }
 }
 
 #left-editor-panel {
