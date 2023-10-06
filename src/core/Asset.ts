@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { Exclude, Expose, Type, instanceToPlain, plainToInstance } from "class-transformer";
 import {
+  IsObject,
   IsString,
   MinLength,
   ValidateNested,
@@ -102,6 +103,7 @@ export class FieldImageSignatureAndOrigin<TOrigin extends FieldImageOriginType> 
 
   @Expose()
   @ValidateNested()
+  @IsObject()
   @Type(() => FieldImageBuiltInOrigin, {
     discriminator: {
       property: "__type",
@@ -363,6 +365,11 @@ export function validateAndPurifyFieldImageURL(
 
 export class AssetManager {
   private userAssets: FieldImageAsset<FieldImageOriginType>[] = [];
+
+  public requiringLocalFieldImage: {
+    requireSignAndOrigin: FieldImageSignatureAndOrigin<FieldImageOriginType.Local>;
+    answer: FieldImageLocalAsset | null | undefined;
+  } | null = null;
 
   constructor() {
     makeAutoObservable(this);

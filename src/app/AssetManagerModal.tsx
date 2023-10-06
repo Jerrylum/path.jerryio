@@ -23,7 +23,6 @@ import {
 import { action, makeAutoObservable } from "mobx";
 import {
   FieldImageAsset,
-  FieldImageBuiltInOrigin,
   FieldImageOriginType,
   createExternalFieldImage,
   createLocalFieldImage,

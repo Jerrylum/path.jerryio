@@ -8,7 +8,7 @@ import { NumberRange, RangeSlider, ValidateNumberRange } from "../component/Rang
 import { Box, Typography } from "@mui/material";
 import { UpdateProperties } from "../core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
-import { IsBoolean, IsPositive } from "class-validator";
+import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
 import { Path, Segment } from "../core/Path";
 import { isCoordinateWithHeading } from "../core/Coordinate";
@@ -37,7 +37,8 @@ class GeneralConfigImpl implements GeneralConfig {
   @IsPositive()
   @Expose()
   controlMagnetDistance: number = 5;
-  @Type(() => FieldImageSignatureAndOrigin)
+  @ValidateNested()
+  @IsObject()
   @Expose()
   fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> =
     getDefaultBuiltInFieldImage().getSignatureAndOrigin();
@@ -57,9 +58,9 @@ class GeneralConfigImpl implements GeneralConfig {
     );
 
     intercept(this, "fieldImage", change => {
-      const { assetManager } = getAppStores();
+      const { app, assetManager } = getAppStores();
 
-      if (assetManager.getAssetBySignature(change.newValue.signature) === undefined) {
+      if (app.gc === this && assetManager.getAssetBySignature(change.newValue.signature) === undefined) {
         change.newValue = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
       }
 

@@ -9,7 +9,7 @@ import { Box, Slider, Typography } from "@mui/material";
 import { NumberRange, RangeSlider, ValidateNumberRange } from "../component/RangeSlider";
 import { UpdateProperties } from "../core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
-import { IsBoolean, IsPositive } from "class-validator";
+import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
 
@@ -37,6 +37,8 @@ class GeneralConfigImpl implements GeneralConfig {
   @Expose()
   controlMagnetDistance: number = 5 / 2.54;
   @Type(() => FieldImageSignatureAndOrigin)
+  @ValidateNested()
+  @IsObject()
   @Expose()
   fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> =
     getDefaultBuiltInFieldImage().getSignatureAndOrigin();

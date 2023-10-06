@@ -2,8 +2,8 @@ import { makeAutoObservable, computed, runInAction, reaction, action } from "mob
 import DOMPurify from "dompurify"; // cspell:disable-line
 import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "../format/Config";
 import { AnyControl, EndControl, Path, PathTreeItem, Vector, relatedPaths, traversal } from "./Path";
-import { addToArray, removeFromArray } from "./Util";
-import { PathFileData, Format, getAllFormats, convertPathFileData } from "../format/Format";
+import { addToArray, removeFromArray, runInActionAsync } from "./Util";
+import { PathFileData, Format, getAllFormats, convertPathFileData, promptFieldImage } from "../format/Format";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { instanceToPlain, plainToClassFromExist } from "class-transformer";
 import { Quantity, UnitConverter, UnitOfLength } from "./Unit";
@@ -22,7 +22,17 @@ import { AppClipboard } from "./Clipboard";
 import { validate } from "class-validator";
 import { FieldEditor } from "./FieldEditor";
 import { SpeedEditor } from "./SpeedEditor";
-import { AssetManager } from "./Asset";
+import {
+  AssetManager,
+  FieldImageBuiltInOrigin,
+  FieldImageExternalOrigin,
+  FieldImageLocalOrigin,
+  FieldImageOriginType,
+  FieldImageSignatureAndOrigin,
+  createExternalFieldImage,
+  createLocalFieldImage,
+  getDefaultBuiltInFieldImage
+} from "./Asset";
 import { Modals } from "../core/Modals";
 import { Preferences } from "./Preferences";
 
@@ -357,6 +367,8 @@ export class MainApp {
     if (format === undefined) throw new Error("Format not found.");
     format.init(); // ALGO: Suspend format reaction
 
+    if (data.gc?.fieldImage?.origin) format.getGeneralConfig().fieldImage.origin = undefined as any; // ALGO: Remove default origin
+
     const gc = plainToClassFromExist(format.getGeneralConfig(), data.gc, {
       excludeExtraneousValues: true,
       exposeDefaultValues: true
@@ -378,6 +390,9 @@ export class MainApp {
     }
 
     getAppStores().ga.gtag("event", "import_file_format", { format: format.getName() });
+
+    const result = await runInActionAsync(() => promptFieldImage(gc.fieldImage));
+    if (result === false) gc.fieldImage = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
 
     this.setPathFileData(format, { gc: gc, paths: paths });
   }
@@ -419,6 +434,9 @@ export class MainApp {
     const format = this.format.createNewInstance();
     format.init(); // ALGO: Suspend format reaction
     const pfd = format.recoverPathFileData(fileContent);
+
+    const result = await runInActionAsync(() => promptFieldImage(format.getGeneralConfig().fieldImage));
+    if (result === false) format.getGeneralConfig().fieldImage = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
 
     this.setPathFileData(format, pfd);
   }

@@ -28,6 +28,7 @@ import { AboutModal } from "./app/AboutModal";
 import { WelcomeModal } from "./app/Welcome";
 import { PreferencesModal, PreferencesModalSymbol } from "./app/PreferencesModal";
 import { AssetManagerModal, AssetManagerModalSymbol } from "./app/AssetManagerModal";
+import { RequireLocalFieldImageModal } from "./format/Format";
 
 const Root = observer(() => {
   const { app, confirmation, modals, appPreferences, clipboard } = getAppStores();
@@ -58,10 +59,6 @@ const Root = observer(() => {
       else return true;
     }
   };
-
-  useEffect(() => {
-    modals.open(AssetManagerModalSymbol);
-  }, []);
 
   useCustomHotkeys("Mod+P", onNew, ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Mod+O", onOpen, ENABLE_ON_ALL_INPUT_FIELDS);
@@ -146,6 +143,7 @@ const Root = observer(() => {
           <WelcomeModal />
           <AboutModal />
           <AssetManagerModal />
+          <RequireLocalFieldImageModal />
         </LayoutProvider>
         {isUsingEditor && isDraggingFile && <DragDropBackdrop {...{ onDragEnter, onDragLeave, onDragOver, onDrop }} />}
       </ThemeProvider>
