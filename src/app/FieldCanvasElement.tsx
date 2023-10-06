@@ -582,6 +582,8 @@ class MouseInteractiveHandler {
     const posWithoutOffsetInPx = fieldEditor.fcc.getUnboundedPxFromEvent(event, false);
     if (posWithoutOffsetInPx === undefined) return;
 
+    fieldEditor.mousePosInUOL = fieldEditor.fcc.toUOL(posInPx);
+
     fieldEditor.updateAreaSelection(posInPx) ||
       fieldEditor.grabAndMove(posWithoutOffsetInPx) ||
       fieldEditor.showRobot(posInPx);
@@ -754,6 +756,10 @@ const FieldCanvasElement = observer((props: {}) => {
     app.addExpanded(targetPath);
   }
 
+  function onMouseLeaveStage(event: Konva.KonvaEventObject<MouseEvent>) {
+    if (fieldEditor.interaction === undefined) fieldEditor.mousePosInUOL = undefined;
+  }
+
   const visiblePaths = app.paths.filter(path => path.visible);
 
   return (
@@ -797,6 +803,7 @@ const FieldCanvasElement = observer((props: {}) => {
           onMouseDown={action(event => miHandler.onMouseDownStage(event))}
           onMouseMove={action(onMouseMoveOrMouseDragOrTouchDragStage)}
           onMouseUp={action(event => miHandler.onMouseUpStage(event))}
+          onMouseLeave={action(onMouseLeaveStage)}
           onDragMove={action(onMouseMoveOrMouseDragOrTouchDragStage)}
           onDragEnd={action(onDragEndStage)}>
           <Layer>

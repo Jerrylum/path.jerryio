@@ -34,6 +34,8 @@ export class FieldEditor {
   tooltipPosition: Vector | undefined = undefined;
   magnet: MagnetReference[] = [];
 
+  mousePosInUOL: Vector | undefined = undefined;
+
   constructor() {
     makeAutoObservable(this, { fcc: false });
 
