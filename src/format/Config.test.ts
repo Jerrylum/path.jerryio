@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
 import { Expose, Exclude, plainToClassFromExist, Type } from "class-transformer";
-import { IsBoolean, IsPositive, validate } from "class-validator";
+import { IsBoolean, IsObject, IsPositive, ValidateNested, validate } from "class-validator";
 import { NumberRange, ValidateNumberRange } from "../component/RangeSlider";
 import { Path } from "../core/Path";
 import { UnitOfLength } from "../core/Unit";
@@ -36,6 +36,8 @@ export class CustomGeneralConfig implements GeneralConfig {
   @Expose()
   controlMagnetDistance: number = 5 / 2.54;
   @Type(() => FieldImageSignatureAndOrigin)
+  @ValidateNested()
+  @IsObject()
   @Expose()
   fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
 
