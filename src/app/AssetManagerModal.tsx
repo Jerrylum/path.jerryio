@@ -362,6 +362,7 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
                 <ObserverInput
                   label=""
                   fullWidth
+                  placeholder="Image URL"
                   InputLabelProps={{ shrink: true }}
                   size="small"
                   {...(!draft.urlValidateResult?.[0]
