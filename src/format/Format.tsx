@@ -6,7 +6,14 @@ import { Range } from "semver";
 import { UnitOfLength } from "../core/Unit";
 import { LemLibFormatV0_4 } from "./LemLibFormatV0_4";
 import { PathDotJerryioFormatV0_1 } from "./PathDotJerryioFormatV0_1";
-import { FieldImageSignatureAndOrigin, FieldImageOriginType, FieldImageBuiltInOrigin, FieldImageExternalOrigin, createExternalFieldImage, FieldImageLocalOrigin } from "../core/Asset";
+import {
+  FieldImageSignatureAndOrigin,
+  FieldImageOriginType,
+  FieldImageBuiltInOrigin,
+  FieldImageExternalOrigin,
+  createExternalFieldImage,
+  FieldImageLocalOrigin
+} from "../core/Asset";
 import { runInActionAsync } from "../core/Util";
 import { when } from "mobx";
 
@@ -77,10 +84,20 @@ const convertFromV0_2_0ToV0_3_0: PathFileDataConverter = {
   }
 };
 
-const convertFromV0_3_0ToCurrentAppVersion: PathFileDataConverter = {
+const convertFromV0_3_0ToV0_4_0: PathFileDataConverter = {
   version: new Range("~0.3"),
   convert: (data: Record<string, any>): void => {
-    // From v0.3.0 to current app version
+    // the field image is using the default field image
+
+    // From v0.3.0 to v0.4.0
+    data.appVersion = "0.4.0";
+  }
+};
+
+const convertFromV0_4_0ToCurrentAppVersion: PathFileDataConverter = {
+  version: new Range("~0.4"),
+  convert: (data: Record<string, any>): void => {
+    // From v0.4.0 to current app version
     data.appVersion = APP_VERSION.version;
   }
 };
@@ -89,7 +106,8 @@ export function convertPathFileData(data: Record<string, any>): boolean {
   for (const { version, convert } of [
     convertFromV0_1_0ToV0_2_0,
     convertFromV0_2_0ToV0_3_0,
-    convertFromV0_3_0ToCurrentAppVersion
+    convertFromV0_3_0ToV0_4_0,
+    convertFromV0_4_0ToCurrentAppVersion
   ]) {
     if (version.test(data.appVersion)) {
       convert(data);
