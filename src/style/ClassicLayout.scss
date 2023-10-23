@@ -90,6 +90,7 @@ $middle-panel-height-svh: calc(100svh - $pg - $pg);
     left: 0;
     right: 0;
     top: calc(100% + 16px);
+    user-select: none;
   }
 }
 

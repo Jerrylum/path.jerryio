@@ -111,6 +111,7 @@
 #mouse-position-presentation {
   position: fixed;
   color: var(--text-primary-color);
+  user-select: none;
 }
 
 .floating-panel {
