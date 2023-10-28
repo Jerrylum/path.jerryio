@@ -112,9 +112,9 @@ By using PATH.JERRYIO, you only need to implement the path file parser and gener
 - Customizable editor panels
 - Hotkey support
 - Drag & Drop to open path file
-- Exclusive editing mode (Coming soon)
+- Exclusive editing mode
 - Light and dark theme
-- iPad support (Coming soon)
+- iPad support
 
 
 ## Usage and Documentation
