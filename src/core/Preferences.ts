@@ -10,6 +10,7 @@ export class Preferences {
   public isGoogleAnalyticsEnabled: boolean = false;
   public themeType: AppThemeType = AppThemeType.Dark;
   public layoutType: LayoutType = LayoutType.Classic;
+  public lastSelectedFormat: string = "path.jerryio v0.1.x (cm, rpm)";
 
   // Not in local storage
   public isSpeedCanvasVisible: boolean = true; // In classic layout only
@@ -45,7 +46,21 @@ export class Preferences {
       this.link("maxHistory", "maxHistory"),
       this.link("isGoogleAnalyticsEnabled", "googleAnalyticsEnabled"),
       this.link("themeType", "theme"),
-      this.link("layoutType", "layout")
+      this.link("layoutType", "layout"),
+      this.link("lastSelectedFormat", "lastSelectedFormat")
     ];
   }
+}
+
+// ALGO: This methods is used to get preference from localStorage before Preferences is initialized
+export function getPreference<T extends {}>(key: string, def: T): T {
+  const item = localStorage.getItem(key);
+  if (item !== null) {
+    try {
+      return JSON.parse(item);
+    } catch (e) {
+      return def; // ALGO: No legacy string support
+    }
+  }
+  return def;
 }

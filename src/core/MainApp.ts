@@ -24,7 +24,7 @@ import { FieldEditor } from "./FieldEditor";
 import { SpeedEditor } from "./SpeedEditor";
 import { AssetManager, getDefaultBuiltInFieldImage } from "./Asset";
 import { Modals } from "../core/Modals";
-import { Preferences } from "./Preferences";
+import { Preferences, getPreference } from "./Preferences";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
@@ -32,7 +32,9 @@ const logger = Logger("App");
 
 // observable class
 export class MainApp {
-  public format: Format = new PathDotJerryioFormatV0_1();
+  public format: Format =
+    getAllFormats().find(f => f.getName() === getPreference("lastSelectedFormat", "")) ??
+    new PathDotJerryioFormatV0_1();
   private usingUOL: UnitOfLength = UnitOfLength.Centimeter;
   public mountingFile: IOFileHandle = new IOFileHandle(null); // This is intended to be modified outside the class
 
@@ -106,6 +108,9 @@ export class MainApp {
         this.resetUserControl();
 
         this.history.clearHistory();
+
+        const { appPreferences } = getAppStores();
+        appPreferences.lastSelectedFormat = newFormat.getName();
       })
     );
 
