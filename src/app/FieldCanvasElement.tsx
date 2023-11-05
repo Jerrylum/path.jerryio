@@ -248,15 +248,13 @@ const PathSegments = observer((props: { path: Path; fcc: FieldCanvasConverter })
 const PathControls = observer((props: { path: Path; fcc: FieldCanvasConverter }) => {
   const { path, fcc } = props;
 
+  const controls = path.controls;
   return (
     <>
-      {path.segments.map(segment =>
-        segment.controls.map((cp, cpIdx) => {
-          const isFirstSegment = path.segments[0] === segment;
-          if (isFirstSegment === false && cpIdx === 0) return null;
-          return cp.visible && <ControlElement key={cp.uid} {...{ segment, path, fcc, cp }} />;
-        })
-      )}
+      {controls.map((cp, cpIdx) => {
+        if (cp.visible === false) return null;
+        return <ControlElement key={cp.uid} {...{ lastControl: controls.length === cpIdx + 1, path, fcc, cp }} />;
+      })}
     </>
   );
 });
