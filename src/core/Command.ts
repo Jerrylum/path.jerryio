@@ -228,16 +228,16 @@ export function isRemovePathTreeItemsCommand(object: Command): object is RemoveP
 
 export class UpdateInstancesProperties<TTarget> implements CancellableCommand, MergeableCommand {
   protected changed = false;
-  protected previousValue?: Partial<TTarget>[];
+  protected _previousValue: Partial<TTarget>[] = [];
 
-  constructor(protected targets: TTarget[], protected newValues: Partial<TTarget>) {}
+  constructor(public targets: TTarget[], public newValues: Partial<TTarget>) {}
 
   execute(): boolean {
-    this.previousValue = [];
+    this._previousValue = [];
     for (let i = 0; i < this.targets.length; i++) {
       const { changed, previousValues } = this.updatePropertiesForTarget(this.targets[i], this.newValues);
       this.changed = this.changed || changed;
-      this.previousValue.push(previousValues);
+      this._previousValue.push(previousValues);
     }
 
     return this.changed;
@@ -245,9 +245,8 @@ export class UpdateInstancesProperties<TTarget> implements CancellableCommand, M
 
   undo(): void {
     for (let i = 0; i < this.targets.length; i++) {
-      this.updatePropertiesForTarget(this.targets[i], this.previousValue![i]);
+      this.updatePropertiesForTarget(this.targets[i], this._previousValue![i]);
     }
-    this.previousValue = undefined;
   }
 
   redo(): void {
@@ -257,9 +256,9 @@ export class UpdateInstancesProperties<TTarget> implements CancellableCommand, M
   merge(latest: UpdateInstancesProperties<TTarget>): boolean {
     // ALGO: Assume that the targets are the same and both commands are executed
     for (let i = 0; i < this.targets.length; i++) {
-      this.previousValue![i] = {
-        ...latest.previousValue![i],
-        ...this.previousValue![i]
+      this._previousValue[i] = {
+        ...latest._previousValue![i],
+        ...this._previousValue![i]
       };
       this.newValues = { ...this.newValues, ...latest.newValues };
     }
@@ -280,16 +279,20 @@ export class UpdateInstancesProperties<TTarget> implements CancellableCommand, M
 
     return { changed, previousValues };
   }
+
+  get previousValue(): readonly Partial<TTarget>[] {
+    return this._previousValue;
+  }
 }
 
 export class UpdateProperties<TTarget> extends UpdateInstancesProperties<TTarget> {
-  constructor(protected target: TTarget, protected newValues: Partial<TTarget>) {
+  constructor(public target: TTarget, public newValues: Partial<TTarget>) {
     super([target], newValues);
   }
 }
 
 export class UpdatePathTreeItems extends UpdateInstancesProperties<PathTreeItem> implements UpdatePathTreeItemsCommand {
-  constructor(protected targets: PathTreeItem[], protected newValues: Partial<PathTreeItem>) {
+  constructor(public targets: PathTreeItem[], public newValues: Partial<PathTreeItem>) {
     super(targets, newValues);
   }
 
@@ -299,22 +302,22 @@ export class UpdatePathTreeItems extends UpdateInstancesProperties<PathTreeItem>
 }
 
 export class AddSegment implements CancellableCommand, AddPathTreeItemsCommand {
-  protected _entities: PathTreeItem[] = [];
+  protected added: PathTreeItem[] = [];
 
-  protected segment?: Segment;
+  protected _segment: Segment | undefined;
 
-  constructor(protected path: Path, protected end: EndControl, protected variant: SegmentVariant) {}
+  constructor(public path: Path, public end: EndControl, public variant: SegmentVariant) {}
 
   protected addLine(): void {
     if (this.path.segments.length === 0) {
-      this.segment = new Segment(new EndControl(0, 0, 0), this.end);
-      this._entities.push(this.end);
+      this._segment = new Segment(new EndControl(0, 0, 0), this.end);
+      this.added.push(this.end);
     } else {
       const last = this.path.segments[this.path.segments.length - 1];
-      this.segment = new Segment(last.last, this.end);
-      this._entities.push(this.end);
+      this._segment = new Segment(last.last, this.end);
+      this.added.push(this.end);
     }
-    this.path.segments.push(this.segment);
+    this.path.segments.push(this._segment);
   }
 
   protected addCurve(): void {
@@ -324,8 +327,8 @@ export class AddSegment implements CancellableCommand, AddPathTreeItemsCommand {
       const p0 = new EndControl(0, 0, 0);
       const p1 = new Control(p0.x, p3.y);
       const p2 = new Control(p3.x, p0.y);
-      this.segment = new Segment(p0, p1, p2, p3);
-      this._entities.push(p0, p1, p2, p3);
+      this._segment = new Segment(p0, p1, p2, p3);
+      this.added.push(p0, p1, p2, p3);
     } else {
       const last = this.path.segments[this.path.segments.length - 1];
       const p0 = last.last;
@@ -333,10 +336,10 @@ export class AddSegment implements CancellableCommand, AddPathTreeItemsCommand {
       const p1 = p0.mirror(new Control(c.x, c.y));
       const p2 = p0.divide(new Control(2, 2)).add(p3.divide(new Control(2, 2)));
 
-      this.segment = new Segment(p0, p1, p2, p3);
-      this._entities.push(p1, p2, p3);
+      this._segment = new Segment(p0, p1, p2, p3);
+      this.added.push(p1, p2, p3);
     }
-    this.path.segments.push(this.segment);
+    this.path.segments.push(this._segment);
   }
 
   execute(): void {
@@ -355,11 +358,15 @@ export class AddSegment implements CancellableCommand, AddPathTreeItemsCommand {
     // this.execute();
     // ALGO: Instead of executing, we just add the segment back
     // ALGO: Assume that the command is executed
-    this.path.segments.push(this.segment!);
+    this.path.segments.push(this._segment!);
   }
 
   get addedItems(): readonly PathTreeItem[] {
-    return this._entities;
+    return this.added;
+  }
+
+  get segment() {
+    return this._segment;
   }
 }
 
@@ -367,7 +374,7 @@ export class ConvertSegment implements CancellableCommand, AddPathTreeItemsComma
   protected previousControls: SegmentControls | undefined;
   protected newControls: SegmentControls | undefined;
 
-  constructor(protected path: Path, protected segment: Segment, protected variant: SegmentVariant) {}
+  constructor(public path: Path, public segment: Segment, public variant: SegmentVariant) {}
 
   protected convertToLine(): void {
     this.segment.controls.splice(1, this.segment.controls.length - 2);
@@ -414,7 +421,7 @@ export class ConvertSegment implements CancellableCommand, AddPathTreeItemsComma
   }
 
   undo(): void {
-    this.segment.controls = [...this.previousControls!]
+    this.segment.controls = [...this.previousControls!];
   }
 
   redo(): void {
@@ -431,13 +438,13 @@ export class ConvertSegment implements CancellableCommand, AddPathTreeItemsComma
 }
 
 export class SplitSegment implements CancellableCommand, AddPathTreeItemsCommand {
-  protected _entities: PathTreeItem[] = [];
+  protected added: PathTreeItem[] = [];
 
   protected previousOriginalSegmentControls: SegmentControls | undefined;
   protected newOriginalSegmentControls: SegmentControls | undefined;
-  protected newSegment?: Segment;
+  protected _newSegment: Segment | undefined;
 
-  constructor(protected path: Path, protected originalSegment: Segment, protected point: EndControl) {}
+  constructor(public path: Path, public originalSegment: Segment, public point: EndControl) {}
 
   execute(): void {
     this.previousOriginalSegmentControls = [...this.originalSegment.controls];
@@ -450,10 +457,10 @@ export class SplitSegment implements CancellableCommand, AddPathTreeItemsCommand
     if (cp_count === 2) {
       const last = this.originalSegment.last;
       this.originalSegment.last = this.point;
-      this.newSegment = new Segment(this.point, last);
-      this.path.segments.splice(index + 1, 0, this.newSegment);
+      this._newSegment = new Segment(this.point, last);
+      this.path.segments.splice(index + 1, 0, this._newSegment);
 
-      this._entities = [this.point];
+      this.added = [this.point];
     } else if (cp_count === 4) {
       const p0 = this.originalSegment.controls[0] as EndControl;
       const p1 = this.originalSegment.controls[1];
@@ -464,10 +471,10 @@ export class SplitSegment implements CancellableCommand, AddPathTreeItemsCommand
       const b = this.point;
       const c = p2.divide(new Control(2, 2)).add(this.point.divide(new Control(2, 2)));
       this.originalSegment.controls = [p0, p1, a, b];
-      this.newSegment = new Segment(b, c, p2, p3);
-      this.path.segments.splice(index + 1, 0, this.newSegment);
+      this._newSegment = new Segment(b, c, p2, p3);
+      this.path.segments.splice(index + 1, 0, this._newSegment);
 
-      this._entities = [a, this.point, c];
+      this.added = [a, this.point, c];
     }
 
     this.newOriginalSegmentControls = [...this.originalSegment.controls];
@@ -475,7 +482,7 @@ export class SplitSegment implements CancellableCommand, AddPathTreeItemsCommand
 
   undo(): void {
     this.originalSegment.controls = this.previousOriginalSegmentControls!;
-    const index = this.path.segments.indexOf(this.newSegment!);
+    const index = this.path.segments.indexOf(this._newSegment!);
     this.path.segments.splice(index, 1);
   }
 
@@ -485,16 +492,20 @@ export class SplitSegment implements CancellableCommand, AddPathTreeItemsCommand
     // ALGO: Assume that the command is executed
     const index = this.path.segments.indexOf(this.originalSegment);
     this.originalSegment.controls = [...this.newOriginalSegmentControls!];
-    this.path.segments.splice(index + 1, 0, this.newSegment!);
+    this.path.segments.splice(index + 1, 0, this._newSegment!);
   }
 
   get addedItems(): readonly PathTreeItem[] {
-    return this._entities;
+    return this.added;
+  }
+
+  get newSegment() {
+    return this._newSegment;
   }
 }
 
 export class DragControls implements CancellableCommand, MergeableCommand, UpdatePathTreeItemsCommand {
-  constructor(protected main: AnyControl, protected from: Vector, protected to: Vector, protected followers: AnyControl[]) {}
+  constructor(public main: AnyControl, public from: Vector, public to: Vector, public followers: AnyControl[]) {}
 
   execute(): void {
     const offsetX = this.to.x - this.from.x;
