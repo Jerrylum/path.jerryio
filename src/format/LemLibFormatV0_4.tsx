@@ -298,7 +298,7 @@ export class LemLibFormatV0_4 implements Format {
     return { gc: this.gc, paths };
   }
 
-  exportPathFile(): string {
+  exportPathFile(): Promise<string> {
     const { app } = getAppStores();
 
     // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.
@@ -365,6 +365,6 @@ export class LemLibFormatV0_4 implements Format {
 
     rtn += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPathFileData());
 
-    return rtn;
+    return new Promise(() => { return rtn; });
   }
 }

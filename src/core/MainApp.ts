@@ -436,7 +436,7 @@ export class MainApp {
     this.setPathFileData(format, pfd);
   }
 
-  exportPathFile(): string | undefined {
+  exportPathFile(): Promise<string | undefined> {
     return this.format.exportPathFile();
   }
 }

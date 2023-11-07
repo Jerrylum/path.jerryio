@@ -67,7 +67,7 @@ async function fileNameConfirm(description: string, callback: () => void) {
   });
 }
 
-function exportPathFile(): string | undefined {
+async function exportPathFile(): Promise<string | undefined> {
   const { app } = getAppStores();
 
   try {
@@ -232,7 +232,7 @@ export async function onSave(): Promise<boolean> {
 
   if (app.mountingFile.handle === null) return onSaveAs();
 
-  const output = exportPathFile();
+  const output = await exportPathFile();
   if (output === undefined) return false;
 
   if (await writeFile(output)) {
@@ -248,7 +248,7 @@ export async function onSaveAs(): Promise<boolean> {
 
   if (isFileSystemSupported() === false) return onDownloadAs(true);
 
-  const output = exportPathFile();
+  const output = await exportPathFile();
   if (output === undefined) return false;
 
   if (!(await choiceSave())) return false;
@@ -293,7 +293,7 @@ export async function onDownload(fallback: boolean = false): Promise<boolean> {
 
   if (app.mountingFile.isNameSet === false) return onDownloadAs(fallback);
 
-  const output = exportPathFile();
+  const output = await exportPathFile();
   if (output === undefined) return false;
 
   downloadFile(output);
@@ -302,7 +302,7 @@ export async function onDownload(fallback: boolean = false): Promise<boolean> {
 }
 
 export async function onDownloadAs(fallback: boolean = false): Promise<boolean> {
-  const output = exportPathFile();
+  const output = await exportPathFile();
   if (output === undefined) return false;
 
   fileNameConfirm(

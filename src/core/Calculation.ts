@@ -127,6 +127,20 @@ export function getPathKeyframeIndexes(path: Path, segmentIndexes: IndexBoundary
   return ikf;
 }
 
+export function simplePoints(path: Path): Point[] {
+  let points: Point[] = [];
+  // extract only end points from Path
+  if (path.segments.length > 0) {
+    let start: Segment = path.segments[0]
+    points.push(new Point(start.first.x, start.first.y, start, 0, 0, start.first.heading))
+    path.segments.forEach(segment => {
+      points.push(new Point(segment.last.x, segment.last.y, segment, 0, 0, segment.last.heading))
+    });
+  }
+  
+  return points;
+}
+
 /**
  * Calculates the uniformly spaced points of a path from a set of sample points.
  *

@@ -1,27 +1,24 @@
 import { makeAutoObservable, reaction, action, intercept } from "mobx";
 import { getAppStores } from "../core/MainApp";
-import { ValidateNumber, makeId } from "../core/Util";
-import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
+import { ValidateNumber, clamp, makeId } from "../core/Util";
+import { Control, EndControl, Path, Segment, Vector } from "../core/Path";
+import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { NumberRange, RangeSlider, ValidateNumberRange } from "../component/RangeSlider";
-import { Box, Typography } from "@mui/material";
-import { UpdateProperties } from "../core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
 import { PointCalculationResult, getPathPoints, simplePoints } from "../core/Calculation";
-import { Path, Segment } from "../core/Path";
-import { isCoordinateWithHeading } from "../core/Coordinate";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
   @IsPositive()
   @Expose()
-  robotWidth: number = 30;
+  robotWidth: number = 12;
   @IsPositive()
   @Expose()
-  robotHeight: number = 30;
+  robotHeight: number = 12;
   @IsBoolean()
   @Expose()
   robotIsHolonomic: boolean = false;
@@ -30,13 +27,13 @@ class GeneralConfigImpl implements GeneralConfig {
   showRobot: boolean = false;
   @ValidateNumber(num => num > 0 && num <= 1000) // Don't use IsEnum
   @Expose()
-  uol: UnitOfLength = UnitOfLength.Centimeter;
+  uol: UnitOfLength = UnitOfLength.Inch;
   @IsPositive()
   @Expose()
-  pointDensity: number = 2;
+  pointDensity: number = 2; // inches
   @IsPositive()
   @Expose()
-  controlMagnetDistance: number = 5;
+  controlMagnetDistance: number = 5 / 2.54;
   @Type(() => FieldImageSignatureAndOrigin)
   @ValidateNested()
   @IsObject()
@@ -45,23 +42,23 @@ class GeneralConfigImpl implements GeneralConfig {
     getDefaultBuiltInFieldImage().getSignatureAndOrigin();
 
   @Exclude()
-  private format_: PathDotJerryioFormatV0_1;
+  private format_: LemLibOdomFormatV0_1;
 
-  constructor(format: PathDotJerryioFormatV0_1) {
+  constructor(format: LemLibOdomFormatV0_1) {
     this.format_ = format;
     makeAutoObservable(this);
 
     reaction(
       () => this.uol,
-      action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
+      action((_: UnitOfLength, oldUOL: UnitOfLength) => {
         convertGeneralConfigUOL(this, oldUOL);
       })
     );
 
     intercept(this, "fieldImage", change => {
-      const { app, assetManager } = getAppStores();
+      const { assetManager } = getAppStores();
 
-      if (app.gc === this && assetManager.getAssetBySignature(change.newValue.signature) === undefined) {
+      if (assetManager.getAssetBySignature(change.newValue.signature) === undefined) {
         change.newValue = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
       }
 
@@ -84,10 +81,10 @@ class PathConfigImpl implements PathConfig {
   @Expose()
   speedLimit: NumberRange = {
     minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 600, label: "600" },
+    maxLimit: { value: 127, label: "127" },
     step: 1,
-    from: 40,
-    to: 120
+    from: 20,
+    to: 100
   };
   @ValidateNumberRange(-Infinity, Infinity)
   @Expose()
@@ -98,14 +95,17 @@ class PathConfigImpl implements PathConfig {
     from: 1.4,
     to: 1.8
   };
+  @ValidateNumber(num => num >= 0.1 && num <= 255)
+  @Expose()
+  maxDecelerationRate: number = 127;
 
   @Exclude()
-  readonly format: PathDotJerryioFormatV0_1;
+  readonly format: LemLibOdomFormatV0_1;
 
   @Exclude()
   public path!: Path;
 
-  constructor(format: PathDotJerryioFormatV0_1) {
+  constructor(format: LemLibOdomFormatV0_1) {
     this.format = format;
     makeAutoObservable(this);
 
@@ -117,7 +117,7 @@ class PathConfigImpl implements PathConfig {
     );
 
     // ALGO: Convert the default parameters to the current point density
-    // ALGO: This is only used when adding a new path
+    // ALGO: This is only used when a new path is added, not when the path config is loaded
     // ALGO: When loading path config, the configuration will be set/overwritten after this constructor
     convertPathConfigPointDensity(this, 2, format.getGeneralConfig().pointDensity);
   }
@@ -125,39 +125,12 @@ class PathConfigImpl implements PathConfig {
   getConfigPanel() {
     const { app } = getAppStores();
 
-    return (
-      <>
-        <Box className="panel-box">
-          <Typography>Min/Max Speed</Typography>
-          <RangeSlider
-            range={this.speedLimit}
-            onChange={(from, to) =>
-              app.history.execute(
-                `Change path ${this.path.uid} min/max speed`,
-                new UpdateProperties(this.speedLimit, { from, to })
-              )
-            }
-          />
-        </Box>
-        <Box className="panel-box">
-          <Typography>Bent Rate Applicable Range</Typography>
-          <RangeSlider
-            range={this.bentRateApplicableRange}
-            onChange={(from, to) =>
-              app.history.execute(
-                `Change path ${this.path.uid} bent rate applicable range`,
-                new UpdateProperties(this.bentRateApplicableRange, { from, to })
-              )
-            }
-          />
-        </Box>
-      </>
-    );
+    return (<></>);
   }
 }
 
 // observable class
-export class PathDotJerryioFormatV0_1 implements Format {
+export class LemLibOdomFormatV0_1 implements Format {
   isInit: boolean = false;
   uid: string;
 
@@ -169,11 +142,11 @@ export class PathDotJerryioFormatV0_1 implements Format {
   }
 
   createNewInstance(): Format {
-    return new PathDotJerryioFormatV0_1();
+    return new LemLibOdomFormatV0_1();
   }
 
   getName(): string {
-    return "path.jerryio v0.1.x (cm, rpm)";
+    return "LemLib Odometry v0.1.x (inch coordinates)";
   }
 
   init(): void {
@@ -190,36 +163,48 @@ export class PathDotJerryioFormatV0_1 implements Format {
   }
 
   getPathPoints(path: Path): PointCalculationResult {
-    return getPathPoints(path, new Quantity(this.gc.pointDensity, this.gc.uol));
+    const result = getPathPoints(path, new Quantity(this.gc.pointDensity, this.gc.uol));
+    return result;
   }
 
-  recoverPathFileData(fileContent: string): PathFileData {
-    throw new Error("Unable to recover path file data from this format, try other formats?");
+  recoverPathFileData(_: string): PathFileData {
+    throw new Error("Loading paths is not supported in this format");
   }
 
-  exportPathFile(): Promise<string> {
-    const { app } = getAppStores();
+  async exportPathFile(): Promise<string> {
+    const { app, confirmation } = getAppStores();
 
     let rtn = "";
 
-    const uc = new UnitConverter(app.gc.uol, UnitOfLength.Centimeter);
-    const density = new Quantity(app.gc.pointDensity, app.gc.uol);
+    const path = app.interestedPath();
+    if (path === undefined) throw new Error("No path to export");
+    if (path.segments.length === 0) throw new Error("No segment to export");
 
-    for (const path of app.paths) {
-      rtn += `#PATH-POINTS-START ${path.name}\n`;
+    const uc = new UnitConverter(this.gc.uol, UnitOfLength.Inch);
+    const points = simplePoints(path);
 
-      const points = getPathPoints(path, density).points;
+    const name = await confirmation.prompt({
+      title: "Export Info",
+      description: "",
+      buttons: [
+        {
+          label: "Confirm",
+          color: "success"
+        }
+      ],
+      inputLabel: "Chassis Variable Name",
+      inputDefaultValue: "chassis"
+    });
 
-      for (const point of points) {
-        const x = uc.fromAtoB(point.x).toUser();
-        const y = uc.fromAtoB(point.y).toUser();
-        if (isCoordinateWithHeading(point)) rtn += `${x},${y},${point.speed.toUser()},${point.heading}\n`;
-        else rtn += `${x},${y},${point.speed.toUser()}\n`;
-      }
+    if (points.length > 0) {
+        let start = points[0]
+        // ALGO: Offsets to convert the absolute coordinates to the relative coordinates LemLib uses
+        let offsets = new Vector(start.x, start.y)
+        for (const point of points) {
+        // ALGO: Only coordinate points are supported in LemLibOdom format
+            rtn += `${name}.moveTo(${uc.fromAtoB(point.x - offsets.x).toUser()}, ${uc.fromAtoB(point.y - offsets.y).toUser()})\n`;
+        }
     }
-
-    rtn += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPathFileData());
-
-    return new Promise(() => { return rtn; });
+    return rtn;
   }
 }

@@ -16,6 +16,7 @@ import {
 } from "../core/Asset";
 import { runInActionAsync } from "../core/Util";
 import { when } from "mobx";
+import { LemLibOdomFormatV0_1 } from "./LemLibOdomFormatV0_1";
 
 export interface Format {
   isInit: boolean;
@@ -35,13 +36,14 @@ export interface Format {
 
   recoverPathFileData(fileContent: string): PathFileData;
 
-  exportPathFile(): string; // return file content
+  exportPathFile(): Promise<string>; // return file content
 }
 
 export function getAllFormats(): Format[] {
   return [
     new LemLibFormatV0_4(), //
-    new PathDotJerryioFormatV0_1()
+    new PathDotJerryioFormatV0_1(),
+    new LemLibOdomFormatV0_1()
   ];
 }
 
