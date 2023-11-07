@@ -7,7 +7,7 @@ import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPo
 import { Format, PathFileData } from "./Format";
 import { Box, Slider, Typography } from "@mui/material";
 import { NumberRange, RangeSlider, ValidateNumberRange } from "../component/RangeSlider";
-import { UpdateProperties } from "../core/Command";
+import { AddKeyframe, CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
@@ -181,6 +181,7 @@ export class LemLibFormatV0_4 implements Format {
   uid: string;
 
   private gc = new GeneralConfigImpl(this);
+  private readonly events = new Map<keyof HistoryEventMap<CancellableCommand>, Set<Function>>();
 
   constructor() {
     this.uid = makeId(10);
@@ -198,6 +199,12 @@ export class LemLibFormatV0_4 implements Format {
   init(): void {
     if (this.isInit) return;
     this.isInit = true;
+
+    this.addEventListener("beforeExecution", event => {
+      if (event.isCommandInstanceOf(AddKeyframe)) {
+        event.command.keyframe.followBentRate = true;
+      }
+    });
   }
 
   getGeneralConfig(): GeneralConfig {
@@ -367,4 +374,31 @@ export class LemLibFormatV0_4 implements Format {
 
     return new Promise(() => { return rtn; });
   }
+
+  addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
+    type: K,
+    listener: (event: HistoryEventMap<T>[K]) => void
+  ): void {
+    if (!this.events.has(type)) this.events.set(type, new Set());
+    this.events.get(type)!.add(listener);
+  }
+
+  removeEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
+    type: K,
+    listener: (event: HistoryEventMap<T>[K]) => void
+  ): void {
+    if (!this.events.has(type)) return;
+    this.events.get(type)!.delete(listener);
+  }
+
+  fireEvent(
+    type: keyof HistoryEventMap<CancellableCommand>,
+    event: HistoryEventMap<CancellableCommand>[keyof HistoryEventMap<CancellableCommand>]
+  ) {
+    if (!this.events.has(type)) return;
+    for (const listener of this.events.get(type)!) {
+      listener(event);
+    }
+  }
 }
+
