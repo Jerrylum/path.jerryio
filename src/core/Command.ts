@@ -573,104 +573,116 @@ export class AddKeyframe implements CancellableCommand {
 }
 
 export class MoveKeyframe implements CancellableCommand, MergeableCommand {
-  protected oldPos?: KeyframePos;
+  protected _oldPos?: KeyframePos;
 
-  constructor(protected path: Path, protected newPos: KeyframePos, protected kf: Keyframe) {}
+  constructor(public path: Path, public newPos: KeyframePos, public keyframe: Keyframe) {}
 
   removeKeyframe(pos: KeyframePos) {
-    const idx = pos.segment.speedProfiles.indexOf(this.kf);
+    const idx = pos.segment.speedProfiles.indexOf(this.keyframe);
     if (idx === -1) return;
 
     pos.segment.speedProfiles.splice(idx, 1);
   }
 
   addKeyframe(pos: KeyframePos) {
-    this.kf.xPos = pos.xPos;
-    this.kf.yPos = pos.yPos;
-    pos.segment.speedProfiles.push(this.kf);
+    this.keyframe.xPos = pos.xPos;
+    this.keyframe.yPos = pos.yPos;
+    pos.segment.speedProfiles.push(this.keyframe);
     pos.segment.speedProfiles.sort((a, b) => a.xPos - b.xPos);
   }
 
   execute(): void {
     // remove keyframe from oldSegment speed control
     for (const segment of this.path.segments) {
-      const idx = segment.speedProfiles.indexOf(this.kf);
+      const idx = segment.speedProfiles.indexOf(this.keyframe);
       if (idx === -1) continue;
 
       segment.speedProfiles.splice(idx, 1);
-      this.oldPos = { segment, xPos: this.kf.xPos, yPos: this.kf.yPos };
+      this._oldPos = { segment, xPos: this.keyframe.xPos, yPos: this.keyframe.yPos };
       break;
     }
     this.addKeyframe(this.newPos);
   }
 
   undo(): void {
-    if (!this.oldPos) return;
+    if (!this._oldPos) return;
 
     this.removeKeyframe(this.newPos);
-    this.addKeyframe(this.oldPos);
+    this.addKeyframe(this._oldPos);
   }
 
   redo(): void {
     // this.execute();
     // ALGO: Instead of executing, we just add the keyframe back
     // ALGO: Assume that the command is executed
-    if (!this.oldPos) return;
+    if (!this._oldPos) return;
 
-    this.removeKeyframe(this.oldPos);
+    this.removeKeyframe(this._oldPos);
     this.addKeyframe(this.newPos);
   }
 
   merge(command: MoveKeyframe) {
-    if (command.kf !== this.kf) return false;
+    if (command.keyframe !== this.keyframe) return false;
 
     this.newPos = command.newPos;
 
     return true;
   }
+
+  get oldPos() {
+    return this._oldPos;
+  }
 }
 
 export class RemoveKeyframe implements CancellableCommand {
-  protected segment?: Segment;
-  protected oldIdx = -1;
+  protected _segment?: Segment;
+  protected _oldIdx = -1;
 
-  constructor(protected path: Path, protected kf: Keyframe) {}
+  constructor(public path: Path, public keyframe: Keyframe) {}
 
   execute(): void {
     for (const segment of this.path.segments) {
-      const idx = segment.speedProfiles.indexOf(this.kf);
+      const idx = segment.speedProfiles.indexOf(this.keyframe);
       if (idx === -1) continue;
 
       segment.speedProfiles.splice(idx, 1);
-      this.segment = segment;
-      this.oldIdx = idx;
+      this._segment = segment;
+      this._oldIdx = idx;
       break;
     }
   }
 
   undo(): void {
-    if (this.segment === undefined || this.oldIdx === -1) return;
+    if (this._segment === undefined || this._oldIdx === -1) return;
 
-    this.segment.speedProfiles.splice(this.oldIdx, 0, this.kf);
+    this._segment.speedProfiles.splice(this._oldIdx, 0, this.keyframe);
   }
 
   redo(): void {
     // this.execute();
     // ALGO: Instead of executing, we just remove the keyframe
     // ALGO: Assume that the command is executed
-    if (this.segment === undefined || this.oldIdx === -1) return;
+    if (this._segment === undefined || this._oldIdx === -1) return;
 
-    this.segment.speedProfiles.splice(this.oldIdx, 1);
+    this._segment.speedProfiles.splice(this._oldIdx, 1);
+  }
+
+  get segment() {
+    return this._segment;
+  }
+
+  get oldIdx() {
+    return this._oldIdx;
   }
 }
 
 export class RemovePathsAndEndControls implements CancellableCommand, RemovePathTreeItemsCommand {
   protected _entities: PathTreeItem[] = [];
 
-  protected removalPaths: Path[] = [];
-  protected removalEndControls: { path: Path; control: EndControl }[] = [];
-  protected affectedPaths: { index: number; path: Path }[] = [];
-  protected affectedSegments: {
+  public removalPaths: Path[] = [];
+  public removalEndControls: { path: Path; control: EndControl }[] = [];
+  protected pathActions: { index: number; path: Path }[] = [];
+  protected segmentActions: {
     index: number;
     segment: Segment;
     path: Path;
@@ -685,7 +697,7 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
    * @param paths all paths in the editor
    * @param entities entities to remove
    */
-  constructor(protected paths: Path[], entities: (string | PathTreeItem)[]) {
+  constructor(public paths: Path[], entities: (string | PathTreeItem)[]) {
     // ALGO: Create a set of all entity uids
     const allEntities = new Set(entities.map(e => (typeof e === "string" ? e : e.uid)));
 
@@ -709,7 +721,7 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
     if (idx === -1) return false;
 
     this.paths.splice(idx, 1);
-    this.affectedPaths.push({ index: idx, path });
+    this.pathActions.push({ index: idx, path });
     this._entities.push(path, ...path.controls);
     return true;
   }
@@ -736,7 +748,7 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
 
       // ALGO: Remove the segment at index i of the path segment list
       path.segments.splice(index, 1);
-      this.affectedSegments.push({ index, segment, path, linkNeeded });
+      this.segmentActions.push({ index, segment, path, linkNeeded });
 
       if (isOnlySegment) {
         // ALGO: Define that all controls for the segment disappear
@@ -762,13 +774,13 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
   }
 
   undo(): void {
-    for (let i = this.affectedPaths.length - 1; i >= 0; i--) {
-      const { index, path } = this.affectedPaths[i];
+    for (let i = this.pathActions.length - 1; i >= 0; i--) {
+      const { index, path } = this.pathActions[i];
       this.paths.splice(index, 0, path);
     }
 
-    for (let i = this.affectedSegments.length - 1; i >= 0; i--) {
-      const { index, segment, path, linkNeeded } = this.affectedSegments[i];
+    for (let i = this.segmentActions.length - 1; i >= 0; i--) {
+      const { index, segment, path, linkNeeded } = this.segmentActions[i];
       path.segments.splice(index, 0, segment);
 
       if (linkNeeded) {
@@ -779,11 +791,11 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
   }
 
   redo(): void {
-    for (const { index } of this.affectedPaths) {
+    for (const { index } of this.pathActions) {
       this.paths.splice(index, 1);
     }
 
-    for (const { index, segment, path, linkNeeded } of this.affectedSegments) {
+    for (const { index, segment, path, linkNeeded } of this.segmentActions) {
       path.segments.splice(index, 1);
 
       if (linkNeeded) {
@@ -805,7 +817,7 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
 export class MovePath implements CancellableCommand, UpdatePathTreeItemsCommand {
   protected _entities: PathTreeItem[] = [];
 
-  constructor(protected paths: Path[], protected fromIdx: number, protected toIdx: number) {}
+  constructor(public paths: Path[], public fromIdx: number, public toIdx: number) {}
 
   public execute(): boolean {
     if (!this.isValid) return false;
