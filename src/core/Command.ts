@@ -1023,8 +1023,6 @@ export class RemovePathTreeItems implements CancellableCommand, RemovePathTreeIt
   constructor(public paths: Path[], public removal: PathTreeItem[]) {}
 
   execute(): boolean {
-    if (!this.isValid) return false;
-
     this.originalPaths = this.paths.slice();
 
     this.original = traversal(this.paths);
@@ -1032,6 +1030,8 @@ export class RemovePathTreeItems implements CancellableCommand, RemovePathTreeIt
     this.existingPaths = this.paths.filter(p => this.removal.includes(p) === false);
 
     this.modified = traversal(this.existingPaths).filter(i => this.removal.includes(i) === false);
+
+    if (!this.isValid) return false;
 
     const removed = construct(this.modified);
     if (removed === undefined) return false;
