@@ -26,17 +26,115 @@ export interface Execution {
   mergeTimeout: number;
 }
 
-export class CommandHistory {
+export interface HistoryEvent<T extends CancellableCommand> {
+  readonly command: ReadonlyCommand<T>;
+  readonly time: number;
+  isCommandInstanceOf<TCommand extends CancellableCommand>(
+    constructor: new (...args: any[]) => TCommand
+  ): this is HistoryEvent<TCommand>;
+}
+
+export interface CancellableExecutionEvent<T extends CancellableCommand> extends HistoryEvent<T> {
+  title: string;
+  readonly command: T;
+  mergeTimeout: number;
+  isCancelled: boolean;
+  isCommandInstanceOf<TCommand extends CancellableCommand>(
+    constructor: new (...args: any[]) => TCommand
+  ): this is CancellableExecutionEvent<TCommand>;
+}
+
+export interface AfterExecutionEvent<T extends CancellableCommand> extends HistoryEvent<T> {
+  readonly title: string;
+  readonly command: ReadonlyCommand<T>;
+  readonly mergeTimeout: number;
+  isCommandInstanceOf<TCommand extends CancellableCommand>(
+    constructor: new (...args: any[]) => TCommand
+  ): this is AfterExecutionEvent<TCommand>;
+}
+
+export interface UndoRedoEvent<T extends CancellableCommand> extends HistoryEvent<T> {}
+
+export interface HistoryEventMap<T extends CancellableCommand> {
+  beforeExecution: CancellableExecutionEvent<T>;
+  merge: AfterExecutionEvent<T>;
+  execute: AfterExecutionEvent<T>;
+  afterUndo: UndoRedoEvent<T>;
+  afterRedo: UndoRedoEvent<T>;
+}
+
+export interface ExecutionEventListenersContainer<T extends CancellableCommand> {
+  addEventListener<K extends keyof HistoryEventMap<T>>(type: K, listener: (event: HistoryEventMap<T>[K]) => void): void;
+  removeEventListener<K extends keyof HistoryEventMap<T>>(
+    type: K,
+    listener: (event: HistoryEventMap<T>[K]) => void
+  ): void;
+  fireEvent<K extends keyof HistoryEventMap<T>>(type: K, event: HistoryEventMap<T>[K]): void;
+}
+
+export function createExecutionEvent<T extends HistoryEvent<CancellableCommand>>(
+  event: Omit<T, "isCommandInstanceOf" | "time"> & { time?: number }
+) {
+  return {
+    ...{ time: Date.now() },
+    ...event,
+    isCommandInstanceOf: (constructor: new (...args: any[]) => any): boolean => {
+      return event.command instanceof constructor;
+    }
+  };
+}
+
+export class CommandHistory implements ExecutionEventListenersContainer<CancellableCommand> {
   private lastExecution: Execution | undefined = undefined;
   private history: CancellableCommand[] = [];
   private redoHistory: CancellableCommand[] = [];
   private saveStepCounter: number = 0;
+  private readonly events = new Map<keyof HistoryEventMap<CancellableCommand>, Set<Function>>();
 
-  constructor(private app: MainApp) {
+  constructor(private readonly app: MainApp) {
     makeAutoObservable(this);
   }
 
+  addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
+    type: K,
+    listener: (event: HistoryEventMap<T>[K]) => void
+  ): void {
+    if (!this.events.has(type)) this.events.set(type, new Set());
+    this.events.get(type)!.add(listener);
+  }
+
+  removeEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
+    type: K,
+    listener: (event: HistoryEventMap<T>[K]) => void
+  ): void {
+    if (!this.events.has(type)) return;
+    this.events.get(type)!.delete(listener);
+  }
+
+  fireEvent(
+    type: keyof HistoryEventMap<CancellableCommand>,
+    event: HistoryEventMap<CancellableCommand>[keyof HistoryEventMap<CancellableCommand>]
+  ) {
+    this.app.format.fireEvent(type, event);
+
+    if (!this.events.has(type)) return;
+    for (const listener of this.events.get(type)!) {
+      listener(event);
+    }
+  }
+
   execute(title: string, command: CancellableCommand, mergeTimeout = 500): void {
+    const beforeEvent = createExecutionEvent<CancellableExecutionEvent<CancellableCommand>>({
+      title,
+      command,
+      mergeTimeout,
+      isCancelled: false
+    });
+    this.fireEvent("beforeExecution", beforeEvent);
+
+    const { isCancelled, isCommandInstanceOf: _ignore, ...exe } = beforeEvent;
+    if (isCancelled) return;
+
     const result = command.execute();
     if (result === false) return;
 
@@ -44,8 +142,6 @@ export class CommandHistory {
     if (isRemovePathTreeItemsCommand(command)) {
       command.removedItems.forEach(item => this.unlink(item));
     }
-
-    const exe = { title, command, time: Date.now(), mergeTimeout };
 
     if (
       exe.title === this.lastExecution?.title &&
@@ -56,11 +152,17 @@ export class CommandHistory {
       this.lastExecution.command.merge(exe.command)
     ) {
       this.lastExecution.time = exe.time;
+
+      const afterEvent = createExecutionEvent<AfterExecutionEvent<CancellableCommand>>({ ...this.lastExecution });
+      this.fireEvent("merge", afterEvent);
     } else {
       this.commit();
       this.lastExecution = exe;
 
       logger.log("EXECUTE", exe.title);
+
+      const afterEvent = createExecutionEvent<AfterExecutionEvent<CancellableCommand>>({ ...this.lastExecution });
+      this.fireEvent("execute", afterEvent);
     }
 
     this.redoHistory = [];
@@ -101,6 +203,9 @@ export class CommandHistory {
       if (a) {
         command.addedItems.forEach(item => this.unlink(item));
       }
+
+      const afterEvent = createExecutionEvent<UndoRedoEvent<CancellableCommand>>({ command });
+      this.fireEvent("afterUndo", afterEvent);
     }
     logger.log("UNDO", this.history.length, "->", this.redoHistory.length);
   }
@@ -128,6 +233,9 @@ export class CommandHistory {
       if (r) {
         command.removedItems.forEach(item => this.unlink(item));
       }
+
+      const afterEvent = createExecutionEvent<UndoRedoEvent<CancellableCommand>>({ command });
+      this.fireEvent("afterRedo", afterEvent);
     }
     logger.log("REDO", this.history.length, "<-", this.redoHistory.length);
   }
@@ -221,6 +329,8 @@ export function isUpdatePathTreeItemsCommand(object: Command): object is UpdateP
 export function isRemovePathTreeItemsCommand(object: Command): object is RemovePathTreeItemsCommand {
   return "removedItems" in object;
 }
+
+export type ReadonlyCommand<T extends Command> = Omit<Readonly<T>, "execute" | "undo" | "redo" | "merge">;
 
 /**
  * ALGO: Assume execute() function are called before undo(), redo() and other functions defined in the class

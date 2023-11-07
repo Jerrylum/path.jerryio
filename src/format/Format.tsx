@@ -16,8 +16,9 @@ import {
 } from "../core/Asset";
 import { runInActionAsync } from "../core/Util";
 import { when } from "mobx";
+import { CancellableCommand, ExecutionEventListenersContainer } from "../core/Command";
 
-export interface Format {
+export interface Format extends ExecutionEventListenersContainer<CancellableCommand> {
   isInit: boolean;
   uid: string;
 
