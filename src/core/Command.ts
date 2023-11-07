@@ -544,31 +544,31 @@ export class DragControls implements CancellableCommand, MergeableCommand, Updat
 }
 
 export class AddKeyframe implements CancellableCommand {
-  protected kf?: Keyframe;
+  public keyframe: Keyframe;
 
-  constructor(protected path: Path, protected pos: KeyframePos) {}
+  constructor(public path: Path, protected pos: KeyframePos) {
+    this.keyframe = new Keyframe(this.pos.xPos, this.pos.yPos);
+  }
 
   execute(): void {
-    // sort and push
-    this.kf = new Keyframe(this.pos.xPos, this.pos.yPos);
-    this.pos.segment.speedProfiles.push(this.kf);
-    this.pos.segment.speedProfiles.sort((a, b) => a.xPos - b.xPos);
+    this.segment.speedProfiles.push(this.keyframe);
+    this.segment.speedProfiles.sort((a, b) => a.xPos - b.xPos);
   }
 
   undo(): void {
-    this.pos.segment.speedProfiles.splice(this.pos.segment.speedProfiles.indexOf(this.kf!), 1);
+    this.segment.speedProfiles.splice(this.segment.speedProfiles.indexOf(this.keyframe), 1);
   }
 
   redo(): void {
-    // this.execute();
-    // ALGO: Instead of executing, we just add the keyframe back
-    // ALGO: Assume that the command is executed
-    this.pos.segment.speedProfiles.push(this.kf!);
-    this.pos.segment.speedProfiles.sort((a, b) => a.xPos - b.xPos);
+    this.execute();
   }
 
-  get keyframe(): Keyframe {
-    return this.kf!;
+  get segment() {
+    return this.pos.segment;
+  }
+
+  set segment(segment: Segment) {
+    this.pos.segment = segment;
   }
 }
 
