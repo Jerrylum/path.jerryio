@@ -851,18 +851,18 @@ export class MovePath implements CancellableCommand, UpdatePathTreeItemsCommand 
 }
 
 export class MovePathTreeItem implements CancellableCommand, UpdatePathTreeItemsCommand, RemovePathTreeItemsCommand {
-  protected _entities: PathTreeItem[] = [];
+  protected removed: PathTreeItem[] = [];
   protected moving: PathTreeItem | undefined;
-  protected original: PathTreeItem[];
-  protected modified: PathTreeItem[];
+  protected original: PathTreeItem[] = [];
+  protected modified: PathTreeItem[] = [];
 
-  constructor(protected allEntities: PathTreeItem[], protected fromIdx: number, protected toIdx: number) {
-    this.original = this.allEntities.slice();
-    this.modified = this.allEntities.slice();
-  }
+  constructor(public allEntities: PathTreeItem[], public fromIdx: number, public toIdx: number) {}
 
   execute(): boolean {
     if (!this.isValid) return false;
+
+    this.original = this.allEntities.slice();
+    this.modified = this.allEntities.slice();
 
     this.moving = this.modified.splice(this.fromIdx, 1)[0];
     this.modified.splice(this.toIdx, 0, this.moving);
@@ -870,7 +870,7 @@ export class MovePathTreeItem implements CancellableCommand, UpdatePathTreeItems
     const removed = construct(this.modified);
     if (removed === undefined) return false;
 
-    this._entities = removed;
+    this.removed = removed;
 
     return true;
   }
@@ -897,19 +897,27 @@ export class MovePathTreeItem implements CancellableCommand, UpdatePathTreeItems
   }
 
   get removedItems(): readonly PathTreeItem[] {
-    return this._entities;
+    return this.removed;
+  }
+
+  get originalStructure(): readonly PathTreeItem[] {
+    return this.original;
+  }
+
+  get modifiedStructure(): readonly PathTreeItem[] {
+    return this.modified;
   }
 }
 
 export class InsertPaths implements CancellableCommand, AddPathTreeItemsCommand {
-  protected _entities: PathTreeItem[];
+  protected added: PathTreeItem[] = [];
 
-  constructor(protected paths: Path[], protected idx: number, protected inserting: Path[]) {
-    this._entities = traversal(inserting);
-  }
+  constructor(public paths: Path[], public idx: number, public inserting: Path[]) {}
 
   execute(): boolean | void {
     if (!this.isValid) return false;
+
+    this.added = traversal(this.inserting);
 
     this.paths.splice(this.idx, 0, ...this.inserting);
   }
@@ -928,33 +936,29 @@ export class InsertPaths implements CancellableCommand, AddPathTreeItemsCommand 
   }
 
   get addedItems() {
-    return this._entities;
+    return this.added;
   }
 }
 
 export class InsertControls implements CancellableCommand, AddPathTreeItemsCommand, RemovePathTreeItemsCommand {
-  protected _entities: PathTreeItem[] = [];
-  protected original: PathTreeItem[];
-  protected modified: PathTreeItem[];
+  protected removed: PathTreeItem[] = [];
+  protected original: PathTreeItem[] = [];
+  protected modified: PathTreeItem[] = [];
 
-  constructor(
-    protected allEntities: PathTreeItem[],
-    protected idx: number,
-    protected inserting: AnyControl[]
-  ) {
-    this.original = this.allEntities.slice();
-    this.modified = this.allEntities.slice();
-  }
+  constructor(public allEntities: PathTreeItem[], public idx: number, public inserting: AnyControl[]) { }
 
   execute(): boolean {
     if (!this.isValid) return false;
+
+    this.original = this.allEntities.slice();
+    this.modified = this.allEntities.slice();
 
     this.modified.splice(this.idx, 0, ...this.inserting);
 
     const removed = construct(this.modified);
     if (removed === undefined) return false;
 
-    this._entities = removed;
+    this.removed = removed;
 
     return true;
   }
@@ -979,12 +983,20 @@ export class InsertControls implements CancellableCommand, AddPathTreeItemsComma
   }
 
   get removedItems() {
-    return this._entities;
+    return this.removed;
+  }
+
+  get originalStructure(): readonly PathTreeItem[] {
+    return this.original;
+  }
+
+  get modifiedStructure(): readonly PathTreeItem[] {
+    return this.modified;
   }
 }
 
 export class AddPath extends InsertPaths {
-  constructor(protected paths: Path[], protected path: Path) {
+  constructor(public paths: Path[], public path: Path) {
     super(paths, paths.length, [path]);
   }
 }
