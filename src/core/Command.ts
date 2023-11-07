@@ -46,14 +46,17 @@ export interface CancellableExecutionEvent<T extends CancellableCommand> extends
 
 export interface AfterExecutionEvent<T extends CancellableCommand> extends HistoryEvent<T> {
   readonly title: string;
-  readonly command: ReadonlyCommand<T>;
   readonly mergeTimeout: number;
   isCommandInstanceOf<TCommand extends CancellableCommand>(
     constructor: new (...args: any[]) => TCommand
   ): this is AfterExecutionEvent<TCommand>;
 }
 
-export interface UndoRedoEvent<T extends CancellableCommand> extends HistoryEvent<T> {}
+export interface UndoRedoEvent<T extends CancellableCommand> extends HistoryEvent<T> {
+  isCommandInstanceOf<TCommand extends CancellableCommand>(
+    constructor: new (...args: any[]) => TCommand
+  ): this is UndoRedoEvent<TCommand>;
+}
 
 export interface HistoryEventMap<T extends CancellableCommand> {
   beforeExecution: CancellableExecutionEvent<T>;
