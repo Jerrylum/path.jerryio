@@ -1,14 +1,14 @@
 import { makeAutoObservable, reaction, action, intercept } from "mobx";
 import { getAppStores } from "../core/MainApp";
-import { ValidateNumber, clamp, makeId } from "../core/Util";
-import { Control, EndControl, Path, Segment, Vector } from "../core/Path";
+import { ValidateNumber, makeId } from "../core/Util";
+import { Path, Segment, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
-import { NumberRange, RangeSlider, ValidateNumberRange } from "../component/RangeSlider";
+import { NumberRange, ValidateNumberRange } from "../component/RangeSlider";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
-import { PointCalculationResult, getPathPoints, simplePoints } from "../core/Calculation";
+import { PointCalculationResult, fromHeadingInDegreeToAngleInRadian, getPathPoints, simplePoints } from "../core/Calculation";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
 
 // observable class
@@ -123,8 +123,6 @@ class PathConfigImpl implements PathConfig {
   }
 
   getConfigPanel() {
-    const { app } = getAppStores();
-
     return (<></>);
   }
 }
@@ -195,14 +193,20 @@ export class LemLibOdomFormatV0_1 implements Format {
       inputLabel: "Chassis Variable Name",
       inputDefaultValue: "chassis"
     });
-
+    
     if (points.length > 0) {
-        let start = points[0]
+        const start = points[0]
+        let heading = 0;
+        if (start.heading !== undefined) {
+          heading = fromHeadingInDegreeToAngleInRadian(start.heading);
+        }
+
         // ALGO: Offsets to convert the absolute coordinates to the relative coordinates LemLib uses
-        let offsets = new Vector(start.x, start.y)
+        const offsets = new Vector(start.x, start.y);
         for (const point of points) {
-        // ALGO: Only coordinate points are supported in LemLibOdom format
-            rtn += `${name}.moveTo(${uc.fromAtoB(point.x - offsets.x).toUser()}, ${uc.fromAtoB(point.y - offsets.y).toUser()})\n`;
+            // ALGO: Only coordinate points are supported in LemLibOdom format
+            const relative = new Vector(point.x - offsets.x, point.y - offsets.y).rotate(heading);
+            rtn += `${name}.moveTo(${uc.fromAtoB(relative.x).toUser()}, ${uc.fromAtoB(relative.y).toUser()})\n`;
         }
     }
     return rtn;
