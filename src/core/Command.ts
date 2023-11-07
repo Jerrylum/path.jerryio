@@ -815,7 +815,7 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
 }
 
 export class MovePath implements CancellableCommand, UpdatePathTreeItemsCommand {
-  protected _entities: PathTreeItem[] = [];
+  protected moving: PathTreeItem[] = [];
 
   constructor(public paths: Path[], public fromIdx: number, public toIdx: number) {}
 
@@ -825,7 +825,7 @@ export class MovePath implements CancellableCommand, UpdatePathTreeItemsCommand 
     const path = this.paths.splice(this.fromIdx, 1)[0];
     this.paths.splice(this.toIdx, 0, path);
 
-    this._entities = [path];
+    this.moving = [path];
 
     return true;
   }
@@ -846,7 +846,7 @@ export class MovePath implements CancellableCommand, UpdatePathTreeItemsCommand 
   }
 
   get updatedItems(): readonly PathTreeItem[] {
-    return this._entities;
+    return this.moving;
   }
 }
 
@@ -945,7 +945,7 @@ export class InsertControls implements CancellableCommand, AddPathTreeItemsComma
   protected original: PathTreeItem[] = [];
   protected modified: PathTreeItem[] = [];
 
-  constructor(public allEntities: PathTreeItem[], public idx: number, public inserting: AnyControl[]) { }
+  constructor(public allEntities: PathTreeItem[], public idx: number, public inserting: AnyControl[]) {}
 
   execute(): boolean {
     if (!this.isValid) return false;
@@ -1002,31 +1002,31 @@ export class AddPath extends InsertPaths {
 }
 
 export class RemovePathTreeItems implements CancellableCommand, RemovePathTreeItemsCommand {
-  protected _entities: PathTreeItem[] = [];
+  protected removed: PathTreeItem[] = [];
 
-  protected originalPaths: Path[];
-  protected original: PathTreeItem[];
-  protected existingPaths: Path[];
-  protected modified: PathTreeItem[];
+  protected originalPaths: Path[] = [];
+  protected original: PathTreeItem[] = [];
+  protected existingPaths: Path[] = [];
+  protected modified: PathTreeItem[] = [];
 
-  constructor(protected paths: Path[], protected removal: PathTreeItem[]) {
+  constructor(public paths: Path[], public removal: PathTreeItem[]) {}
+
+  execute(): boolean {
+    if (!this.isValid) return false;
+
     this.originalPaths = this.paths.slice();
 
     this.original = traversal(this.paths);
 
-    this.existingPaths = this.paths.filter(p => removal.includes(p) === false);
+    this.existingPaths = this.paths.filter(p => this.removal.includes(p) === false);
 
-    this.modified = traversal(this.existingPaths).filter(i => removal.includes(i) === false);
-  }
-
-  execute(): boolean {
-    if (!this.isValid) return false;
+    this.modified = traversal(this.existingPaths).filter(i => this.removal.includes(i) === false);
 
     const removed = construct(this.modified);
     if (removed === undefined) return false;
 
     this.paths.splice(0, this.paths.length, ...this.existingPaths);
-    this._entities = [...removed, ...this.removal];
+    this.removed = [...removed, ...this.removal];
 
     return true;
   }
@@ -1046,6 +1046,15 @@ export class RemovePathTreeItems implements CancellableCommand, RemovePathTreeIt
   }
 
   get removedItems(): readonly PathTreeItem[] {
-    return this._entities;
+    return this.removed;
+  }
+
+  get originalStructure(): readonly PathTreeItem[] {
+    return this.original;
+  }
+
+  get modifiedStructure(): readonly PathTreeItem[] {
+    return this.modified;
   }
 }
+
