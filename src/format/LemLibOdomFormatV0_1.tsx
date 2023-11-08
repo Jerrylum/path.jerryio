@@ -10,6 +10,7 @@ import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
 import { PointCalculationResult, fromHeadingInDegreeToAngleInRadian, getPathPoints, simplePoints } from "../core/Calculation";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
+import { CancellableCommand, HistoryEventMap } from "../core/Command";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -121,6 +122,7 @@ export class LemLibOdomFormatV0_1 implements Format {
   uid: string;
 
   private gc = new GeneralConfigImpl(this);
+  private readonly events = new Map<keyof HistoryEventMap<CancellableCommand>, Set<Function>>();
 
   constructor() {
     this.uid = makeId(10);
@@ -198,5 +200,31 @@ export class LemLibOdomFormatV0_1 implements Format {
         }
     }
     return rtn;
+  }
+
+  addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
+    type: K,
+    listener: (event: HistoryEventMap<T>[K]) => void
+  ): void {
+    if (!this.events.has(type)) this.events.set(type, new Set());
+    this.events.get(type)!.add(listener);
+  }
+
+  removeEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
+    type: K,
+    listener: (event: HistoryEventMap<T>[K]) => void
+  ): void {
+    if (!this.events.has(type)) return;
+    this.events.get(type)!.delete(listener);
+  }
+
+  fireEvent(
+    type: keyof HistoryEventMap<CancellableCommand>,
+    event: HistoryEventMap<CancellableCommand>[keyof HistoryEventMap<CancellableCommand>]
+  ) {
+    if (!this.events.has(type)) return;
+    for (const listener of this.events.get(type)!) {
+      listener(event);
+    }
   }
 }
