@@ -3,7 +3,7 @@ import { getAppStores } from "../core/MainApp";
 import { ValidateNumber, makeId } from "../core/Util";
 import { Path, Segment, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
-import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
+import { GeneralConfig, PathConfig, convertGeneralConfigUOL } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { NumberRange, ValidateNumberRange } from "../component/RangeSlider";
 import { Exclude, Expose, Type } from "class-transformer";
@@ -181,7 +181,7 @@ export class LemLibOdomFormatV0_1 implements Format {
   }
 
   exportPathFile(): string {
-    const { app, confirmation } = getAppStores();
+    const { app } = getAppStores();
 
     let rtn = "";
     const gc = app.gc as GeneralConfigImpl;

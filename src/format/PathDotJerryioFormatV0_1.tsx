@@ -9,7 +9,7 @@ import { Box, Typography } from "@mui/material";
 import { CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
-import { PointCalculationResult, getPathPoints, simplePoints } from "../core/Calculation";
+import { PointCalculationResult, getPathPoints } from "../core/Calculation";
 import { Path, Segment } from "../core/Path";
 import { isCoordinateWithHeading } from "../core/Coordinate";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
