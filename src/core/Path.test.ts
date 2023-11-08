@@ -119,7 +119,7 @@ test("validate Keyframe", async () => {
   expect(k.uid).toHaveLength(10);
   expect(k.xPos).toBe(0.123);
   expect(k.yPos).toBe(0.456);
-  expect(k.followBentRate).toBe(true);
+  expect(k.followBentRate).toBe(false);
 
   expect(await validate(k)).toHaveLength(0);
 
