@@ -12,7 +12,8 @@ import {
   PointCalculationResult,
   fromHeadingInDegreeToAngleInRadian,
   getPathPoints,
-  getDiscretePoints
+  getDiscretePoints,
+  fromDegreeToRadian
 } from "../core/Calculation";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
 import { CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
@@ -204,8 +205,9 @@ export class LemLibOdomGeneratorFormatV0_1 implements Format {
     if (points.length > 0) {
       const start = points[0];
       let heading = 0;
+
       if (start.heading !== undefined) {
-        heading = fromHeadingInDegreeToAngleInRadian(start.heading);
+        heading = fromDegreeToRadian(start.heading);
       }
 
       // ALGO: Offsets to convert the absolute coordinates to the relative coordinates LemLib uses
