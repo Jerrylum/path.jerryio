@@ -38,7 +38,7 @@ export interface Format extends ExecutionEventListenersContainer<CancellableComm
 
   recoverPathFileData(fileContent: string): PathFileData;
 
-  exportPathFile(): Promise<string>; // return file content
+  exportPathFile(): string; // return file content
 }
 
 export function getAllFormats(): Format[] {

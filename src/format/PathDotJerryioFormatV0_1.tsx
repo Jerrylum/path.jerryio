@@ -198,7 +198,7 @@ export class PathDotJerryioFormatV0_1 implements Format {
     throw new Error("Unable to recover path file data from this format, try other formats?");
   }
 
-  exportPathFile(): Promise<string> {
+  exportPathFile(): string {
     const { app } = getAppStores();
 
     let rtn = "";
@@ -221,7 +221,7 @@ export class PathDotJerryioFormatV0_1 implements Format {
 
     rtn += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPathFileData());
 
-    return new Promise(() => { return rtn; });
+    return rtn;
   }
 
   addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
