@@ -17,8 +17,10 @@ import {
 import { runInActionAsync } from "../core/Util";
 import { when } from "mobx";
 import { LemLibOdomFormatV0_1 } from "./LemLibOdomFormatV0_1";
+import { CancellableCommand, ExecutionEventListenersContainer } from "../core/Command";
 
-export interface Format {
+
+export interface Format extends ExecutionEventListenersContainer<CancellableCommand> {
   isInit: boolean;
   uid: string;
 

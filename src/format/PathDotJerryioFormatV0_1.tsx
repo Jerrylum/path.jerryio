@@ -6,7 +6,7 @@ import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPo
 import { Format, PathFileData } from "./Format";
 import { NumberRange, RangeSlider, ValidateNumberRange } from "../component/RangeSlider";
 import { Box, Typography } from "@mui/material";
-import { UpdateProperties } from "../core/Command";
+import { CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
 import { PointCalculationResult, getPathPoints, simplePoints } from "../core/Calculation";
@@ -162,6 +162,7 @@ export class PathDotJerryioFormatV0_1 implements Format {
   uid: string;
 
   private gc = new GeneralConfigImpl(this);
+  private readonly events = new Map<keyof HistoryEventMap<CancellableCommand>, Set<Function>>();
 
   constructor() {
     this.uid = makeId(10);
@@ -222,4 +223,31 @@ export class PathDotJerryioFormatV0_1 implements Format {
 
     return new Promise(() => { return rtn; });
   }
+
+  addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
+    type: K,
+    listener: (event: HistoryEventMap<T>[K]) => void
+  ): void {
+    if (!this.events.has(type)) this.events.set(type, new Set());
+    this.events.get(type)!.add(listener);
+  }
+
+  removeEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
+    type: K,
+    listener: (event: HistoryEventMap<T>[K]) => void
+  ): void {
+    if (!this.events.has(type)) return;
+    this.events.get(type)!.delete(listener);
+  }
+
+  fireEvent(
+    type: keyof HistoryEventMap<CancellableCommand>,
+    event: HistoryEventMap<CancellableCommand>[keyof HistoryEventMap<CancellableCommand>]
+  ) {
+    if (!this.events.has(type)) return;
+    for (const listener of this.events.get(type)!) {
+      listener(event);
+    }
+  }
 }
+
