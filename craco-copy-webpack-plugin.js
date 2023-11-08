@@ -9,7 +9,9 @@ module.exports = {
 
     newConfig.plugins.push(
       new CopyPlugin({
-        patterns: [{ from: "static/*.*", context: "public", noErrorOnMissing: true }]
+        patterns: [
+          { from: "static/*.*", context: "public", noErrorOnMissing: true }
+        ]
       })
     );
     return newConfig;
