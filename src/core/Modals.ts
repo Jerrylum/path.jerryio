@@ -1,4 +1,3 @@
-
 import { makeAutoObservable } from "mobx";
 
 export class Modals {

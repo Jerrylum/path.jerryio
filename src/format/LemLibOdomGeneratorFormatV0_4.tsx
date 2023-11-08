@@ -8,11 +8,17 @@ import { Format, PathFileData } from "./Format";
 import { NumberRange, ValidateNumberRange } from "../component/RangeSlider";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
-import { PointCalculationResult, fromHeadingInDegreeToAngleInRadian, getPathPoints, getDiscretePoints } from "../core/Calculation";
+import {
+  PointCalculationResult,
+  fromHeadingInDegreeToAngleInRadian,
+  getPathPoints,
+  getDiscretePoints
+} from "../core/Calculation";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
 import { CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
 import { ObserverInput } from "../component/ObserverInput";
 import { Box, Typography } from "@mui/material";
+import { euclideanRotation } from "../core/Coordinate";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -76,23 +82,26 @@ class GeneralConfigImpl implements GeneralConfig {
 
   getConfigPanel() {
     const { app } = getAppStores();
-    return <>
-      <Box className="panel-box">
-        <Typography sx={{ marginTop: "16px" }}>
-          Export Settings
-        </Typography>
-        <ObserverInput
+    return (
+      <>
+        <Box className="panel-box">
+          <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
+          <ObserverInput
             label="Chassis Variable Name"
             getValue={() => this.chassisName}
-            setValue={(value: string) => { 
-              app.history.execute(`Change chassis variable name`, 
-              new UpdateProperties(this as any, { chassisName: value })); }}
+            setValue={(value: string) => {
+              app.history.execute(
+                `Change chassis variable name`,
+                new UpdateProperties(this as any, { chassisName: value })
+              );
+            }}
             isValidIntermediate={() => true}
             isValidValue={(candidate: string) => candidate !== ""}
             sx={{ marginTop: "16px" }}
           />
         </Box>
-    </>;
+      </>
+    );
   }
 }
 
@@ -132,8 +141,7 @@ class PathConfigImpl implements PathConfig {
   }
 
   getConfigPanel() {
-    return (<>
-    </>);
+    return <></>;
   }
 }
 
@@ -192,21 +200,21 @@ export class LemLibOdomGeneratorFormatV0_1 implements Format {
 
     const uc = new UnitConverter(this.gc.uol, UnitOfLength.Inch);
     const points = getDiscretePoints(path);
-    
-    if (points.length > 0) {
-        const start = points[0]
-        let heading = 0;
-        if (start.heading !== undefined) {
-          heading = fromHeadingInDegreeToAngleInRadian(start.heading);
-        }
 
-        // ALGO: Offsets to convert the absolute coordinates to the relative coordinates LemLib uses
-        const offsets = new Vector(start.x, start.y);
-        for (const point of points) {
-            // ALGO: Only coordinate points are supported in LemLibOdom format
-            const relative = new Vector(point.x - offsets.x, point.y - offsets.y).rotate(heading);
-            rtn += `${gc.chassisName}.moveTo(${uc.fromAtoB(relative.x).toUser()}, ${uc.fromAtoB(relative.y).toUser()});\n`;
-        }
+    if (points.length > 0) {
+      const start = points[0];
+      let heading = 0;
+      if (start.heading !== undefined) {
+        heading = fromHeadingInDegreeToAngleInRadian(start.heading);
+      }
+
+      // ALGO: Offsets to convert the absolute coordinates to the relative coordinates LemLib uses
+      const offsets = new Vector(start.x, start.y);
+      for (const point of points) {
+        // ALGO: Only coordinate points are supported in LemLibOdom format
+        const relative = euclideanRotation(heading, point.subtract(offsets));
+        rtn += `${gc.chassisName}.moveTo(${uc.fromAtoB(relative.x).toUser()}, ${uc.fromAtoB(relative.y).toUser()});\n`;
+      }
     }
     return rtn;
   }

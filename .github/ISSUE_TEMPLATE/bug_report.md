@@ -3,8 +3,7 @@ name: Bug report
 about: Create a report to help us improve
 title: ":bug: "
 labels: bug
-assignees: ''
-
+assignees: ""
 ---
 
 **Describe the bug**
@@ -12,6 +11,7 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
+
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
@@ -24,13 +24,15 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
- - Browser [e.g. chrome, safari]
- - Version [e.g. 0.1.0]
+
+- Browser [e.g. chrome, safari]
+- Version [e.g. 0.1.0]
 
 **Other Devices (please complete the following information):**
- - Device: [e.g. iPad mini]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 0.1.0]
+
+- Device: [e.g. iPad mini]
+- Browser [e.g. stock browser, safari]
+- Version [e.g. 0.1.0]
 
 **Additional context**
 Add any other context about the problem here.

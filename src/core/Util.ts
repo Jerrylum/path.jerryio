@@ -1,5 +1,5 @@
 import { runInAction } from "mobx";
-import { TextEncoder as NodeTextEncoder, TextDecoder as NodeTextDecoder,  } from "util";
+import { TextEncoder as NodeTextEncoder, TextDecoder as NodeTextDecoder } from "util";
 import { ValidationArguments, ValidationOptions, registerDecorator } from "class-validator";
 import { TokenParser, NumberWithUnit, CodePointBuffer, Computation } from "../token/Tokens";
 import { Unit } from "./Unit";

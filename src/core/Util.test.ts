@@ -2,7 +2,7 @@ import { validate } from "class-validator";
 import { ValidateNumber } from "./Util";
 
 class TestClass {
-  @ValidateNumber((num) => num >= 5 && num <= 10)
+  @ValidateNumber(num => num >= 5 && num <= 10)
   attr1;
 
   constructor(attr1: number) {

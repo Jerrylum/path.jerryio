@@ -20,7 +20,7 @@ import { Quantity, UnitOfLength } from "./Unit";
 
 test("getPathSamplePoints", () => {
   const path = new Path(new CustomPathConfig(), new Segment(new EndControl(60, 60, 0), new EndControl(66, 60, 90)));
-  
+
   const density = new Quantity(2, UnitOfLength.Centimeter);
 
   const samples = getPathSamplePoints(path, density);
@@ -28,10 +28,9 @@ test("getPathSamplePoints", () => {
   expect(samples.points.length).toEqual(101);
 });
 
-
 test("getPathSamplePoints with no segment path", () => {
   const path = new Path(new CustomPathConfig());
-  
+
   const density = new Quantity(2, UnitOfLength.Centimeter);
 
   const samples = getPathSamplePoints(path, density);
@@ -39,7 +38,7 @@ test("getPathSamplePoints with no segment path", () => {
   expect(samples.points.length).toEqual(0);
 });
 
-test('Calculation with one segment and 6cm position changes', () => {
+test("Calculation with one segment and 6cm position changes", () => {
   const path = new Path(new CustomPathConfig(), new Segment(new EndControl(60, 60, 0), new EndControl(66, 60, 90)));
 
   expect(path.controls[0].x).toEqual(60);
@@ -77,10 +76,8 @@ function toMatchObjectArray<T>(received: T[], expected: Partial<T>[]) {
   }
 }
 
-test('Calculation with one segment and no position changes', () => {
-  const path = new Path(new CustomPathConfig(), new Segment(
-    new EndControl(60, 60, 0),
-    new EndControl(60, 60, 90)));
+test("Calculation with one segment and no position changes", () => {
+  const path = new Path(new CustomPathConfig(), new Segment(new EndControl(60, 60, 0), new EndControl(60, 60, 90)));
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
   const segSamples = getSegmentSamplePoints(path.segments[0], density);
@@ -95,15 +92,11 @@ test('Calculation with one segment and no position changes', () => {
     { x: 60, y: 60, heading: 0, isLast: false },
     { x: 60, y: 60, heading: 90, isLast: true }
   ]);
-  toMatchObjectArray(uniformResult.segmentIndexes, [
-    { index: 0, from: 0, to: 2 }
-  ]);
+  toMatchObjectArray(uniformResult.segmentIndexes, [{ index: 0, from: 0, to: 2 }]);
 });
 
-test('Calculation with one segment and 1cm position changes', () => {
-  const path = new Path(new CustomPathConfig(), new Segment(
-    new EndControl(60, 60, 0),
-    new EndControl(61, 60, 90)));
+test("Calculation with one segment and 1cm position changes", () => {
+  const path = new Path(new CustomPathConfig(), new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90)));
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
   const pathSamples = getPathSamplePoints(path, density);
@@ -115,15 +108,11 @@ test('Calculation with one segment and 1cm position changes', () => {
     { x: 60, y: 60, heading: 0, isLast: false },
     { x: 61, y: 60, heading: 90, isLast: true }
   ]);
-  toMatchObjectArray(uniformResult.segmentIndexes, [
-    { index: 0, from: 0, to: 2 }
-  ]);
+  toMatchObjectArray(uniformResult.segmentIndexes, [{ index: 0, from: 0, to: 2 }]);
 });
 
-test('Calculation with one segment and 2cm position changes', () => {
-  const path = new Path(new CustomPathConfig(), new Segment(
-    new EndControl(60, 60, 0),
-    new EndControl(62, 60, 90)));
+test("Calculation with one segment and 2cm position changes", () => {
+  const path = new Path(new CustomPathConfig(), new Segment(new EndControl(60, 60, 0), new EndControl(62, 60, 90)));
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
   const pathSamples = getPathSamplePoints(path, density);
@@ -135,15 +124,11 @@ test('Calculation with one segment and 2cm position changes', () => {
     { x: 60, y: 60, heading: 0, isLast: false },
     { x: 62, y: 60, heading: 90, isLast: true }
   ]);
-  toMatchObjectArray(uniformResult.segmentIndexes, [
-    { index: 0, from: 0, to: 2 }
-  ]);
+  toMatchObjectArray(uniformResult.segmentIndexes, [{ index: 0, from: 0, to: 2 }]);
 });
 
-test('Calculation with one segment and 3cm position changes', () => {
-  const path = new Path(new CustomPathConfig(), new Segment(
-    new EndControl(60, 60, 0),
-    new EndControl(63, 60, 90)));
+test("Calculation with one segment and 3cm position changes", () => {
+  const path = new Path(new CustomPathConfig(), new Segment(new EndControl(60, 60, 0), new EndControl(63, 60, 90)));
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
   const pathSamples = getPathSamplePoints(path, density);
@@ -156,20 +141,13 @@ test('Calculation with one segment and 3cm position changes', () => {
     { x: 62, y: 60, heading: undefined, isLast: false },
     { x: 63, y: 60, heading: 90, isLast: true }
   ]);
-  toMatchObjectArray(uniformResult.segmentIndexes, [
-    { index: 0, from: 0, to: 3 }
-  ]);
+  toMatchObjectArray(uniformResult.segmentIndexes, [{ index: 0, from: 0, to: 3 }]);
 });
 
-test('Calculation with two segments and no position changes', () => {
-  const path = new Path(new CustomPathConfig(), new Segment(
-    new EndControl(60, 60, 0),
-    new EndControl(60, 60, 90)));
+test("Calculation with two segments and no position changes", () => {
+  const path = new Path(new CustomPathConfig(), new Segment(new EndControl(60, 60, 0), new EndControl(60, 60, 90)));
 
-  path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last,
-    new EndControl(60, 60, 180)
-  ));
+  path.segments.push(new Segment(path.segments[path.segments.length - 1].last, new EndControl(60, 60, 180)));
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
   const pathSamples = getPathSamplePoints(path, density);
@@ -187,15 +165,10 @@ test('Calculation with two segments and no position changes', () => {
   ]);
 });
 
-test('Calculation with two segments and 2cm position changes', () => {
-  const path = new Path(new CustomPathConfig(), new Segment(
-    new EndControl(60, 60, 0),
-    new EndControl(62, 60, 90)));
+test("Calculation with two segments and 2cm position changes", () => {
+  const path = new Path(new CustomPathConfig(), new Segment(new EndControl(60, 60, 0), new EndControl(62, 60, 90)));
 
-  path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last,
-    new EndControl(62, 60, 180)
-  ));
+  path.segments.push(new Segment(path.segments[path.segments.length - 1].last, new EndControl(62, 60, 180)));
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
   const pathSamples = getPathSamplePoints(path, density);
@@ -214,15 +187,10 @@ test('Calculation with two segments and 2cm position changes', () => {
   ]);
 });
 
-test('Calculation with two segments and 3cm position changes', () => {
-  const path = new Path(new CustomPathConfig(), new Segment(
-    new EndControl(60, 60, 0),
-    new EndControl(63, 60, 90)));
+test("Calculation with two segments and 3cm position changes", () => {
+  const path = new Path(new CustomPathConfig(), new Segment(new EndControl(60, 60, 0), new EndControl(63, 60, 90)));
 
-  path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last,
-    new EndControl(63, 60, 180)
-  ));
+  path.segments.push(new Segment(path.segments[path.segments.length - 1].last, new EndControl(63, 60, 180)));
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
   const pathSamples = getPathSamplePoints(path, density);
@@ -241,20 +209,12 @@ test('Calculation with two segments and 3cm position changes', () => {
   ]);
 });
 
-test('Calculation with three segments and 4cm position changes', () => {
-  const path = new Path(new CustomPathConfig(), new Segment(
-    new EndControl(60, 60, 0),
-    new EndControl(62, 60, 90)));
+test("Calculation with three segments and 4cm position changes", () => {
+  const path = new Path(new CustomPathConfig(), new Segment(new EndControl(60, 60, 0), new EndControl(62, 60, 90)));
 
-  path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last,
-    new EndControl(63, 60, 180)
-  ));
+  path.segments.push(new Segment(path.segments[path.segments.length - 1].last, new EndControl(63, 60, 180)));
 
-  path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last,
-    new EndControl(64, 60, 270)
-  ));
+  path.segments.push(new Segment(path.segments[path.segments.length - 1].last, new EndControl(64, 60, 270)));
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
   const pathSamples = getPathSamplePoints(path, density);
@@ -274,20 +234,12 @@ test('Calculation with three segments and 4cm position changes', () => {
   ]);
 });
 
-test('Calculation with three segments and 5cm position changes', () => {
-  const path = new Path(new CustomPathConfig(), new Segment(
-    new EndControl(60, 60, 0),
-    new EndControl(62, 60, 90)));
+test("Calculation with three segments and 5cm position changes", () => {
+  const path = new Path(new CustomPathConfig(), new Segment(new EndControl(60, 60, 0), new EndControl(62, 60, 90)));
 
-  path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last,
-    new EndControl(63, 60, 180)
-  ));
+  path.segments.push(new Segment(path.segments[path.segments.length - 1].last, new EndControl(63, 60, 180)));
 
-  path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last,
-    new EndControl(65, 60, 270)
-  ));
+  path.segments.push(new Segment(path.segments[path.segments.length - 1].last, new EndControl(65, 60, 270)));
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
   const pathSamples = getPathSamplePoints(path, density);
@@ -308,20 +260,12 @@ test('Calculation with three segments and 5cm position changes', () => {
   ]);
 });
 
-test('Calculation with three segments and 7cm position changes', () => {
-  const path = new Path(new CustomPathConfig(), new Segment(
-    new EndControl(60, 60, 0),
-    new EndControl(65, 60, 90)));
+test("Calculation with three segments and 7cm position changes", () => {
+  const path = new Path(new CustomPathConfig(), new Segment(new EndControl(60, 60, 0), new EndControl(65, 60, 90)));
 
-  path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last,
-    new EndControl(66, 60, 180)
-  ));
+  path.segments.push(new Segment(path.segments[path.segments.length - 1].last, new EndControl(66, 60, 180)));
 
-  path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last,
-    new EndControl(67, 60, 270)
-  ));
+  path.segments.push(new Segment(path.segments[path.segments.length - 1].last, new EndControl(67, 60, 270)));
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
   const pathSamples = getPathSamplePoints(path, density);
@@ -343,19 +287,19 @@ test('Calculation with three segments and 7cm position changes', () => {
   ]);
 });
 
-test('Calculation with two segments edge case 1', () => {
+test("Calculation with two segments edge case 1", () => {
   // it finishes all samples before t=1
 
-  const path = new Path(new CustomPathConfig(), new Segment(
-    new EndControl(0, 0, 0),
-    new EndControl(10, 0, 0)));
+  const path = new Path(new CustomPathConfig(), new Segment(new EndControl(0, 0, 0), new EndControl(10, 0, 0)));
 
-  path.segments.push(new Segment(
-    path.segments[path.segments.length - 1].last,
-    new Control(10, 103.71910889077459),
-    new Control(0, 80),
-    new EndControl(40, 60, 0)
-  ));
+  path.segments.push(
+    new Segment(
+      path.segments[path.segments.length - 1].last,
+      new Control(10, 103.71910889077459),
+      new Control(0, 80),
+      new EndControl(40, 60, 0)
+    )
+  );
 
   const density = new Quantity(2, UnitOfLength.Centimeter);
   const pathSamples = getPathSamplePoints(path, density);
@@ -365,16 +309,14 @@ test('Calculation with two segments edge case 1', () => {
   expect(uniformResult.points[61]).toMatchObject({ x: 40, y: 60, heading: 0, isLast: true });
   toMatchObjectArray(uniformResult.segmentIndexes, [
     { index: 0, from: 0, to: 6 },
-    { index: 1, from: 6, to: 62 },
+    { index: 1, from: 6, to: 62 }
   ]);
 });
 
 // Should produce an array consiting of each discrete point on the path only once
 test("getDiscretePoints", () => {
-  const path = new Path(new CustomPathConfig(), new Segment(
-    new EndControl(0, 0, 0),
-    new EndControl(10, 0, 0)));
-  
+  const path = new Path(new CustomPathConfig(), new Segment(new EndControl(0, 0, 0), new EndControl(10, 0, 0)));
+
   path.segments.push(new Segment(new EndControl(10, 0, 0), new EndControl(10, 10, 0)));
   path.segments.push(new Segment(new EndControl(10, 10, 0), new EndControl(20, 20, 0)));
   path.segments.push(new Segment(new EndControl(20, 20, 0), new EndControl(10, 20, 0)));
@@ -382,7 +324,9 @@ test("getDiscretePoints", () => {
   path.segments.push(new Segment(new EndControl(10, 10, 0), new EndControl(0, 0, 0)));
 
   // Only point X and Y coordinates are relevant
-  const discretePoints = getDiscretePoints(path).map((point) => { return [point.x, point.y]; });
+  const discretePoints = getDiscretePoints(path).map(point => {
+    return [point.x, point.y];
+  });
   toMatchObjectArray(discretePoints, [
     [0, 0],
     [10, 0],
@@ -391,8 +335,8 @@ test("getDiscretePoints", () => {
     [10, 20],
     [10, 10],
     [0, 0]
-  ])
-})
+  ]);
+});
 
 test("toDerivativeHeading", () => {
   expect(toDerivativeHeading(0, 270)).toBe(-90);
@@ -426,7 +370,7 @@ test("fromAngleInRadianToHeadingInDegree", () => {
 });
 
 test("fromHeadingInDegreeToAngleInRadian <-> fromAngleInRadianToHeadingInDegree", () => {
-  for(let i = -720; i < 1080; i+=0.1) {
+  for (let i = -720; i < 1080; i += 0.1) {
     expect(fromAngleInRadianToHeadingInDegree(fromHeadingInDegreeToAngleInRadian(i))).toBeCloseTo(boundHeading(i));
   }
   for (let i = -Math.PI * 4; i < Math.PI * 6; i += 0.1) {

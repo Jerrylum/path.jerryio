@@ -129,9 +129,9 @@ export function getPathKeyframeIndexes(path: Path, segmentIndexes: IndexBoundary
 
 /**
  * Returns only the very first point of the path, and the last point of all segments.
- * 
+ *
  * No interpolation is performed.
- * 
+ *
  * @param path - The path to extract the points from
  * @returns A point array consisting of the discrete points on the path
  */
@@ -139,13 +139,13 @@ export function getDiscretePoints(path: Path): Point[] {
   let points: Point[] = [];
   // extract only end points from Path
   if (path.segments.length > 0) {
-    let start: Segment = path.segments[0]
-    points.push(new Point(start.first.x, start.first.y, start, 0, 0, start.first.heading))
+    let start: Segment = path.segments[0];
+    points.push(new Point(start.first.x, start.first.y, start, 0, 0, start.first.heading));
     path.segments.forEach(segment => {
-      points.push(new Point(segment.last.x, segment.last.y, segment, 0, 0, segment.last.heading))
+      points.push(new Point(segment.last.x, segment.last.y, segment, 0, 0, segment.last.heading));
     });
   }
-  
+
   return points;
 }
 

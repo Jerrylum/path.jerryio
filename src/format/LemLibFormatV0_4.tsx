@@ -401,4 +401,3 @@ export class LemLibFormatV0_4 implements Format {
     }
   }
 }
-

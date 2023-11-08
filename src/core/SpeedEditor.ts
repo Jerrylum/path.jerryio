@@ -40,7 +40,7 @@ export class SpeedEditor {
     if (this.gcc === undefined) return;
     const fieldParent = this.gcc.container?.parentElement;
     const tooltips = [...(fieldParent?.querySelectorAll("*[role='tooltip']") ?? [])];
-    
+
     const isUsingTooltip = tooltips.some(tooltip => tooltip.contains(event.target as Node));
     if (isUsingTooltip === false) this.tooltipPosition = undefined;
   }
@@ -96,7 +96,8 @@ export class SpeedEditor {
       this._lastInteraction = oldIt;
       this._interaction = newIt;
     } else if (
-      oldIt !== undefined && newIt !== undefined &&
+      oldIt !== undefined &&
+      newIt !== undefined &&
       (oldIt.keyframe !== newIt.keyframe || oldIt.type !== newIt.type)
     ) {
       this._lastInteraction = oldIt;
@@ -104,4 +105,3 @@ export class SpeedEditor {
     }
   }
 }
-

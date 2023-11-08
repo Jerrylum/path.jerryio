@@ -112,12 +112,6 @@ export class Vector implements Coordinate {
     return rtn;
   }
 
-  rotate(angle: number): Vector {
-    const x = this.x * Math.cos(angle) - this.y * Math.sin(angle);
-    const y = this.y * Math.cos(angle) + this.x * Math.sin(angle);
-    return new Vector(x, y);
-  }
-
   setXY(x: number, y: number): void;
   setXY(other: Vector): void;
   setXY(arg0: number | Vector, arg1?: number): void {

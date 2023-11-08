@@ -9,7 +9,13 @@ import { registerRoute } from "workbox-routing";
 import { StaleWhileRevalidate } from "workbox-strategies";
 import LoggerImpl from "./core/LoggerImpl";
 import { APP_VERSION_STRING } from "./Version";
-import { ClientsCountResponse, Message, SkipWaitingResponse, VersionResponse, isMessage } from "./core/ServiceWorkerMessages";
+import {
+  ClientsCountResponse,
+  Message,
+  SkipWaitingResponse,
+  VersionResponse,
+  isMessage
+} from "./core/ServiceWorkerMessages";
 
 declare const self: ServiceWorkerGlobalScope;
 

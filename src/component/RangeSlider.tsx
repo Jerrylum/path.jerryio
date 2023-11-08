@@ -91,7 +91,7 @@ export function ValidateNumberRange(min: number, max: number, validationOptions?
         defaultMessage(args: ValidationArguments) {
           const minValue: number = args.constraints[0];
           const maxValue: number = args.constraints[1];
-          return `The ${args.property} must be a valid NumberRange object with minLimit.value >= ${minValue}, maxLimit.value <= ${maxValue}, and step > 0`
+          return `The ${args.property} must be a valid NumberRange object with minLimit.value >= ${minValue}, maxLimit.value <= ${maxValue}, and step > 0`;
         }
       }
     });

@@ -1,7 +1,5 @@
 import { getAppStores } from "../core/MainApp";
-import {
-  createLocalFieldImage
-} from "../core/Asset";
+import { createLocalFieldImage } from "../core/Asset";
 import { observer } from "mobx-react-lite";
 import { action } from "mobx";
 import { Card, Typography, Box, Button } from "@mui/material";

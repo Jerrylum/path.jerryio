@@ -19,7 +19,6 @@ import { when } from "mobx";
 import { LemLibOdomGeneratorFormatV0_1 } from "./LemLibOdomGeneratorFormatV0_4";
 import { CancellableCommand, ExecutionEventListenersContainer } from "../core/Command";
 
-
 export interface Format extends ExecutionEventListenersContainer<CancellableCommand> {
   isInit: boolean;
   uid: string;
