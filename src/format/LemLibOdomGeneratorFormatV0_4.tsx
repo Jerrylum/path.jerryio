@@ -46,9 +46,9 @@ class GeneralConfigImpl implements GeneralConfig {
   @Expose()
   chassisName: string = "chassis";
   @Exclude()
-  private format_: LemLibOdomFormatV0_1;
+  private format_: LemLibOdomGeneratorFormatV0_1;
 
-  constructor(format: LemLibOdomFormatV0_1) {
+  constructor(format: LemLibOdomGeneratorFormatV0_1) {
     this.format_ = format;
     makeAutoObservable(this);
 
@@ -121,12 +121,12 @@ class PathConfigImpl implements PathConfig {
   maxDecelerationRate: number = 127;
 
   @Exclude()
-  readonly format: LemLibOdomFormatV0_1;
+  readonly format: LemLibOdomGeneratorFormatV0_1;
 
   @Exclude()
   public path!: Path;
 
-  constructor(format: LemLibOdomFormatV0_1) {
+  constructor(format: LemLibOdomGeneratorFormatV0_1) {
     this.format = format;
     makeAutoObservable(this);
   }
@@ -138,7 +138,7 @@ class PathConfigImpl implements PathConfig {
 }
 
 // observable class
-export class LemLibOdomFormatV0_1 implements Format {
+export class LemLibOdomGeneratorFormatV0_1 implements Format {
   isInit: boolean = false;
   uid: string;
 
@@ -151,11 +151,11 @@ export class LemLibOdomFormatV0_1 implements Format {
   }
 
   createNewInstance(): Format {
-    return new LemLibOdomFormatV0_1();
+    return new LemLibOdomGeneratorFormatV0_1();
   }
 
   getName(): string {
-    return "LemLib Odometry v0.1.x (inch coordinates)";
+    return "LemLib Odometry Code Generator v0.4.x (inch coordinates)";
   }
 
   init(): void {
