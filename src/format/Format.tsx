@@ -43,8 +43,8 @@ export interface Format extends ExecutionEventListenersContainer<CancellableComm
 export function getAllFormats(): Format[] {
   return [
     new LemLibFormatV0_4(), //
-    new PathDotJerryioFormatV0_1(),
-    new LemLibOdomGeneratorFormatV0_1()
+    new LemLibOdomGeneratorFormatV0_1(),
+    new PathDotJerryioFormatV0_1()
   ];
 }
 
