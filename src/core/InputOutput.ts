@@ -67,7 +67,7 @@ async function fileNameConfirm(description: string, callback: () => void) {
   });
 }
 
-async function exportPathFile(): Promise<string | undefined> {
+function exportPathFile(): string | undefined {
   const { app } = getAppStores();
 
   try {
