@@ -8,7 +8,7 @@ import { Format, PathFileData } from "./Format";
 import { NumberRange, ValidateNumberRange } from "../component/RangeSlider";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
-import { PointCalculationResult, fromHeadingInDegreeToAngleInRadian, getPathPoints, simplePoints } from "../core/Calculation";
+import { PointCalculationResult, fromHeadingInDegreeToAngleInRadian, getPathPoints, getDiscretePoints } from "../core/Calculation";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
 import { CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
 import { ObserverInput } from "../component/ObserverInput";
@@ -191,7 +191,7 @@ export class LemLibOdomGeneratorFormatV0_1 implements Format {
     if (path.segments.length === 0) throw new Error("No segment to export");
 
     const uc = new UnitConverter(this.gc.uol, UnitOfLength.Inch);
-    const points = simplePoints(path);
+    const points = getDiscretePoints(path);
     
     if (points.length > 0) {
         const start = points[0]
