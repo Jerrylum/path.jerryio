@@ -12,7 +12,8 @@ import {
   getUniformPointsFromSamples,
   fromAngleInRadianToHeadingInDegree,
   boundHeading,
-  boundAngle
+  boundAngle,
+  getDiscretePoints
 } from "./Calculation";
 import { Control, EndControl, Path, Segment, Vector } from "./Path";
 import { Quantity, UnitOfLength } from "./Unit";
@@ -367,6 +368,31 @@ test('Calculation with two segments edge case 1', () => {
     { index: 1, from: 6, to: 62 },
   ]);
 });
+
+// Should produce an array consiting of each discrete point on the path only once
+test("getDiscretePoints", () => {
+  const path = new Path(new CustomPathConfig(), new Segment(
+    new EndControl(0, 0, 0),
+    new EndControl(10, 0, 0)));
+  
+  path.segments.push(new Segment(new EndControl(10, 0, 0), new EndControl(10, 10, 0)));
+  path.segments.push(new Segment(new EndControl(10, 10, 0), new EndControl(20, 20, 0)));
+  path.segments.push(new Segment(new EndControl(20, 20, 0), new EndControl(10, 20, 0)));
+  path.segments.push(new Segment(new EndControl(10, 20, 0), new EndControl(10, 10, 0)));
+  path.segments.push(new Segment(new EndControl(10, 10, 0), new EndControl(0, 0, 0)));
+
+  // Only point X and Y coordinates are relevant
+  const discretePoints = getDiscretePoints(path).map((point) => { return [point.x, point.y]; });
+  toMatchObjectArray(discretePoints, [
+    [0, 0],
+    [10, 0],
+    [10, 10],
+    [20, 20],
+    [10, 20],
+    [10, 10],
+    [0, 0]
+  ])
+})
 
 test("toDerivativeHeading", () => {
   expect(toDerivativeHeading(0, 270)).toBe(-90);
