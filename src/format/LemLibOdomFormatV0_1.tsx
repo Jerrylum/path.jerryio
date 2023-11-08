@@ -80,20 +80,20 @@ class PathConfigImpl implements PathConfig {
   @ValidateNumberRange(-Infinity, Infinity)
   @Expose()
   speedLimit: NumberRange = {
-    minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 127, label: "127" },
-    step: 1,
-    from: 20,
-    to: 100
+    minLimit: { value: 0, label: "" },
+    maxLimit: { value: 0, label: "" },
+    step: 0,
+    from: 0,
+    to: 0
   };
   @ValidateNumberRange(-Infinity, Infinity)
   @Expose()
   bentRateApplicableRange: NumberRange = {
-    minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 4, label: "4" },
-    step: 0.01,
-    from: 1.4,
-    to: 1.8
+    minLimit: { value: 0, label: "" },
+    maxLimit: { value: 0, label: "" },
+    step: 0,
+    from: 0,
+    to: 0
   };
   @ValidateNumber(num => num >= 0.1 && num <= 255)
   @Expose()
@@ -108,18 +108,6 @@ class PathConfigImpl implements PathConfig {
   constructor(format: LemLibOdomFormatV0_1) {
     this.format = format;
     makeAutoObservable(this);
-
-    reaction(
-      () => format.getGeneralConfig().pointDensity,
-      action((val: number, oldVal: number) => {
-        convertPathConfigPointDensity(this, oldVal, val);
-      })
-    );
-
-    // ALGO: Convert the default parameters to the current point density
-    // ALGO: This is only used when a new path is added, not when the path config is loaded
-    // ALGO: When loading path config, the configuration will be set/overwritten after this constructor
-    convertPathConfigPointDensity(this, 2, format.getGeneralConfig().pointDensity);
   }
 
   getConfigPanel() {
@@ -206,7 +194,7 @@ export class LemLibOdomFormatV0_1 implements Format {
         for (const point of points) {
             // ALGO: Only coordinate points are supported in LemLibOdom format
             const relative = new Vector(point.x - offsets.x, point.y - offsets.y).rotate(heading);
-            rtn += `${name}.moveTo(${uc.fromAtoB(relative.x).toUser()}, ${uc.fromAtoB(relative.y).toUser()})\n`;
+            rtn += `${name}.moveTo(${uc.fromAtoB(relative.x).toUser()}, ${uc.fromAtoB(relative.y).toUser()});\n`;
         }
     }
     return rtn;
