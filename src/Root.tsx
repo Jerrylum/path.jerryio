@@ -14,7 +14,7 @@ import {
 } from "./core/Hook";
 import { getAppStores } from "./core/MainApp";
 
-import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./core/InputOutput";
+import { onCopyToClipboard, onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./core/InputOutput";
 import { NoticeProvider } from "./app/Notice";
 import { ConfirmationModal } from "./app/Confirmation";
 import { DragDropBackdrop } from "./app/DragDropBackdrop";
@@ -65,6 +65,7 @@ const Root = observer(() => {
   useCustomHotkeys("Mod+S", onSave, ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Shift+Mod+S", onSaveAs, ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Mod+D", onDownload, ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys("Shift+Mod+C", onCopyToClipboard, ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Shift+Mod+D", onDownloadAs, ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Mod+Comma", () => modals.open(PreferencesModalSymbol), ENABLE_ON_ALL_INPUT_FIELDS);
   useCustomHotkeys("Mod+X", () => clipboard.cut(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
