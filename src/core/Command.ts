@@ -8,12 +8,15 @@ import {
   Keyframe,
   KeyframePos,
   Path,
+  PathStructureMemento,
   PathTreeItem,
   Segment,
   SegmentControls,
   SegmentVariant,
   Vector,
+  applyStructureMemento,
   construct,
+  createStructureMemento,
   traversal
 } from "./Path";
 
@@ -977,34 +980,37 @@ export class MovePath implements CancellableCommand, UpdatePathTreeItemsCommand 
 export class MovePathTreeItem implements CancellableCommand, UpdatePathTreeItemsCommand, RemovePathTreeItemsCommand {
   protected removed: PathTreeItem[] = [];
   protected moving: PathTreeItem | undefined;
-  protected original: PathTreeItem[] = [];
-  protected modified: PathTreeItem[] = [];
+  protected original: PathStructureMemento[] = [];
+  protected modified: PathStructureMemento[] = [];
 
   constructor(public allEntities: PathTreeItem[], public fromIdx: number, public toIdx: number) {}
 
   execute(): boolean {
     if (!this.isValid) return false;
 
-    this.original = this.allEntities.slice();
-    this.modified = this.allEntities.slice();
+    this.original = createStructureMemento(this.allEntities.filter(e => e instanceof Path) as Path[]);
 
-    this.moving = this.modified.splice(this.fromIdx, 1)[0];
-    this.modified.splice(this.toIdx, 0, this.moving);
+    const temp = this.allEntities.slice();
 
-    const removed = construct(this.modified);
+    this.moving = temp.splice(this.fromIdx, 1)[0];
+    temp.splice(this.toIdx, 0, this.moving);
+
+    const removed = construct(temp);
     if (removed === undefined) return false;
 
     this.removed = removed;
+
+    this.modified = createStructureMemento(this.allEntities.filter(e => e instanceof Path) as Path[]);
 
     return true;
   }
 
   undo(): void {
-    construct(this.original);
+    applyStructureMemento(this.original);
   }
 
   redo(): void {
-    construct(this.modified);
+    applyStructureMemento(this.modified);
   }
 
   get isValid() {
@@ -1024,11 +1030,11 @@ export class MovePathTreeItem implements CancellableCommand, UpdatePathTreeItems
     return this.removed;
   }
 
-  get originalStructure(): readonly PathTreeItem[] {
+  get originalStructure(): readonly PathStructureMemento[] {
     return this.original;
   }
 
-  get modifiedStructure(): readonly PathTreeItem[] {
+  get modifiedStructure(): readonly PathStructureMemento[] {
     return this.modified;
   }
 }
@@ -1066,33 +1072,35 @@ export class InsertPaths implements CancellableCommand, AddPathTreeItemsCommand 
 
 export class InsertControls implements CancellableCommand, AddPathTreeItemsCommand, RemovePathTreeItemsCommand {
   protected removed: PathTreeItem[] = [];
-  protected original: PathTreeItem[] = [];
-  protected modified: PathTreeItem[] = [];
+  protected original: PathStructureMemento[] = [];
+  protected modified: PathStructureMemento[] = [];
 
   constructor(public allEntities: PathTreeItem[], public idx: number, public inserting: AnyControl[]) {}
 
   execute(): boolean {
     if (!this.isValid) return false;
 
-    this.original = this.allEntities.slice();
-    this.modified = this.allEntities.slice();
+    this.original = createStructureMemento(this.allEntities.filter(e => e instanceof Path) as Path[]);
 
-    this.modified.splice(this.idx, 0, ...this.inserting);
+    const temp = this.allEntities.slice();
+    temp.splice(this.idx, 0, ...this.inserting);
 
-    const removed = construct(this.modified);
+    const removed = construct(temp);
     if (removed === undefined) return false;
 
     this.removed = removed;
+
+    this.modified = createStructureMemento(this.allEntities.filter(e => e instanceof Path) as Path[]);
 
     return true;
   }
 
   undo(): void {
-    construct(this.original);
+    applyStructureMemento(this.original);
   }
 
   redo(): void {
-    construct(this.modified);
+    applyStructureMemento(this.modified);
   }
 
   get isValid() {
@@ -1110,11 +1118,11 @@ export class InsertControls implements CancellableCommand, AddPathTreeItemsComma
     return this.removed;
   }
 
-  get originalStructure(): readonly PathTreeItem[] {
+  get originalStructure(): readonly PathStructureMemento[] {
     return this.original;
   }
 
-  get modifiedStructure(): readonly PathTreeItem[] {
+  get modifiedStructure(): readonly PathStructureMemento[] {
     return this.modified;
   }
 }
@@ -1128,56 +1136,51 @@ export class AddPath extends InsertPaths {
 export class RemovePathTreeItems implements CancellableCommand, RemovePathTreeItemsCommand {
   protected removed: PathTreeItem[] = [];
 
-  protected originalPaths: Path[] = [];
-  protected original: PathTreeItem[] = [];
-  protected existingPaths: Path[] = [];
-  protected modified: PathTreeItem[] = [];
+  protected original: PathStructureMemento[] = [];
+  protected modified: PathStructureMemento[] = [];
 
   constructor(public paths: Path[], public removal: PathTreeItem[]) {}
 
   execute(): boolean {
-    this.originalPaths = this.paths.slice();
+    this.original = createStructureMemento(this.paths);
 
-    this.original = traversal(this.paths);
+    const existingPaths = this.paths.filter(p => this.removal.includes(p) === false);
+    const temp = traversal(existingPaths).filter(i => this.removal.includes(i) === false);
 
-    this.existingPaths = this.paths.filter(p => this.removal.includes(p) === false);
-
-    this.modified = traversal(this.existingPaths).filter(i => this.removal.includes(i) === false);
-
-    if (!this.isValid) return false;
-
-    const removed = construct(this.modified);
+    const removed = construct(temp);
     if (removed === undefined) return false;
 
-    this.paths.splice(0, this.paths.length, ...this.existingPaths);
+    this.paths.splice(0, this.paths.length, ...existingPaths);
     this.removed = [...removed, ...this.removal];
 
-    return true;
+    this.modified = createStructureMemento(this.paths);
+
+    return this.isValid;
   }
 
   undo(): void {
-    construct(this.original);
-    this.paths.splice(0, this.paths.length, ...this.originalPaths);
+    applyStructureMemento(this.original);
+    this.paths.splice(0, this.paths.length, ...this.original.map(m => m.path));
   }
 
   redo(): void {
-    construct(this.modified);
-    this.paths.splice(0, this.paths.length, ...this.existingPaths);
+    applyStructureMemento(this.modified);
+    this.paths.splice(0, this.paths.length, ...this.modified.map(m => m.path));
   }
 
   get isValid() {
-    return this.original.length !== this.modified.length;
+    return this.removed.length !== 0;
   }
 
   get removedItems(): readonly PathTreeItem[] {
     return this.removed;
   }
 
-  get originalStructure(): readonly PathTreeItem[] {
+  get originalStructure(): readonly PathStructureMemento[] {
     return this.original;
   }
 
-  get modifiedStructure(): readonly PathTreeItem[] {
+  get modifiedStructure(): readonly PathStructureMemento[] {
     return this.modified;
   }
 }
