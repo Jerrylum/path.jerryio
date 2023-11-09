@@ -1184,4 +1184,3 @@ export class RemovePathTreeItems implements CancellableCommand, RemovePathTreeIt
     return this.modified;
   }
 }
-

@@ -250,4 +250,3 @@ export class PathDotJerryioFormatV0_1 implements Format {
     }
   }
 }
-

@@ -54,4 +54,3 @@ export function euclideanRotation(theta: number, target: Coordinate) {
     x: target.x * cos - target.y * sin
   };
 }
-

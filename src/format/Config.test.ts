@@ -39,7 +39,8 @@ export class CustomGeneralConfig implements GeneralConfig {
   @ValidateNested()
   @IsObject()
   @Expose()
-  fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
+  fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> =
+    getDefaultBuiltInFieldImage().getSignatureAndOrigin();
 
   constructor() {
     makeAutoObservable(this);

@@ -617,4 +617,3 @@ export function ValidateSegmentControls(validationOptions?: ValidationOptions) {
     });
   };
 }
-

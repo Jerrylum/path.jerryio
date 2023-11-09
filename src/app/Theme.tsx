@@ -77,7 +77,7 @@ export const themes = {
       components: componentsStyleOverrides
     })
   }
-} as const satisfies {[key in AppThemeType]: Readonly<AppThemeInfo>};
+} as const satisfies { [key in AppThemeType]: Readonly<AppThemeInfo> };
 
 export function getAppThemeInfo() {
   return themes[getAppStores().appPreferences.themeType] ?? themes[AppThemeType.Dark];

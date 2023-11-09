@@ -19,7 +19,7 @@ const AreaSelectionElement = observer((props: AreaSelectionElementProps) => {
 
   const playAnimation = visible && animation;
   const playingAnimation = playAnimation && Date.now() < endAnimation;
-  
+
   React.useEffect(() => {
     if (visible && animation && playingAnimation === false && ref.current) {
       setEndAnimation(Date.now() + 300);

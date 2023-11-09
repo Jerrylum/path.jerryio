@@ -1,4 +1,16 @@
-import { EndControl, Control, Segment, construct, traversal, Path, Keyframe, relatedPaths, Vector, createStructureMemento, applyStructureMemento } from "./Path";
+import {
+  EndControl,
+  Control,
+  Segment,
+  construct,
+  traversal,
+  Path,
+  Keyframe,
+  relatedPaths,
+  Vector,
+  createStructureMemento,
+  applyStructureMemento
+} from "./Path";
 import { CustomPathConfig } from "../format/Config.test";
 import { validate } from "class-validator";
 import { instanceToPlain, plainToClass, plainToClassFromExist } from "class-transformer";
