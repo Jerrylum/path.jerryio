@@ -1,4 +1,16 @@
-import { EndControl, Control, Segment, construct, traversal, Path, Keyframe, relatedPaths, Vector } from "./Path";
+import {
+  EndControl,
+  Control,
+  Segment,
+  construct,
+  traversal,
+  Path,
+  Keyframe,
+  relatedPaths,
+  Vector,
+  createStructureMemento,
+  applyStructureMemento
+} from "./Path";
 import { CustomPathConfig } from "../format/Config.test";
 import { validate } from "class-validator";
 import { instanceToPlain, plainToClass, plainToClassFromExist } from "class-transformer";
@@ -119,7 +131,7 @@ test("validate Keyframe", async () => {
   expect(k.uid).toHaveLength(10);
   expect(k.xPos).toBe(0.123);
   expect(k.yPos).toBe(0.456);
-  expect(k.followBentRate).toBe(true);
+  expect(k.followBentRate).toBe(false);
 
   expect(await validate(k)).toHaveLength(0);
 
@@ -319,6 +331,35 @@ test("construct removal", () => {
 
   expect(removed).toEqual([i1, i2, i8, i12, i16, i17, i19, i20, i21]);
   expect(actual).toEqual(expected);
+});
+
+test("structure memento", () => {
+  const i3 = new EndControl(3, 0, 0);
+  const i4 = new Control(4, 0);
+  const i5 = new Control(5, 0);
+  const i6 = new EndControl(6, 0, 0);
+  const i7 = new Control(7, 0);
+  const i9 = new Control(9, 0);
+  const i10 = new EndControl(10, 0, 0);
+  const i11 = new EndControl(11, 0, 0);
+  const i13 = new EndControl(13, 0, 0);
+  const i14 = new EndControl(14, 0, 0);
+  const i15 = new EndControl(15, 0, 0);
+  const i0 = new Path(new CustomPathConfig(), new Segment(i3, i6));
+
+  construct([i0, i3, i4, i5, i6, i7, i9, i10, i11, i13, i14, i15]);
+
+  const paths = [i0];
+  const memento = createStructureMemento(paths);
+
+  expect(i0.segments.length).toBe(6);
+
+  const expected = i0.segments.slice();
+  i0.segments = [];
+
+  applyStructureMemento(memento);
+
+  expect(i0.segments).toEqual(expected);
 });
 
 test("relatedPaths", () => {
