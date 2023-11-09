@@ -52,6 +52,8 @@ class GeneralConfigImpl implements GeneralConfig {
     getDefaultBuiltInFieldImage().getSignatureAndOrigin();
   @Expose()
   chassisName: string = "chassis";
+  @Expose()
+  movementTimeout: number = 5000;
   @Exclude()
   private format_: LemLibOdomGeneratorFormatV0_1;
 
@@ -87,8 +89,9 @@ class GeneralConfigImpl implements GeneralConfig {
       <>
         <Box className="panel-box">
           <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
+          <Box className="flex-editor-panel">
           <ObserverInput
-            label="Chassis Variable Name"
+            label="Chassis Name"
             getValue={() => this.chassisName}
             setValue={(value: string) => {
               app.history.execute(
@@ -100,6 +103,21 @@ class GeneralConfigImpl implements GeneralConfig {
             isValidValue={(candidate: string) => candidate !== ""}
             sx={{ marginTop: "16px" }}
           />
+          <ObserverInput
+            label="Movement Timeout"
+            getValue={() => this.movementTimeout.toString() }
+            setValue={(value: string) => {
+              const parsedValue = parseInt(value)!;
+              app.history.execute(
+                `Change default movement timeout`,
+                new UpdateProperties(this as any, { movementTimeout: parsedValue })
+              );
+            }}
+            isValidIntermediate={() => true}
+            isValidValue={(candidate: string) => parseInt(candidate) !== undefined}
+            sx={{ marginTop: "16px" }}
+          />
+          </Box>
         </Box>
       </>
     );
@@ -215,7 +233,7 @@ export class LemLibOdomGeneratorFormatV0_1 implements Format {
       for (const point of points) {
         // ALGO: Only coordinate points are supported in LemLibOdom format
         const relative = euclideanRotation(heading, point.subtract(offsets));
-        rtn += `${gc.chassisName}.moveTo(${uc.fromAtoB(relative.x).toUser()}, ${uc.fromAtoB(relative.y).toUser()});\n`;
+        rtn += `${gc.chassisName}.moveTo(${uc.fromAtoB(relative.x).toUser()}, ${uc.fromAtoB(relative.y).toUser()}, ${gc.movementTimeout});\n`;
       }
     }
     return rtn;
