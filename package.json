@@ -60,6 +60,7 @@
     "workbox-window": "^7.0.0"
   },
   "devDependencies": {
+    "@babel/plugin-transform-private-property-in-object": "^7.23.3",
     "@craco/craco": "^7.1.0",
     "copy-webpack-plugin": "^11.0.0",
     "prettier": "2.8.8",
