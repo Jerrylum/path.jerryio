@@ -29,7 +29,7 @@ module.exports = {
 
   vueIndentScriptAndStyle: false,
 
-  endOfLine: "crlf",
+  endOfLine: "lf",
 
   embeddedLanguageFormatting: "auto",
 

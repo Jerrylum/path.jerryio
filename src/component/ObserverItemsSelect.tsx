@@ -5,7 +5,7 @@ import React from "react";
 import { makeId } from "../core/Util";
 
 export type Item<TValue> = {
-  key: React.Key;
+  key: string | number;
   value: TValue;
   label: string;
 };
