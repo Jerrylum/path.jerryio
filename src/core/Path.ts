@@ -491,6 +491,17 @@ export function construct(entities: PathTreeItem[]): PathTreeItem[] | undefined 
     }
   };
 
+  const segment = (...controls: SegmentControls): Segment => {
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+
+    // ALGO: Reuse existing segment if possible
+    const segment = currentPath?.segments.find(seg => seg.first === first && seg.last === last) ?? new Segment();
+
+    segment.controls = controls;
+    return segment;
+  };
+
   for (let i = 0; i < entities.length; i++) {
     const entity = entities[i];
     if (entity instanceof Path) {
@@ -503,15 +514,15 @@ export function construct(entities: PathTreeItem[]): PathTreeItem[] | undefined 
         if (middle.length < 2) {
           removed.push(...middle);
           // No less than 2 controls
-          segments.push(new Segment(first, entity));
+          segments.push(segment(first, entity));
         } else if (middle.length > 2) {
           removed.push(...middle.slice(1, -1));
           // No more than 2 controls
-          segments.push(new Segment(first, middle[0], middle[middle.length - 1], entity));
+          segments.push(segment(first, middle[0], middle[middle.length - 1], entity));
         } else if (middle.length === 2) {
-          segments.push(new Segment(first, middle[0], middle[1], entity));
+          segments.push(segment(first, middle[0], middle[1], entity));
         } else {
-          segments.push(new Segment(first, entity));
+          segments.push(segment(first, entity));
         }
       } else {
         removed.push(...middle);
@@ -529,6 +540,35 @@ export function construct(entities: PathTreeItem[]): PathTreeItem[] | undefined 
   push();
 
   return removed;
+}
+
+export interface PathStructureMemento {
+  path: Path;
+  segments: SegmentStructureMemento[];
+}
+
+export interface SegmentStructureMemento {
+  segment: Segment;
+  controls: SegmentControls;
+}
+
+export function createStructureMemento(path: Path[]): PathStructureMemento[] {
+  return path.map(path => ({
+    path,
+    segments: path.segments.map(segment => ({
+      segment,
+      controls: segment.controls.slice() as SegmentControls
+    }))
+  }));
+}
+
+export function applyStructureMemento(memento: PathStructureMemento[]): void {
+  for (const { path, segments } of memento) {
+    path.segments = segments.map(({ segment, controls }) => {
+      segment.controls = controls.slice() as SegmentControls;
+      return segment;
+    });
+  }
 }
 
 export function relatedPaths(paths: Path[], items: PathTreeItem[]): Path[] {
@@ -577,3 +617,4 @@ export function ValidateSegmentControls(validationOptions?: ValidationOptions) {
     });
   };
 }
+

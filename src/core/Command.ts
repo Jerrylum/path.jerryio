@@ -8,12 +8,15 @@ import {
   Keyframe,
   KeyframePos,
   Path,
+  PathStructureMemento,
   PathTreeItem,
   Segment,
   SegmentControls,
   SegmentVariant,
   Vector,
+  applyStructureMemento,
   construct,
+  createStructureMemento,
   traversal
 } from "./Path";
 
@@ -841,34 +844,37 @@ export class MovePath implements CancellableCommand, UpdatePathTreeItemsCommand 
 export class MovePathTreeItem implements CancellableCommand, UpdatePathTreeItemsCommand, RemovePathTreeItemsCommand {
   protected _entities: PathTreeItem[] = [];
   protected moving: PathTreeItem | undefined;
-  protected original: PathTreeItem[];
-  protected modified: PathTreeItem[];
+  protected original: PathStructureMemento[] = [];
+  protected modified: PathStructureMemento[] = [];
 
-  constructor(protected allEntities: PathTreeItem[], protected fromIdx: number, protected toIdx: number) {
-    this.original = this.allEntities.slice();
-    this.modified = this.allEntities.slice();
-  }
+  constructor(protected allEntities: PathTreeItem[], protected fromIdx: number, protected toIdx: number) { }
 
   execute(): boolean {
     if (!this.isValid) return false;
 
-    this.moving = this.modified.splice(this.fromIdx, 1)[0];
-    this.modified.splice(this.toIdx, 0, this.moving);
+    this.original = createStructureMemento(this.allEntities.filter(e => e instanceof Path) as Path[]);
 
-    const removed = construct(this.modified);
+    const temp = this.allEntities.slice();
+
+    this.moving = temp.splice(this.fromIdx, 1)[0];
+    temp.splice(this.toIdx, 0, this.moving);
+
+    const removed = construct(temp);
     if (removed === undefined) return false;
 
     this._entities = removed;
+
+    this.modified = createStructureMemento(this.allEntities.filter(e => e instanceof Path) as Path[]);
 
     return true;
   }
 
   undo(): void {
-    construct(this.original);
+    applyStructureMemento(this.original);
   }
 
   redo(): void {
-    construct(this.modified);
+    applyStructureMemento(this.modified);
   }
 
   get isValid() {
@@ -922,37 +928,39 @@ export class InsertPaths implements CancellableCommand, AddPathTreeItemsCommand 
 
 export class InsertControls implements CancellableCommand, AddPathTreeItemsCommand, RemovePathTreeItemsCommand {
   protected _entities: PathTreeItem[] = [];
-  protected original: PathTreeItem[];
-  protected modified: PathTreeItem[];
+  protected original: PathStructureMemento[] = [];
+  protected modified: PathStructureMemento[] = [];
 
   constructor(
     protected allEntities: PathTreeItem[],
     protected idx: number,
     protected inserting: AnyControl[]
-  ) {
-    this.original = this.allEntities.slice();
-    this.modified = this.allEntities.slice();
-  }
-
+  ) { }
+  
   execute(): boolean {
     if (!this.isValid) return false;
+    
+    this.original = createStructureMemento(this.allEntities.filter(e => e instanceof Path) as Path[]);
+    
+    const temp = this.allEntities.slice();
+    temp.splice(this.idx, 0, ...this.inserting);
 
-    this.modified.splice(this.idx, 0, ...this.inserting);
-
-    const removed = construct(this.modified);
+    const removed = construct(temp);
     if (removed === undefined) return false;
 
     this._entities = removed;
+
+    this.modified = createStructureMemento(this.allEntities.filter(e => e instanceof Path) as Path[]);
 
     return true;
   }
 
   undo(): void {
-    construct(this.original);
+    applyStructureMemento(this.original);
   }
 
   redo(): void {
-    construct(this.modified);
+    applyStructureMemento(this.modified);
   }
 
   get isValid() {
@@ -980,45 +988,40 @@ export class AddPath extends InsertPaths {
 export class RemovePathTreeItems implements CancellableCommand, RemovePathTreeItemsCommand {
   protected _entities: PathTreeItem[] = [];
 
-  protected originalPaths: Path[];
-  protected original: PathTreeItem[];
-  protected existingPaths: Path[];
-  protected modified: PathTreeItem[];
+  protected original: PathStructureMemento[] = [];
+  protected modified: PathStructureMemento[] = [];
 
-  constructor(protected paths: Path[], protected removal: PathTreeItem[]) {
-    this.originalPaths = this.paths.slice();
-
-    this.original = traversal(this.paths);
-
-    this.existingPaths = this.paths.filter(p => removal.includes(p) === false);
-
-    this.modified = traversal(this.existingPaths).filter(i => removal.includes(i) === false);
-  }
+  constructor(protected paths: Path[], protected removal: PathTreeItem[]) { }
 
   execute(): boolean {
-    if (!this.isValid) return false;
+    this.original = createStructureMemento(this.paths);
 
-    const removed = construct(this.modified);
+    const existingPaths = this.paths.filter(p => this.removal.includes(p) === false);
+    const temp = traversal(existingPaths).filter(i => this.removal.includes(i) === false);
+
+    const removed = construct(temp);
     if (removed === undefined) return false;
 
-    this.paths.splice(0, this.paths.length, ...this.existingPaths);
+    this.paths.splice(0, this.paths.length, ...existingPaths);
     this._entities = [...removed, ...this.removal];
 
-    return true;
+    this.modified = createStructureMemento(this.paths);
+
+    return this.isValid;
   }
 
   undo(): void {
-    construct(this.original);
-    this.paths.splice(0, this.paths.length, ...this.originalPaths);
+    applyStructureMemento(this.original);
+    this.paths.splice(0, this.paths.length, ...this.original.map(m => m.path));
   }
 
   redo(): void {
-    construct(this.modified);
-    this.paths.splice(0, this.paths.length, ...this.existingPaths);
+    applyStructureMemento(this.modified);
+    this.paths.splice(0, this.paths.length, ...this.modified.map(m => m.path));
   }
 
   get isValid() {
-    return this.original.length !== this.modified.length;
+    return this._entities.length !== 0;
   }
 
   get removedItems(): readonly PathTreeItem[] {
