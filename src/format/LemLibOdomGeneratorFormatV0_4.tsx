@@ -108,7 +108,7 @@ class GeneralConfigImpl implements GeneralConfig {
             label="Movement Timeout"
             getValue={() => this.movementTimeout.toString() }
             setValue={(value: string) => {
-              const parsedValue = parseInt(value);
+              const parsedValue = parseInt(Int.parse(new CodePointBuffer(value))!.value);
               app.history.execute(
                 `Change default movement timeout to ${parsedValue}`,
                 new UpdateProperties(this as any, { movementTimeout: parsedValue })
