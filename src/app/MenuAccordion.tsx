@@ -463,7 +463,7 @@ const FileMenuItems = () => {
       key={makeId(10)}
       showLeftIcon={false}
       label="Download As"
-      hotkey="Mod+Shift+D"
+      hotkey="Shift+Mod+D"
       onClick={() => onDownloadAs()}
     />,
     <Divider key={makeId(10)} />,
