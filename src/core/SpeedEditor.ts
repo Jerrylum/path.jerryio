@@ -1,11 +1,11 @@
 import { makeAutoObservable, action } from "mobx";
 import { GraphCanvasConverter } from "./Canvas";
-import { Keyframe, KeyframePos, Path } from "./Path";
+import { SpeedKeyframe, KeyframePos, Path } from "./Path";
 import { clamp } from "./Util";
 
 export type KeyframeInteraction =
   | {
-      keyframe: Keyframe;
+      keyframe: SpeedKeyframe;
       type: "touch" | "drag/hover";
     }
   | {
@@ -56,7 +56,7 @@ export class SpeedEditor {
     this.interaction = { keyframe: null, type: "panning" };
   }
 
-  interact(keyframe: Keyframe, type: "touch" | "drag/hover") {
+  interact(keyframe: SpeedKeyframe, type: "touch" | "drag/hover") {
     if (this._interaction !== undefined && this._interaction.keyframe !== keyframe) return false;
     this.interaction = { keyframe, type };
     return true;

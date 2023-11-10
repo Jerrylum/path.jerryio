@@ -1,16 +1,27 @@
-import { Keyframe, KeyframePos, Path, Point, SamplePoint, Segment, Vector } from "./Path";
+import {
+  SpeedKeyframe,
+  Keyframe,
+  KeyframePos,
+  Path,
+  Point,
+  SamplePoint,
+  Segment,
+  Vector,
+  LookaheadKeyframe,
+  SegmentKeyframeKey
+} from "./Path";
 import { Quantity, UnitOfLength } from "./Unit";
 
 /**
  * Represents an index into a set of points, with an associated segment and keyframe.
  */
-export class KeyframeIndexing {
+export class KeyframeIndexing<T extends Keyframe> {
   /**
    * @param index The index of the keyframe in the set of points.
    * @param segment The segment containing the keyframe, or undefined if the keyframe is not associated with a segment.
    * @param keyframe The keyframe associated with the index.
    */
-  constructor(public index: number, public segment: Segment | undefined, public keyframe: Keyframe) {}
+  constructor(public index: number, public segment: Segment | undefined, public keyframe: T) {}
 
   toKeyframePos(): KeyframePos | undefined {
     if (this.segment === undefined) return undefined;
@@ -47,7 +58,8 @@ export interface UniformCalculationResult {
  * Represents the result of calculating points along a path.
  */
 export interface PointCalculationResult extends UniformCalculationResult {
-  keyframeIndexes: KeyframeIndexing[]; // The indexes of keyframes in the `points` array.
+  speedKeyframeIndexes: KeyframeIndexing<SpeedKeyframe>[]; // The indexes of keyframes in the `points` array.
+  lookaheadKeyframeIndexes: KeyframeIndexing<LookaheadKeyframe>[]; // The indexes of keyframes in the `points` array.
 }
 
 /**
@@ -58,12 +70,25 @@ export interface PointCalculationResult extends UniformCalculationResult {
  * @returns The calculated points, segment indexes, and keyframe indexes.
  */
 export function getPathPoints(path: Path, density: Quantity<UnitOfLength>): PointCalculationResult {
-  if (path.segments.length === 0) return { points: [], segmentIndexes: [], keyframeIndexes: [] };
+  if (path.segments.length === 0)
+    return { points: [], segmentIndexes: [], speedKeyframeIndexes: [], lookaheadKeyframeIndexes: [] };
 
   const sampleResult = getPathSamplePoints(path, density);
   const uniformResult = getUniformPointsFromSamples(sampleResult, density);
-  const keyframeIndexes = getPathKeyframeIndexes(path, uniformResult.segmentIndexes);
-  processKeyframes(path, uniformResult.points, keyframeIndexes);
+  const speedKeyframeIndexes = getPathKeyframeIndexes(path.segments, uniformResult.segmentIndexes, "speedProfiles");
+  processKeyframes(path, uniformResult.points, [
+    new KeyframeIndexing(0, undefined, new SpeedKeyframe(0, 1)),
+    ...speedKeyframeIndexes
+  ]);
+  const lookaheadKeyframeIndexes = getPathKeyframeIndexes(
+    path.segments,
+    uniformResult.segmentIndexes,
+    "lookaheadKeyframes"
+  );
+  processKeyframes(path, uniformResult.points, [
+    new KeyframeIndexing(0, undefined, new LookaheadKeyframe(0, 1)),
+    ...lookaheadKeyframeIndexes
+  ]);
 
   // ALGO: The final point should be the last end control point in the path
   // ALGO: At this point, we know segments has at least 1 segment
@@ -77,7 +102,8 @@ export function getPathPoints(path: Path, density: Quantity<UnitOfLength>): Poin
   return {
     points: uniformResult.points,
     segmentIndexes: uniformResult.segmentIndexes,
-    keyframeIndexes
+    speedKeyframeIndexes,
+    lookaheadKeyframeIndexes
   };
 }
 
@@ -88,12 +114,10 @@ export function getPathPoints(path: Path, density: Quantity<UnitOfLength>): Poin
  * @param points - The points to apply the keyframes to.
  * @param keyframes - The keyframes to apply.
  */
-export function processKeyframes(path: Path, points: Point[], keyframes: KeyframeIndexing[]) {
-  const workingKeyframes = [new KeyframeIndexing(0, undefined, new Keyframe(0, 1)), ...keyframes];
-
-  for (let i = 0; i < workingKeyframes.length; i++) {
-    const current = workingKeyframes[i];
-    const next = workingKeyframes[i + 1];
+export function processKeyframes(path: Path, points: Point[], keyframes: KeyframeIndexing<Keyframe>[]) {
+  for (let i = 0; i < keyframes.length; i++) {
+    const current = keyframes[i];
+    const next = keyframes[i + 1];
     const from = current.index;
     const to = next === undefined ? points.length : next.index;
     const responsiblePoints = points.slice(from, to);
@@ -105,20 +129,25 @@ export function processKeyframes(path: Path, points: Point[], keyframes: Keyfram
 /**
  * Calculates the keyframe indexes for the given path and segment indexes.
  *
- * @param path - The path to calculate keyframe indexes for.
+ * @param segments - The segments of the path.
  * @param segmentIndexes - The start and end indexes of each segment.
+ * @param key - The key to use to get the keyframes.
  * @returns The keyframe indexes.
  */
-export function getPathKeyframeIndexes(path: Path, segmentIndexes: IndexBoundary[]): KeyframeIndexing[] {
+export function getPathKeyframeIndexes<TReturn extends SegmentKeyframeKey>(
+  segments: Segment[],
+  segmentIndexes: IndexBoundary[],
+  key: TReturn
+): KeyframeIndexing<Segment[TReturn][number]>[] {
   // ALGO: result.segmentIndexes must have at least x ranges (x = number of segments)
-  const ikf: KeyframeIndexing[] = [];
+  const ikf: KeyframeIndexing<Keyframe>[] = [];
 
-  for (let segmentIdx = 0; segmentIdx < path.segments.length; segmentIdx++) {
-    const segment = path.segments[segmentIdx];
+  for (let segmentIdx = 0; segmentIdx < segments.length; segmentIdx++) {
+    const segment = segments[segmentIdx];
     const pointIdxRange = segmentIndexes[segmentIdx];
     if (pointIdxRange.from === pointIdxRange.to) continue; // ALGO: Skip empty segments
     // ALGO: Assume the keyframes are sorted
-    segment.speedProfiles.forEach(kf => {
+    segment[key].forEach(kf => {
       const pointIdx = pointIdxRange.from + Math.floor((pointIdxRange.to - pointIdxRange.from) * kf.xPos);
       ikf.push(new KeyframeIndexing(pointIdx, segment, kf));
     });

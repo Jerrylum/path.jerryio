@@ -1,6 +1,6 @@
 import { makeObservable, action, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Point, Path, Vector, Keyframe, KeyframePos } from "../core/Path";
+import { Point, Path, Vector, SpeedKeyframe, KeyframePos } from "../core/Path";
 import Konva from "konva";
 import { Circle, Layer, Line, Rect, Stage, Text } from "react-konva";
 import React from "react";
@@ -33,9 +33,9 @@ const SpeedCanvasTooltipContent = observer((props: {}) => {
 
   const lastInteraction = app.speedEditor.lastInteraction;
   const interaction = app.speedEditor.interaction;
-  if (interaction?.keyframe instanceof Keyframe && interaction?.type === "drag/hover") {
+  if (interaction?.keyframe instanceof SpeedKeyframe && interaction?.type === "drag/hover") {
     return <Box sx={{ padding: "8px" }}>{(speedFrom + pos.yPos * (speedTo - speedFrom)).toUser()}</Box>;
-  } else if (lastInteraction?.keyframe instanceof Keyframe && lastInteraction?.type === "touch") {
+  } else if (lastInteraction?.keyframe instanceof SpeedKeyframe && lastInteraction?.type === "touch") {
     const keyframe = lastInteraction.keyframe;
     return (
       <Box>
@@ -55,7 +55,7 @@ const SpeedCanvasTooltipContent = observer((props: {}) => {
           onClick={() => {
             app.history.execute(
               `Remove keyframe ${keyframe.uid} from path ${path.uid}`,
-              new RemoveKeyframe(path, keyframe)
+              new RemoveKeyframe(path.segments, "speedProfiles", keyframe)
             );
           }}
         />
@@ -85,8 +85,8 @@ const Keyframes = observer((props: { path: Path; gcc: GraphCanvasConverter }) =>
 
   return (
     <>
-      {path.cachedResult.keyframeIndexes.map(ikf => (
-        <KeyframeElement key={ikf.keyframe.uid} {...{ ikf, gcc }} />
+      {path.cachedResult.speedKeyframeIndexes.map(ikf => (
+        <SpeedKeyframeElement key={ikf.keyframe.uid} {...{ ikf, gcc }} />
       ))}
     </>
   );
@@ -119,12 +119,12 @@ const PointElement = observer((props: { point: Point; index: number; pc: PathCon
   );
 });
 
-interface KeyframeElementProps {
-  ikf: KeyframeIndexing;
+interface SpeedKeyframeElementProps {
+  ikf: KeyframeIndexing<SpeedKeyframe>;
   gcc: GraphCanvasConverter;
 }
 
-const KeyframeElement = observer((props: KeyframeElementProps) => {
+const SpeedKeyframeElement = observer((props: SpeedKeyframeElementProps) => {
   const { app } = getAppStores();
   const { ikf, gcc } = props;
 
@@ -151,7 +151,10 @@ const KeyframeElement = observer((props: KeyframeElementProps) => {
       return;
     }
 
-    app.history.execute(`Move keyframe ${ikf.keyframe.uid}`, new MoveKeyframe(gcc.path, kfPos, ikf.keyframe));
+    app.history.execute(
+      `Move keyframe ${ikf.keyframe.uid}`,
+      new MoveKeyframe(gcc.path.segments, "speedProfiles", kfPos, ikf.keyframe)
+    );
 
     const posInPx = gcc.toPx(kfPos);
     event.target.x(posInPx.x);
@@ -176,7 +179,7 @@ const KeyframeElement = observer((props: KeyframeElementProps) => {
       // right click
       app.history.execute(
         `Remove keyframe ${ikf.keyframe.uid} from path ${gcc.path.uid}`,
-        new RemoveKeyframe(gcc.path, ikf.keyframe)
+        new RemoveKeyframe(gcc.path.segments, "speedProfiles", ikf.keyframe)
       );
 
       app.speedEditor.tooltipPosition = undefined;
@@ -301,7 +304,7 @@ class TouchInteractiveHandler extends TouchEventListener {
         this.touchAction = TouchAction.End;
       }
     } else if (this.touchAction === TouchAction.PendingScrolling) {
-      if (app.speedEditor.interaction?.keyframe instanceof Keyframe) {
+      if (app.speedEditor.interaction?.keyframe instanceof SpeedKeyframe) {
         this.touchAction = TouchAction.TouchingKeyframe;
       } else if (keys.length >= 1) {
         const t = this.pos(keys[0]);
@@ -313,7 +316,7 @@ class TouchInteractiveHandler extends TouchEventListener {
         this.touchAction = TouchAction.Release;
       }
     } else if (this.touchAction === TouchAction.Panning) {
-      if (app.speedEditor.interaction?.keyframe instanceof Keyframe) {
+      if (app.speedEditor.interaction?.keyframe instanceof SpeedKeyframe) {
         this.touchAction = TouchAction.TouchingKeyframe;
       } else if (keys.length >= 1) {
         app.speedEditor.panning(this.vec(keys[0]).x);
@@ -339,9 +342,12 @@ class TouchInteractiveHandler extends TouchEventListener {
       if (this.wasShowingTooltip === false) {
         const kfPos = this.getKeyframePos();
         if (kfPos && app.speedEditor.isAddingKeyframe) {
+          const keyframes = kfPos.segment.speedProfiles;
+          const keyframe = new SpeedKeyframe(kfPos.xPos, kfPos.yPos);
+
           app.history.execute(
             `Add speed keyframe to path ${app.speedEditor.path?.uid}`,
-            new AddKeyframe(app.speedEditor.path!, kfPos)
+            new AddKeyframe(keyframes, keyframe)
           );
         }
       }
@@ -414,7 +420,10 @@ const SpeedCanvasElement = observer((props: { extended: boolean }) => {
     const kfPos = gcc.toPos(new Vector(e.evt.offsetX, e.evt.offsetY));
     if (kfPos === undefined) return;
 
-    app.history.execute(`Add speed keyframe to path ${path.uid}`, new AddKeyframe(path, kfPos));
+    const keyframes = kfPos.segment.speedProfiles;
+    const keyframe = new SpeedKeyframe(kfPos.xPos, kfPos.yPos);
+
+    app.history.execute(`Add speed keyframe to path ${path.uid}`, new AddKeyframe(keyframes, keyframe));
   };
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
