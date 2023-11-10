@@ -10,7 +10,7 @@ Add comments to your code to explain the code related to user experience and alg
 
 ### Format Your Code
 
-Self explanatory. Use [Prettier](https://prettier.io/). If you are using VSCode, press `Shift + Alt + F` to format your code.
+Before pushing a commit, run `npm run format`, or else your commit will fail.
 
 ### Follow Naming Conventions
 
