@@ -63,6 +63,7 @@
     "@babel/plugin-transform-private-property-in-object": "^7.23.3",
     "@craco/craco": "^7.1.0",
     "copy-webpack-plugin": "^11.0.0",
+    "husky": "^8.0.3",
     "prettier": "2.8.8",
     "react-scripts": "5.0.1"
   },
@@ -70,7 +71,10 @@
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "prepare": "husky install",
+    "format": "prettier . --write --cache",
+    "check-format": "prettier . -c --cache"
   },
   "eslintConfig": {
     "extends": [
