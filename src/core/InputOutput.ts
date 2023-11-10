@@ -313,15 +313,6 @@ export async function onDownloadAs(fallback: boolean = false): Promise<boolean> 
   return true;
 }
 
-export async function onCopyToClipboard(): Promise<boolean> {
-  const code = exportPathFile();
-  if (code === undefined) {
-    return false;
-  }
-  navigator.clipboard.writeText(code);
-  return true;
-}
-
 export async function onDropFile(file: File, saveCheck: boolean = true): Promise<boolean> {
   const { app } = getAppStores();
 
