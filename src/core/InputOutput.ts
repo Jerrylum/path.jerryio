@@ -314,7 +314,10 @@ export async function onDownloadAs(fallback: boolean = false): Promise<boolean> 
 }
 
 export async function onCopyToClipboard(): Promise<boolean> {
-  const code = exportPathFile()!;
+  const code = exportPathFile();
+  if (code === undefined) {
+    return false;
+  }
   navigator.clipboard.writeText(code);
   return true;
 }
