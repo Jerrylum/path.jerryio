@@ -1,6 +1,6 @@
 import { makeAutoObservable, reaction, action, intercept } from "mobx";
 import { getAppStores } from "../core/MainApp";
-import { ValidateNumber, makeId } from "../core/Util";
+import { ValidateNumber, makeId, parseFormula } from "../core/Util";
 import { Path, Segment, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL } from "./Config";
@@ -20,6 +20,7 @@ import { CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/C
 import { ObserverInput } from "../component/ObserverInput";
 import { Box, Typography } from "@mui/material";
 import { euclideanRotation } from "../core/Coordinate";
+import { CodePointBuffer, Int } from "../token/Tokens";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -107,15 +108,16 @@ class GeneralConfigImpl implements GeneralConfig {
             label="Movement Timeout"
             getValue={() => this.movementTimeout.toString() }
             setValue={(value: string) => {
-              const parsedValue = parseInt(value)!;
+              const parsedValue = parseInt(value);
               app.history.execute(
-                `Change default movement timeout`,
+                `Change default movement timeout to ${parsedValue}`,
                 new UpdateProperties(this as any, { movementTimeout: parsedValue })
               );
             }}
             isValidIntermediate={() => true}
-            isValidValue={(candidate: string) => parseInt(candidate) !== undefined}
+            isValidValue={(candidate: string) => Int.parse(new CodePointBuffer(candidate)) !== null }
             sx={{ marginTop: "16px" }}
+            numeric
           />
           </Box>
         </Box>
