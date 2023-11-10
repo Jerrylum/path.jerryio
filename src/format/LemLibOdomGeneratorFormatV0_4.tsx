@@ -55,9 +55,9 @@ class GeneralConfigImpl implements GeneralConfig {
   @Expose()
   movementTimeout: number = 5000;
   @Exclude()
-  private format_: LemLibOdomGeneratorFormatV0_1;
+  private format_: LemLibOdomGeneratorFormatV0_4;
 
-  constructor(format: LemLibOdomGeneratorFormatV0_1) {
+  constructor(format: LemLibOdomGeneratorFormatV0_4) {
     this.format_ = format;
     makeAutoObservable(this);
 
@@ -149,12 +149,12 @@ class PathConfigImpl implements PathConfig {
   maxDecelerationRate: number = 127;
 
   @Exclude()
-  readonly format: LemLibOdomGeneratorFormatV0_1;
+  readonly format: LemLibOdomGeneratorFormatV0_4;
 
   @Exclude()
   public path!: Path;
 
-  constructor(format: LemLibOdomGeneratorFormatV0_1) {
+  constructor(format: LemLibOdomGeneratorFormatV0_4) {
     this.format = format;
     makeAutoObservable(this);
   }
@@ -165,7 +165,7 @@ class PathConfigImpl implements PathConfig {
 }
 
 // observable class
-export class LemLibOdomGeneratorFormatV0_1 implements Format {
+export class LemLibOdomGeneratorFormatV0_4 implements Format {
   isInit: boolean = false;
   uid: string;
 
@@ -178,7 +178,7 @@ export class LemLibOdomGeneratorFormatV0_1 implements Format {
   }
 
   createNewInstance(): Format {
-    return new LemLibOdomGeneratorFormatV0_1();
+    return new LemLibOdomGeneratorFormatV0_4();
   }
 
   getName(): string {

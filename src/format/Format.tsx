@@ -16,7 +16,7 @@ import {
 } from "../core/Asset";
 import { runInActionAsync } from "../core/Util";
 import { when } from "mobx";
-import { LemLibOdomGeneratorFormatV0_1 } from "./LemLibOdomGeneratorFormatV0_4";
+import { LemLibOdomGeneratorFormatV0_4 } from "./LemLibOdomGeneratorFormatV0_4";
 import { CancellableCommand, ExecutionEventListenersContainer } from "../core/Command";
 
 export interface Format extends ExecutionEventListenersContainer<CancellableCommand> {
@@ -43,7 +43,7 @@ export interface Format extends ExecutionEventListenersContainer<CancellableComm
 export function getAllFormats(): Format[] {
   return [
     new LemLibFormatV0_4(), //
-    new LemLibOdomGeneratorFormatV0_1(),
+    new LemLibOdomGeneratorFormatV0_4(),
     new PathDotJerryioFormatV0_1()
   ];
 }
