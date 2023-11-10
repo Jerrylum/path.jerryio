@@ -12,6 +12,7 @@ import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFi
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
 import { Format, PathFileData } from "./Format";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
+import { SmartBuffer } from "smart-buffer";
 
 export interface LemLibWaypoint {
   x: number;
@@ -21,32 +22,24 @@ export interface LemLibWaypoint {
   lookahead?: number;
 }
 
-export interface LemLibPathConfig extends PathConfig {
-  lookaheadProfiles: any[];
+export function writeWaypoint(buffer: SmartBuffer, waypoint: LemLibWaypoint) {
+  
 }
 
-export class LemLibPoint extends Point {
-  constructor(
-    x: number,
-    y: number,
-    sampleRef: Segment,
-    sampleT: number,
-    speed: number = 0,
-    heading: number | undefined,
-    public lookahead: number | undefined
-  ) {
-    super(x, y, sampleRef, sampleT, speed, heading);
-  }
-}
+// export function readWaypoint(buffer: SmartBuffer): LemLibWaypoint {
+
+// }
+
+export interface LemLibPathConfig extends PathConfig {}
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
   @IsPositive()
   @Expose()
-  robotWidth: number = 12;
+  robotWidth: number = 300;
   @IsPositive()
   @Expose()
-  robotHeight: number = 12;
+  robotHeight: number = 300;
   @IsBoolean()
   @Expose()
   robotIsHolonomic: boolean = false;
@@ -55,13 +48,13 @@ class GeneralConfigImpl implements GeneralConfig {
   showRobot: boolean = false;
   @ValidateNumber(num => num > 0 && num <= 1000) // Don't use IsEnum
   @Expose()
-  uol: UnitOfLength = UnitOfLength.Inch;
+  uol: UnitOfLength = UnitOfLength.Millimeter;
   @IsPositive()
   @Expose()
-  pointDensity: number = 2; // inches
+  pointDensity: number = 10; // inches
   @IsPositive()
   @Expose()
-  controlMagnetDistance: number = 5 / 2.54;
+  controlMagnetDistance: number = 50;
   @Type(() => FieldImageSignatureAndOrigin)
   @ValidateNested()
   @IsObject()
@@ -109,28 +102,24 @@ class PathConfigImpl implements LemLibPathConfig {
   @Expose()
   speedLimit: NumberRange = {
     minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 127, label: "127" },
-    step: 1,
-    from: 20,
-    to: 100
+    // maxLimit: { value: 32.767, label: "32.767" },
+    maxLimit: { value: 10, label: "10" },
+    step: 0.05,
+    from: 0.5,
+    to: 1.0
   };
   @ValidateNumberRange(-Infinity, Infinity)
   @Expose()
   bentRateApplicableRange: NumberRange = {
     minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 4, label: "4" },
-    step: 0.01,
-    from: 1.4,
-    to: 1.8
+    maxLimit: { value: 50, label: "50" },
+    step: 1,
+    from: 14,
+    to: 18
   };
-  @ValidateNumber(num => num >= 0.1 && num <= 255)
+  @ValidateNumber(num => num >= 0.05 && num <= 10)
   @Expose()
-  maxDecelerationRate: number = 127;
-
-  @Expose()
-  get lookaheadProfiles(): any[] {
-    return [];
-  }
+  maxDecelerationRate: number = 1;
 
   @Exclude()
   readonly format: LemLibFormatV1_0;
@@ -224,7 +213,7 @@ export class LemLibFormatV1_0 implements Format {
   }
 
   getName(): string {
-    return "LemLib v1.0.0";
+    return "LemLib v1.0.0 (mm, m/s)";
   }
 
   init(): void {
@@ -273,9 +262,11 @@ export class LemLibFormatV1_0 implements Format {
   exportPathFile(): string {
     const { app } = getAppStores();
 
-    // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.
+    // ALGO: The implementation is adopted from https://github.com/LemLib/path under the MIT license.
 
     let rtn = "";
+
+    // TODO
 
     rtn += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPathFileData());
 
