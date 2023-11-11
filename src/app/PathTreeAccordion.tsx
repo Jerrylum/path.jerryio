@@ -27,12 +27,9 @@ import classNames from "classnames";
 import { IS_MAC_OS } from "../core/Util";
 import React from "react";
 import { APP_VERSION_STRING } from "../Version";
+import DOMPurify from "dompurify";
 
 const MIME_TYPE = `application/x-item-uid-path.jerryio.com-${APP_VERSION_STRING}`;
-
-function getItemNameRegex() {
-  return new RegExp(/^[^<>\r\n]+$/g); /* eslint-disable-line */
-}
 
 function touchItem(
   variables: PathTreeVariables,
@@ -193,14 +190,7 @@ const TreeItem = observer((props: TreeItemProps) => {
   const showDraggingDivider = allowDrop && entityIdx === variables.dragging?.dragOverIdx;
 
   function onItemNameChange(event: React.FormEvent<HTMLSpanElement>) {
-    const candidate = event.currentTarget.innerText;
-    if (!getItemNameRegex().test(candidate) && candidate.length !== 0) {
-      event.preventDefault();
-
-      event.currentTarget.innerText = lastValidName.current;
-    } else {
-      lastValidName.current = event.currentTarget.innerText;
-    }
+    lastValidName.current = event.currentTarget.innerText;
   }
 
   function onItemNameKeyDown(event: React.KeyboardEvent<HTMLSpanElement>) {
@@ -238,10 +228,13 @@ const TreeItem = observer((props: TreeItemProps) => {
   }, [isEditingName]);
 
   function onItemNameConfirm(event: React.SyntheticEvent<HTMLSpanElement, Event>) {
-    if (event.currentTarget.innerText === "") event.currentTarget.innerText = initialValue.current;
-    const pathName = (initialValue.current = lastValidName.current = event.currentTarget.innerText);
+    const purify = DOMPurify();
+    let pathName = purify.sanitize(event.currentTarget.innerText, { ALLOWED_TAGS: [] });
+    if (pathName === "") pathName = initialValue.current;
 
     app.history.execute(`Update path tree item name to ${pathName}`, new UpdateProperties(entity, { name: pathName }));
+
+    initialValue.current = lastValidName.current = event.currentTarget.innerText = entity.name;
     setIsEditingName(false);
   }
 
