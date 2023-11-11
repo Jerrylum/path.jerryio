@@ -171,13 +171,14 @@ export class Point extends Vector {
     public sampleRef: Segment, // The referenced sample segment
     public sampleT: number,
     public speed: number = 0,
-    public heading: number | undefined
+    public heading?: number,
+    public lookahead?: number
   ) {
     super(x, y);
   }
 
   clone(): this {
-    return new Point(this.x, this.y, this.sampleRef, this.sampleT, this.speed, this.heading) as this;
+    return new Point(this.x, this.y, this.sampleRef, this.sampleT, this.speed, this.heading, this.lookahead) as this;
   }
 }
 
@@ -362,7 +363,7 @@ export class LookaheadKeyframe extends Keyframe implements CanvasEntity {
     makeObservable(this, {});
   }
 
-  process(pc: PathConfig, responsible: Point[], nextFrame?: SpeedKeyframe): void {
+  process(pc: PathConfig, responsible: Point[], nextFrame?: LookaheadKeyframe): void {
     // TODO
   }
 }
