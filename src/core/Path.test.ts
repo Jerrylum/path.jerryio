@@ -5,11 +5,12 @@ import {
   construct,
   traversal,
   Path,
-  Keyframe,
+  SpeedKeyframe,
   relatedPaths,
   Vector,
   createStructureMemento,
-  applyStructureMemento
+  applyStructureMemento,
+  LookaheadKeyframe
 } from "./Path";
 import { CustomPathConfig } from "../format/Config.test";
 import { validate } from "class-validator";
@@ -126,7 +127,7 @@ test("validate EndControl", async () => {
 });
 
 test("validate Keyframe", async () => {
-  const k = new Keyframe(0.123, 0.456);
+  const k = new SpeedKeyframe(0.123, 0.456);
 
   expect(k.uid).toHaveLength(10);
   expect(k.xPos).toBe(0.123);
@@ -136,7 +137,7 @@ test("validate Keyframe", async () => {
   expect(await validate(k)).toHaveLength(0);
 
   const p = instanceToPlain(k);
-  const k2 = plainToClass(Keyframe, p, { excludeExtraneousValues: true, exposeDefaultValues: true });
+  const k2 = plainToClass(SpeedKeyframe, p, { excludeExtraneousValues: true, exposeDefaultValues: true });
 
   expect(await validate(k2)).toHaveLength(0);
   expect(k2).toStrictEqual(k);
@@ -165,6 +166,7 @@ test("validate Segment", async () => {
   expect(s.controls).toStrictEqual(controls);
   expect(s.last).toStrictEqual(controls[3]);
   expect(s.speedProfiles).toHaveLength(0);
+  expect(s.lookaheadKeyframes).toHaveLength(0);
 
   expect(await validate(s)).toHaveLength(0);
 
@@ -182,8 +184,9 @@ test("validate Segment", async () => {
 
   (s as any).uid = "";
   (s as any).controls = controls[0];
-  (s as any).speedProfiles = new Keyframe(0, 0);
-  expect(await validate(s)).toHaveLength(3);
+  (s as any).speedProfiles = new SpeedKeyframe(0, 0);
+  (s as any).lookaheadKeyframes = new LookaheadKeyframe(0, 0);
+  expect(await validate(s)).toHaveLength(4);
 });
 
 test("validate Path", async () => {

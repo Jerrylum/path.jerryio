@@ -12,6 +12,7 @@ import {
   PathTreeItem,
   Segment,
   SegmentControls,
+  SegmentKeyframeKey,
   SegmentVariant,
   Vector,
   applyStructureMemento,
@@ -671,60 +672,53 @@ export class DragControls implements CancellableCommand, MergeableCommand, Updat
 }
 
 export class AddKeyframe implements CancellableCommand {
-  public keyframe: Keyframe;
-
-  constructor(public path: Path, protected pos: KeyframePos) {
-    this.keyframe = new Keyframe(this.pos.xPos, this.pos.yPos);
-  }
+  constructor(public keyframes: Keyframe[], public keyframe: Keyframe) {}
 
   execute(): void {
-    this.segment.speedProfiles.push(this.keyframe);
-    this.segment.speedProfiles.sort((a, b) => a.xPos - b.xPos);
+    this.keyframes.push(this.keyframe);
+    this.keyframes.sort((a, b) => a.xPos - b.xPos);
   }
 
   undo(): void {
-    this.segment.speedProfiles.splice(this.segment.speedProfiles.indexOf(this.keyframe), 1);
+    this.keyframes.splice(this.keyframes.indexOf(this.keyframe), 1);
   }
 
   redo(): void {
     this.execute();
-  }
-
-  get segment() {
-    return this.pos.segment;
-  }
-
-  set segment(segment: Segment) {
-    this.pos.segment = segment;
   }
 }
 
 export class MoveKeyframe implements CancellableCommand, MergeableCommand {
   protected _oldPos?: KeyframePos;
 
-  constructor(public path: Path, public newPos: KeyframePos, public keyframe: Keyframe) {}
+  constructor(
+    public segments: Segment[],
+    public key: SegmentKeyframeKey,
+    public newPos: KeyframePos,
+    public keyframe: Keyframe
+  ) {}
 
   removeKeyframe(pos: KeyframePos) {
-    const idx = pos.segment.speedProfiles.indexOf(this.keyframe);
+    const idx = pos.segment[this.key].indexOf(this.keyframe as any);
     if (idx === -1) return;
 
-    pos.segment.speedProfiles.splice(idx, 1);
+    pos.segment[this.key].splice(idx, 1);
   }
 
   addKeyframe(pos: KeyframePos) {
     this.keyframe.xPos = pos.xPos;
     this.keyframe.yPos = pos.yPos;
-    pos.segment.speedProfiles.push(this.keyframe);
-    pos.segment.speedProfiles.sort((a, b) => a.xPos - b.xPos);
+    pos.segment[this.key].push(this.keyframe as any);
+    pos.segment[this.key].sort((a, b) => a.xPos - b.xPos);
   }
 
   execute(): void {
     // remove keyframe from oldSegment speed control
-    for (const segment of this.path.segments) {
-      const idx = segment.speedProfiles.indexOf(this.keyframe);
+    for (const segment of this.segments) {
+      const idx = segment[this.key].indexOf(this.keyframe as any);
       if (idx === -1) continue;
 
-      segment.speedProfiles.splice(idx, 1);
+      segment[this.key].splice(idx, 1);
       this._oldPos = { segment, xPos: this.keyframe.xPos, yPos: this.keyframe.yPos };
       break;
     }
@@ -765,11 +759,11 @@ export class RemoveKeyframe implements CancellableCommand {
   protected _segment?: Segment;
   protected _oldIdx = -1;
 
-  constructor(public path: Path, public keyframe: Keyframe) {}
+  constructor(public segments: Segment[], public key: SegmentKeyframeKey, public keyframe: Keyframe) {}
 
   execute(): void {
-    for (const segment of this.path.segments) {
-      const idx = segment.speedProfiles.indexOf(this.keyframe);
+    for (const segment of this.segments) {
+      const idx = segment[this.key].indexOf(this.keyframe as any);
       if (idx === -1) continue;
 
       segment.speedProfiles.splice(idx, 1);
@@ -782,7 +776,7 @@ export class RemoveKeyframe implements CancellableCommand {
   undo(): void {
     if (this._segment === undefined || this._oldIdx === -1) return;
 
-    this._segment.speedProfiles.splice(this._oldIdx, 0, this.keyframe);
+    this._segment[this.key].splice(this._oldIdx, 0, this.keyframe);
   }
 
   redo(): void {

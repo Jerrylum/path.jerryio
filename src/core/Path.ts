@@ -274,8 +274,7 @@ export interface KeyframePos {
   yPos: number; // [0...1]
 }
 
-// observable class
-export class Keyframe implements CanvasEntity {
+export abstract class Keyframe implements CanvasEntity {
   @Matches(/^[a-zA-Z0-9]+$/)
   @MinLength(10)
   @Expose()
@@ -286,6 +285,25 @@ export class Keyframe implements CanvasEntity {
   @ValidateNumber(num => num >= 0 && num <= 1)
   @Expose()
   public yPos: number;
+
+  constructor(
+    xPos: number, // [0...1)
+    yPos: number // [0...1]
+  ) {
+    this.uid = makeId(10);
+    this.xPos = xPos;
+    this.yPos = yPos;
+    makeObservable(this, {
+      xPos: observable,
+      yPos: observable
+    });
+  }
+
+  abstract process(pc: PathConfig, responsible: Point[], nextFrame?: Keyframe): void;
+}
+
+// observable class
+export class SpeedKeyframe extends Keyframe implements CanvasEntity {
   @IsBoolean()
   @Expose()
   public followBentRate: boolean;
@@ -295,14 +313,14 @@ export class Keyframe implements CanvasEntity {
     yPos: number, // [0...1]
     followBentRate: boolean = false
   ) {
-    this.uid = makeId(10);
-    this.xPos = xPos;
-    this.yPos = yPos;
+    super(xPos, yPos);
     this.followBentRate = followBentRate;
-    makeAutoObservable(this);
+    makeObservable(this, {
+      followBentRate: observable
+    });
   }
 
-  process(pc: PathConfig, responsible: Point[], nextFrame?: Keyframe): void {
+  process(pc: PathConfig, responsible: Point[], nextFrame?: SpeedKeyframe): void {
     const limitFrom = pc.speedLimit.from;
     const limitTo = pc.speedLimit.to;
     const limitDiff = limitTo - limitFrom;
@@ -334,6 +352,21 @@ export class Keyframe implements CanvasEntity {
   }
 }
 
+// observable class
+export class LookaheadKeyframe extends Keyframe implements CanvasEntity {
+  constructor(
+    xPos: number, // [0...1)
+    yPos: number // [0...1]
+  ) {
+    super(xPos, yPos);
+    makeObservable(this, {});
+  }
+
+  process(pc: PathConfig, responsible: Point[], nextFrame?: SpeedKeyframe): void {
+    // TODO
+  }
+}
+
 export enum SegmentVariant {
   Linear = "linear",
   Cubic = "cubic"
@@ -342,6 +375,8 @@ export enum SegmentVariant {
 export type LinearSegmentControls = [EndControl, EndControl];
 export type CubicSegmentControls = [EndControl, Control, Control, EndControl];
 export type SegmentControls = LinearSegmentControls | CubicSegmentControls;
+
+export type SegmentKeyframeKey = "speedProfiles" | "lookaheadKeyframes";
 
 // observable class
 export class Segment implements CanvasEntity {
@@ -363,8 +398,13 @@ export class Segment implements CanvasEntity {
   @ValidateNested()
   @IsArray()
   @Expose()
-  @Type(() => Keyframe)
-  public speedProfiles: Keyframe[];
+  @Type(() => SpeedKeyframe)
+  public speedProfiles: SpeedKeyframe[];
+  @ValidateNested()
+  @IsArray()
+  @Expose()
+  @Type(() => LookaheadKeyframe)
+  public lookaheadKeyframes: LookaheadKeyframe[];
   @Matches(/^[a-zA-Z0-9]+$/)
   @MinLength(10)
   @Expose()
@@ -376,6 +416,7 @@ export class Segment implements CanvasEntity {
   constructor(...list: [] | SegmentControls) {
     this.controls = list as SegmentControls;
     this.speedProfiles = [];
+    this.lookaheadKeyframes = [];
     this.uid = makeId(10);
     makeAutoObservable(this);
   }
