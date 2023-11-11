@@ -206,6 +206,12 @@ export class LemLibFormatV0_4 implements Format {
         if (keyframe instanceof SpeedKeyframe) {
           keyframe.followBentRate = true;
         }
+      } else if (event.isCommandInstanceOf(UpdateProperties)) {
+        const target = event.command.target;
+        const newValues = event.command.newValues;
+        if (target instanceof Path && "name" in newValues) {
+          newValues.name = newValues.name.replace(/[^\x00-\x7F]/g, ""); // ascii only
+        }
       }
     });
   }
