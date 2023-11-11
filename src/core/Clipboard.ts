@@ -72,7 +72,7 @@ class CopyPathsMessage extends ClipboardMessage {
       path.uid = makeId(10);
 
       // SECURITY: Sanitize path names, beware of XSS attack from the clipboard
-      const temp = purify.sanitize(path.name);
+      const temp = purify.sanitize(path.name, { ALLOWED_TAGS: [] });
       path.name = temp === "" ? "Path" : temp;
 
       // ALGO: Link the first vector of each segment to the last vector of the previous segment

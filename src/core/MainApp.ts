@@ -330,7 +330,7 @@ export class MainApp {
     this.expanded = [];
     for (const path of pfd.paths) {
       // SECURITY: Sanitize path names, beware of XSS attack from the path file
-      const temp = purify.sanitize(path.name);
+      const temp = purify.sanitize(path.name, { ALLOWED_TAGS: [] });
       path.name = temp === "" ? "Path" : temp;
 
       // ALGO: Link the first vector of each segment to the last vector of the previous segment
