@@ -122,12 +122,15 @@ export interface NumberMark {
   label: string;
 }
 
-export interface EditableNumberRange {
+export interface NumberRange {
+  from: number;
+  to: number;
+}
+
+export interface EditableNumberRange extends NumberRange {
   minLimit: NumberMark;
   maxLimit: NumberMark;
   step: number;
-  from: number;
-  to: number;
 }
 
 export function isNumberMark(value: any): value is NumberMark {

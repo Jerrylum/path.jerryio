@@ -5,7 +5,7 @@ import { RangeSlider } from "../component/RangeSlider";
 import { AddKeyframe, CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
 import { getAppStores } from "../core/MainApp";
 import { Path, Segment, SpeedKeyframe } from "../core/Path";
-import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
+import { EditableNumberRange, NumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { IsPositive, IsBoolean, ValidateNested, IsObject } from "class-validator";
 import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFieldImage } from "../core/Asset";
@@ -214,8 +214,10 @@ class GeneralConfigImpl implements GeneralConfig {
 // observable class
 class PathConfigImpl implements LemLibPathConfig {
   @Exclude()
-  readonly lookaheadFrom = 10;
-  readonly lookaheadTo = 1000;
+  readonly lookahead: NumberRange = {
+    from: 10,
+    to: 1000
+  };
 
   @ValidateEditableNumberRange(-Infinity, Infinity)
   @Expose()
