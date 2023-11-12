@@ -1,16 +1,14 @@
 import { makeAutoObservable, reaction, action, intercept } from "mobx";
 import { getAppStores } from "../core/MainApp";
-import { ValidateNumber, makeId, parseFormula } from "../core/Util";
+import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
 import { Path, Segment, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL } from "./Config";
 import { Format, PathFileData } from "./Format";
-import { NumberRange, ValidateNumberRange } from "../component/RangeSlider";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
 import {
   PointCalculationResult,
-  fromHeadingInDegreeToAngleInRadian,
   getPathPoints,
   getDiscretePoints,
   fromDegreeToRadian
@@ -128,18 +126,18 @@ class GeneralConfigImpl implements GeneralConfig {
 
 // observable class
 class PathConfigImpl implements PathConfig {
-  @ValidateNumberRange(-Infinity, Infinity)
+  @ValidateEditableNumberRange(-Infinity, Infinity)
   @Expose()
-  speedLimit: NumberRange = {
+  speedLimit: EditableNumberRange = {
     minLimit: { value: 0, label: "" },
     maxLimit: { value: 0, label: "" },
     step: 0,
     from: 0,
     to: 0
   };
-  @ValidateNumberRange(-Infinity, Infinity)
+  @ValidateEditableNumberRange(-Infinity, Infinity)
   @Expose()
-  bentRateApplicableRange: NumberRange = {
+  bentRateApplicableRange: EditableNumberRange = {
     minLimit: { value: 0, label: "" },
     maxLimit: { value: 0, label: "" },
     step: 0,
