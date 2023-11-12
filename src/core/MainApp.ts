@@ -3,7 +3,8 @@ import DOMPurify from "dompurify"; // cspell:disable-line
 import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "../format/Config";
 import { AnyControl, EndControl, Path, PathTreeItem, Vector, relatedPaths, traversal } from "./Path";
 import { addToArray, removeFromArray, runInActionAsync } from "./Util";
-import { PathFileData, Format, convertPathFileData, getAllFormats, promptFieldImage } from "../format/Format";
+import { PathFileData, Format, convertPathFileData, getAllFormats } from "../format/Format";
+import { promptFieldImage } from "./FieldImagePrompt";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { instanceToPlain, plainToClassFromExist } from "class-transformer";
 import { Quantity, UnitConverter, UnitOfLength } from "./Unit";
