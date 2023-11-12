@@ -187,3 +187,25 @@ export function ValidateEditableNumberRange(min: number, max: number, validation
     });
   };
 }
+
+export function getMacHotKeyString(hotkey: string): string {
+  return hotkey
+    .replaceAll("Mod", "⌘")
+    .replaceAll("Option", "⌥")
+    .replaceAll("Ctrl", "⌃")
+    .replaceAll("Shift", "⇧")
+    .replaceAll("CapsLock", "⇪")
+    .replaceAll("ArrowLeft", "←")
+    .replaceAll("ArrowRight", "→")
+    .replaceAll("ArrowUp", "↑")
+    .replaceAll("ArrowDown", "↓")
+    .replaceAll("Tab", "⇥")
+    .replaceAll("Del", "⌫")
+    .replaceAll(" ", "␣")
+    .replaceAll("Esc", "") // Hide escape key
+    .replaceAll("+", "")
+    .replaceAll("Add", "+")
+    .replaceAll("Equal", "+")
+    .replaceAll("Subtract", "-")
+    .replaceAll("Minus", "-");
+}
