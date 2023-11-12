@@ -1,11 +1,11 @@
 import { makeAutoObservable, reaction, action, intercept } from "mobx";
 import { Box, Typography, Slider } from "@mui/material";
 import { Expose, Exclude, Type } from "class-transformer";
-import { ValidateNumberRange, NumberRange, RangeSlider } from "../component/RangeSlider";
+import { RangeSlider } from "../component/RangeSlider";
 import { AddKeyframe, CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
 import { getAppStores } from "../core/MainApp";
 import { Path, Segment, SpeedKeyframe } from "../core/Path";
-import { ValidateNumber, makeId } from "../core/Util";
+import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { IsPositive, IsBoolean, ValidateNested, IsObject } from "class-validator";
 import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFieldImage } from "../core/Asset";
@@ -217,9 +217,9 @@ class PathConfigImpl implements LemLibPathConfig {
   readonly lookaheadFrom = 10;
   readonly lookaheadTo = 1000;
 
-  @ValidateNumberRange(-Infinity, Infinity)
+  @ValidateEditableNumberRange(-Infinity, Infinity)
   @Expose()
-  speedLimit: NumberRange = {
+  speedLimit: EditableNumberRange = {
     minLimit: { value: 0, label: "0" },
     // maxLimit: { value: 32.767, label: "32.767" },
     maxLimit: { value: 10, label: "10" },
@@ -227,9 +227,9 @@ class PathConfigImpl implements LemLibPathConfig {
     from: 0.5,
     to: 1.0
   };
-  @ValidateNumberRange(-Infinity, Infinity)
+  @ValidateEditableNumberRange(-Infinity, Infinity)
   @Expose()
-  bentRateApplicableRange: NumberRange = {
+  bentRateApplicableRange: EditableNumberRange = {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 50, label: "50" },
     step: 1,

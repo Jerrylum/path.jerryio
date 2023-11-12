@@ -1,12 +1,12 @@
 import { makeAutoObservable, reaction, action, intercept } from "mobx";
 import { getAppStores } from "../core/MainApp";
-import { ValidateNumber, clamp, makeId } from "../core/Util";
+import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, clamp, makeId } from "../core/Util";
 import { Control, EndControl, Path, Segment, SpeedKeyframe, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { Box, Slider, Typography } from "@mui/material";
-import { NumberRange, RangeSlider, ValidateNumberRange } from "../component/RangeSlider";
+import { RangeSlider } from "../component/RangeSlider";
 import { AddKeyframe, CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
@@ -79,18 +79,18 @@ class GeneralConfigImpl implements GeneralConfig {
 
 // observable class
 class PathConfigImpl implements PathConfig {
-  @ValidateNumberRange(-Infinity, Infinity)
+  @ValidateEditableNumberRange(-Infinity, Infinity)
   @Expose()
-  speedLimit: NumberRange = {
+  speedLimit: EditableNumberRange = {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 127, label: "127" },
     step: 1,
     from: 20,
     to: 100
   };
-  @ValidateNumberRange(-Infinity, Infinity)
+  @ValidateEditableNumberRange(-Infinity, Infinity)
   @Expose()
-  bentRateApplicableRange: NumberRange = {
+  bentRateApplicableRange: EditableNumberRange = {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 4, label: "4" },
     step: 0.01,
