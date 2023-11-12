@@ -2,7 +2,7 @@ import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { Format } from "./Format";
 import { Path } from "../core/Path";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin } from "../core/Asset";
-import { EditableNumberRange } from "../core/Util";
+import { EditableNumberRange, NumberRange } from "../core/Util";
 
 export function convertGeneralConfigUOL(gc: GeneralConfig, fromUOL: UnitOfLength) {
   const toUOL = gc.uol;
@@ -44,6 +44,7 @@ export interface GeneralConfig extends ConfigSection {
 
 export interface PathConfig extends ConfigSection {
   path: Path;
+  lookaheadLimit?: NumberRange;
   speedLimit: EditableNumberRange;
   bentRateApplicableRange: EditableNumberRange;
 }

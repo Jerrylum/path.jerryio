@@ -126,7 +126,7 @@ test("validate EndControl", async () => {
   expect(await validate(c)).toHaveLength(6);
 });
 
-test("validate Keyframe", async () => {
+test("validate SpeedKeyframe", async () => {
   const k = new SpeedKeyframe(0.123, 0.456);
 
   expect(k.uid).toHaveLength(10);
@@ -150,6 +150,30 @@ test("validate Keyframe", async () => {
   (k as any).yPos = 1.1;
   (k as any).followBentRate = null;
   expect(await validate(k)).toHaveLength(4);
+});
+
+test("validate LookaheadKeyframe", async () => {
+  const k = new LookaheadKeyframe(0.123, 0.456);
+
+  expect(k.uid).toHaveLength(10);
+  expect(k.xPos).toBe(0.123);
+  expect(k.yPos).toBe(0.456);
+
+  expect(await validate(k)).toHaveLength(0);
+
+  const p = instanceToPlain(k);
+  const k2 = plainToClass(LookaheadKeyframe, p, { excludeExtraneousValues: true, exposeDefaultValues: true });
+
+  expect(await validate(k2)).toHaveLength(0);
+  expect(k2).toStrictEqual(k);
+
+  (k as any).uid = "123456789-";
+  expect(await validate(k)).toHaveLength(1);
+
+  (k as any).uid = "";
+  (k as any).xPos = 1;
+  (k as any).yPos = 1.1;
+  expect(await validate(k)).toHaveLength(3);
 });
 
 test("validate Segment", async () => {

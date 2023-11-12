@@ -214,7 +214,7 @@ class GeneralConfigImpl implements GeneralConfig {
 // observable class
 class PathConfigImpl implements LemLibPathConfig {
   @Exclude()
-  readonly lookahead: NumberRange = {
+  readonly lookaheadLimit: NumberRange = {
     from: 10,
     to: 1000
   };
