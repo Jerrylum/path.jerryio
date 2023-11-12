@@ -117,20 +117,20 @@ export function hex(input: Uint8Array) {
   return [...input].map(x => x.toString(16).padStart(2, "0")).join("");
 }
 
-export interface Mark {
+export interface NumberMark {
   value: number;
   label: string;
 }
 
 export interface EditableNumberRange {
-  minLimit: Mark;
-  maxLimit: Mark;
+  minLimit: NumberMark;
+  maxLimit: NumberMark;
   step: number;
   from: number;
   to: number;
 }
 
-export function isMark(value: any): value is Mark {
+export function isNumberMark(value: any): value is NumberMark {
   return (
     typeof value === "object" && value !== null && typeof value.value === "number" && typeof value.label === "string"
   );
@@ -140,8 +140,8 @@ export function isEditableNumberRange(value: any): value is EditableNumberRange 
   return (
     typeof value === "object" &&
     value !== null &&
-    isMark(value.minLimit) &&
-    isMark(value.maxLimit) &&
+    isNumberMark(value.minLimit) &&
+    isNumberMark(value.maxLimit) &&
     typeof value.step === "number" &&
     typeof value.from === "number" &&
     typeof value.to === "number"
