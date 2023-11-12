@@ -68,7 +68,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
             setValue={(value: string) => {
               app.history.execute(
                 `Change chassis variable name`,
-                new UpdateProperties(this as any, { chassisName: value })
+                new UpdateProperties(config, { chassisName: value })
               );
             }}
             isValidIntermediate={() => true}
@@ -82,7 +82,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
               const parsedValue = parseInt(Int.parse(new CodePointBuffer(value))!.value);
               app.history.execute(
                 `Change default movement timeout to ${parsedValue}`,
-                new UpdateProperties(this as any, { movementTimeout: parsedValue })
+                new UpdateProperties(config, { movementTimeout: parsedValue })
               );
             }}
             isValidIntermediate={() => true}
