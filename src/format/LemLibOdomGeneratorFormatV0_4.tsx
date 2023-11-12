@@ -1,24 +1,105 @@
 import { makeAutoObservable, reaction, action, intercept } from "mobx";
 import { getAppStores } from "../core/MainApp";
-import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
+import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "../core/Util";
 import { Path, Segment, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
-import {
-  PointCalculationResult,
-  getPathPoints,
-  getDiscretePoints,
-  fromDegreeToRadian
-} from "../core/Calculation";
+import { PointCalculationResult, getPathPoints, getDiscretePoints, fromDegreeToRadian } from "../core/Calculation";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
 import { CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
 import { ObserverInput } from "../component/ObserverInput";
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { euclideanRotation } from "../core/Coordinate";
 import { CodePointBuffer, Int } from "../token/Tokens";
+import { observer } from "mobx-react-lite";
+import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "../app/Notice";
+import { Logger } from "../core/Logger";
+import { FormTags } from "react-hotkeys-hook/dist/types";
+import { useCustomHotkeys } from "../core/Hook";
+
+const logger = Logger("LemLib Odom Code Gen v0.4.x (inch)");
+
+const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
+  const { config } = props;
+
+  const { app, confirmation, modals } = getAppStores();
+
+  const isUsingEditor = !confirmation.isOpen && !modals.isOpen;
+
+  const ENABLE_ON_NON_TEXT_INPUT_FIELDS = {
+    preventDefaultOnlyIfEnabled: true,
+    enableOnFormTags: ["input", "INPUT"] as FormTags[],
+    // UX: It is okay to enable hotkeys on some input fields (e.g. checkbox, button, range)
+    enabled: (kvEvt: KeyboardEvent) => {
+      if (isUsingEditor === false) return false;
+      if (kvEvt.target instanceof HTMLInputElement)
+        return ["button", "checkbox", "radio", "range", "reset", "submit"].includes(kvEvt.target.type);
+      else return true;
+    }
+  };
+
+  const onCopyCode = action(() => {
+    try {
+      const code = config.format.exportCode();
+
+      navigator.clipboard.writeText(code);
+
+      enqueueSuccessSnackbar(logger, "Copied");
+    } catch (e) {
+      enqueueErrorSnackbar(logger, e);
+    }
+  });
+
+  useCustomHotkeys("Shift+Mod+C", onCopyCode, ENABLE_ON_NON_TEXT_INPUT_FIELDS);
+
+  const hotkey = IS_MAC_OS ? getMacHotKeyString("Shift+Mod+C") : "Shift+Mod+C";
+
+  return (
+    <>
+      <Box className="panel-box">
+        <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
+        <Box className="flex-editor-panel">
+          <ObserverInput
+            label="Chassis Name"
+            getValue={() => config.chassisName}
+            setValue={(value: string) => {
+              app.history.execute(
+                `Change chassis variable name`,
+                new UpdateProperties(this as any, { chassisName: value })
+              );
+            }}
+            isValidIntermediate={() => true}
+            isValidValue={(candidate: string) => candidate !== ""}
+            sx={{ marginTop: "16px" }}
+          />
+          <ObserverInput
+            label="Movement Timeout"
+            getValue={() => config.movementTimeout.toString()}
+            setValue={(value: string) => {
+              const parsedValue = parseInt(Int.parse(new CodePointBuffer(value))!.value);
+              app.history.execute(
+                `Change default movement timeout to ${parsedValue}`,
+                new UpdateProperties(this as any, { movementTimeout: parsedValue })
+              );
+            }}
+            isValidIntermediate={() => true}
+            isValidValue={(candidate: string) => Int.parse(new CodePointBuffer(candidate)) !== null}
+            sx={{ marginTop: "16px" }}
+            numeric
+          />
+        </Box>
+        <Box className="flex-editor-panel" sx={{ marginTop: "32px" }}>
+          <Button variant="contained" title={hotkey} onClick={onCopyCode}>
+            Copy Code
+          </Button>
+        </Box>
+      </Box>
+    </>
+  );
+});
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -83,51 +164,13 @@ class GeneralConfigImpl implements GeneralConfig {
   }
 
   getConfigPanel() {
-    const { app } = getAppStores();
-    return (
-      <>
-        <Box className="panel-box">
-          <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
-          <Box className="flex-editor-panel">
-          <ObserverInput
-            label="Chassis Name"
-            getValue={() => this.chassisName}
-            setValue={(value: string) => {
-              app.history.execute(
-                `Change chassis variable name`,
-                new UpdateProperties(this as any, { chassisName: value })
-              );
-            }}
-            isValidIntermediate={() => true}
-            isValidValue={(candidate: string) => candidate !== ""}
-            sx={{ marginTop: "16px" }}
-          />
-          <ObserverInput
-            label="Movement Timeout"
-            getValue={() => this.movementTimeout.toString() }
-            setValue={(value: string) => {
-              const parsedValue = parseInt(Int.parse(new CodePointBuffer(value))!.value);
-              app.history.execute(
-                `Change default movement timeout to ${parsedValue}`,
-                new UpdateProperties(this as any, { movementTimeout: parsedValue })
-              );
-            }}
-            isValidIntermediate={() => true}
-            isValidValue={(candidate: string) => Int.parse(new CodePointBuffer(candidate)) !== null }
-            sx={{ marginTop: "16px" }}
-            numeric
-          />
-          </Box>
-        </Box>
-      </>
-    );
+    return <GeneralConfigPanel config={this} />;
   }
 }
 
 // observable class
 class PathConfigImpl implements PathConfig {
-  @ValidateEditableNumberRange(-Infinity, Infinity)
-  @Expose()
+  @Exclude()
   speedLimit: EditableNumberRange = {
     minLimit: { value: 0, label: "" },
     maxLimit: { value: 0, label: "" },
@@ -135,8 +178,7 @@ class PathConfigImpl implements PathConfig {
     from: 0,
     to: 0
   };
-  @ValidateEditableNumberRange(-Infinity, Infinity)
-  @Expose()
+  @Exclude()
   bentRateApplicableRange: EditableNumberRange = {
     minLimit: { value: 0, label: "" },
     maxLimit: { value: 0, label: "" },
@@ -144,8 +186,7 @@ class PathConfigImpl implements PathConfig {
     from: 0,
     to: 0
   };
-  @ValidateNumber(num => num >= 0.1 && num <= 255)
-  @Expose()
+  @Exclude()
   maxDecelerationRate: number = 127;
 
   @Exclude()
@@ -160,7 +201,11 @@ class PathConfigImpl implements PathConfig {
   }
 
   getConfigPanel() {
-    return <></>;
+    return (
+      <>
+        <Typography>(No setting)</Typography>
+      </>
+    );
   }
 }
 
@@ -182,7 +227,7 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
   }
 
   getName(): string {
-    return "LemLib Odometry Code Generator v0.4.x (inch coordinates)";
+    return "LemLib Odom Code Gen v0.4.x (inch)";
   }
 
   init(): void {
@@ -207,7 +252,7 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
     throw new Error("Loading paths is not supported in this format");
   }
 
-  exportPathFile(): string {
+  exportCode(): string {
     const { app } = getAppStores();
 
     let rtn = "";
@@ -233,9 +278,24 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
       for (const point of points) {
         // ALGO: Only coordinate points are supported in LemLibOdom format
         const relative = euclideanRotation(heading, point.subtract(offsets));
-        rtn += `${gc.chassisName}.moveTo(${uc.fromAtoB(relative.x).toUser()}, ${uc.fromAtoB(relative.y).toUser()}, ${gc.movementTimeout});\n`;
+        rtn += `${gc.chassisName}.moveTo(${uc.fromAtoB(relative.x).toUser()}, ${uc.fromAtoB(relative.y).toUser()}, ${
+          gc.movementTimeout
+        });\n`;
       }
     }
+
+    return rtn;
+  }
+
+  exportPathFile(): string {
+    const { app } = getAppStores();
+
+    let rtn = this.exportCode();
+
+    rtn += "\n";
+
+    rtn += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPathFileData());
+
     return rtn;
   }
 
