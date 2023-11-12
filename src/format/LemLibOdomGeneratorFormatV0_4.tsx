@@ -55,7 +55,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
 
   useCustomHotkeys("Shift+Mod+C", onCopyCode, ENABLE_ON_NON_TEXT_INPUT_FIELDS);
 
-  const hotkey = IS_MAC_OS ? getMacHotKeyString("Shift+Mod+C") : "Shift+Mod+C";
+  const hotkey = IS_MAC_OS ? getMacHotKeyString("Shift+Mod+C") : "Shift+Ctrl+C";
 
   return (
     <>
@@ -92,7 +92,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
           />
         </Box>
         <Box className="flex-editor-panel" sx={{ marginTop: "32px" }}>
-          <Button variant="contained" title={hotkey} onClick={onCopyCode}>
+          <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
             Copy Code
           </Button>
         </Box>
