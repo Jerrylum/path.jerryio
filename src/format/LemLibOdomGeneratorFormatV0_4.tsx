@@ -19,6 +19,7 @@ import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "../app/Notice";
 import { Logger } from "../core/Logger";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 import { useCustomHotkeys } from "../core/Hook";
+import { ObserverCheckbox } from "../component/ObserverCheckbox";
 
 const logger = Logger("LemLib Odom Code Gen v0.4.x (inch)");
 
@@ -66,10 +67,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
             label="Chassis Name"
             getValue={() => config.chassisName}
             setValue={(value: string) => {
-              app.history.execute(
-                `Change chassis variable name`,
-                new UpdateProperties(this as any, { chassisName: value })
-              );
+              app.history.execute(`Change chassis variable name`, new UpdateProperties(config, { chassisName: value }));
             }}
             isValidIntermediate={() => true}
             isValidValue={(candidate: string) => candidate !== ""}
@@ -82,13 +80,25 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
               const parsedValue = parseInt(Int.parse(new CodePointBuffer(value))!.value);
               app.history.execute(
                 `Change default movement timeout to ${parsedValue}`,
-                new UpdateProperties(this as any, { movementTimeout: parsedValue })
+                new UpdateProperties(config, { movementTimeout: parsedValue })
               );
             }}
             isValidIntermediate={() => true}
             isValidValue={(candidate: string) => Int.parse(new CodePointBuffer(candidate)) !== null}
             sx={{ marginTop: "16px" }}
             numeric
+          />
+        </Box>
+        <Box className="flex-editor-panel">
+          <ObserverCheckbox
+            label="Use Relative Coordinates"
+            checked={config.relativeCoords}
+            onCheckedChange={value => {
+              app.history.execute(
+                `Set using relative coordinates to ${value}`,
+                new UpdateProperties(config, { relativeCoords: value })
+              );
+            }}
           />
         </Box>
         <Box className="flex-editor-panel" sx={{ marginTop: "32px" }}>
@@ -134,6 +144,8 @@ class GeneralConfigImpl implements GeneralConfig {
   chassisName: string = "chassis";
   @Expose()
   movementTimeout: number = 5000;
+  @Expose()
+  relativeCoords: boolean = true;
   @Exclude()
   private format_: LemLibOdomGeneratorFormatV0_4;
 
@@ -269,12 +281,12 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
       const start = points[0];
       let heading = 0;
 
-      if (start.heading !== undefined) {
+      if (start.heading !== undefined && gc.relativeCoords) {
         heading = fromDegreeToRadian(start.heading);
       }
 
       // ALGO: Offsets to convert the absolute coordinates to the relative coordinates LemLib uses
-      const offsets = new Vector(start.x, start.y);
+      const offsets = gc.relativeCoords ? new Vector(start.x, start.y) : new Vector(0, 0);
       for (const point of points) {
         // ALGO: Only coordinate points are supported in LemLibOdom format
         const relative = euclideanRotation(heading, point.subtract(offsets));
