@@ -6,7 +6,7 @@ import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL } from "./Config";
 import { Format, PathFileData } from "./Format";
 import { Exclude, Expose, Type } from "class-transformer";
-import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
+import { IsBoolean, IsObject, IsPositive, IsString, MinLength, ValidateNested } from "class-validator";
 import { PointCalculationResult, getPathPoints, getDiscretePoints, fromDegreeToRadian } from "../core/Calculation";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
 import { CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
@@ -140,10 +140,14 @@ class GeneralConfigImpl implements GeneralConfig {
   @Expose()
   fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> =
     getDefaultBuiltInFieldImage().getSignatureAndOrigin();
+  @IsString()
+  @MinLength(1)
   @Expose()
   chassisName: string = "chassis";
+  @ValidateNumber(num => num >= 0)
   @Expose()
   movementTimeout: number = 5000;
+  @IsBoolean()
   @Expose()
   relativeCoords: boolean = true;
   @Exclude()
