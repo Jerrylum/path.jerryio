@@ -2,6 +2,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import { getAppStores } from "../core/MainApp";
+import { TravelDistancePresentation } from "./Layouts";
 
 const PathConfigAccordion = observer((props: {}) => {
   const { app } = getAppStores();
@@ -13,13 +14,14 @@ const PathConfigAccordion = observer((props: {}) => {
         <Typography>Path</Typography>
       </AccordionSummary>
       <AccordionDetails>{pc?.getConfigPanel()}</AccordionDetails>
-      {app.fieldEditor.mousePosInUOL && (
-        <Box id="mouse-position-presentation">
+      <Box id="mouse-position-presentation">
+        {app.fieldEditor.mousePosInUOL && (
           <Typography>
             X: {app.fieldEditor.mousePosInUOL.x.toUser()}, Y: {app.fieldEditor.mousePosInUOL.y.toUser()}
           </Typography>
-        </Box>
-      )}
+        )}
+        <TravelDistancePresentation />
+      </Box>
     </Accordion>
   );
 });
