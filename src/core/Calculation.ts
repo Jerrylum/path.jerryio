@@ -58,6 +58,7 @@ export interface UniformCalculationResult {
  * Represents the result of calculating points along a path.
  */
 export interface PointCalculationResult extends UniformCalculationResult {
+  arcLength: number; // The total arc length of the path.
   speedKeyframeIndexes: KeyframeIndexing<SpeedKeyframe>[]; // The indexes of keyframes in the `points` array.
   lookaheadKeyframeIndexes: KeyframeIndexing<LookaheadKeyframe>[]; // The indexes of keyframes in the `points` array.
 }
@@ -71,7 +72,7 @@ export interface PointCalculationResult extends UniformCalculationResult {
  */
 export function getPathPoints(path: Path, density: Quantity<UnitOfLength>): PointCalculationResult {
   if (path.segments.length === 0)
-    return { points: [], segmentIndexes: [], speedKeyframeIndexes: [], lookaheadKeyframeIndexes: [] };
+    return { arcLength: 0, points: [], segmentIndexes: [], speedKeyframeIndexes: [], lookaheadKeyframeIndexes: [] };
 
   const sampleResult = getPathSamplePoints(path, density);
   const uniformResult = getUniformPointsFromSamples(sampleResult, density);
@@ -100,6 +101,7 @@ export function getPathPoints(path: Path, density: Quantity<UnitOfLength>): Poin
   uniformResult.points.push(finalPoint);
 
   return {
+    arcLength: sampleResult.arcLength,
     points: uniformResult.points,
     segmentIndexes: uniformResult.segmentIndexes,
     speedKeyframeIndexes,
