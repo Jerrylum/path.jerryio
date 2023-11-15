@@ -33,6 +33,39 @@ import { useWindowSize } from "../core/Hook";
 export const LayoutContext = React.createContext<LayoutType>(LayoutType.Classic);
 export const LayoutProvider = LayoutContext.Provider;
 
+export const TravelDistancePresentation = observer(() => {
+  const { app } = getAppStores();
+
+  const interestedPath = app.interestedPath();
+
+  if (app.robot.position.visible && interestedPath !== undefined) {
+    const find = app.robot.position.toVector();
+    const points = interestedPath.cachedResult.points;
+
+    let distance = 0;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p = points[i];
+      if (p.x === find.x && p.y === find.y) break;
+      distance += p.distance(points[i + 1]);
+    }
+
+    const arcLength = interestedPath.cachedResult.arcLength;
+
+    const traveled = {
+      distance: distance,
+      percentage: arcLength === 0 ? 100 : (distance / arcLength) * 100
+    };
+
+    return (
+      <Typography>
+        Traveled: {traveled.distance.toUser()} ({traveled.percentage.toFixed(2)}%)
+      </Typography>
+    );
+  } else {
+    return null;
+  }
+});
+
 export const ClassisLayout = observer(() => {
   const { appPreferences } = getAppStores();
 
@@ -113,10 +146,12 @@ export const ExclusiveLayout = observer(() => {
 
   const windowSize = useWindowSize();
 
+  const interestedPath = app.interestedPath();
+
   const expectedWindowWithIfSpeedCanvasIsFloating = 8 + 48 + 8 + 16 + windowSize.y * 0.12 * 6.5 + 16 + 8 + 48 + 8;
   const isSpeedCanvasExtended = windowSize.x < expectedWindowWithIfSpeedCanvasIsFloating;
   const alpha =
-    isSpeedCanvasExtended && variables.isOpenPanel("speed-graph") && app.interestedPath() !== undefined
+    isSpeedCanvasExtended && variables.isOpenPanel("speed-graph") && interestedPath !== undefined
       ? windowSize.y * 0.12 + 8 + 16 + 8
       : 0;
 
@@ -165,13 +200,14 @@ export const ExclusiveLayout = observer(() => {
           <HomeIcon fontSize="large" />
         </Box>
       </Box>
-      {app.fieldEditor.mousePosInUOL && (
-        <Box id="mouse-position-presentation" style={{ left: "8px", bottom: alpha + "px" }}>
+      <Box id="mouse-position-presentation" style={{ left: "8px", bottom: alpha + "px" }}>
+        {app.fieldEditor.mousePosInUOL && (
           <Typography>
             X: {app.fieldEditor.mousePosInUOL.x.toUser()}, Y: {app.fieldEditor.mousePosInUOL.y.toUser()}
           </Typography>
-        </Box>
-      )}
+        )}
+        <TravelDistancePresentation />
+      </Box>
       <Box id="left-editor-panel">
         <MenuMainDropdown
           anchor={{ top: 8, left: 48 + 8 + 8 }}
