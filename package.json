@@ -21,6 +21,7 @@
     "@types/react-dom": "^18.2.4",
     "@types/semver": "^7.5.0",
     "@types/wicg-file-system-access": "^2020.9.6",
+    "buffer": "^6.0.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "classnames": "^2.3.2",
