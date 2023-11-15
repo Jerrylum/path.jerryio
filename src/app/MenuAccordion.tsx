@@ -18,7 +18,7 @@ import { observer } from "mobx-react-lite";
 
 import React, { forwardRef } from "react";
 import { IS_MAC_OS, getMacHotKeyString, makeId } from "../core/Util";
-import { onDownload, onDownloadAs, onNew, onOpen, onSave, onSaveAs } from "../core/InputOutput";
+import { onDownload, onDownloadAs, onExportImage, onNew, onOpen, onSave, onSaveAs } from "../core/InputOutput";
 import { getAppStores } from "../core/MainApp";
 import { AppThemeType } from "./Theme";
 import { RemovePathsAndEndControls } from "../core/Command";
@@ -447,6 +447,13 @@ const FileMenuItems = () => {
       label="Download As"
       hotkey="Shift+Mod+D"
       onClick={() => onDownloadAs()}
+    />,
+    <CustomMenuItem
+      key={makeId(10)}
+      showLeftIcon={false}
+      label="Export Image"
+      hotkey="Shift+Mod+E"
+      onClick={() => onExportImage() }
     />,
     <Divider key={makeId(10)} />,
     <CustomMenuItem

@@ -339,3 +339,36 @@ export async function onDropFile(file: File, saveCheck: boolean = true): Promise
     return false;
   }
 }
+
+export async function onExportImage() {
+  const { app, confirmation } = getAppStores();
+  // There is probably a better way to do this
+  const canvas = document.getElementsByClassName("field-canvas")[0].getElementsByTagName("canvas")[0];
+  const defaultName = "path.jerryio.png";
+  return new Promise<void>((resolve, reject) => {
+    confirmation.prompt({
+      title: "Export Field Image",
+      description: "File Name",
+      buttons: [
+        {
+          label: "Confirm",
+          color: "success",
+          onClick: async () => {
+            let candidate = confirmation.input ?? defaultName;
+            if (candidate.indexOf(".") === -1) candidate += ".png";
+            const a = document.createElement("a");
+            canvas.toBlob(blob => {
+              a.href = URL.createObjectURL(blob!);
+              a.download = candidate;
+              a.click();
+            });
+            resolve();
+          }
+        },
+        { label: "Cancel", onClick: () => resolve() }
+      ],
+      inputLabel: "File Name",
+      inputDefaultValue: defaultName
+    });
+  });
+}
