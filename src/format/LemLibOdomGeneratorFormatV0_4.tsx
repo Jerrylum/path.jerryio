@@ -4,7 +4,7 @@ import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, mak
 import { Path, Segment, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL } from "./Config";
-import { Format, PathFileData } from "./Format";
+import { Format, importPDJDataFromTextFile } from "./Format";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, IsString, MinLength, ValidateNested } from "class-validator";
 import { PointCalculationResult, getPathPoints, getDiscretePoints, fromDegreeToRadian } from "../core/Calculation";
@@ -264,8 +264,8 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
     return result;
   }
 
-  recoverPathFileData(_: string): PathFileData {
-    throw new Error("Loading paths is not supported in this format");
+  importPathsFromFile(buffer: ArrayBuffer): Path[] {
+    throw new Error("Unable to import paths from this format, try other formats?");
   }
 
   exportCode(): string {
@@ -303,16 +303,20 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
     return rtn;
   }
 
-  exportPathFile(): string {
+  importPDJDataFromFile(buffer: ArrayBuffer): Record<string, any> | undefined {
+    return importPDJDataFromTextFile(buffer);
+  }
+
+  exportFile(): ArrayBuffer {
     const { app } = getAppStores();
 
-    let rtn = this.exportCode();
+    let fileContent = this.exportCode();
 
-    rtn += "\n";
+    fileContent += "\n";
 
-    rtn += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPathFileData());
+    fileContent += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPDJData());
 
-    return rtn;
+    return new TextEncoder().encode(fileContent);
   }
 
   addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(

@@ -67,18 +67,18 @@ async function fileNameConfirm(description: string, callback: () => void) {
   });
 }
 
-function exportPathFile(): string | undefined {
+function exportFile(): ArrayBuffer | undefined {
   const { app } = getAppStores();
 
   try {
-    return app.format.exportPathFile();
+    return app.exportFile();
   } catch (err) {
     enqueueErrorSnackbar(logger, err);
     return undefined;
   }
 }
 
-async function writeFile(contents: string): Promise<boolean> {
+async function writeFile(buffer: ArrayBuffer): Promise<boolean> {
   const { app } = getAppStores();
 
   try {
@@ -89,7 +89,7 @@ async function writeFile(contents: string): Promise<boolean> {
     await file.handle.requestPermission({ mode: "readwrite" });
 
     const writable = await file.handle.createWritable();
-    await writable.write(contents);
+    await writable.write(buffer);
     await writable.close();
 
     getAppStores().ga.gtag("event", "write_file_format", { format: app.format.getName() });
@@ -103,7 +103,7 @@ async function writeFile(contents: string): Promise<boolean> {
   }
 }
 
-async function readFile(): Promise<string | undefined> {
+async function readFile(): Promise<ArrayBuffer | undefined> {
   const { app } = getAppStores();
 
   const options = {
@@ -119,9 +119,9 @@ async function readFile(): Promise<string | undefined> {
     app.mountingFile.isNameSet = true;
 
     const file = await fileHandle.getFile();
-    const contents = await file.text();
+    const buffer = await file.arrayBuffer();
 
-    return contents;
+    return buffer;
   } catch (err) {
     if (err instanceof DOMException === false) enqueueErrorSnackbar(logger, err);
     else logger.error(err); // UX: Do not show DOMException to user, usually means user cancelled
@@ -130,7 +130,7 @@ async function readFile(): Promise<string | undefined> {
   }
 }
 
-async function readFileFromInput(): Promise<string | undefined> {
+async function readFileFromInput(): Promise<ArrayBuffer | undefined> {
   const { app } = getAppStores();
 
   const input = document.createElement("input");
@@ -158,20 +158,15 @@ async function readFileFromInput(): Promise<string | undefined> {
   app.mountingFile.name = file.name;
   app.mountingFile.isNameSet = true;
 
-  const reader = new FileReader();
-  reader.readAsText(file);
-
-  return new Promise<string | undefined>((resolve, reject) => {
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => resolve(undefined);
-  });
+  const buffer = await file.arrayBuffer();
+  return buffer;
 }
 
-function downloadFile(contents: string) {
+function downloadFile(buffer: ArrayBuffer) {
   const { app } = getAppStores();
 
   const a = document.createElement("a");
-  const file = new Blob([contents], { type: "text/plain" });
+  const file = new Blob([buffer], { type: "text/plain" });
   a.href = URL.createObjectURL(file);
   a.download = app.mountingFile.name;
   a.click();
@@ -220,7 +215,7 @@ export async function onNew(saveCheck: boolean = true): Promise<boolean> {
 
   if (saveCheck && app.history.isModified()) return saveConfirm(onNew.bind(null, false));
 
-  app.newPathFile();
+  app.newFile();
   app.mountingFile = new IOFileHandle();
   return true;
 }
@@ -232,7 +227,7 @@ export async function onSave(): Promise<boolean> {
 
   if (app.mountingFile.handle === null) return onSaveAs();
 
-  const output = exportPathFile();
+  const output = exportFile();
   if (output === undefined) return false;
 
   if (await writeFile(output)) {
@@ -248,7 +243,7 @@ export async function onSaveAs(): Promise<boolean> {
 
   if (isFileSystemSupported() === false) return onDownloadAs(true);
 
-  const output = exportPathFile();
+  const output = exportFile();
   if (output === undefined) return false;
 
   if (!(await choiceSave())) return false;
@@ -276,11 +271,11 @@ export async function onOpen(saveCheck: boolean = true, interactive: boolean = t
     });
   }
 
-  const contents = await (isFileSystemSupported() ? readFile() : readFileFromInput());
-  if (contents === undefined) return false;
+  const buffer = await (isFileSystemSupported() ? readFile() : readFileFromInput());
+  if (buffer === undefined) return false;
 
   try {
-    await app.importPathFile(contents);
+    await app.importFile(buffer);
     return true;
   } catch (err) {
     enqueueErrorSnackbar(logger, err);
@@ -293,7 +288,7 @@ export async function onDownload(fallback: boolean = false): Promise<boolean> {
 
   if (app.mountingFile.isNameSet === false) return onDownloadAs(fallback);
 
-  const output = exportPathFile();
+  const output = exportFile();
   if (output === undefined) return false;
 
   downloadFile(output);
@@ -302,7 +297,7 @@ export async function onDownload(fallback: boolean = false): Promise<boolean> {
 }
 
 export async function onDownloadAs(fallback: boolean = false): Promise<boolean> {
-  const output = exportPathFile();
+  const output = exportFile();
   if (output === undefined) return false;
 
   fileNameConfirm(
@@ -322,17 +317,8 @@ export async function onDropFile(file: File, saveCheck: boolean = true): Promise
   app.mountingFile.name = file.name;
   app.mountingFile.isNameSet = true;
 
-  const reader = new FileReader();
-  reader.readAsText(file);
-
-  const contents = await new Promise<string | undefined>((resolve, reject) => {
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => resolve(undefined);
-  });
-  if (contents === undefined) return false;
-
   try {
-    await app.importPathFile(contents);
+    await app.importFile(await file.arrayBuffer());
     return true;
   } catch (err) {
     enqueueErrorSnackbar(logger, err);

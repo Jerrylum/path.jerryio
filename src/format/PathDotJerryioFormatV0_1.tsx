@@ -3,7 +3,7 @@ import { getAppStores } from "../core/MainApp";
 import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
-import { Format, PathFileData } from "./Format";
+import { Format, importPDJDataFromTextFile } from "./Format";
 import { RangeSlider } from "../component/RangeSlider";
 import { Box, Typography } from "@mui/material";
 import { CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
@@ -194,34 +194,38 @@ export class PathDotJerryioFormatV0_1 implements Format {
     return getPathPoints(path, new Quantity(this.gc.pointDensity, this.gc.uol));
   }
 
-  recoverPathFileData(fileContent: string): PathFileData {
-    throw new Error("Unable to recover path file data from this format, try other formats?");
+  importPathsFromFile(buffer: ArrayBuffer): Path[] {
+    throw new Error("Unable to import paths from this format, try other formats?");
   }
 
-  exportPathFile(): string {
+  importPDJDataFromFile(buffer: ArrayBuffer): Record<string, any> | undefined {
+    return importPDJDataFromTextFile(buffer);
+  }
+
+  exportFile(): ArrayBuffer {
     const { app } = getAppStores();
 
-    let rtn = "";
+    let fileContent = "";
 
     const uc = new UnitConverter(app.gc.uol, UnitOfLength.Centimeter);
     const density = new Quantity(app.gc.pointDensity, app.gc.uol);
 
     for (const path of app.paths) {
-      rtn += `#PATH-POINTS-START ${path.name}\n`;
+      fileContent += `#PATH-POINTS-START ${path.name}\n`;
 
       const points = getPathPoints(path, density).points;
 
       for (const point of points) {
         const x = uc.fromAtoB(point.x).toUser();
         const y = uc.fromAtoB(point.y).toUser();
-        if (isCoordinateWithHeading(point)) rtn += `${x},${y},${point.speed.toUser()},${point.heading}\n`;
-        else rtn += `${x},${y},${point.speed.toUser()}\n`;
+        if (isCoordinateWithHeading(point)) fileContent += `${x},${y},${point.speed.toUser()},${point.heading}\n`;
+        else fileContent += `${x},${y},${point.speed.toUser()}\n`;
       }
     }
 
-    rtn += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPathFileData());
+    fileContent += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPDJData());
 
-    return rtn;
+    return new TextEncoder().encode(fileContent);
   }
 
   addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(

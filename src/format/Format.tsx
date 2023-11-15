@@ -26,9 +26,39 @@ export interface Format extends ExecutionEventListenersContainer<CancellableComm
 
   getPathPoints(path: Path): PointCalculationResult;
 
-  recoverPathFileData(fileContent: string): PathFileData;
+  /**
+   * SECURITY: The input is not safe.
+   * The returned value is valid but might contain malicious code.
+   *
+   * This function is responsible for parsing the file buffer and creating the path objects.
+   * It is also responsible for validating the file format since the returned value is trusted.
+   * Upon calling this function, the internal state of the format will be changed.
+   * This format is then used in the MainApp.
+   * If the file format is incorrect, an error will be thrown.
+   *
+   * @throws Error if the file format can not be parsed
+   * @param buffer the path file buffer in ArrayBuffer
+   * @returns the path objects
+   */
+  importPathsFromFile(buffer: ArrayBuffer): Path[];
 
-  exportPathFile(): string; // return file content
+  /**
+   * SECURITY: The input and the returned value are not safe.
+   * The returned value might be invalid and contain malicious code.
+   *
+   * The internal state of the format should not be changed after calling this function.
+   *
+   * @throws Error if an error occurs during parsing the file
+   * @param buffer the path file buffer in ArrayBuffer
+   * @returns the PATH.JERRYIO-DATA in JSON format or undefined if PATH.JERRYIO-DATA is not found
+   */
+  importPDJDataFromFile(buffer: ArrayBuffer): Record<string, any> | undefined;
+
+  /**
+   * @throws Error if the file can not be exported
+   * @returns the path file buffer in ArrayBuffer
+   */
+  exportFile(): ArrayBuffer;
 }
 
 export function getAllFormats(): Format[] {
@@ -38,11 +68,6 @@ export function getAllFormats(): Format[] {
     new LemLibFormatV1_0(),
     new PathDotJerryioFormatV0_1()
   ];
-}
-
-export interface PathFileData {
-  gc: GeneralConfig;
-  paths: Path[];
 }
 
 interface PathFileDataConverter {
@@ -110,4 +135,22 @@ export function convertPathFileData(data: Record<string, any>): boolean {
     }
   }
   return false;
+}
+
+/**
+ * Import the PATH.JERRYIO data from a text file. It is a common function for all formats with text path file.
+ *
+ * @throws Error if the file format is incorrect, for example, the json is not valid
+ * @param buffer the PATH.JERRYIO data in JSON format
+ * @returns the path file data or undefined if the file path file data is not found
+ */
+export function importPDJDataFromTextFile(buffer: ArrayBuffer): Record<string, any> | undefined {
+  const fileContent = new TextDecoder().decode(buffer);
+  const lineWithPathDotJerryioData = fileContent.split("\n").find(line => line.startsWith("#PATH.JERRYIO-DATA"));
+  if (lineWithPathDotJerryioData === undefined) return undefined;
+
+  const pathFileDataInString = lineWithPathDotJerryioData.substring("#PATH.JERRYIO-DATA".length).trim();
+  const data = JSON.parse(pathFileDataInString);
+
+  return data;
 }

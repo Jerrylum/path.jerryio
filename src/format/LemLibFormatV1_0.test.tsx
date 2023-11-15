@@ -76,7 +76,7 @@ test("read write path file", () => {
 
   const buffer1 = SmartBuffer.fromSize(1024); // auto resize
 
-  const pathFileData = app.exportPathFileData();
+  const pathFileData = app.exportPDJData();
   LemLibV1_0.writePathFile(buffer1, [path], pathFileData);
 
   const result = LemLibV1_0.readPathFile(buffer1);

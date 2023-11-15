@@ -3,7 +3,7 @@ import DOMPurify from "dompurify"; // cspell:disable-line
 import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "../format/Config";
 import { AnyControl, EndControl, Path, PathTreeItem, Vector, relatedPaths, traversal } from "./Path";
 import { addToArray, removeFromArray, runInActionAsync } from "./Util";
-import { PathFileData, Format, convertPathFileData, getAllFormats } from "../format/Format";
+import { Format, convertPathFileData, getAllFormats, importPDJDataFromTextFile } from "../format/Format";
 import { promptFieldImage } from "./FieldImagePrompt";
 import { PathDotJerryioFormatV0_1 } from "../format/PathDotJerryioFormatV0_1";
 import { instanceToPlain, plainToClassFromExist } from "class-transformer";
@@ -26,6 +26,8 @@ import { SpeedEditor } from "./SpeedEditor";
 import { AssetManager, getDefaultBuiltInFieldImage } from "./Asset";
 import { Modals } from "../core/Modals";
 import { Preferences, getPreference } from "./Preferences";
+import { LemLibFormatV0_4 } from "../format/LemLibFormatV0_4";
+import { LemLibFormatV1_0 } from "../format/LemLibFormatV1_0";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
@@ -144,7 +146,7 @@ export class MainApp {
 
     reaction(() => this.latestVersion, onLatestVersionChange);
 
-    this.newPathFile();
+    this.newFile();
   }
 
   onUIReady() {
@@ -325,11 +327,11 @@ export class MainApp {
     this.fieldEditor.scale = 1;
   }
 
-  private setPathFileData(format: Format, pfd: PathFileData): void {
+  private setFormatAndPaths(format: Format, paths: Path[]): void {
     const purify = DOMPurify();
 
     this.expanded = [];
-    for (const path of pfd.paths) {
+    for (const path of paths) {
       // SECURITY: Sanitize path names, beware of XSS attack from the path file
       const temp = purify.sanitize(path.name, { ALLOWED_TAGS: [] });
       path.name = temp === "" ? "Path" : temp;
@@ -345,7 +347,7 @@ export class MainApp {
 
     this.format = format;
     this.usingUOL = format.getGeneralConfig().uol;
-    this.paths = pfd.paths;
+    this.paths = paths;
 
     this.resetUserControl();
     this.resetAllEditors();
@@ -353,7 +355,12 @@ export class MainApp {
     this.history.clearHistory();
   }
 
-  async importPathFileData(data: Record<string, any>): Promise<void> {
+  /**
+   * Security: The input file buffer might be invalid and contain malicious code.
+   *
+   * @param data the path file data
+   */
+  async importPDJData(data: Record<string, any>): Promise<void> {
     // ALGO: Convert the path file to the app version
     while (data.appVersion !== APP_VERSION.version) {
       if (convertPathFileData(data) === false) throw new Error("Unable to open the path file. Try updating the app.");
@@ -361,7 +368,7 @@ export class MainApp {
 
     const format = getAllFormats().find(f => f.getName() === data.format);
     if (format === undefined) throw new Error("Format not found.");
-    format.init(); // ALGO: Suspend format reaction
+    format.init(); // ALGO: Suspend format reaction in MainApp
 
     if (data.gc?.fieldImage?.origin) format.getGeneralConfig().fieldImage.origin = undefined as any; // ALGO: Remove default origin
 
@@ -381,7 +388,7 @@ export class MainApp {
 
     const errors = [...(await validate(gc)), ...(await Promise.all(paths.map(path => validate(path)))).flat()];
     if (errors.length > 0) {
-      errors.forEach(e => logger.error("Validation errors", e.constraints, `in ${e.property}`));
+      errors.forEach(e => logger.error("Validation errors", e.constraints, `in ${e.property}`, e));
       throw new Error("Unable to open the path file due to validation errors.");
     }
 
@@ -390,17 +397,20 @@ export class MainApp {
     const result = await runInActionAsync(() => promptFieldImage(gc.fieldImage));
     if (result === false) gc.fieldImage = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
 
-    this.setPathFileData(format, { gc: gc, paths: paths });
+    this.setFormatAndPaths(format, paths);
   }
 
-  exportPathFileData(): Record<string, any> {
-    const data: PathFileData = { gc: this.format.getGeneralConfig(), paths: this.paths };
-    return { ...{ appVersion: APP_VERSION.version, format: this.format.getName() }, ...instanceToPlain(data) };
+  exportPDJData(): Record<string, any> {
+    return {
+      appVersion: APP_VERSION.version,
+      format: this.format.getName(),
+      ...instanceToPlain({ gc: this.format.getGeneralConfig(), paths: this.paths })
+    };
   }
 
-  newPathFile() {
+  newFile() {
     const newFormat = this.format.createNewInstance();
-    newFormat.init(); // ALGO: Suspend format reaction
+    newFormat.init(); // ALGO: Suspend format reaction in MainApp
 
     this.format = newFormat;
     this.usingUOL = this.gc.uol;
@@ -411,34 +421,62 @@ export class MainApp {
     this.history.clearHistory();
   }
 
-  async importPathFile(fileContent: string): Promise<void> {
-    // ALGO: This function throws error
-    // ALGO: Just find the first line that starts with "#PATH.JERRYIO-DATA"
-    // ALGO: Throw error if not found
-    const lines = fileContent.split("\n");
-    for (const line of lines) {
-      if (line.startsWith("#PATH.JERRYIO-DATA")) {
-        const pathFileDataInString = line.substring("#PATH.JERRYIO-DATA".length).trim();
-        await this.importPathFileData(JSON.parse(pathFileDataInString));
-        return;
-      }
+  /**
+   * Security: The input file buffer might be invalid and contain malicious code.
+   *
+   * @throws Error if the file can not be imported
+   * @param buffer the path file buffer in ArrayBuffer
+   */
+  async importFile(buffer: ArrayBuffer): Promise<void> {
+    /*
+    Import PDJ data using user selected format
+
+    Note that even if this function returned the path file data, it is not guaranteed that the data is in the same 
+    format as the current one.
+    */
+    const importResult = this.format.importPDJDataFromFile(buffer);
+    if (importResult !== undefined) {
+      await this.importPDJData(importResult);
+      return;
     }
 
-    // Recover
+    const testFormat2 = new LemLibFormatV1_0(); // Sample binary path file
+    const importResult2 = testFormat2.importPDJDataFromFile(buffer);
+    if (importResult2 !== undefined) {
+      await this.importPDJData(importResult2);
+      return;
+    }
 
-    // Clone format
-    const format = this.format.createNewInstance();
-    format.init(); // ALGO: Suspend format reaction
-    const pfd = format.recoverPathFileData(fileContent);
+    const importResult3 = importPDJDataFromTextFile(buffer); // Input general text path file
+    if (importResult3 !== undefined) {
+      await this.importPDJData(importResult3);
+      return;
+    }
+
+    // Import paths
+
+    let format: Format;
+    let paths: Path[] = [];
+    try {
+      format = this.format.createNewInstance();
+      paths = format.importPathsFromFile(buffer);
+    } catch (err) {
+      format = new LemLibFormatV0_4(); // Sample text path file
+      paths = format.importPathsFromFile(buffer);
+    }
 
     const result = await runInActionAsync(() => promptFieldImage(format.getGeneralConfig().fieldImage));
     if (result === false) format.getGeneralConfig().fieldImage = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
 
-    this.setPathFileData(format, pfd);
+    this.setFormatAndPaths(format, paths);
   }
 
-  exportPathFile(): string | undefined {
-    return this.format.exportPathFile();
+  /**
+   * @throws Error if the file can not be exported
+   * @returns the path file buffer in ArrayBuffer
+   */
+  exportFile(): ArrayBuffer {
+    return this.format.exportFile();
   }
 }
 

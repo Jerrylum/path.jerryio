@@ -10,7 +10,7 @@ import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPo
 import { IsPositive, IsBoolean, ValidateNested, IsObject } from "class-validator";
 import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFieldImage } from "../core/Asset";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
-import { Format, PathFileData } from "./Format";
+import { Format } from "./Format";
 import { PointCalculationResult, fromDegreeToRadian, fromRadiansToDegree, getPathPoints } from "../core/Calculation";
 import { SmartBuffer } from "smart-buffer";
 
@@ -168,7 +168,7 @@ class GeneralConfigImpl implements GeneralConfig {
   uol: UnitOfLength = UnitOfLength.Millimeter;
   @IsPositive()
   @Expose()
-  pointDensity: number = 10; // inches
+  pointDensity: number = 20; // mm
   @IsPositive()
   @Expose()
   controlMagnetDistance: number = 50;
@@ -235,7 +235,7 @@ class PathConfigImpl implements LemLibPathConfig {
   @Expose()
   bentRateApplicableRange: EditableNumberRange = {
     minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 50, label: "50" },
+    maxLimit: { value: 40, label: "40" },
     step: 1,
     from: 14,
     to: 18
@@ -264,7 +264,7 @@ class PathConfigImpl implements LemLibPathConfig {
     // ALGO: Convert the default parameters to the current point density
     // ALGO: This is only used when a new path is added, not when the path config is loaded
     // ALGO: When loading path config, the configuration will be set/overwritten after this constructor
-    convertPathConfigPointDensity(this, 2, format.getGeneralConfig().pointDensity);
+    convertPathConfigPointDensity(this, 20, format.getGeneralConfig().pointDensity);
   }
 
   getConfigPanel() {
@@ -385,22 +385,40 @@ export class LemLibFormatV1_0 implements Format {
     return result;
   }
 
-  recoverPathFileData(fileContent: string): PathFileData {
-    throw new Error("Unable to recover path file data from this format, try other formats?");
+  importPathsFromFile(buffer: ArrayBuffer): Path[] {
+    throw new Error("Unable to import paths from this format, try other formats?");
   }
 
-  exportPathFile(): string {
+  importPDJDataFromFile(arrayBuffer: ArrayBuffer): Record<string, any> | undefined {
+    const buffer = SmartBuffer.fromBuffer(Buffer.from(arrayBuffer));
+
+    try {
+      const bodyBeginIdx = buffer.readOffset;
+      buffer.readUInt8(); // Metadata size
+      const sizeOfBody = buffer.readUInt32LE();
+
+      buffer.readOffset = bodyBeginIdx + sizeOfBody;
+      const signature = buffer.readStringNT();
+
+      if (signature !== "#PATH.JERRYIO-DATA") return undefined;
+    } catch (e) {
+      return undefined;
+    }
+
+    const pathFileData = JSON.parse(buffer.readString());
+    return pathFileData;
+  }
+
+  exportFile(): ArrayBuffer {
     const { app } = getAppStores();
 
     // ALGO: The implementation is adopted from https://github.com/LemLib/path under the MIT license.
 
-    let rtn = "";
+    const buffer = SmartBuffer.fromSize(1024 * 10); // Initial size of 10KB
 
-    // TODO
+    LemLibV1_0.writePathFile(buffer, app.paths, app.exportPDJData());
 
-    rtn += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPathFileData());
-
-    return rtn;
+    return buffer.toBuffer();
   }
 
   addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(

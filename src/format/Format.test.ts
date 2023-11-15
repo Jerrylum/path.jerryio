@@ -2,7 +2,7 @@ import { action } from "mobx";
 import { instanceToPlain, plainToClassFromExist, plainToInstance, Expose, Exclude, Type } from "class-transformer";
 import { MainApp } from "../core/MainApp";
 import { Segment, EndControl, Path } from "../core/Path";
-import { Format, PathFileData } from "./Format";
+import { Format } from "./Format";
 import DOMPurify from "dompurify";
 import { PointCalculationResult } from "../core/Calculation";
 import { GeneralConfig } from "./Config";
@@ -40,10 +40,13 @@ export class CustomFormat implements Format {
   getPathPoints(path: Path): PointCalculationResult {
     throw new Error("Method not implemented.");
   }
-  recoverPathFileData(fileContent: string): PathFileData {
+  importPathsFromFile(buffer: ArrayBuffer): Path[] {
     throw new Error("Method not implemented.");
   }
-  exportPathFile(): string {
+  importPDJDataFromFile(buffer: ArrayBuffer): Record<string, any> | undefined {
+    throw new Error("Method not implemented.");
+  }
+  exportFile(): ArrayBuffer {
     throw new Error("Method not implemented.");
   }
 
@@ -85,11 +88,11 @@ test("Sanitize", () => {
 test("Export test", () => {
   const app = new MainApp();
 
-  const plain = JSON.stringify(app.exportPathFileData());
+  const plain = JSON.stringify(app.exportPDJData());
 
-  app.importPathFileData(JSON.parse(plain));
+  app.importPDJData(JSON.parse(plain));
 
-  const plain2 = JSON.stringify(app.exportPathFileData());
+  const plain2 = JSON.stringify(app.exportPDJData());
 
   expect(plain).toEqual(plain2);
 });

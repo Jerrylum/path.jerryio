@@ -4,7 +4,7 @@ import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, clamp
 import { Control, EndControl, Path, Segment, SpeedKeyframe, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
-import { Format, PathFileData } from "./Format";
+import { Format, importPDJDataFromTextFile } from "./Format";
 import { Box, Slider, Typography } from "@mui/material";
 import { RangeSlider } from "../component/RangeSlider";
 import { AddKeyframe, CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
@@ -241,8 +241,10 @@ export class LemLibFormatV0_4 implements Format {
     return result;
   }
 
-  recoverPathFileData(fileContent: string): PathFileData {
+  importPathsFromFile(buffer: ArrayBuffer): Path[] {
     // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.
+
+    const fileContent = new TextDecoder().decode(buffer);
 
     const paths: Path[] = [];
 
@@ -311,15 +313,19 @@ export class LemLibFormatV0_4 implements Format {
       i++;
     }
 
-    return { gc: this.gc, paths };
+    return paths;
   }
 
-  exportPathFile(): string {
+  importPDJDataFromFile(buffer: ArrayBuffer): Record<string, any> | undefined {
+    return importPDJDataFromTextFile(buffer);
+  }
+
+  exportFile(): ArrayBuffer {
     const { app } = getAppStores();
 
     // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.
 
-    let rtn = "";
+    let fileContent = "";
 
     const path = app.interestedPath();
     if (path === undefined) throw new Error("No path to export");
@@ -330,7 +336,7 @@ export class LemLibFormatV0_4 implements Format {
     const points = this.getPathPoints(path).points;
     for (const point of points) {
       // ALGO: heading is not supported in LemLib V0.4 format.
-      rtn += `${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${point.speed.toUser()}\n`;
+      fileContent += `${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${point.speed.toUser()}\n`;
     }
 
     if (points.length < 3) throw new Error("The path is too short to export");
@@ -353,15 +359,15 @@ export class LemLibFormatV0_4 implements Format {
     const last1 = points[points.length - 2]; // second last point, also the last control point
     // ALGO: The 20 inches constant is a constant value in the original LemLib-Path-Gen implementation.
     const ghostPoint = last2.interpolate(last1, last2.distance(last1) + uc.fromBtoA(20));
-    rtn += `${uc.fromAtoB(ghostPoint.x).toUser()}, ${uc.fromAtoB(ghostPoint.y).toUser()}, 0\n`;
+    fileContent += `${uc.fromAtoB(ghostPoint.x).toUser()}, ${uc.fromAtoB(ghostPoint.y).toUser()}, 0\n`;
 
-    rtn += `endData\n`;
-    rtn += `${(path.pc as PathConfigImpl).maxDecelerationRate}\n`;
-    rtn += `${path.pc.speedLimit.to}\n`;
-    rtn += `200\n`; // Not supported
+    fileContent += `endData\n`;
+    fileContent += `${(path.pc as PathConfigImpl).maxDecelerationRate}\n`;
+    fileContent += `${path.pc.speedLimit.to}\n`;
+    fileContent += `200\n`; // Not supported
 
     function output(control: Vector, postfix: string = ", ") {
-      rtn += `${uc.fromAtoB(control.x).toUser()}, ${uc.fromAtoB(control.y).toUser()}${postfix}`;
+      fileContent += `${uc.fromAtoB(control.x).toUser()}, ${uc.fromAtoB(control.y).toUser()}${postfix}`;
     }
 
     for (const segment of path.segments) {
@@ -379,9 +385,9 @@ export class LemLibFormatV0_4 implements Format {
       }
     }
 
-    rtn += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPathFileData());
+    fileContent += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPDJData());
 
-    return rtn;
+    return new TextEncoder().encode(fileContent);
   }
 
   addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
