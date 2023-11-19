@@ -210,6 +210,7 @@ test('NumberT valid case', () => {
   expect(number.isDouble).toBeFalsy();
   expect(NumberT.parse(cpb("14a"))?.toInt()).toStrictEqual(14);
   expect(new NumberT("0", true, false)).toStrictEqual(NumberT.parse(cpb("0")));
+  expect(new NumberT("-0.123", false, true)).toStrictEqual(NumberT.parse(cpb("-0.123")));
   expect(new NumberT("-14", false, false)).toStrictEqual(NumberT.parse(cpb("-14")));
   expect(new NumberT("14", true, false)).toStrictEqual(NumberT.parse(cpb("14")));
   expect(new NumberT("3.14", true, true)).toStrictEqual(NumberT.parse(cpb("3.14 ")));
@@ -342,11 +343,13 @@ function c<U extends Unit>(left: Computable<U>, operator: Operator, right: Compu
 
 test('NumberWithUnit valid case', () => {
   expect(n('0', null)).toStrictEqual(NumberUOL.parse(cpb("0")));
+  expect(n('-0.123', null)).toStrictEqual(NumberUOL.parse(cpb("-0.123")));
   expect(n('100', null)).toStrictEqual(NumberUOL.parse(cpb("100")));
   expect(n('3.14', null)).toStrictEqual(NumberUOL.parse(cpb("3.14")));
   expect(n('31.4', null)).toStrictEqual(NumberUOL.parse(cpb("31.4")));
   expect(n('-31.4', null)).toStrictEqual(NumberUOL.parse(cpb("-31.4")));
   expect(n('0', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("0mm")));
+  expect(n('-0.123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("-0.123mm")));
   expect(n('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123mm+")));
   expect(n('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123mm(")));
   expect(n('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123mm +")));
@@ -372,6 +375,7 @@ test('NumberWithUnit valid case with UOA', () => {
   }
 
   expect(n('0', null)).toStrictEqual(NumberUOA.parse(cpb("0")));
+  expect(n('-0.123', null)).toStrictEqual(NumberUOA.parse(cpb("-0.123")));
   expect(n('100', null)).toStrictEqual(NumberUOA.parse(cpb("100")));
   expect(n('3.14', null)).toStrictEqual(NumberUOA.parse(cpb("3.14")));
   expect(n('31.4', null)).toStrictEqual(NumberUOA.parse(cpb("31.4")));
