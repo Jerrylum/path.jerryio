@@ -453,7 +453,6 @@ export class NumberT extends Token {
     let rtn = "";
     let isPositive: boolean, isDouble: boolean;
 
-    // const n = NegativeInt.parse(buffer);
     const m = Minus.parse(buffer);
 
     if (m) {
