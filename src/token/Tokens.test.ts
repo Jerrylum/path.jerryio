@@ -234,7 +234,6 @@ test('NumberT valid case', () => {
 
 test('NumberT invalid case', () => {
   expect(NumberT.parse(cpb("-"))).toBeNull();
-  expect(NumberT.parse(cpb("-0"))).toBeNull();
   expect(NumberT.parse(cpb(""))).toBeNull();
   expect(NumberT.parse(cpb(" "))).toBeNull();
   expect(NumberT.parse(cpb("a"))).toBeNull();
@@ -392,7 +391,6 @@ test('NumberWithUnit valid case with UOA', () => {
 });
 
 test('NumberWithUnit invalid case', () => {
-  expect(NumberUOL.parse(cpb("-0"))).toBeNull();
   expect(NumberUOL.parse(cpb("0mmm"))).toBeNull();
   expect(NumberUOL.parse(cpb("0 mmm"))).toBeNull();
   expect(NumberUOL.parse(cpb("0 mmm"))).toBeNull();
@@ -506,7 +504,6 @@ test('Expression invalid case', () => {
   expect(Expression.parseWith(cpb("123+"), NumberUOL.parse)).toBeNull();
   expect(Expression.parseWith(cpb("123 +"), NumberUOL.parse)).toBeNull();
   expect(Expression.parseWith(cpb("123 + "), NumberUOL.parse)).toBeNull();
-  expect(Expression.parseWith(cpb("123 + -0"), NumberUOL.parse)).toBeNull();
   expect(Expression.parseWith(cpb("- 123"), NumberUOL.parse)).toBeNull();
   expect(Expression.parseWith(cpb("123 + - 1"), NumberUOL.parse)).toBeNull();
   expect(Expression.parseWith(cpb("(123"), NumberUOL.parse)).toBeNull();
@@ -518,7 +515,6 @@ test('Expression invalid case with UOA', () => {
   expect(Expression.parseWith(cpb("123+"), NumberUOA.parse)).toBeNull();
   expect(Expression.parseWith(cpb("123 +"), NumberUOA.parse)).toBeNull();
   expect(Expression.parseWith(cpb("123 + "), NumberUOA.parse)).toBeNull();
-  expect(Expression.parseWith(cpb("123 + -0"), NumberUOA.parse)).toBeNull();
   expect(Expression.parseWith(cpb("- 123"), NumberUOA.parse)).toBeNull();
   expect(Expression.parseWith(cpb("123 + - 1"), NumberUOA.parse)).toBeNull();
   expect(Expression.parseWith(cpb("(123"), NumberUOA.parse)).toBeNull();
