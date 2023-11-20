@@ -10,7 +10,7 @@ Add comments to your code to explain the code related to user experience and alg
 
 ### Format Your Code
 
-Self explanatory. Use [Prettier](https://prettier.io/). If you are using VSCode, press `Shift + Alt + F` to format your code.
+Before pushing a commit, run `npm run format`, or else your commit will fail.
 
 ### Follow Naming Conventions
 
@@ -23,6 +23,11 @@ Self explanatory. Follow the conventions of the language you are using. For exam
 Self explanatory. Use the issue templates when creating an issue.
 
 ### Commit Messages
+
+> [!WARNING]
+> Hey! before you push a commit, run `npm run format`, to make sure it passes the precommit hook
+>
+> (If you want to ignore the pre-commit check, run the commit command with `--no-verify`)
 
 You must follow the [gitmoji](https://gitmoji.dev/) convention for commit messages.
 
