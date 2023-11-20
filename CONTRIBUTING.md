@@ -27,7 +27,7 @@ Self explanatory. Use the issue templates when creating an issue.
 > [!WARNING]
 > Hey! before you push a commit, run `npm run format`, to make sure it passes the precommit hook
 >
-> (If you want to ignore the pre-commit check run the commit command with `--no-verify`)
+> (If you want to ignore the pre-commit check, run the commit command with `--no-verify`)
 
 You must follow the [gitmoji](https://gitmoji.dev/) convention for commit messages.
 
