@@ -210,6 +210,7 @@ test('NumberT valid case', () => {
   expect(number.isDouble).toBeFalsy();
   expect(NumberT.parse(cpb("14a"))?.toInt()).toStrictEqual(14);
   expect(new NumberT("0", true, false)).toStrictEqual(NumberT.parse(cpb("0")));
+  expect(new NumberT("-0.123", false, true)).toStrictEqual(NumberT.parse(cpb("-0.123")));
   expect(new NumberT("-14", false, false)).toStrictEqual(NumberT.parse(cpb("-14")));
   expect(new NumberT("14", true, false)).toStrictEqual(NumberT.parse(cpb("14")));
   expect(new NumberT("3.14", true, true)).toStrictEqual(NumberT.parse(cpb("3.14 ")));
@@ -234,7 +235,6 @@ test('NumberT valid case', () => {
 
 test('NumberT invalid case', () => {
   expect(NumberT.parse(cpb("-"))).toBeNull();
-  expect(NumberT.parse(cpb("-0"))).toBeNull();
   expect(NumberT.parse(cpb(""))).toBeNull();
   expect(NumberT.parse(cpb(" "))).toBeNull();
   expect(NumberT.parse(cpb("a"))).toBeNull();
@@ -343,11 +343,13 @@ function c<U extends Unit>(left: Computable<U>, operator: Operator, right: Compu
 
 test('NumberWithUnit valid case', () => {
   expect(n('0', null)).toStrictEqual(NumberUOL.parse(cpb("0")));
+  expect(n('-0.123', null)).toStrictEqual(NumberUOL.parse(cpb("-0.123")));
   expect(n('100', null)).toStrictEqual(NumberUOL.parse(cpb("100")));
   expect(n('3.14', null)).toStrictEqual(NumberUOL.parse(cpb("3.14")));
   expect(n('31.4', null)).toStrictEqual(NumberUOL.parse(cpb("31.4")));
   expect(n('-31.4', null)).toStrictEqual(NumberUOL.parse(cpb("-31.4")));
   expect(n('0', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("0mm")));
+  expect(n('-0.123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("-0.123mm")));
   expect(n('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123mm+")));
   expect(n('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123mm(")));
   expect(n('123', UnitOfLength.Millimeter)).toStrictEqual(NumberUOL.parse(cpb("123mm +")));
@@ -373,6 +375,7 @@ test('NumberWithUnit valid case with UOA', () => {
   }
 
   expect(n('0', null)).toStrictEqual(NumberUOA.parse(cpb("0")));
+  expect(n('-0.123', null)).toStrictEqual(NumberUOA.parse(cpb("-0.123")));
   expect(n('100', null)).toStrictEqual(NumberUOA.parse(cpb("100")));
   expect(n('3.14', null)).toStrictEqual(NumberUOA.parse(cpb("3.14")));
   expect(n('31.4', null)).toStrictEqual(NumberUOA.parse(cpb("31.4")));
@@ -392,7 +395,6 @@ test('NumberWithUnit valid case with UOA', () => {
 });
 
 test('NumberWithUnit invalid case', () => {
-  expect(NumberUOL.parse(cpb("-0"))).toBeNull();
   expect(NumberUOL.parse(cpb("0mmm"))).toBeNull();
   expect(NumberUOL.parse(cpb("0 mmm"))).toBeNull();
   expect(NumberUOL.parse(cpb("0 mmm"))).toBeNull();
@@ -506,7 +508,6 @@ test('Expression invalid case', () => {
   expect(Expression.parseWith(cpb("123+"), NumberUOL.parse)).toBeNull();
   expect(Expression.parseWith(cpb("123 +"), NumberUOL.parse)).toBeNull();
   expect(Expression.parseWith(cpb("123 + "), NumberUOL.parse)).toBeNull();
-  expect(Expression.parseWith(cpb("123 + -0"), NumberUOL.parse)).toBeNull();
   expect(Expression.parseWith(cpb("- 123"), NumberUOL.parse)).toBeNull();
   expect(Expression.parseWith(cpb("123 + - 1"), NumberUOL.parse)).toBeNull();
   expect(Expression.parseWith(cpb("(123"), NumberUOL.parse)).toBeNull();
@@ -518,7 +519,6 @@ test('Expression invalid case with UOA', () => {
   expect(Expression.parseWith(cpb("123+"), NumberUOA.parse)).toBeNull();
   expect(Expression.parseWith(cpb("123 +"), NumberUOA.parse)).toBeNull();
   expect(Expression.parseWith(cpb("123 + "), NumberUOA.parse)).toBeNull();
-  expect(Expression.parseWith(cpb("123 + -0"), NumberUOA.parse)).toBeNull();
   expect(Expression.parseWith(cpb("- 123"), NumberUOA.parse)).toBeNull();
   expect(Expression.parseWith(cpb("123 + - 1"), NumberUOA.parse)).toBeNull();
   expect(Expression.parseWith(cpb("(123"), NumberUOA.parse)).toBeNull();

@@ -453,19 +453,21 @@ export class NumberT extends Token {
     let rtn = "";
     let isPositive: boolean, isDouble: boolean;
 
-    const n = NegativeInt.parse(buffer);
-    if (n) {
-      rtn += n.value;
+    const m = Minus.parse(buffer);
+
+    if (m) {
+      rtn += m.value;
       isPositive = false;
     } else {
-      const p = Int.parse(buffer);
-      if (!p) {
-        return buffer.rollbackAndReturn(null);
-      }
-      rtn += p.value;
       isPositive = true;
     }
 
+    const p = Int.parse(buffer);
+    if (!p) {
+      return buffer.rollbackAndReturn(null);
+    }
+    rtn += p.value;
+    
     const f = Frac.parse(buffer);
     isDouble = f !== null;
     if (isDouble) {
