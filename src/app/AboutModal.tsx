@@ -17,7 +17,7 @@ export const AboutModal = observer(() => {
           Made by Jerry Lum
         </Typography>
         <Typography variant="body1" align="center">
-          This is a free software licensing under GPL-3.0
+          This is a free software licensed under GPL-3.0
         </Typography>
         <Typography variant="body1" align="center">
           <a target="_blank" rel="noreferrer" href="https://github.com/Jerrylum/path.jerryio">
