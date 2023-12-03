@@ -7,10 +7,13 @@ import { ObserverEnumSelect } from "../component/ObserverEnumSelect";
 import { ObserverCheckbox } from "../component/ObserverCheckbox";
 import { ObserverInput } from "../component/ObserverInput";
 import { Modal } from "../component/Modal";
+import { enqueueInfoSnackbar } from "./Notice";
+import { Logger } from "../core/Logger";
 
 export const PreferencesModalSymbol = Symbol("PreferencesModalSymbol");
 
 export const PreferencesModal = observer(() => {
+  const logger = Logger("Preferences");
   const { appPreferences } = getAppStores();
 
   return (
@@ -45,6 +48,14 @@ export const PreferencesModal = observer(() => {
           label="Enable Google Analytics"
           checked={appPreferences.isGoogleAnalyticsEnabled}
           onCheckedChange={v => (appPreferences.isGoogleAnalyticsEnabled = v)}
+        />
+        <ObserverCheckbox
+          label="Enable Experimental Features"
+          checked={appPreferences.isExperimentalFeaturesEnabled}
+          onCheckedChange={v => {
+            appPreferences.isExperimentalFeaturesEnabled = v;
+            enqueueInfoSnackbar(logger, "Please refresh the page to apply this change.", 5000);
+          }}
         />
       </Card>
     </Modal>

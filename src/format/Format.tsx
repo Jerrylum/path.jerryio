@@ -9,6 +9,7 @@ import { PathDotJerryioFormatV0_1 } from "./PathDotJerryioFormatV0_1";
 import { LemLibOdomGeneratorFormatV0_4 } from "./LemLibOdomGeneratorFormatV0_4";
 import { CancellableCommand, ExecutionEventListenersContainer } from "../core/Command";
 import { LemLibFormatV1_0 } from "./LemLibFormatV1_0";
+import { isExperimentalFeaturesEnabled } from "../core/Preferences";
 
 export interface Format extends ExecutionEventListenersContainer<CancellableCommand> {
   isInit: boolean;
@@ -63,10 +64,12 @@ export interface Format extends ExecutionEventListenersContainer<CancellableComm
 
 export function getAllFormats(): Format[] {
   return [
-    new LemLibFormatV0_4(), //
-    new LemLibOdomGeneratorFormatV0_4(),
-    new LemLibFormatV1_0(),
-    new PathDotJerryioFormatV0_1()
+    ...[
+      new LemLibFormatV0_4(), //
+      new LemLibOdomGeneratorFormatV0_4()
+    ],
+    ...(isExperimentalFeaturesEnabled() ? [new LemLibFormatV1_0()] : []),
+    ...[new PathDotJerryioFormatV0_1()]
   ];
 }
 

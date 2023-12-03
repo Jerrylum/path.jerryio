@@ -8,6 +8,7 @@ export class Preferences {
   // Local storage
   public maxHistory: number = 50;
   public isGoogleAnalyticsEnabled: boolean = false;
+  public isExperimentalFeaturesEnabled: boolean = false;
   public themeType: AppThemeType = AppThemeType.Dark;
   public layoutType: LayoutType = LayoutType.Classic;
   public lastSelectedFormat: string = "path.jerryio v0.1.x (cm, rpm)";
@@ -45,6 +46,7 @@ export class Preferences {
     this.disposers = [
       this.link("maxHistory", "maxHistory"),
       this.link("isGoogleAnalyticsEnabled", "googleAnalyticsEnabled"),
+      this.link("isExperimentalFeaturesEnabled", "experimentalFeaturesEnabled"),
       this.link("themeType", "theme"),
       this.link("layoutType", "layout"),
       this.link("lastSelectedFormat", "lastSelectedFormat")
@@ -63,4 +65,10 @@ export function getPreference<T extends {}>(key: string, def: T): T {
     }
   }
   return def;
+}
+
+const localIsExperimentalFeaturesEnabled: boolean = getPreference("experimentalFeaturesEnabled", false);
+
+export function isExperimentalFeaturesEnabled(): boolean {
+  return localIsExperimentalFeaturesEnabled;
 }
