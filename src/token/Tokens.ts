@@ -467,7 +467,7 @@ export class NumberT extends Token {
       return buffer.rollbackAndReturn(null);
     }
     rtn += p.value;
-    
+
     const f = Frac.parse(buffer);
     isDouble = f !== null;
     if (isDouble) {
