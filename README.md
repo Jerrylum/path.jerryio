@@ -140,6 +140,9 @@ We work closely with the community and library developers. We would like to than
 <a href="https://github.com/JohnDoeAntler" title="John Doe Antler"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/16289028?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
 <a href="https://github.com/Mustang8192" title="Samy Chirumamilla"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/107894608?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
 <a href="https://github.com/Rocky14683" title="THERocky"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/101498190?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
+<a href="https://github.com/SGD2718" title="Benjamin Lee"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/48599511?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
 <a href="https://github.com/SizzinSeal" title="Liam Teale"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/111480281?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
 <a href="https://github.com/SunkenSplash" title="William Castro"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/62484109?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
 <a href="https://github.com/johnnylam123" title="johnnylam123"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/72603940?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
+<a href="https://github.com/meisZWFLZ" title="Andrew Curtis"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/80860310?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
+<a href="https://github.com/sufferiing" title="Maddy Scott"><img src="https://images.weserv.nl/?url=https://avatars.githubusercontent.com/u/11135808?v=4&mask=circle&maxage=7d" alt="" width="10%"/></a>
