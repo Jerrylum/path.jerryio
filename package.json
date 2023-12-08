@@ -1,6 +1,6 @@
 {
   "name": "path.jerryio",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.0",
