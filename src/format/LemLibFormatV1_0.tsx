@@ -371,7 +371,9 @@ export class LemLibFormatV1_0 implements Format {
   getPathPoints(path: Path): PointCalculationResult {
     const uc = new UnitConverter(this.gc.uol, UnitOfLength.Inch);
 
-    const result = getPathPoints(path, new Quantity(this.gc.pointDensity, this.gc.uol));
+    const result = getPathPoints(path, new Quantity(this.gc.pointDensity, this.gc.uol), {
+      defaultFollowBentRate: true
+    });
     const rate = (path.pc as PathConfigImpl).maxDecelerationRate;
 
     for (let i = result.points.length - 2; i >= 0; i--) {
