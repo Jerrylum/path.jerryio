@@ -63,6 +63,10 @@ export interface PointCalculationResult extends UniformCalculationResult {
   lookaheadKeyframeIndexes: KeyframeIndexing<LookaheadKeyframe>[]; // The indexes of keyframes in the `points` array.
 }
 
+export interface PointCalculationOptions {
+  defaultFollowBentRate?: boolean;
+}
+
 /**
  * Calculates the points along a path at a uniform density.
  *
@@ -70,7 +74,7 @@ export interface PointCalculationResult extends UniformCalculationResult {
  * @param density - The density of points to generate.
  * @returns The calculated points, segment indexes, and keyframe indexes.
  */
-export function getPathPoints(path: Path, density: Quantity<UnitOfLength>): PointCalculationResult {
+export function getPathPoints(path: Path, density: Quantity<UnitOfLength>, options?: PointCalculationOptions): PointCalculationResult {
   if (path.segments.length === 0)
     return { arcLength: 0, points: [], segmentIndexes: [], speedKeyframeIndexes: [], lookaheadKeyframeIndexes: [] };
 
@@ -78,7 +82,7 @@ export function getPathPoints(path: Path, density: Quantity<UnitOfLength>): Poin
   const uniformResult = getUniformPointsFromSamples(sampleResult, density);
   const speedKeyframeIndexes = getPathKeyframeIndexes(path.segments, uniformResult.segmentIndexes, "speedProfiles");
   processKeyframes(path, uniformResult.points, [
-    new KeyframeIndexing(0, undefined, new SpeedKeyframe(0, 1)),
+    new KeyframeIndexing(0, undefined, new SpeedKeyframe(0, 1, options?.defaultFollowBentRate ?? false)),
     ...speedKeyframeIndexes
   ]);
   const lookaheadKeyframeIndexes = getPathKeyframeIndexes(
