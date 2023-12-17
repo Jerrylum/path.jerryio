@@ -74,7 +74,11 @@ export interface PointCalculationOptions {
  * @param density - The density of points to generate.
  * @returns The calculated points, segment indexes, and keyframe indexes.
  */
-export function getPathPoints(path: Path, density: Quantity<UnitOfLength>, options?: PointCalculationOptions): PointCalculationResult {
+export function getPathPoints(
+  path: Path,
+  density: Quantity<UnitOfLength>,
+  options?: PointCalculationOptions
+): PointCalculationResult {
   if (path.segments.length === 0)
     return { arcLength: 0, points: [], segmentIndexes: [], speedKeyframeIndexes: [], lookaheadKeyframeIndexes: [] };
 

@@ -135,7 +135,6 @@ const convertFromV0_5_0ToCurrentAppVersion: PathFileDataConverter = {
   }
 };
 
-
 export function convertPathFileData(data: Record<string, any>): boolean {
   for (const { version, convert } of [
     convertFromV0_1_0ToV0_2_0,
