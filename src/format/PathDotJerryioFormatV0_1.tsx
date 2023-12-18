@@ -194,6 +194,8 @@ export class PathDotJerryioFormatV0_1 implements Format {
     return getPathPoints(path, new Quantity(this.gc.pointDensity, this.gc.uol));
   }
 
+  convertFromFormat(oldFormat: Format, paths: Path[]): void {}
+
   importPathsFromFile(buffer: ArrayBuffer): Path[] {
     throw new Error("Unable to import paths from this format, try other formats?");
   }

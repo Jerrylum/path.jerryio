@@ -76,19 +76,23 @@ export class MainApp {
         newFormat.init();
 
         const oldGC = oldFormat.getGeneralConfig();
+        const newGC = newFormat.getGeneralConfig(); // == this.gc
 
-        const keepPointDensity = this.gc.pointDensity;
+        const keepPointDensity = newGC.pointDensity;
 
-        this.gc.robotWidth = oldGC.robotWidth;
-        this.gc.robotHeight = oldGC.robotHeight;
-        convertGeneralConfigUOL(this.gc, oldGC.uol);
-        // TODO: Custom format conversion behavior
-        this.gc.pointDensity = keepPointDensity; // UX: Use new format point density
+        newGC.robotWidth = oldGC.robotWidth;
+        newGC.robotHeight = oldGC.robotHeight;
+        convertGeneralConfigUOL(newGC, oldGC.uol);
+        newGC.pointDensity = keepPointDensity; // UX: Use new format point density
 
         const paths: Path[] = [];
         for (const oldPath of this.paths) {
           const newPath = newFormat.createPath(...oldPath.segments);
           const newPC = newPath.pc;
+
+          newPath.name = oldPath.name;
+          newPath.visible = oldPath.visible;
+          newPath.lock = oldPath.lock;
 
           if (
             newPC.speedLimit.minLimit === oldPath.pc.speedLimit.minLimit &&
@@ -98,12 +102,12 @@ export class MainApp {
           }
           newPC.bentRateApplicableRange = oldPath.pc.bentRateApplicableRange; // UX: Keep application range
 
-          // TODO: Custom format conversion behavior
-
-          convertPathConfigPointDensity(newPC, oldGC.pointDensity, this.gc.pointDensity);
+          convertPathConfigPointDensity(newPC, oldGC.pointDensity, newGC.pointDensity);
 
           paths.push(newPath);
         }
+
+        newFormat.convertFromFormat(oldFormat, paths);
 
         // this.paths = paths;
         this.paths.splice(0, this.paths.length, ...paths); // alternative to above

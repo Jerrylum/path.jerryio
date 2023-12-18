@@ -264,6 +264,8 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
     return result;
   }
 
+  convertFromFormat(oldFormat: Format, paths: Path[]): void {}
+
   importPathsFromFile(buffer: ArrayBuffer): Path[] {
     throw new Error("Unable to import paths from this format, try other formats?");
   }

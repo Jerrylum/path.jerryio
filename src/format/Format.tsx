@@ -27,6 +27,8 @@ export interface Format extends ExecutionEventListenersContainer<CancellableComm
 
   getPathPoints(path: Path): PointCalculationResult;
 
+  convertFromFormat(oldFormat: Format, paths: Path[]): void;
+
   /**
    * SECURITY: The input is not safe.
    * The returned value is valid but might contain malicious code.

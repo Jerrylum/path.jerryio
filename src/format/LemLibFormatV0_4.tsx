@@ -237,6 +237,8 @@ export class LemLibFormatV0_4 implements Format {
     return result;
   }
 
+  convertFromFormat(oldFormat: Format, paths: Path[]): void {}
+
   importPathsFromFile(buffer: ArrayBuffer): Path[] {
     // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.
 

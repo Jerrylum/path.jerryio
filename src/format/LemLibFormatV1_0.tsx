@@ -364,6 +364,12 @@ export class LemLibFormatV1_0 implements Format {
     return this.gc;
   }
 
+  convertFromFormat(oldFormat: Format, paths: Path[]): void {
+    for (const path of paths) {
+      path.name = path.name.replace(/[^\x00-\x7F]/g, ""); // ascii only
+    }
+  }
+
   createPath(...segments: Segment[]): Path {
     return new Path(new PathConfigImpl(this), ...segments);
   }

@@ -40,6 +40,7 @@ export class CustomFormat implements Format {
   getPathPoints(path: Path): PointCalculationResult {
     throw new Error("Method not implemented.");
   }
+  convertFromFormat(oldFormat: Format, paths: Path[]): void {}
   importPathsFromFile(buffer: ArrayBuffer): Path[] {
     throw new Error("Method not implemented.");
   }
