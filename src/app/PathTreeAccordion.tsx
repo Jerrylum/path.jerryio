@@ -7,6 +7,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp";
 import { AccordionDetails, AccordionSummary, Box, Card, IconButton, Tooltip, Typography } from "@mui/material";
@@ -210,7 +211,7 @@ const TreeItem = observer((props: TreeItemProps) => {
     }
   }
 
-  function onItemNameDoubleClick(event: React.MouseEvent<HTMLSpanElement, MouseEvent>) {
+  function onItemNameDoubleClick(event: React.MouseEvent<HTMLSpanElement | SVGSVGElement, MouseEvent>) {
     setIsEditingName(true);
   }
 
@@ -402,6 +403,7 @@ const TreeItem = observer((props: TreeItemProps) => {
           )}
           {isEditingName === false && (
             <>
+              {isNameEditable && <EditIcon className="tree-func-icon" onClick={action(onItemNameDoubleClick)} />}
               {isDraggable && <DeleteIcon className="tree-func-icon" onClick={action(onDeleteClick)} />}
               {entity.lock === false ? (
                 parent?.lock === true ? (
@@ -446,8 +448,6 @@ const TreeView = observer((props: { variables: PathTreeVariables }) => {
   const { app } = getAppStores();
 
   const { variables } = props;
-
-  // TODO: Left click to focus on the tree view
 
   function pressSpaceToToggleSelection(e: React.KeyboardEvent<HTMLUListElement>): boolean {
     const current = variables.focused;
