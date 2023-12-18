@@ -26,6 +26,42 @@ export function convertPathConfigPointDensity(pc: PathConfig, fromDensity: numbe
   pc.bentRateApplicableRange.to = Number(pc.bentRateApplicableRange.to * ratio).toUser();
 }
 
+export function convertFormat(newFormat: Format, oldFormat: Format, oldPaths: Path[]): Path[] {
+  const oldGC = oldFormat.getGeneralConfig();
+  const newGC = newFormat.getGeneralConfig(); // == this.gc
+
+  const keepPointDensity = newGC.pointDensity;
+
+  newGC.robotWidth = oldGC.robotWidth;
+  newGC.robotHeight = oldGC.robotHeight;
+  convertGeneralConfigUOL(newGC, oldGC.uol);
+  newGC.pointDensity = keepPointDensity; // UX: Use new format point density
+
+  const newPaths: Path[] = [];
+  for (const oldPath of oldPaths) {
+    const newPath = newFormat.createPath(...oldPath.segments);
+    const newPC = newPath.pc;
+
+    newPath.name = oldPath.name;
+    newPath.visible = oldPath.visible;
+    newPath.lock = oldPath.lock;
+
+    if (
+      newPC.speedLimit.minLimit === oldPath.pc.speedLimit.minLimit &&
+      newPC.speedLimit.maxLimit === oldPath.pc.speedLimit.maxLimit
+    ) {
+      newPC.speedLimit = oldPath.pc.speedLimit; // UX: Keep speed limit if the new format has the same speed limit range as the old one
+    }
+    newPC.bentRateApplicableRange = oldPath.pc.bentRateApplicableRange; // UX: Keep application range
+
+    convertPathConfigPointDensity(newPC, oldGC.pointDensity, newGC.pointDensity);
+
+    newPaths.push(newPath);
+  }
+
+  return newPaths;
+}
+
 export interface ConfigSection {
   get format(): Format;
   getConfigPanel(): JSX.Element;

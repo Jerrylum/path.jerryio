@@ -2,7 +2,13 @@ import { makeAutoObservable, reaction, action, intercept } from "mobx";
 import { getAppStores } from "../core/MainApp";
 import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
-import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
+import {
+  GeneralConfig,
+  PathConfig,
+  convertFormat,
+  convertGeneralConfigUOL,
+  convertPathConfigPointDensity
+} from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { RangeSlider } from "../component/RangeSlider";
 import { Box, Typography } from "@mui/material";
@@ -194,7 +200,9 @@ export class PathDotJerryioFormatV0_1 implements Format {
     return getPathPoints(path, new Quantity(this.gc.pointDensity, this.gc.uol));
   }
 
-  convertFromFormat(oldFormat: Format, paths: Path[]): void {}
+  convertFromFormat(oldFormat: Format, oldPaths: Path[]): Path[] {
+    return convertFormat(this, oldFormat, oldPaths);
+  }
 
   importPathsFromFile(buffer: ArrayBuffer): Path[] {
     throw new Error("Unable to import paths from this format, try other formats?");

@@ -3,7 +3,7 @@ import { getAppStores } from "../core/MainApp";
 import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "../core/Util";
 import { Path, Segment, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
-import { GeneralConfig, PathConfig, convertGeneralConfigUOL } from "./Config";
+import { GeneralConfig, PathConfig, convertFormat, convertGeneralConfigUOL } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, IsString, MinLength, ValidateNested } from "class-validator";
@@ -264,7 +264,9 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
     return result;
   }
 
-  convertFromFormat(oldFormat: Format, paths: Path[]): void {}
+  convertFromFormat(oldFormat: Format, oldPaths: Path[]): Path[] {
+    return convertFormat(this, oldFormat, oldPaths);
+  }
 
   importPathsFromFile(buffer: ArrayBuffer): Path[] {
     throw new Error("Unable to import paths from this format, try other formats?");

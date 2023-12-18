@@ -5,7 +5,7 @@ import { Segment, EndControl, Path } from "../core/Path";
 import { Format } from "./Format";
 import DOMPurify from "dompurify";
 import { PointCalculationResult } from "../core/Calculation";
-import { GeneralConfig } from "./Config";
+import { GeneralConfig, convertFormat } from "./Config";
 import { CustomGeneralConfig, CustomPathConfig } from "./Config.test";
 import { HistoryEventMap, CancellableCommand } from "../core/Command";
 import { LemLibFormatV1_0, LemLibPathConfig } from "./LemLibFormatV1_0";
@@ -40,7 +40,9 @@ export class CustomFormat implements Format {
   getPathPoints(path: Path): PointCalculationResult {
     throw new Error("Method not implemented.");
   }
-  convertFromFormat(oldFormat: Format, paths: Path[]): void {}
+  convertFromFormat(oldFormat: Format, oldPaths: Path[]): Path[] {
+    return convertFormat(this, oldFormat, oldPaths);
+  }
   importPathsFromFile(buffer: ArrayBuffer): Path[] {
     throw new Error("Method not implemented.");
   }

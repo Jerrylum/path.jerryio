@@ -6,7 +6,13 @@ import { AddKeyframe, CancellableCommand, HistoryEventMap, UpdateProperties } fr
 import { getAppStores } from "../core/MainApp";
 import { Path, Segment, SpeedKeyframe } from "../core/Path";
 import { EditableNumberRange, NumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
-import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
+import {
+  GeneralConfig,
+  PathConfig,
+  convertFormat,
+  convertGeneralConfigUOL,
+  convertPathConfigPointDensity
+} from "./Config";
 import { IsPositive, IsBoolean, ValidateNested, IsObject } from "class-validator";
 import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFieldImage } from "../core/Asset";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
@@ -364,10 +370,14 @@ export class LemLibFormatV1_0 implements Format {
     return this.gc;
   }
 
-  convertFromFormat(oldFormat: Format, paths: Path[]): void {
-    for (const path of paths) {
+  convertFromFormat(oldFormat: Format, oldPaths: Path[]): Path[] {
+    const newPaths = convertFormat(this, oldFormat, oldPaths);
+
+    for (const path of newPaths) {
       path.name = path.name.replace(/[^\x00-\x7F]/g, ""); // ascii only
     }
+
+    return newPaths;
   }
 
   createPath(...segments: Segment[]): Path {

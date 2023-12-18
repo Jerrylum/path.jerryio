@@ -3,7 +3,13 @@ import { getAppStores } from "../core/MainApp";
 import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, clamp, makeId } from "../core/Util";
 import { Control, EndControl, Path, Segment, SpeedKeyframe, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
-import { GeneralConfig, PathConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "./Config";
+import {
+  GeneralConfig,
+  PathConfig,
+  convertFormat,
+  convertGeneralConfigUOL,
+  convertPathConfigPointDensity
+} from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { Box, Slider, Typography } from "@mui/material";
 import { RangeSlider } from "../component/RangeSlider";
@@ -237,7 +243,9 @@ export class LemLibFormatV0_4 implements Format {
     return result;
   }
 
-  convertFromFormat(oldFormat: Format, paths: Path[]): void {}
+  convertFromFormat(oldFormat: Format, oldPaths: Path[]): Path[] {
+    return convertFormat(this, oldFormat, oldPaths);
+  }
 
   importPathsFromFile(buffer: ArrayBuffer): Path[] {
     // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.

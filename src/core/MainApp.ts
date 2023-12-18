@@ -75,42 +75,10 @@ export class MainApp {
 
         newFormat.init();
 
-        const oldGC = oldFormat.getGeneralConfig();
-        const newGC = newFormat.getGeneralConfig(); // == this.gc
-
-        const keepPointDensity = newGC.pointDensity;
-
-        newGC.robotWidth = oldGC.robotWidth;
-        newGC.robotHeight = oldGC.robotHeight;
-        convertGeneralConfigUOL(newGC, oldGC.uol);
-        newGC.pointDensity = keepPointDensity; // UX: Use new format point density
-
-        const paths: Path[] = [];
-        for (const oldPath of this.paths) {
-          const newPath = newFormat.createPath(...oldPath.segments);
-          const newPC = newPath.pc;
-
-          newPath.name = oldPath.name;
-          newPath.visible = oldPath.visible;
-          newPath.lock = oldPath.lock;
-
-          if (
-            newPC.speedLimit.minLimit === oldPath.pc.speedLimit.minLimit &&
-            newPC.speedLimit.maxLimit === oldPath.pc.speedLimit.maxLimit
-          ) {
-            newPC.speedLimit = oldPath.pc.speedLimit; // UX: Keep speed limit if the new format has the same speed limit range as the old one
-          }
-          newPC.bentRateApplicableRange = oldPath.pc.bentRateApplicableRange; // UX: Keep application range
-
-          convertPathConfigPointDensity(newPC, oldGC.pointDensity, newGC.pointDensity);
-
-          paths.push(newPath);
-        }
-
-        newFormat.convertFromFormat(oldFormat, paths);
+        const newPaths = newFormat.convertFromFormat(oldFormat, this.paths);
 
         // this.paths = paths;
-        this.paths.splice(0, this.paths.length, ...paths); // alternative to above
+        this.paths.splice(0, this.paths.length, ...newPaths); // alternative to above
 
         this.resetUserControl();
 
