@@ -12,7 +12,7 @@ PATH.JERRYIO is a Progressive Web Apps (PWA) that is installable and can be used
 
 It is a powerful and flexible multi-purpose path editor/planner, which allows users to design and edit paths with intuitive click-and-drag interactions. After that, a readable path file can be generated for the robot, it will be used by the robot to travel the designed paths in the autonomous period with path-following algorithms.
 
-![Screenshot of path.jerryio with a path in the editor](./assets/screenshot-1.png)
+![Screenshot of path.jerryio with a path in the editor](./assets/readme-banner.png)
 
 ## Demonstration
 
