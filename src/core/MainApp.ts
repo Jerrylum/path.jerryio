@@ -320,11 +320,6 @@ export class MainApp {
     this.format = format;
     this.usingUOL = format.getGeneralConfig().uol;
     this.paths = paths;
-
-    this.resetUserControl();
-    this.resetAllEditors();
-
-    this.history.clearHistory();
   }
 
   /**
@@ -387,10 +382,6 @@ export class MainApp {
     this.format = newFormat;
     this.usingUOL = this.gc.uol;
     this.paths = [];
-    this.resetUserControl();
-    this.resetAllEditors();
-
-    this.history.clearHistory();
   }
 
   /**
