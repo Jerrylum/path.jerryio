@@ -294,6 +294,9 @@ export class FieldEditor {
     this.offset = new Vector(0, 0);
     this.scale = 1;
     this.wheelInteractionState = { type: "panning", lastTimestamp: 0 };
+    // ALGO: Use fcc?. because it may be undefined
+    // ALGO: Settle all the konva elements
+    this.fcc?.stage?.stopDrag();
   }
 
   get offset() {

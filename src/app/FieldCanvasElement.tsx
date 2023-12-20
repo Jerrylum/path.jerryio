@@ -653,7 +653,7 @@ const FieldCanvasElement = observer((props: {}) => {
     canvasHeightInUOL,
     offset,
     scale,
-    stageRef.current?.container() ?? null
+    stageRef.current ?? null
   );
 
   app.fieldEditor.fcc = fcc;
@@ -779,8 +779,8 @@ const FieldCanvasElement = observer((props: {}) => {
         popperRef,
         anchorEl: {
           getBoundingClientRect: () => {
-            const div = stageRef.current;
-            if (div === null || fieldEditor.tooltipPosition === undefined) return new DOMRect(-200, -200, 0, 0);
+            const stage = stageRef.current;
+            if (stage === null || fieldEditor.tooltipPosition === undefined) return new DOMRect(-200, -200, 0, 0);
 
             return new DOMRect(fieldEditor.tooltipPosition.x, fieldEditor.tooltipPosition.y, 0, 0);
           }

@@ -39,6 +39,7 @@ export class FieldCanvasConverter {
   public uol2pixel: number; // in pixel/uol
   public pixel2uol: number; // in uol/pixel
   public viewOffset: Vector;
+  public container: HTMLElement | null;
 
   constructor(
     public widthInPx: number,
@@ -46,13 +47,14 @@ export class FieldCanvasConverter {
     public heightInUOL: number,
     public offset: Vector,
     public scale: number,
-    public container: HTMLElement | null
+    public stage: Konva.Stage | null
   ) {
     this.halfWidthInPx = widthInPx / 2;
     this.halfHeightInPx = heightInPx / 2;
     this.uol2pixel = heightInPx / heightInUOL;
     this.pixel2uol = heightInUOL / heightInPx;
     this.viewOffset = new Vector((widthInPx - heightInPx) / 2, 0);
+    this.container = stage?.container() ?? null;
   }
 
   toPx<T extends Vector>(inUOL: T): T {

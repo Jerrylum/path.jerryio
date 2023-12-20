@@ -69,23 +69,23 @@ export class MainApp {
     reaction(
       () => this.format,
       action((newFormat: Format, oldFormat: Format) => {
-        if (newFormat.isInit) return;
+        if (newFormat.isInit === false) {
+          // ALGO: This should only be triggered when the format is changed by the user, not loading a file
 
-        // ALGO: this reaction should only be triggered when the format is changed by the user, not loading a file
+          newFormat.init();
 
-        newFormat.init();
+          const newPaths = newFormat.convertFromFormat(oldFormat, this.paths);
 
-        const newPaths = newFormat.convertFromFormat(oldFormat, this.paths);
+          this.paths.splice(0, this.paths.length, ...newPaths); // alternative to this.paths = paths
 
-        // this.paths = paths;
-        this.paths.splice(0, this.paths.length, ...newPaths); // alternative to above
+          const { appPreferences } = getAppStores();
+          appPreferences.lastSelectedFormat = newFormat.getName();
+        }
 
         this.resetUserControl();
+        this.resetAllEditors();
 
         this.history.clearHistory();
-
-        const { appPreferences } = getAppStores();
-        appPreferences.lastSelectedFormat = newFormat.getName();
       })
     );
 
