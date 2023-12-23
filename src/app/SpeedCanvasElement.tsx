@@ -44,7 +44,7 @@ const SpeedCanvasTooltipContent = observer((props: {}) => {
           onClick={() => {
             const setTo = !keyframe.followBentRate;
             app.history.execute(
-              `Update keyframe ${keyframe.uid} followCurve to ${setTo}`,
+              `Update keyframe ${keyframe.uid} followBentRate to ${setTo}`,
               new UpdateProperties(keyframe, { followBentRate: setTo }),
               0
             );
@@ -171,7 +171,7 @@ const SpeedKeyframeElement = observer((props: SpeedKeyframeElementProps) => {
       // left click
       const setTo = !ikf.keyframe.followBentRate;
       app.history.execute(
-        `Update keyframe ${ikf.keyframe.uid} followCurve to ${setTo}`,
+        `Update keyframe ${ikf.keyframe.uid} followBentRate to ${setTo}`,
         new UpdateProperties(ikf.keyframe, { followBentRate: setTo }),
         0
       );
