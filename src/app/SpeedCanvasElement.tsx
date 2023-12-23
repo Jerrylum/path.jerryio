@@ -200,7 +200,7 @@ const SpeedKeyframeElement = observer((props: SpeedKeyframeElementProps) => {
       x={x}
       y={y}
       radius={gcc.pointRadius * 4}
-      fill={"#D7B301"}
+      fill={ikf.keyframe.followBentRate ? "#666" : "#D7B301"}
       opacity={0.75}
       draggable
       onTouchStart={action(onTouchStart)}

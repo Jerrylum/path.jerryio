@@ -54,6 +54,8 @@ export class SpeedEditor {
     }
     // UX: This interaction is prioritized
     this.interaction = { keyframe: null, type: "panning" };
+    // UX: Remove tooltip when panning
+    this.tooltipPosition = undefined;
   }
 
   interact(keyframe: SpeedKeyframe, type: "touch" | "drag/hover") {
