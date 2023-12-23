@@ -34,7 +34,14 @@ const SpeedCanvasTooltipContent = observer((props: {}) => {
   const lastInteraction = app.speedEditor.lastInteraction;
   const interaction = app.speedEditor.interaction;
   if (interaction?.keyframe instanceof SpeedKeyframe && interaction?.type === "drag/hover") {
-    return <Box sx={{ padding: "8px" }}>{(speedFrom + pos.yPos * (speedTo - speedFrom)).toUser()}</Box>;
+    const speed = (speedFrom + pos.yPos * (speedTo - speedFrom)).toUser();
+    const postfix = interaction.keyframe.followBentRate ? " (Bent Rate Interruption)" : " (Linear Interpolation)";
+    return (
+      <Box sx={{ padding: "8px" }}>
+        {speed}
+        {postfix}
+      </Box>
+    );
   } else if (lastInteraction?.keyframe instanceof SpeedKeyframe && lastInteraction?.type === "touch") {
     const keyframe = lastInteraction.keyframe;
     return (
