@@ -428,7 +428,7 @@ export class AddSegment implements CancellableCommand, AddPathTreeItemsCommand {
   protected addLine(): void {
     if (this.path.segments.length === 0) {
       this._segment = new Segment(new EndControl(0, 0, 0), this.end);
-      this.added.push(this.end);
+      this.added.push(this._segment.controls[0], this.end);
     } else {
       const last = this.path.segments[this.path.segments.length - 1];
       this._segment = new Segment(last.last, this.end);
