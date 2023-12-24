@@ -87,7 +87,7 @@ const Root = observer(() => {
   );
   useCustomHotkeys(
     "Mod+J",
-    () => (appPreferences.isRightPanelVisible = !appPreferences.isRightPanelVisible),
+    () => (appPreferences.isRightSectionVisible = !appPreferences.isRightSectionVisible),
     ENABLE_ON_ALL_INPUT_FIELDS
   );
 

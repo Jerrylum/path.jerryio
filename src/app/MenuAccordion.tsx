@@ -590,10 +590,10 @@ const ViewMenuItems = () => {
           />,
           <CustomMenuItem
             key={makeId(10)}
-            showLeftIcon={appPreferences.isRightPanelVisible}
+            showLeftIcon={appPreferences.isRightSectionVisible}
             label="Right Panel"
             hotkey="Mod+J"
-            onClick={() => (appPreferences.isRightPanelVisible = !appPreferences.isRightPanelVisible)}
+            onClick={() => (appPreferences.isRightSectionVisible = !appPreferences.isRightSectionVisible)}
           />,
           <Divider key={makeId(10)} />
         ]

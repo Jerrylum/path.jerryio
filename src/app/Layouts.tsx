@@ -71,12 +71,12 @@ export const ClassisLayout = observer(() => {
 
   return (
     <>
-      <Box id="left-editor-panel">
+      <Box id="left-section">
         <MenuAccordion />
         <PathTreeAccordion />
       </Box>
 
-      <Box id="middle-panel" className={classNames({ "full-height": !appPreferences.isSpeedCanvasVisible })}>
+      <Box id="middle-section" className={classNames({ "full-height": !appPreferences.isSpeedCanvasVisible })}>
         <Card id="field-panel">
           <svg viewBox="0 0 1 1"></svg>
           <FieldCanvasElement />
@@ -87,8 +87,8 @@ export const ClassisLayout = observer(() => {
           </Card>
         )}
       </Box>
-      {appPreferences.isRightPanelVisible && (
-        <Box id="right-editor-panel">
+      {appPreferences.isRightSectionVisible && (
+        <Box id="right-section">
           <GeneralConfigAccordion />
           <ControlAccordion />
           <PathConfigAccordion />
@@ -208,7 +208,7 @@ export const ExclusiveLayout = observer(() => {
         )}
         <TravelDistancePresentation />
       </Box>
-      <Box id="left-editor-panel">
+      <Box id="left-section">
         <MenuMainDropdown
           anchor={{ top: 8, left: 48 + 8 + 8 }}
           isOpen={variables.isOpenPanel("menu")}
@@ -216,7 +216,7 @@ export const ExclusiveLayout = observer(() => {
         />
         {variables.isOpenPanel("paths") && <PathTreeFloatingPanel />}
       </Box>
-      <Box id="right-editor-panel">
+      <Box id="right-section">
         {variables.isOpenPanel("general-config") && <GeneralConfigFloatingPanel />}
         {variables.isOpenPanel("control") && <ControlFloatingPanel />}
         {variables.isOpenPanel("path") && <PathConfigFloatingPanel />}

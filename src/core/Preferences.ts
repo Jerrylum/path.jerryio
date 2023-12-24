@@ -15,7 +15,7 @@ export class Preferences {
 
   // Not in local storage
   public isSpeedCanvasVisible: boolean = true; // In classic layout only
-  public isRightPanelVisible: boolean = true; // In classic layout only
+  public isRightSectionVisible: boolean = true; // In classic layout only
 
   constructor() {
     makeAutoObservable(this);
