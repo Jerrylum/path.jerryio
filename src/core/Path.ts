@@ -454,6 +454,18 @@ export class Segment implements CanvasEntity {
     this.controls[this.controls.length - 1] = point;
   }
 
+  isCubic(): this is Segment & { controls: CubicSegmentControls } {
+    return this.controls.length === 4;
+  }
+
+  isLinear(): this is Segment & { controls: LinearSegmentControls } {
+    return this.controls.length === 2;
+  }
+
+  getVariant(): SegmentVariant {
+    return this.isCubic() ? SegmentVariant.Cubic : SegmentVariant.Linear;
+  }
+
   isLocked(): boolean {
     return this.controls.some(cp => cp.lock);
   }

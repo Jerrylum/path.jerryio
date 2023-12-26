@@ -1,6 +1,6 @@
 import { action, makeAutoObservable, makeObservable, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Control, EndControl, Path, Segment, SegmentVariant, Vector, isAnyControl } from "../core/Path";
+import { Control, EndControl, Path, Segment, Vector, isAnyControl } from "../core/Path";
 import Konva from "konva";
 import { Circle, Group, Image, Layer, Line, Stage } from "react-konva";
 import { SegmentElement } from "./SegmentElement";
@@ -12,7 +12,14 @@ import { AreaSelectionElement } from "./AreaSelectionElement";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { FieldCanvasConverter, getClientXY, isKonvaTouchEvent } from "../core/Canvas";
 import { clamp, getFieldCanvasFullHeight, getFieldCanvasHalfHeight } from "../core/Util";
-import { AddPath, AddSegment, ConvertSegment, RemovePathsAndEndControls, SplitSegment } from "../core/Command";
+import {
+  AddCubicSegment,
+  AddLinearSegment,
+  AddPath,
+  ConvertSegment,
+  RemovePathsAndEndControls,
+  SplitSegment
+} from "../core/Command";
 import { getAppStores } from "../core/MainApp";
 import { RobotElement } from "./RobotElement";
 import { fromHeadingInDegreeToAngleInRadian } from "../core/Calculation";
@@ -27,7 +34,7 @@ import { LayoutContext } from "./Layouts";
 import { getDefaultBuiltInFieldImage } from "../core/Asset";
 
 function fixControlTooCloseToTheEndControl() {
-  // UX: Fix control point too close to the end control point when adding the first new curve segment
+  // UX: Fix control point too close to the end control point when adding the first new cubic segment
   const { app } = getAppStores();
 
   if (app.paths.length !== 1) return;
@@ -58,7 +65,7 @@ const FieldTooltipContent = observer((props: {}) => {
   const { app, clipboard } = getAppStores();
   const fieldEditor = app.fieldEditor;
 
-  function onAddCurve() {
+  function onAddCubic() {
     if (fieldEditor.tooltipPosition === undefined) return;
 
     const posInPx = fieldEditor.fcc.getUnboundedPx(fieldEditor.tooltipPosition);
@@ -77,15 +84,15 @@ const FieldTooltipContent = observer((props: {}) => {
     if (targetPath.visible && !targetPath.lock) {
       // UX: Add control point if: path is selected and visible and not locked
       app.history.execute(
-        `Add curve segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-        new AddSegment(targetPath, cpInUOL, SegmentVariant.Cubic)
+        `Add cubic segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
+        new AddCubicSegment(targetPath, cpInUOL)
       );
 
       fixControlTooCloseToTheEndControl();
     }
   }
 
-  function onAddLine() {
+  function onAddLinear() {
     if (fieldEditor.tooltipPosition === undefined) return;
 
     const posInPx = fieldEditor.fcc.getUnboundedPx(fieldEditor.tooltipPosition);
@@ -105,7 +112,7 @@ const FieldTooltipContent = observer((props: {}) => {
       // UX: Add control point if: path is selected and visible and not locked
       app.history.execute(
         `Add linear segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-        new AddSegment(targetPath, cpInUOL, SegmentVariant.Linear)
+        new AddLinearSegment(targetPath, cpInUOL)
       );
     }
   }
@@ -116,8 +123,8 @@ const FieldTooltipContent = observer((props: {}) => {
 
   return (
     <Box>
-      <Label text="Curve" onClick={onAddCurve} />
-      <Label text="Line" onClick={onAddLine} />
+      <Label text="Curve" onClick={onAddCubic} />
+      <Label text="Line" onClick={onAddLinear} />
       {clipboard.hasData && <Label text="Paste" onClick={onPaste} />}
     </Box>
   );
@@ -160,16 +167,7 @@ const SegmentTooltipContent = observer((props: {}) => {
     const path = app.paths.find(path => path.segments.includes(segment));
     if (path === undefined) return;
 
-    if (segment.controls.length === 2)
-      app.history.execute(
-        `Convert segment ${segment.uid} to curve`,
-        new ConvertSegment(path, segment, SegmentVariant.Cubic)
-      );
-    else
-      app.history.execute(
-        `Convert segment ${segment.uid} to line`,
-        new ConvertSegment(path, segment, SegmentVariant.Linear)
-      );
+    app.history.execute(`Convert segment ${segment.uid}`, new ConvertSegment(path, segment));
   }
 
   function onSplit() {
@@ -732,10 +730,10 @@ const FieldCanvasElement = observer((props: {}) => {
     if (targetPath.visible && !targetPath.lock) {
       // UX: Add control point if: path is selected and visible and not locked
       if (evt.button === 0) {
-        // UX: Add 4-controls curve if: left click
+        // UX: Add 4-controls cubic if: left click
         app.history.execute(
-          `Add curve segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-          new AddSegment(targetPath, cpInUOL, SegmentVariant.Cubic)
+          `Add cubic segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
+          new AddCubicSegment(targetPath, cpInUOL)
         );
 
         fixControlTooCloseToTheEndControl();
@@ -743,7 +741,7 @@ const FieldCanvasElement = observer((props: {}) => {
         // UX: Add straight line if: right click
         app.history.execute(
           `Add linear segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-          new AddSegment(targetPath, cpInUOL, SegmentVariant.Linear)
+          new AddLinearSegment(targetPath, cpInUOL)
         );
       }
     }

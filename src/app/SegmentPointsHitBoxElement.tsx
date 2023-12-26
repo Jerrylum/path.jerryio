@@ -2,7 +2,7 @@ import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import Konva from "konva";
 import { Line } from "react-konva";
-import { EndControl, SegmentVariant } from "../core/Path";
+import { EndControl } from "../core/Path";
 import { SegmentElementProps } from "./SegmentElement";
 import { ConvertSegment, SplitSegment } from "../core/Command";
 import { getAppStores } from "../core/MainApp";
@@ -44,16 +44,7 @@ const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
       );
     } else if (evt.button === 0) {
       // UX: Convert segment if: left click
-      if (props.segment.controls.length === 2)
-        app.history.execute(
-          `Convert segment ${props.segment.uid} to curve`,
-          new ConvertSegment(props.path, props.segment, SegmentVariant.Cubic)
-        );
-      else
-        app.history.execute(
-          `Convert segment ${props.segment.uid} to line`,
-          new ConvertSegment(props.path, props.segment, SegmentVariant.Linear)
-        );
+      app.history.execute(`Convert segment ${props.segment.uid}`, new ConvertSegment(props.path, props.segment));
     }
   }
 
