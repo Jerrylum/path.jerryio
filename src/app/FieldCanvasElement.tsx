@@ -12,7 +12,7 @@ import { AreaSelectionElement } from "./AreaSelectionElement";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { FieldCanvasConverter, getClientXY, isKonvaTouchEvent } from "../core/Canvas";
 import { clamp, getFieldCanvasFullHeight, getFieldCanvasHalfHeight } from "../core/Util";
-import { AddPath, AddSegment, ConvertSegment, RemovePathsAndEndControls, SplitSegment } from "../core/Command";
+import { AddCubicSegment, AddLinearSegment, AddPath, ConvertSegment, RemovePathsAndEndControls, SplitSegment } from "../core/Command";
 import { getAppStores } from "../core/MainApp";
 import { RobotElement } from "./RobotElement";
 import { fromHeadingInDegreeToAngleInRadian } from "../core/Calculation";
@@ -78,7 +78,7 @@ const FieldTooltipContent = observer((props: {}) => {
       // UX: Add control point if: path is selected and visible and not locked
       app.history.execute(
         `Add cubic segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-        new AddSegment(targetPath, cpInUOL, SegmentVariant.Cubic)
+        new AddCubicSegment(targetPath, cpInUOL)
       );
 
       fixControlTooCloseToTheEndControl();
@@ -105,7 +105,7 @@ const FieldTooltipContent = observer((props: {}) => {
       // UX: Add control point if: path is selected and visible and not locked
       app.history.execute(
         `Add linear segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-        new AddSegment(targetPath, cpInUOL, SegmentVariant.Linear)
+        new AddLinearSegment(targetPath, cpInUOL)
       );
     }
   }
@@ -735,7 +735,7 @@ const FieldCanvasElement = observer((props: {}) => {
         // UX: Add 4-controls cubic if: left click
         app.history.execute(
           `Add cubic segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-          new AddSegment(targetPath, cpInUOL, SegmentVariant.Cubic)
+          new AddCubicSegment(targetPath, cpInUOL)
         );
 
         fixControlTooCloseToTheEndControl();
@@ -743,7 +743,7 @@ const FieldCanvasElement = observer((props: {}) => {
         // UX: Add straight line if: right click
         app.history.execute(
           `Add linear segment with end control point ${cpInUOL.uid} to path ${targetPath.uid}`,
-          new AddSegment(targetPath, cpInUOL, SegmentVariant.Linear)
+          new AddLinearSegment(targetPath, cpInUOL)
         );
       }
     }
