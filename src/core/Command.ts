@@ -425,7 +425,7 @@ export class AddSegment implements CancellableCommand, AddPathTreeItemsCommand {
 
   constructor(public path: Path, public end: EndControl, public variant: SegmentVariant) {}
 
-  protected addLine(): void {
+  protected addLinear(): void {
     if (this.path.segments.length === 0) {
       this._segment = new Segment(new EndControl(0, 0, 0), this.end);
       this.added.push(this.end);
@@ -437,7 +437,7 @@ export class AddSegment implements CancellableCommand, AddPathTreeItemsCommand {
     this.path.segments.push(this._segment);
   }
 
-  protected addCurve(): void {
+  protected addCubic(): void {
     const p3 = this.end;
 
     if (this.path.segments.length === 0) {
@@ -461,9 +461,9 @@ export class AddSegment implements CancellableCommand, AddPathTreeItemsCommand {
 
   execute(): void {
     if (this.variant === SegmentVariant.Linear) {
-      this.addLine();
+      this.addLinear();
     } else if (this.variant === SegmentVariant.Cubic) {
-      this.addCurve();
+      this.addCubic();
     }
   }
 
@@ -497,7 +497,7 @@ export class ConvertSegment implements CancellableCommand, AddPathTreeItemsComma
     this.segment.controls.splice(1, this.segment.controls.length - 2);
   }
 
-  protected convertToCurve(): void {
+  protected convertToCubic(): void {
     const index = this.path.segments.indexOf(this.segment);
     const found = index !== -1;
     if (!found) return;
@@ -532,7 +532,7 @@ export class ConvertSegment implements CancellableCommand, AddPathTreeItemsComma
     if (this.variant === SegmentVariant.Linear) {
       this.convertToLine();
     } else if (this.variant === SegmentVariant.Cubic) {
-      this.convertToCurve();
+      this.convertToCubic();
     }
     this.newControls = [...this.segment.controls];
   }
