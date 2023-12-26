@@ -534,9 +534,9 @@ export function binomial(n: number, k: number): number {
  * @returns The first derivative vector at the given parameter value.
  */
 export function firstDerivative(segment: Segment, t: number): Vector {
-  if (segment.controls.length === 2) {
+  if (segment.isLinear()) {
     return segment.controls[1].subtract(segment.controls[0]).toVector();
-  } else if (segment.controls.length === 4) {
+  } else if (segment.isCubic()) {
     const x =
       3 * (segment.controls[1].x - segment.controls[0].x) * (1 - t) * (1 - t) +
       6 * (segment.controls[2].x - segment.controls[1].x) * (1 - t) * t +

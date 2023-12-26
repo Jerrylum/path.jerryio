@@ -160,7 +160,7 @@ const SegmentTooltipContent = observer((props: {}) => {
     const path = app.paths.find(path => path.segments.includes(segment));
     if (path === undefined) return;
 
-    if (segment.controls.length === 2)
+    if (segment.isLinear())
       app.history.execute(
         `Convert segment ${segment.uid} to cubic`,
         new ConvertSegment(path, segment, SegmentVariant.Cubic)

@@ -377,12 +377,12 @@ export class LemLibFormatV0_4 implements Format {
     }
 
     for (const segment of path.segments) {
-      if (segment.controls.length === 4) {
+      if (segment.isCubic()) {
         output(segment.controls[0]);
         output(segment.controls[1]);
         output(segment.controls[2]);
         output(segment.controls[3], "\n");
-      } else if (segment.controls.length === 2) {
+      } else if (segment.isLinear()) {
         const center = segment.controls[0].add(segment.controls[1]).divide(2);
         output(segment.controls[0]);
         output(center);
