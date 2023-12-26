@@ -1,70 +1,84 @@
 import { CustomPathConfig } from "../format/Config.test";
-import { AddSegment } from "./Command";
+import { AddLinearSegment, AddCubicSegment, ConvertSegment } from "./Command";
 import { Control, EndControl, Path, Segment, SegmentVariant } from "./Path";
 
-test("AddSegment", () => {
+test("AddLinearSegment", () => {
   const path = new Path(new CustomPathConfig());
-  const addSegment = new AddSegment(path, new EndControl(60, 60, 0), SegmentVariant.Linear);
+  const addLinearSegment = new AddLinearSegment(path, new EndControl(60, 60, 0));
   expect(path.segments.length).toBe(0);
-  addSegment.execute();
+  addLinearSegment.execute();
   expect(path.segments.length).toBe(1);
-  expect(addSegment.segment).not.toBeUndefined();
-  expect(addSegment.addedItems.length).toBe(2);
-  expect(addSegment.addedItems).toStrictEqual(addSegment.segment?.controls);
-
-  path.segments = [];
-  const addSegment2 = new AddSegment(path, new EndControl(60, 60, 0), SegmentVariant.Cubic);
-  expect(path.segments.length).toBe(0);
-  addSegment2.execute();
-  expect(path.segments.length).toBe(1);
-  expect(addSegment2.segment).not.toBeUndefined();
-  expect(addSegment2.addedItems.length).toBe(4);
-  expect(addSegment2.addedItems).toStrictEqual(addSegment2.segment?.controls);
+  expect(addLinearSegment.segment).not.toBeUndefined();
+  expect(addLinearSegment.addedItems.length).toBe(2);
+  expect(addLinearSegment.addedItems).toStrictEqual(addLinearSegment.segment?.controls);
 
   path.segments = [new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90))];
-  const addSegment3 = new AddSegment(path, new EndControl(60, 60, 0), SegmentVariant.Linear);
+  const addLinearSegment2 = new AddLinearSegment(path, new EndControl(60, 60, 0));
   expect(path.segments.length).toBe(1);
-  addSegment3.execute();
+  addLinearSegment2.execute();
   expect(path.segments.length).toBe(2);
-  expect(addSegment3.segment).not.toBeUndefined();
-  expect(addSegment3.addedItems.length).toBe(1);
-  expect(addSegment3.segment?.controls[0]).toStrictEqual(
+  expect(addLinearSegment2.segment).not.toBeUndefined();
+  expect(addLinearSegment2.addedItems.length).toBe(1);
+  expect(addLinearSegment2.segment?.controls[0]).toStrictEqual(
     path.segments[0].controls[path.segments[0].controls.length - 1]
   );
-  expect(addSegment3.addedItems[0]).toStrictEqual(addSegment3.segment?.controls[1]);
+  expect(addLinearSegment2.addedItems[0]).toStrictEqual(addLinearSegment2.segment?.controls[1]);
+
+  addLinearSegment2.undo();
+  expect(path.segments.length).toBe(1);
+  addLinearSegment2.redo();
+  expect(path.segments.length).toBe(2);
+});
+
+test("AddCubicSegment", () => {
+  const path = new Path(new CustomPathConfig());
+  const addCubicSegment = new AddCubicSegment(path, new EndControl(60, 60, 0));
+  expect(path.segments.length).toBe(0);
+  addCubicSegment.execute();
+  expect(path.segments.length).toBe(1);
+  expect(addCubicSegment.segment).not.toBeUndefined();
+  expect(addCubicSegment.addedItems.length).toBe(4);
+  expect(addCubicSegment.addedItems).toStrictEqual(addCubicSegment.segment?.controls);
 
   path.segments = [new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90))];
-  const addSegment4 = new AddSegment(path, new EndControl(60, 60, 0), SegmentVariant.Cubic);
+  const addCubicSegment2 = new AddCubicSegment(path, new EndControl(60, 60, 0));
   expect(path.segments.length).toBe(1);
-  addSegment4.execute();
+  addCubicSegment2.execute();
   expect(path.segments.length).toBe(2);
-  expect(addSegment4.segment).not.toBeUndefined();
-  expect(addSegment4.addedItems.length).toBe(3);
-  expect(addSegment4.segment?.controls[0]).toStrictEqual(
+  expect(addCubicSegment2.segment).not.toBeUndefined();
+  expect(addCubicSegment2.addedItems.length).toBe(3);
+  expect(addCubicSegment2.segment?.controls[0]).toStrictEqual(
     path.segments[0].controls[path.segments[0].controls.length - 1]
   );
-  expect(addSegment4.addedItems[0]).toStrictEqual(addSegment4.segment?.controls[1]);
-  expect(addSegment4.addedItems[1]).toStrictEqual(addSegment4.segment?.controls[2]);
-  expect(addSegment4.addedItems[2]).toStrictEqual(addSegment4.segment?.controls[3]);
+  expect(addCubicSegment2.addedItems[0]).toStrictEqual(addCubicSegment2.segment?.controls[1]);
+  expect(addCubicSegment2.addedItems[1]).toStrictEqual(addCubicSegment2.segment?.controls[2]);
+  expect(addCubicSegment2.addedItems[2]).toStrictEqual(addCubicSegment2.segment?.controls[3]);
 
   path.segments = [
     new Segment(new EndControl(60, 60, 0), new Control(0, 0), new Control(0, 0), new EndControl(61, 60, 90))
   ];
-  const addSegment5 = new AddSegment(path, new EndControl(60, 60, 0), SegmentVariant.Cubic);
+  const addCubicSegment3 = new AddCubicSegment(path, new EndControl(60, 60, 0));
   expect(path.segments.length).toBe(1);
-  addSegment5.execute();
+  addCubicSegment3.execute();
   expect(path.segments.length).toBe(2);
-  expect(addSegment5.segment).not.toBeUndefined();
-  expect(addSegment5.addedItems.length).toBe(3);
-  expect(addSegment5.segment?.controls[0]).toStrictEqual(
+  expect(addCubicSegment3.segment).not.toBeUndefined();
+  expect(addCubicSegment3.addedItems.length).toBe(3);
+  expect(addCubicSegment3.segment?.controls[0]).toStrictEqual(
     path.segments[0].controls[path.segments[0].controls.length - 1]
   );
-  expect(addSegment5.addedItems[0]).toStrictEqual(addSegment5.segment?.controls[1]);
-  expect(addSegment5.addedItems[1]).toStrictEqual(addSegment5.segment?.controls[2]);
-  expect(addSegment5.addedItems[2]).toStrictEqual(addSegment5.segment?.controls[3]);
+  expect(addCubicSegment3.addedItems[0]).toStrictEqual(addCubicSegment3.segment?.controls[1]);
+  expect(addCubicSegment3.addedItems[1]).toStrictEqual(addCubicSegment3.segment?.controls[2]);
+  expect(addCubicSegment3.addedItems[2]).toStrictEqual(addCubicSegment3.segment?.controls[3]);
 
-  addSegment5.undo();
+  addCubicSegment3.undo();
   expect(path.segments.length).toBe(1);
-  addSegment5.redo();
+  addCubicSegment3.redo();
   expect(path.segments.length).toBe(2);
 });
+
+// test("ConvertSegment", () => {
+//   const path = new Path(new CustomPathConfig());
+//   const segLinear = new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90));
+//   const segCurve = new Segment(new EndControl(60, 60, 0), new Control(0, 0), new Control(0, 0), new EndControl(61, 60, 90))
+//   const convertSegment = new ConvertSegment(path, , SegmentVariant.Linear);
+// });
