@@ -2,7 +2,7 @@ import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import Konva from "konva";
 import { Line } from "react-konva";
-import { EndControl, SegmentVariant } from "../core/Path";
+import { EndControl } from "../core/Path";
 import { SegmentElementProps } from "./SegmentElement";
 import { ConvertSegment, SplitSegment } from "../core/Command";
 import { getAppStores } from "../core/MainApp";

@@ -1,6 +1,6 @@
 import { action, makeAutoObservable, makeObservable, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Control, EndControl, Path, Segment, SegmentVariant, Vector, isAnyControl } from "../core/Path";
+import { Control, EndControl, Path, Segment, Vector, isAnyControl } from "../core/Path";
 import Konva from "konva";
 import { Circle, Group, Image, Layer, Line, Stage } from "react-konva";
 import { SegmentElement } from "./SegmentElement";
