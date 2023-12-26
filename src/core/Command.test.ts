@@ -9,6 +9,7 @@ test("AddLinearSegment", () => {
   addLinearSegment.execute();
   expect(path.segments.length).toBe(1);
   expect(addLinearSegment.segment).not.toBeUndefined();
+  expect(addLinearSegment.segment?.isLinear()).toBeTruthy();
   expect(addLinearSegment.addedItems.length).toBe(2);
   expect(addLinearSegment.addedItems).toStrictEqual(addLinearSegment.segment?.controls);
 
@@ -18,6 +19,7 @@ test("AddLinearSegment", () => {
   addLinearSegment2.execute();
   expect(path.segments.length).toBe(2);
   expect(addLinearSegment2.segment).not.toBeUndefined();
+  expect(addLinearSegment2.segment?.isLinear()).toBeTruthy();
   expect(addLinearSegment2.addedItems.length).toBe(1);
   expect(addLinearSegment2.segment?.controls[0]).toStrictEqual(
     path.segments[0].controls[path.segments[0].controls.length - 1]
@@ -37,6 +39,7 @@ test("AddCubicSegment", () => {
   addCubicSegment.execute();
   expect(path.segments.length).toBe(1);
   expect(addCubicSegment.segment).not.toBeUndefined();
+  expect(addCubicSegment.segment?.isCubic()).toBeTruthy();
   expect(addCubicSegment.addedItems.length).toBe(4);
   expect(addCubicSegment.addedItems).toStrictEqual(addCubicSegment.segment?.controls);
 
@@ -46,6 +49,7 @@ test("AddCubicSegment", () => {
   addCubicSegment2.execute();
   expect(path.segments.length).toBe(2);
   expect(addCubicSegment2.segment).not.toBeUndefined();
+  expect(addCubicSegment2.segment?.isCubic()).toBeTruthy();
   expect(addCubicSegment2.addedItems.length).toBe(3);
   expect(addCubicSegment2.segment?.controls[0]).toStrictEqual(
     path.segments[0].controls[path.segments[0].controls.length - 1]
@@ -62,6 +66,7 @@ test("AddCubicSegment", () => {
   addCubicSegment3.execute();
   expect(path.segments.length).toBe(2);
   expect(addCubicSegment3.segment).not.toBeUndefined();
+  expect(addCubicSegment3.segment?.isCubic()).toBeTruthy();
   expect(addCubicSegment3.addedItems.length).toBe(3);
   expect(addCubicSegment3.segment?.controls[0]).toStrictEqual(
     path.segments[0].controls[path.segments[0].controls.length - 1]
@@ -76,9 +81,61 @@ test("AddCubicSegment", () => {
   expect(path.segments.length).toBe(2);
 });
 
-// test("ConvertSegment", () => {
-//   const path = new Path(new CustomPathConfig());
-//   const segLinear = new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90));
-//   const segCurve = new Segment(new EndControl(60, 60, 0), new Control(0, 0), new Control(0, 0), new EndControl(61, 60, 90))
-//   const convertSegment = new ConvertSegment(path, , SegmentVariant.Linear);
-// });
+test("ConvertSegment", () => {
+  const path = new Path(new CustomPathConfig());
+  let segLinear = new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90));
+  let segCurve = new Segment(
+    new EndControl(60, 60, 0),
+    new Control(0, 0),
+    new Control(0, 0),
+    new EndControl(61, 60, 90)
+  );
+
+  path.segments = [];
+  const convertSegment = new ConvertSegment(path, segLinear);
+  convertSegment.execute();
+
+  path.segments = [segLinear];
+  const convertSegment2 = new ConvertSegment(path, segLinear);
+  expect(path.segments.length).toBe(1);
+  expect(path.segments[0].isLinear()).toBeTruthy();
+  expect(convertSegment2.addedItems.length).toBe(0);
+  expect(convertSegment2.removedItems.length).toBe(0);
+  convertSegment2.execute();
+  expect(path.segments.length).toBe(1);
+  expect(path.segments[0].isCubic()).toBeTruthy();
+  expect(convertSegment2.addedItems.length).toBe(2);
+  expect(convertSegment2.removedItems.length).toBe(0);
+  expect(convertSegment2.addedItems[0]).toStrictEqual(convertSegment2.segment?.controls[1]);
+  expect(convertSegment2.addedItems[1]).toStrictEqual(convertSegment2.segment?.controls[2]);
+
+  segLinear = new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90));
+  path.segments = [new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90)), segLinear, segCurve];
+  const convertSegment3 = new ConvertSegment(path, segLinear);
+  expect(path.segments.length).toBe(3);
+  expect(path.segments[0].isLinear()).toBeTruthy();
+  expect(path.segments[1].isLinear()).toBeTruthy();
+  expect(path.segments[2].isCubic()).toBeTruthy();
+  convertSegment3.execute();
+  expect(path.segments.length).toBe(3);
+  expect(path.segments[1].isCubic()).toBeTruthy();
+
+  path.segments = [segCurve];
+  const convertSegment4 = new ConvertSegment(path, segCurve);
+  expect(path.segments.length).toBe(1);
+  expect(path.segments[0].isCubic()).toBeTruthy();
+  expect(convertSegment4.addedItems.length).toBe(0);
+  expect(convertSegment4.removedItems.length).toBe(0);
+  convertSegment4.execute();
+  expect(path.segments.length).toBe(1);
+  expect(path.segments[0].isLinear()).toBeTruthy();
+  expect(convertSegment4.addedItems.length).toBe(0);
+  expect(convertSegment4.removedItems.length).toBe(2);
+
+  convertSegment4.undo();
+  expect(path.segments.length).toBe(1);
+  expect(path.segments[0].isCubic()).toBeTruthy();
+  convertSegment4.redo();
+  expect(path.segments.length).toBe(1);
+  expect(path.segments[0].isLinear()).toBeTruthy();
+});
