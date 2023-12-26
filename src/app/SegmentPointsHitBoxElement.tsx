@@ -44,16 +44,7 @@ const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
       );
     } else if (evt.button === 0) {
       // UX: Convert segment if: left click
-      if (props.segment.isLinear())
-        app.history.execute(
-          `Convert segment ${props.segment.uid} to cubic`,
-          new ConvertSegment(props.path, props.segment, SegmentVariant.Cubic)
-        );
-      else
-        app.history.execute(
-          `Convert segment ${props.segment.uid} to linear`,
-          new ConvertSegment(props.path, props.segment, SegmentVariant.Linear)
-        );
+      app.history.execute(`Convert segment ${props.segment.uid}`, new ConvertSegment(props.path, props.segment));
     }
   }
 

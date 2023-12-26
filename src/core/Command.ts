@@ -465,7 +465,6 @@ export class AddCubicSegment implements CancellableCommand, AddPathTreeItemsComm
 }
 
 export class AddLinearSegment implements CancellableCommand, AddPathTreeItemsCommand {
-
   protected added: PathTreeItem[] = [];
 
   protected _segment: Segment | undefined;
@@ -504,8 +503,11 @@ export class AddLinearSegment implements CancellableCommand, AddPathTreeItemsCom
 export class ConvertSegment implements CancellableCommand, AddPathTreeItemsCommand, RemovePathTreeItemsCommand {
   protected previousControls: SegmentControls | undefined;
   protected newControls: SegmentControls | undefined;
+  public variant: SegmentVariant;
 
-  constructor(public path: Path, public segment: Segment, public variant: SegmentVariant) {}
+  constructor(public path: Path, public segment: Segment) {
+    this.variant = segment.isCubic() ? SegmentVariant.Linear : SegmentVariant.Cubic;
+  }
 
   protected convertToLine(): void {
     this.segment.controls.splice(1, this.segment.controls.length - 2);

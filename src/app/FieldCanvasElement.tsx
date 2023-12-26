@@ -12,7 +12,14 @@ import { AreaSelectionElement } from "./AreaSelectionElement";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { FieldCanvasConverter, getClientXY, isKonvaTouchEvent } from "../core/Canvas";
 import { clamp, getFieldCanvasFullHeight, getFieldCanvasHalfHeight } from "../core/Util";
-import { AddCubicSegment, AddLinearSegment, AddPath, ConvertSegment, RemovePathsAndEndControls, SplitSegment } from "../core/Command";
+import {
+  AddCubicSegment,
+  AddLinearSegment,
+  AddPath,
+  ConvertSegment,
+  RemovePathsAndEndControls,
+  SplitSegment
+} from "../core/Command";
 import { getAppStores } from "../core/MainApp";
 import { RobotElement } from "./RobotElement";
 import { fromHeadingInDegreeToAngleInRadian } from "../core/Calculation";
@@ -160,16 +167,7 @@ const SegmentTooltipContent = observer((props: {}) => {
     const path = app.paths.find(path => path.segments.includes(segment));
     if (path === undefined) return;
 
-    if (segment.isLinear())
-      app.history.execute(
-        `Convert segment ${segment.uid} to cubic`,
-        new ConvertSegment(path, segment, SegmentVariant.Cubic)
-      );
-    else
-      app.history.execute(
-        `Convert segment ${segment.uid} to linear`,
-        new ConvertSegment(path, segment, SegmentVariant.Linear)
-      );
+    app.history.execute(`Convert segment ${segment.uid}`, new ConvertSegment(path, segment));
   }
 
   function onSplit() {
