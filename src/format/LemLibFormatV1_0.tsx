@@ -237,8 +237,8 @@ class PathConfigImpl implements LemLibPathConfig {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 1, label: "1" },
     step: 0.001,
-    from: 0.9,
-    to: 1
+    from: 0,
+    to: 0.1
   };
   @ValidateNumber(num => num >= 0.05 && num <= 10)
   @Expose()

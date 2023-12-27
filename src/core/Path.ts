@@ -342,10 +342,10 @@ export class SpeedKeyframe extends Keyframe implements CanvasEntity {
 
       if (this.followBentRate) {
         const bentRate = point.bentRate;
-        if (bentRate < pc.bentRateApplicableRange.from && bentRate !== 0) speed = Math.min(speed, limitFrom);
-        else if (bentRate > pc.bentRateApplicableRange.to) speed = Math.min(speed, limitTo);
-        else if (useRatio && bentRate !== 0)
-          speed = Math.min(speed, limitFrom + (bentRate - pc.bentRateApplicableRange.from) * applicationRatio);
+        if (bentRate < pc.bentRateApplicableRange.from) speed = Math.min(speed, limitTo);
+        else if (bentRate > pc.bentRateApplicableRange.to) speed = Math.min(speed, limitFrom);
+        else if (useRatio)
+          speed = Math.min(speed, limitTo - (bentRate - pc.bentRateApplicableRange.from) * applicationRatio);
       }
 
       point.speed = speed;

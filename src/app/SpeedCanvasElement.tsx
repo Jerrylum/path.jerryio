@@ -111,7 +111,7 @@ const PointElement = observer((props: { point: Point; index: number; pc: PathCon
   let p1 = (point.bentRate - bentRateLow) / (bentRateHigh - bentRateLow || 1);
   let p2 = (point.speed - speedFrom) / (speedTo - speedFrom || 1);
   let x = gcc.toPxNumber(index);
-  let y1 = (1 - p1) * (gcc.pixelHeight * 0.6) + gcc.axisLineTopX;
+  let y1 = p1 * (gcc.pixelHeight * 0.6) + gcc.axisLineTopX;
   let y2 = (1 - p2) * (gcc.pixelHeight * 0.6) + gcc.axisLineTopX;
   const color = `hsl(${p2 * 90}, 70%, 50%)`; // red = min speed, green = max speed
 
@@ -534,7 +534,7 @@ const SpeedCanvasElement = observer((props: { extended: boolean }) => {
               fill={bgColor}
             />
             <Text
-              text={bentRateHigh + ""}
+              text={bentRateLow + ""}
               x={gcc.rightPaddingStart + gcc.pointWidth}
               y={gcc.axisLineTopX - fontSize / 2}
               fontSize={fontSize}
@@ -543,7 +543,7 @@ const SpeedCanvasElement = observer((props: { extended: boolean }) => {
               width={gcc.axisTitleWidth}
             />
             <Text
-              text={bentRateLow + ""}
+              text={bentRateHigh + ""}
               x={gcc.rightPaddingStart + gcc.pointWidth}
               y={gcc.axisLineBottomX - fontSize / 2}
               fontSize={fontSize}

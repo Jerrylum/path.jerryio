@@ -314,11 +314,8 @@ export function getUniformPointsFromSamples(
       ? new Point(p3X, p3Y, p2.ref, p2.t, 0, heading)
       : new Point(p1.x, p1.y, p2.ref, p2.t, 0, heading);
 
-    // ALGO: Use point delta as bent rate by default,
-    // point delta is NaN if the first point is the same as the second point, otherwise it is always positive
-
     const c = curvature(p3.sampleRef, p3.sampleT) / density.unit;
-    p3.bentRate = 1 - Math.abs(isNaN(c) ? 0 : c);
+    p3.bentRate = Math.abs(isNaN(c) ? 0 : c);
 
     points.push(p3);
 
