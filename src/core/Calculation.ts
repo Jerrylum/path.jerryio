@@ -554,6 +554,46 @@ export function firstDerivative(segment: Segment, t: number): Vector {
 }
 
 /**
+ * Calculates the second derivative of a segment at a given parameter value.
+ * @param segment The segment containing control points.
+ * @param t The parameter value [0, 1] at which to calculate the derivative.
+ * @returns The second derivative vector at the given parameter value.
+ */
+export function secondDerivative(segment: Segment, t: number): Vector {
+  if (segment.isLinear()) {
+    return new Vector(0, 0);
+  } else if (segment.isCubic()) {
+    const x =
+      6 * (segment.controls[0].x - 2 * segment.controls[1].x + segment.controls[2].x) * (1 - t) +
+      6 * (segment.controls[1].x - 2 * segment.controls[2].x + segment.controls[3].x) * t;
+
+    const y =
+      6 * (segment.controls[0].y - 2 * segment.controls[1].y + segment.controls[2].y) * (1 - t) +
+      6 * (segment.controls[1].y - 2 * segment.controls[2].y + segment.controls[3].y) * t;
+
+    return new Vector(x, y);
+  } else {
+    return new Vector(0, 0);
+  }
+}
+
+/**
+ * Calculates the curvature of a segment at a given parameter value. Curvature represents how bent the curve is.
+ * @param segment The segment containing control points.
+ * @param t The parameter value [0, 1] at which to calculate the curvature.
+ * @returns The curvature at the given parameter value.
+ */
+export function curvature(segment: Segment, t: number): number {
+  const first = firstDerivative(segment, t);
+  const second = secondDerivative(segment, t);
+
+  const crossProduct = first.x * second.y - first.y * second.x;
+  const magnitude = Math.sqrt(first.x * first.x + first.y * first.y) ** 3;
+
+  return crossProduct / magnitude;
+}
+
+/**
  * Bounds the given heading to the range [0, 360) in degrees.
  * @param num The heading to bound.
  * @returns The bounded heading.
