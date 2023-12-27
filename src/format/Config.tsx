@@ -14,18 +14,6 @@ export function convertGeneralConfigUOL(gc: GeneralConfig, fromUOL: UnitOfLength
   gc.controlMagnetDistance = uc.fromAtoB(gc.controlMagnetDistance);
 }
 
-export function convertPathConfigPointDensity(pc: PathConfig, fromDensity: number, toDensity: number) {
-  const applyMaxLimit = Number(toDensity * 2).toUser();
-
-  pc.bentRateApplicableRange.maxLimit.label = applyMaxLimit + "";
-  pc.bentRateApplicableRange.maxLimit.value = applyMaxLimit;
-
-  const ratio = toDensity / fromDensity;
-
-  pc.bentRateApplicableRange.from = Number(pc.bentRateApplicableRange.from * ratio).toUser();
-  pc.bentRateApplicableRange.to = Number(pc.bentRateApplicableRange.to * ratio).toUser();
-}
-
 export function convertFormat(newFormat: Format, oldFormat: Format, oldPaths: Path[]): Path[] {
   const oldGC = oldFormat.getGeneralConfig();
   const newGC = newFormat.getGeneralConfig(); // == this.gc
@@ -53,8 +41,6 @@ export function convertFormat(newFormat: Format, oldFormat: Format, oldPaths: Pa
       newPC.speedLimit = oldPath.pc.speedLimit; // UX: Keep speed limit if the new format has the same speed limit range as the old one
     }
     newPC.bentRateApplicableRange = oldPath.pc.bentRateApplicableRange; // UX: Keep application range
-
-    convertPathConfigPointDensity(newPC, oldGC.pointDensity, newGC.pointDensity);
 
     newPaths.push(newPath);
   }

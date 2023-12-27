@@ -1,6 +1,6 @@
 import { makeAutoObservable, computed, runInAction, reaction, action } from "mobx";
 import DOMPurify from "dompurify"; // cspell:disable-line
-import { GeneralConfig, convertGeneralConfigUOL, convertPathConfigPointDensity } from "../format/Config";
+import { GeneralConfig } from "../format/Config";
 import { AnyControl, EndControl, Path, PathTreeItem, Vector, relatedPaths, traversal } from "./Path";
 import { addToArray, removeFromArray, runInActionAsync } from "./Util";
 import { Format, convertPathFileData, getAllFormats, importPDJDataFromTextFile } from "../format/Format";

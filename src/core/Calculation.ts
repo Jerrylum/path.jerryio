@@ -308,7 +308,6 @@ export function getUniformPointsFromSamples(
     const pRatio = (integral - p1.integral) / (p2.integral - p1.integral);
     const p3X = p1.x + (p2.x - p1.x) * pRatio;
     const p3Y = p1.y + (p2.y - p1.y) * pRatio;
-    const p3Delta = p1.delta + (p2.delta - p1.delta) * pRatio;
     // ALGO: pRatio is NaN/Infinity if p1 and p2 are the same point or too close
     const useRatio = !isNaN(pRatio) && pRatio !== Infinity;
     const p3: Point = useRatio
@@ -317,7 +316,9 @@ export function getUniformPointsFromSamples(
 
     // ALGO: Use point delta as bent rate by default,
     // point delta is NaN if the first point is the same as the second point, otherwise it is always positive
-    p3.bentRate = useRatio ? p3Delta : 0;
+
+    const c = curvature(p3.sampleRef, p3.sampleT) / density.unit;
+    p3.bentRate = 1 - Math.abs(isNaN(c) ? 0 : c);
 
     points.push(p3);
 

@@ -75,10 +75,10 @@ export class CustomPathConfig implements PathConfig {
   @Expose()
   bentRateApplicableRange: EditableNumberRange = {
     minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 4, label: "4" },
-    step: 0.01,
-    from: 1.4,
-    to: 1.8
+    maxLimit: { value: 1, label: "1" },
+    step: 0.001,
+    from: 0.9,
+    to: 1
   };
 
   constructor() {

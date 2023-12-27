@@ -6,13 +6,7 @@ import { AddKeyframe, CancellableCommand, HistoryEventMap, UpdateProperties } fr
 import { getAppStores } from "../core/MainApp";
 import { Path, Segment, SpeedKeyframe } from "../core/Path";
 import { EditableNumberRange, NumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
-import {
-  GeneralConfig,
-  PathConfig,
-  convertFormat,
-  convertGeneralConfigUOL,
-  convertPathConfigPointDensity
-} from "./Config";
+import { GeneralConfig, PathConfig, convertFormat, convertGeneralConfigUOL } from "./Config";
 import { IsPositive, IsBoolean, ValidateNested, IsObject } from "class-validator";
 import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFieldImage } from "../core/Asset";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
@@ -241,10 +235,10 @@ class PathConfigImpl implements LemLibPathConfig {
   @Expose()
   bentRateApplicableRange: EditableNumberRange = {
     minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 40, label: "40" },
-    step: 1,
-    from: 14,
-    to: 18
+    maxLimit: { value: 1, label: "1" },
+    step: 0.001,
+    from: 0.9,
+    to: 1
   };
   @ValidateNumber(num => num >= 0.05 && num <= 10)
   @Expose()
@@ -259,18 +253,6 @@ class PathConfigImpl implements LemLibPathConfig {
   constructor(format: LemLibFormatV1_0) {
     this.format = format;
     makeAutoObservable(this);
-
-    reaction(
-      () => format.getGeneralConfig().pointDensity,
-      action((val: number, oldVal: number) => {
-        convertPathConfigPointDensity(this, oldVal, val);
-      })
-    );
-
-    // ALGO: Convert the default parameters to the current point density
-    // ALGO: This is only used when a new path is added, not when the path config is loaded
-    // ALGO: When loading path config, the configuration will be set/overwritten after this constructor
-    convertPathConfigPointDensity(this, 20, format.getGeneralConfig().pointDensity);
   }
 
   getConfigPanel() {

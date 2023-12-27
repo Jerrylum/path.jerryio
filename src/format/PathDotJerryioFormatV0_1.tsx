@@ -2,13 +2,7 @@ import { makeAutoObservable, reaction, action, intercept } from "mobx";
 import { getAppStores } from "../core/MainApp";
 import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
-import {
-  GeneralConfig,
-  PathConfig,
-  convertFormat,
-  convertGeneralConfigUOL,
-  convertPathConfigPointDensity
-} from "./Config";
+import { GeneralConfig, PathConfig, convertFormat, convertGeneralConfigUOL } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { RangeSlider } from "../component/RangeSlider";
 import { Box, Typography } from "@mui/material";
@@ -99,10 +93,10 @@ class PathConfigImpl implements PathConfig {
   @Expose()
   bentRateApplicableRange: EditableNumberRange = {
     minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 4, label: "4" },
-    step: 0.01,
-    from: 1.4,
-    to: 1.8
+    maxLimit: { value: 1, label: "1" },
+    step: 0.001,
+    from: 0.9,
+    to: 1
   };
 
   @Exclude()
@@ -114,18 +108,6 @@ class PathConfigImpl implements PathConfig {
   constructor(format: PathDotJerryioFormatV0_1) {
     this.format = format;
     makeAutoObservable(this);
-
-    reaction(
-      () => format.getGeneralConfig().pointDensity,
-      action((val: number, oldVal: number) => {
-        convertPathConfigPointDensity(this, oldVal, val);
-      })
-    );
-
-    // ALGO: Convert the default parameters to the current point density
-    // ALGO: This is only used when adding a new path
-    // ALGO: When loading path config, the configuration will be set/overwritten after this constructor
-    convertPathConfigPointDensity(this, 2, format.getGeneralConfig().pointDensity);
   }
 
   getConfigPanel() {
