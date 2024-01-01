@@ -1,13 +1,19 @@
 import { ObserverCheckbox } from "../component/ObserverCheckbox";
-import { ReactComponent as TermsAndConceptOverlay } from "../static/terms-and-concept.svg";
-import TermsAndConceptBackground from "../static/terms-and-concept.png";
 
 <img src="static/logo464.svg" alt="app logo" className="logo" />
 
 <div align='center' style={{"marginBlockStart": "16px", "marginBlockEnd": "16px"}}>
 # Welcome to PATH.JERRYIO
-Please take a few minutes (I promise 🙏) to read this document before you start. Remember, you can always find this page again in the help menu 📖.
+Before you start, please take a few minutes to read the [Getting Started](https://github.com/Jerrylum/path.jerryio/wiki/Getting-Started) page.
 </div>
+
+<br/>
+
+PATH.JERRYIO is a multi-purpose path editor/planner which can be used to design routes for one-minute driver skill and generate path files. It is a Progressive Web Apps (PWA) that is installable and can be used on any device without an internet connection.
+
+![A banner showing PATH.JERRYIO running on the IMac, MacBook, iPad, and iPhone](static/readme-banner-0.5x.png)
+
+More information about this editor can be found on the [GitHub Page](https://github.com/Jerrylum/path.jerryio).
 
 ## We Respect Your Privacy
 
@@ -16,76 +22,6 @@ You can disable it now or at any time on the Preference Page.
 Please read our [Privacy Policy](https://github.com/Jerrylum/path.jerryio/blob/main/PRIVACY.md) for more information.
 
 <ObserverCheckbox label="Enable Google Analytics" checked={props.isGAEnabled} onCheckedChange={props.setIsGAEnabled} />
-
-## Introduction
-
-PATH.JERRYIO is a multi-purpose path editor/planner which can be used to design routes for one-minute driver skill and generate path files.
-More information about the editor can be found on the [GitHub Page](https://github.com/Jerrylum/path.jerryio).
-
-
-## Getting Started
-
-Before you start, please make sure you understand the following terms. The diagram below illustrates the definition of all the terms used in this editor.
-
-<div style={{ position: "relative" }}>
-<img src={TermsAndConceptBackground} alt="" width="100%" />
-<TermsAndConceptOverlay style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }} />
-</div>
-
-PATH.JERRYIO is using bézier spline to form a path. It consists of multiple segments, which are multiple bézier curves connected together, sharing endpoints.
-
-Each bézier curve is either a cubic bézier curve or a simple bézier curve. A bézier curve is defined by its control points.
-A cubic bézier curve has 4 control points, which makes it a "curve".
-A simple bézier curve has only 2 control points, which makes it a "straight line".
-
-All the control points(purple circle) can be called "Control",
-but the shared endpoints(big purple circle) of the segments are called "End Control" in order to distinguish them.
-Only end control points have heading attributes to indicate the target heading of the robot when the robot is at that point.
-
-If you want to know more about bézier curve and spline, please check out these videos by Freya Holmér:
-[The Beauty of Bézier Curves](https://youtu.be/aVwxzDHniEw) and [The Continuity of Splines](https://youtu.be/jvPPXbo87ds)
-
-Here are some basic operations you can do with the editor:
-
-### Create
-
-- Left click on the field to create curve at the end of the path
-- Right click on the field to create line at the end of the path
-- Right click on the path to insert a control point in the middle of it
-
-### Modify
-
-- Left click on a control point to select it
-- Left click on a path segments(segment) to convert it into line or curve
-- Drag a control point to shape the path
-- To select multiple controls:<br/>
-  - Hold shift and left click the controls; or
-  - Drag a rectangle with/without holding shift key; or
-  - Select controls in the Path Panel on the left
-- To drag multiple controls simultaneously:<br/>
-&nbsp;1. Select the controls<br/>
-&nbsp;2. Drag one of the selected controls<br/>
-- While dragging control(s), press shift to start magnetic mode
-- Scroll middle wheel on an end control to change the heading
-
-### Delete
-
-- Right click on a control point to delete it
-- Click delete button in the Path Panel to delete controls or paths
-
-### View
-
-- Hold ctrl + scrolling to zoom in/out
-- Hold middle wheel button and drag to pan
-
-### Save and Load Path Files
-
-- Use Ctrl+S or select "Save" in the menu to save the path file
-- Use Ctrl+O or select "Open" in the menu to load the file again
-
-### Undo/Redo
-
-Undo/Redo any modification with Ctrl+Z/Ctrl+Y or select Undo/Redo in the edit menu.
 
 ## Support
 

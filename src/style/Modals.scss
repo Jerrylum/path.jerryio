@@ -29,6 +29,12 @@
   }
 }
 
+@supports not (-moz-appearance: none) {
+  #welcome-modal {
+    padding-right: 10px;
+  }
+}
+
 #about-modal {
   padding: 32px;
   width: 512px;
