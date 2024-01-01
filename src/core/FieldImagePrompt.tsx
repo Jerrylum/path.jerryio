@@ -22,7 +22,7 @@ export async function promptFieldImage(
   } else if (signAndOrigin.origin instanceof FieldImageExternalOrigin) {
     const url = new URL(signAndOrigin.origin.location);
 
-    await new Promise<void>(resolve => {
+    const answer = await new Promise<boolean>(resolve => {
       confirmation.prompt({
         title: "Download External Field Image",
         description: (
@@ -39,9 +39,14 @@ export async function promptFieldImage(
             Name: {signAndOrigin.displayName}
           </>
         ),
-        buttons: [{ label: "Yes", onClick: resolve }, { label: "No" }]
+        buttons: [
+          { label: "Yes", onClick: () => resolve(true) },
+          { label: "No", onClick: () => resolve(false) }
+        ]
       });
     });
+
+    if (answer === false) return false;
 
     const asset = await createExternalFieldImage(
       signAndOrigin.displayName,
