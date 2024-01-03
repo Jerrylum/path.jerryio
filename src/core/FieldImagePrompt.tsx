@@ -27,7 +27,7 @@ export async function promptFieldImage(
         title: "Download External Field Image",
         description: (
           <>
-            This path file recommends the use of a custom field image.Would you like to download and install it?
+            This path file recommends the use of a custom field image. Would you like to download and install it?
             <br />
             <br />
             Click "Yes" to download and install the image from <a href={url.toString()}>{url.origin}</a> only if you
