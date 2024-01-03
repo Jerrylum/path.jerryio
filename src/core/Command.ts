@@ -563,12 +563,12 @@ export class ConvertSegment implements CancellableCommand, AddPathTreeItemsComma
 
   get addedItems(): readonly PathTreeItem[] {
     if (this.newControls === undefined) return [];
-    return this.variant === SegmentVariant.Linear ? [] : this.newControls.slice(1, -1);
+    return this.variant === SegmentVariant.Linear ? [] : this.newControls!.slice(1, -1);
   }
 
   get removedItems(): readonly PathTreeItem[] {
     if (this.previousControls === undefined) return [];
-    return this.variant === SegmentVariant.Linear ? this.previousControls.slice(1, -1) : [];
+    return this.variant === SegmentVariant.Linear ? this.previousControls!.slice(1, -1) : [];
   }
 }
 
