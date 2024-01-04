@@ -1,7 +1,7 @@
 import { makeAutoObservable, reaction, action, intercept } from "mobx";
 import { getAppStores } from "../core/MainApp";
 import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, clamp, makeId } from "../core/Util";
-import { Control, EndControl, Path, Segment, SpeedKeyframe, Vector } from "../core/Path";
+import { BentRateApplicationDirection, Control, EndControl, Path, Segment, SpeedKeyframe, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertFormat, convertGeneralConfigUOL } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
@@ -97,6 +97,8 @@ class PathConfigImpl implements PathConfig {
     from: 0,
     to: 0.1
   };
+  @Exclude()
+  bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
   @ValidateNumber(num => num >= 0.1 && num <= 255)
   @Expose()
   maxDecelerationRate: number = 127;

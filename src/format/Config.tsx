@@ -1,6 +1,6 @@
 import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { Format } from "./Format";
-import { Path } from "../core/Path";
+import { BentRateApplicationDirection, Path } from "../core/Path";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin } from "../core/Asset";
 import { EditableNumberRange, NumberRange } from "../core/Util";
 
@@ -69,4 +69,5 @@ export interface PathConfig extends ConfigSection {
   lookaheadLimit?: NumberRange;
   speedLimit: EditableNumberRange;
   bentRateApplicableRange: EditableNumberRange;
+  bentRateApplicationDirection: BentRateApplicationDirection;
 }
