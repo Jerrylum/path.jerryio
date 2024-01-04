@@ -9,6 +9,8 @@ import { LayoutType } from "../core/Layout";
 import { getAppStores } from "../core/MainApp";
 import { LayoutContext } from "./Layouts";
 import WelcomeMDX from "./Welcome.mdx";
+import WelcomeForBraveMDX from "./WelcomeForBrave.mdx";
+import { isBraveBrowser } from "../core/Util";
 
 export const WelcomeModalSymbol = Symbol("WelcomeModalSymbol");
 
@@ -25,9 +27,13 @@ export const WelcomeModal = observer(() => {
 
   // UX: Save user preference when user closes the modal
   const onClose = () => {
-    setIsGAEnabled(action((curr: boolean) => (appPreferences.isGoogleAnalyticsEnabled = curr)));
+    // Get the latest value of isGAEnabled and save it to localStorage
+    setIsGAEnabled(action((curr: boolean) => (appPreferences.isGoogleAnalyticsEnabled = curr && isBrave === false)));
     modals.close(WelcomeModalSymbol);
   };
+
+  // call async function isBraveBrowser
+  const isBrave = isBraveBrowser();
 
   const isMobileLayout = React.useContext(LayoutContext) === LayoutType.Mobile;
 
@@ -39,7 +45,7 @@ export const WelcomeModal = observer(() => {
             <Button onClick={onClose}>Continue</Button>
           </Box>
         )}
-        <WelcomeMDX {...{ isGAEnabled, setIsGAEnabled }} components={MarkdownOverwrittenComponents} />
+        <WelcomeForBraveMDX {...{ isGAEnabled, setIsGAEnabled }} components={MarkdownOverwrittenComponents} />
         {isMobileLayout && (
           <Box sx={{ textAlign: "center" }}>
             <Button onClick={onClose}>Begin</Button>

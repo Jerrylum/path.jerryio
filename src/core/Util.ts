@@ -19,6 +19,10 @@ export const IS_MAC_OS = (() => {
   }
 })();
 
+export function isBraveBrowser(): boolean {
+  return "brave" in navigator;
+}
+
 export async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
