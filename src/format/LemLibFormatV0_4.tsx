@@ -241,7 +241,7 @@ export class LemLibFormatV0_4 implements Format {
     // find the first line that is "endData"
     const lines = fileContent.split("\n");
 
-    let i = lines.findIndex(line => line === "endData");
+    let i = lines.findIndex(line => line.trim() === "endData");
     if (i === -1) throw new Error("Invalid file format, unable to find line 'endData'");
 
     const maxDecelerationRate = Number(lines[i + 1]);
