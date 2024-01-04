@@ -1,6 +1,6 @@
 import { CustomPathConfig } from "../format/Config.test";
-import { AddLinearSegment, AddCubicSegment, ConvertSegment } from "./Command";
-import { Control, EndControl, Path, Segment, SegmentVariant } from "./Path";
+import { AddLinearSegment, AddCubicSegment, ConvertSegment, SplitSegment, DragControls } from "./Command";
+import { Control, EndControl, Path, Segment, SegmentVariant, Vector } from "./Path";
 
 test("AddLinearSegment", () => {
   const path = new Path(new CustomPathConfig());
@@ -138,4 +138,92 @@ test("ConvertSegment", () => {
   convertSegment4.redo();
   expect(path.segments.length).toBe(1);
   expect(path.segments[0].isLinear()).toBeTruthy();
+});
+
+test("SplitSegment", () => {
+  const path = new Path(new CustomPathConfig());
+  const segLinear = new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90));
+  const segCurve = new Segment(
+    new EndControl(60, 60, 0),
+    new Control(0, 0),
+    new Control(0, 0),
+    new EndControl(61, 60, 90)
+  );
+  path.segments = [];
+  const newpoint = new EndControl(60, 60, 0);
+  //Case that the segment is not in the path
+  const splitSegment = new SplitSegment(path, segLinear, newpoint);
+  splitSegment.execute();
+
+  path.segments = [segLinear];
+  const splitSegment2 = new SplitSegment(path, segLinear, newpoint);
+  expect(splitSegment.addedItems.length).toBe(0);
+  splitSegment2.execute();
+  expect(path.segments.length).toBe(2);
+  expect(path.segments[0].isLinear()).toBeTruthy();
+  expect(path.segments[1].isLinear()).toBeTruthy();
+  expect(splitSegment2.addedItems.length).toBe(1);
+  expect(splitSegment2.addedItems[0]).toStrictEqual(newpoint);
+  expect(splitSegment2.newSegment).toStrictEqual(path.segments[1]);
+
+  path.segments = [segCurve];
+  const splitSegment3 = new SplitSegment(path, segCurve, newpoint);
+  expect(splitSegment3.addedItems.length).toBe(0);
+  splitSegment3.execute();
+  expect(path.segments.length).toBe(2);
+  expect(path.segments[0].isCubic()).toBeTruthy();
+  expect(path.segments[1].isCubic()).toBeTruthy();
+  expect(splitSegment3.addedItems.length).toBe(3);
+  expect(splitSegment3.addedItems[1]).toStrictEqual(newpoint);
+  expect(splitSegment3.newSegment).toStrictEqual(path.segments[1]);
+
+  splitSegment3.undo();
+  expect(path.segments.length).toBe(1);
+  expect(path.segments[0].isCubic()).toBeTruthy();
+  splitSegment3.redo();
+  expect(path.segments.length).toBe(2);
+  expect(path.segments[0].isCubic()).toBeTruthy();
+});
+
+test("DragControls", () => {
+  const mainControl = new EndControl(60, 60, 0);
+  const mainControl2 = new EndControl(69, 69, 0);
+  const control1 = new EndControl(60, 60, 0);
+  const followers = [control1];
+  const followers2 = [new EndControl(60, 60, 0), new EndControl(60, 60, 0)];
+  const followers3 = [new EndControl(42, 42, 0)];
+
+  const dragControls = new DragControls(mainControl, new Vector(60, 60), new Vector(61, 61), followers);
+  dragControls.execute();
+  expect(mainControl.x).toBe(61);
+  expect(mainControl.y).toBe(61);
+  expect(control1.x).toBe(61);
+  expect(control1.y).toBe(61);
+  expect(dragControls.updatedItems.length).toBe(2);
+
+  dragControls.undo();
+  expect(mainControl.x).toBe(60);
+  expect(mainControl.y).toBe(60);
+  expect(control1.x).toBe(60);
+  expect(control1.y).toBe(60);
+
+  dragControls.redo();
+
+  //Merge with different followers length
+  const dragControls2 = new DragControls(mainControl, new Vector(60, 60), new Vector(61, 61), followers2);
+  expect(dragControls.merge(dragControls2)).toBeFalsy();
+
+  //Merge with different main control
+  const dragControls3 = new DragControls(mainControl2, new Vector(60, 60), new Vector(61, 61), followers);
+  expect(dragControls.merge(dragControls3)).toBeFalsy();
+
+  //Merge with different followers
+  const dragControls4 = new DragControls(mainControl, new Vector(60, 60), new Vector(61, 61), followers3);
+  expect(dragControls.merge(dragControls4)).toBeFalsy();
+
+  //Merge with same followers, same main control
+  const dragControls5 = new DragControls(mainControl, new Vector(60, 60), new Vector(100, 100), followers);
+  expect(dragControls.merge(dragControls5)).toBeTruthy();
+  expect(dragControls.to.x).toBe(100);
+  expect(dragControls.to.y).toBe(100);
 });
