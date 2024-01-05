@@ -20,6 +20,8 @@ export const WelcomeModal = observer(() => {
   const rawGAEnabled = localStorage.getItem("googleAnalyticsEnabled");
   const [isGAEnabled, setIsGAEnabled] = React.useState(rawGAEnabled !== "false"); // UX: Default to true
 
+  const isBrave = isBraveBrowser();
+
   React.useEffect(() => {
     setIsGAEnabled(rawGAEnabled !== "false");
     if (rawGAEnabled === null) modals.open(WelcomeModalSymbol); // UX: Show welcome page if user is new
@@ -32,9 +34,6 @@ export const WelcomeModal = observer(() => {
     modals.close(WelcomeModalSymbol);
   };
 
-  // call async function isBraveBrowser
-  const isBrave = isBraveBrowser();
-
   const isMobileLayout = React.useContext(LayoutContext) === LayoutType.Mobile;
 
   return (
@@ -45,7 +44,11 @@ export const WelcomeModal = observer(() => {
             <Button onClick={onClose}>Continue</Button>
           </Box>
         )}
-        <WelcomeForBraveMDX {...{ isGAEnabled, setIsGAEnabled }} components={MarkdownOverwrittenComponents} />
+        {isBrave ? (
+          <WelcomeForBraveMDX components={MarkdownOverwrittenComponents} />
+        ) : (
+          <WelcomeMDX {...{ isGAEnabled, setIsGAEnabled }} components={MarkdownOverwrittenComponents} />
+        )}
         {isMobileLayout && (
           <Box sx={{ textAlign: "center" }}>
             <Button onClick={onClose}>Begin</Button>
