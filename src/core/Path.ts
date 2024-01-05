@@ -269,6 +269,11 @@ export class EndControl extends Vector implements InteractiveEntity, CoordinateW
   }
 }
 
+export enum BentRateApplicationDirection {
+  LowToHigh = "low-to-high",
+  HighToLow = "high-to-low"
+}
+
 export interface KeyframePos {
   segment: Segment;
   xPos: number; // [0...1)

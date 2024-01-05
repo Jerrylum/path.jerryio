@@ -10,7 +10,7 @@ import { CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/C
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
-import { Path, Segment } from "../core/Path";
+import { BentRateApplicationDirection, Path, Segment } from "../core/Path";
 import { isCoordinateWithHeading } from "../core/Coordinate";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
 
@@ -98,7 +98,8 @@ class PathConfigImpl implements PathConfig {
     from: 0,
     to: 0.1
   };
-
+  @Exclude()
+  bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
   @Exclude()
   readonly format: PathDotJerryioFormatV0_1;
 

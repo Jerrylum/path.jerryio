@@ -1,7 +1,7 @@
 import { makeAutoObservable, reaction, action, intercept } from "mobx";
 import { getAppStores } from "../core/MainApp";
 import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "../core/Util";
-import { Path, Segment, Vector } from "../core/Path";
+import { BentRateApplicationDirection, Path, Segment, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertFormat, convertGeneralConfigUOL } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
@@ -202,6 +202,8 @@ class PathConfigImpl implements PathConfig {
     from: 0,
     to: 0
   };
+  @Exclude()
+  bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
   @Exclude()
   maxDecelerationRate: number = 127;
 

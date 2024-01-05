@@ -648,7 +648,7 @@ const HelpMenuItems = () => {
       key={makeId(10)}
       showLeftIcon={false}
       label="Wiki Page"
-      onClick={() => window.open("https://github.com/Jerrylum/path.jerryio/wiki", "_blank")}
+      onClick={() => window.open("https://docs.path.jerryio.com", "_blank")}
     />,
     <CustomMenuItem
       key={makeId(10)}

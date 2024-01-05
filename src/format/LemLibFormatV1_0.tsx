@@ -4,7 +4,7 @@ import { Expose, Exclude, Type } from "class-transformer";
 import { RangeSlider } from "../component/RangeSlider";
 import { AddKeyframe, CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
 import { getAppStores } from "../core/MainApp";
-import { Path, Segment, SpeedKeyframe } from "../core/Path";
+import { BentRateApplicationDirection, Path, Segment, SpeedKeyframe } from "../core/Path";
 import { EditableNumberRange, NumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
 import { GeneralConfig, PathConfig, convertFormat, convertGeneralConfigUOL } from "./Config";
 import { IsPositive, IsBoolean, ValidateNested, IsObject } from "class-validator";
@@ -240,6 +240,8 @@ class PathConfigImpl implements LemLibPathConfig {
     from: 0,
     to: 0.1
   };
+  @Exclude()
+  bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
   @ValidateNumber(num => num >= 0.05 && num <= 10)
   @Expose()
   maxDecelerationRate: number = 1;
