@@ -1,7 +1,7 @@
 import { getAppStores } from "./MainApp";
-import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "../app/Notice";
+import { enqueueErrorSnackbar, enqueueInfoSnackbar, enqueueSuccessSnackbar } from "../app/Notice";
 import { Logger } from "./Logger";
-import { isFirefox } from "./Util";
+import { isBraveBrowser, isFirefox } from "./Util";
 
 const logger = Logger("I/O");
 
@@ -40,10 +40,10 @@ async function saveConfirm(callback: () => void) {
   });
 }
 
-async function fileNameConfirm(description: string, callback: () => void) {
+async function fileNameConfirm(description: string, callback: () => void): Promise<boolean> {
   const { app, confirmation } = getAppStores();
 
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<boolean>((resolve, reject) => {
     confirmation.prompt({
       title: "Download",
       description,
@@ -57,10 +57,10 @@ async function fileNameConfirm(description: string, callback: () => void) {
             app.mountingFile.name = candidate;
             app.mountingFile.isNameSet = true;
             callback();
-            resolve();
+            resolve(true);
           }
         },
-        { label: "Cancel", onClick: () => resolve() }
+        { label: "Cancel", onClick: () => resolve(false) }
       ],
       inputLabel: "File Name",
       inputDefaultValue: app.mountingFile.name
@@ -280,6 +280,9 @@ export async function onOpen(saveCheck: boolean = true, interactive: boolean = t
   }
 }
 
+/**
+ * @returns true if the file is downloaded, false otherwise
+ */
 export async function onDownload(fallback: boolean = false): Promise<boolean> {
   const { app } = getAppStores();
 
@@ -293,16 +296,29 @@ export async function onDownload(fallback: boolean = false): Promise<boolean> {
   return true;
 }
 
+/**
+ * @returns true if the file is downloaded, false otherwise
+ */
 export async function onDownloadAs(fallback: boolean = false): Promise<boolean> {
   const output = exportFile();
   if (output === undefined) return false;
 
-  fileNameConfirm(
-    fallback ? "Writing file to the disk is not supported in this browser. Falling back to download." : "",
-    downloadFile.bind(null, output)
-  );
-
-  return true;
+  if (fallback) {
+    if (isBraveBrowser()) {
+      // enqueueInfoSnackbar(logger, "Please enable the API at \"brave://flags/#file-system-access-api\"", 8000);
+      return fileNameConfirm(
+        'The "File System Access API" is disabled by default on Brave. Falling back to download.',
+        downloadFile.bind(null, output)
+      );
+    } else {
+      return fileNameConfirm(
+        "Writing file to the disk is not supported in this browser. Falling back to download.",
+        downloadFile.bind(null, output)
+      );
+    }
+  } else {
+    return fileNameConfirm("", downloadFile.bind(null, output));
+  }
 }
 
 export async function onDropFile(file: File, saveCheck: boolean = true): Promise<boolean> {
