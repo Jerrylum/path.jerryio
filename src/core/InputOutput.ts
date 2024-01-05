@@ -1,6 +1,7 @@
 import { getAppStores } from "./MainApp";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "../app/Notice";
 import { Logger } from "./Logger";
+import { isFirefox } from "./Util";
 
 const logger = Logger("I/O");
 
@@ -195,10 +196,6 @@ async function choiceSave(): Promise<boolean> {
     logger.error(err); // ignore error
     return false;
   }
-}
-
-function isFirefox() {
-  return navigator.userAgent.indexOf("Firefox") !== -1;
 }
 
 export class IOFileHandle {
