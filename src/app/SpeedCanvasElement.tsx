@@ -1,6 +1,6 @@
 import { makeObservable, action, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Point, Path, Vector, SpeedKeyframe, KeyframePos } from "../core/Path";
+import { Point, Path, Vector, SpeedKeyframe, KeyframePos, BentRateApplicationDirection } from "../core/Path";
 import Konva from "konva";
 import { Circle, Layer, Line, Rect, Stage, Text } from "react-konva";
 import React from "react";
@@ -108,20 +108,22 @@ const PointElement = observer((props: { point: Point; index: number; pc: PathCon
   const bentRateHigh = pc.bentRateApplicableRange.to;
   const bentRateLow = pc.bentRateApplicableRange.from;
 
-  let p1 = (point.bentRate - bentRateLow) / (bentRateHigh - bentRateLow || 1);
-  let p2 = (point.speed - speedFrom) / (speedTo - speedFrom || 1);
-  let x = gcc.toPxNumber(index);
-  let y1 = p1 * (gcc.pixelHeight * 0.6) + gcc.axisLineTopX;
-  let y2 = (1 - p2) * (gcc.pixelHeight * 0.6) + gcc.axisLineTopX;
-  const color = `hsl(${p2 * 90}, 70%, 50%)`; // red = min speed, green = max speed
+  const isHighToLow = pc.bentRateApplicationDirection === BentRateApplicationDirection.HighToLow;
+
+  const bentRatePoint = (point.bentRate - bentRateLow) / (bentRateHigh - bentRateLow || 1);
+  const resultPoint = (point.speed - speedFrom) / (speedTo - speedFrom || 1);
+  const x = gcc.toPxNumber(index);
+  const bentRateY = (isHighToLow ? bentRatePoint : 1 - bentRatePoint) * (gcc.pixelHeight * 0.6) + gcc.axisLineTopX;
+  const resultY = (1 - resultPoint) * (gcc.pixelHeight * 0.6) + gcc.axisLineTopX;
+  const color = `hsl(${resultPoint * 90}, 70%, 50%)`; // red = min speed, green = max speed
 
   return (
     <>
       {point.isLast && (
         <Line points={[x, 0, x, gcc.pixelHeight]} stroke="grey" strokeWidth={gcc.lineWidth} listening={false} />
       )}
-      <Circle x={x} y={y1} radius={gcc.pointRadius} fill={"grey"} listening={false} />
-      <Circle x={x} y={y2} radius={gcc.pointRadius} fill={color} listening={false} />
+      <Circle x={x} y={bentRateY} radius={gcc.pointRadius} fill={"grey"} listening={false} />
+      <Circle x={x} y={resultY} radius={gcc.pointRadius} fill={color} listening={false} />
     </>
   );
 });
@@ -416,6 +418,8 @@ const SpeedCanvasElement = observer((props: { extended: boolean }) => {
   const bentRateHigh = path.pc.bentRateApplicableRange.to;
   const bentRateLow = path.pc.bentRateApplicableRange.from;
 
+  const isHighToLow = path.pc.bentRateApplicationDirection === BentRateApplicationDirection.HighToLow;
+
   app.speedEditor.gcc = gcc;
 
   const onGraphClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -534,7 +538,7 @@ const SpeedCanvasElement = observer((props: { extended: boolean }) => {
               fill={bgColor}
             />
             <Text
-              text={bentRateLow + ""}
+              text={(isHighToLow ? bentRateLow : bentRateHigh) + ""}
               x={gcc.rightPaddingStart + gcc.pointWidth}
               y={gcc.axisLineTopX - fontSize / 2}
               fontSize={fontSize}
@@ -543,7 +547,7 @@ const SpeedCanvasElement = observer((props: { extended: boolean }) => {
               width={gcc.axisTitleWidth}
             />
             <Text
-              text={bentRateHigh + ""}
+              text={(isHighToLow ? bentRateHigh : bentRateLow) + ""}
               x={gcc.rightPaddingStart + gcc.pointWidth}
               y={gcc.axisLineBottomX - fontSize / 2}
               fontSize={fontSize}

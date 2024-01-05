@@ -19,6 +19,14 @@ export const IS_MAC_OS = (() => {
   }
 })();
 
+export function isFirefox() {
+  return navigator.userAgent.indexOf("Firefox") !== -1;
+}
+
+export function isBraveBrowser(): boolean {
+  return "brave" in navigator;
+}
+
 export async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }

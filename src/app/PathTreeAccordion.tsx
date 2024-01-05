@@ -130,6 +130,8 @@ class PathTreeVariables {
       }
     | undefined = undefined;
 
+  renaming: Path | undefined = undefined;
+
   constructor() {
     makeAutoObservable(this);
   }
@@ -179,7 +181,7 @@ const TreeItem = observer((props: TreeItemProps) => {
   const nameRef = React.useRef<HTMLSpanElement>(null);
   const initialValue = React.useRef(entity.name);
   const lastValidName = React.useRef(entity.name);
-  const [isEditingName, setIsEditingName] = React.useState(false);
+  const isEditingName = variables.renaming === entity;
 
   const entityIdx = app.allEntityIds.indexOf(entity.uid);
   const children = entity instanceof Path ? entity.controls : undefined;
@@ -212,7 +214,7 @@ const TreeItem = observer((props: TreeItemProps) => {
   }
 
   function onItemNameDoubleClick(event: React.MouseEvent<HTMLSpanElement | SVGSVGElement, MouseEvent>) {
-    setIsEditingName(true);
+    if (isNameEditable) variables.renaming = entity;
   }
 
   React.useEffect(() => {
@@ -229,6 +231,9 @@ const TreeItem = observer((props: TreeItemProps) => {
   }, [isEditingName]);
 
   function onItemNameConfirm(event: React.SyntheticEvent<HTMLSpanElement, Event>) {
+    event.preventDefault();
+    event.stopPropagation();
+
     const purify = DOMPurify();
     let pathName = purify.sanitize(event.currentTarget.innerText, { ALLOWED_TAGS: [] });
     if (pathName === "") pathName = initialValue.current;
@@ -236,7 +241,9 @@ const TreeItem = observer((props: TreeItemProps) => {
     app.history.execute(`Update path tree item name to ${pathName}`, new UpdateProperties(entity, { name: pathName }));
 
     initialValue.current = lastValidName.current = event.currentTarget.innerText = entity.name;
-    setIsEditingName(false);
+    variables.renaming = undefined;
+    variables.focused = entity;
+    treeViewRef.current?.focus();
   }
 
   function onDraggableFalseMouseDown(event: React.MouseEvent<HTMLLIElement, MouseEvent>) {
@@ -548,7 +555,18 @@ const TreeView = observer((props: { variables: PathTreeVariables }) => {
     return true;
   }
 
+  function pressF2ToRenameChild(e: React.KeyboardEvent<HTMLUListElement>) {
+    if (variables.focused instanceof Path) {
+      variables.renaming = variables.focused;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   function onKeyDown(e: React.KeyboardEvent<HTMLUListElement>) {
+    if (variables.renaming !== undefined) return;
+
     let flag: boolean;
 
     const key = e.key;
@@ -565,6 +583,8 @@ const TreeView = observer((props: { variables: PathTreeVariables }) => {
       flag = focusParent(e);
     } else if (key === "ArrowRight") {
       flag = focusFirstChild(e);
+    } else if (key === "F2") {
+      flag = pressF2ToRenameChild(e);
     } else {
       flag = false;
     }

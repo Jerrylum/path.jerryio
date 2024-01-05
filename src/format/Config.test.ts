@@ -2,7 +2,7 @@ import { makeAutoObservable } from "mobx";
 
 import { Expose, Exclude, plainToClassFromExist, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested, validate } from "class-validator";
-import { Path } from "../core/Path";
+import { BentRateApplicationDirection, Path } from "../core/Path";
 import { UnitOfLength } from "../core/Unit";
 import { GeneralConfig, PathConfig } from "./Config";
 import { Format } from "./Format";
@@ -80,6 +80,9 @@ export class CustomPathConfig implements PathConfig {
     from: 0,
     to: 0.1
   };
+
+  @Exclude()
+  bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
 
   constructor() {
     makeAutoObservable(this);
