@@ -305,9 +305,8 @@ export async function onDownloadAs(fallback: boolean = false): Promise<boolean> 
 
   if (fallback) {
     if (isBraveBrowser()) {
-      // enqueueInfoSnackbar(logger, "Please enable the API at \"brave://flags/#file-system-access-api\"", 8000);
       return fileNameConfirm(
-        'The "File System Access API" is disabled by default on Brave. Falling back to download.',
+        'The "File System Access API" is disabled. Falling back to download.',
         downloadFile.bind(null, output)
       );
     } else {
