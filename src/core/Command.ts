@@ -563,12 +563,12 @@ export class ConvertSegment implements CancellableCommand, AddPathTreeItemsComma
 
   get addedItems(): readonly PathTreeItem[] {
     if (this.newControls === undefined) return [];
-    return this.variant === SegmentVariant.Linear ? [] : this.newControls.slice(1, -1);
+    return this.variant === SegmentVariant.Linear ? [] : this.newControls!.slice(1, -1);
   }
 
   get removedItems(): readonly PathTreeItem[] {
     if (this.previousControls === undefined) return [];
-    return this.variant === SegmentVariant.Linear ? this.previousControls.slice(1, -1) : [];
+    return this.variant === SegmentVariant.Linear ? this.previousControls!.slice(1, -1) : [];
   }
 }
 
@@ -596,7 +596,7 @@ export class SplitSegment implements CancellableCommand, AddPathTreeItemsCommand
       this.path.segments.splice(index + 1, 0, this._newSegment);
 
       this.added = [this.point];
-    } else if (cp_count === 4) {
+    } else {
       const p0 = this.originalSegment.controls[0] as EndControl;
       const p1 = this.originalSegment.controls[1];
       const p2 = this.originalSegment.controls[2];
