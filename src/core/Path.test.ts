@@ -201,15 +201,15 @@ test("validate Segment", async () => {
   const s2 = plainToClass(Segment, p, { excludeExtraneousValues: true, exposeDefaultValues: true });
 
   expect(await validate(s2)).toHaveLength(0);
-  expect(s2).toStrictEqual(s);
+  expect(instanceToPlain(s2)).toStrictEqual(instanceToPlain(s));
 
   (s as any).uid = "123456789-";
   expect(await validate(s)).toHaveLength(1);
 
   (s as any).uid = "";
   (s as any).controls = controls[0];
-  (s as any).speedProfiles = new SpeedKeyframe(0, 0);
-  (s as any).lookaheadKeyframes = new LookaheadKeyframe(0, 0);
+  (s as any).speedProfiles_ = new SpeedKeyframe(0, 0);
+  (s as any).lookaheadKeyframes_ = new LookaheadKeyframe(0, 0);
   expect(await validate(s)).toHaveLength(4);
 });
 
@@ -238,7 +238,7 @@ test("validate Path", async () => {
   // expect(p.pc).toStrictEqual(p2.pc);
   expect(p.name).toBe(p2.name);
   p.segments.forEach(s => s.controls.forEach(c => expect(delete (c as any).__type)));
-  expect(p.segments).toStrictEqual(p2.segments);
+  expect(instanceToPlain(p2)).toStrictEqual(instanceToPlain(p));
 
   (p as any).uid = "123456789-";
   expect(await validate(p)).toHaveLength(1);

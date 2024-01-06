@@ -389,6 +389,48 @@ export class LookaheadKeyframe extends Keyframe implements CanvasEntity {
   }
 }
 
+export class KeyframeList<T extends Keyframe> {
+  constructor(private readonly listGetter: () => T[], public readonly accept: new (...args: any) => T) {}
+
+  add(keyframe: Keyframe): boolean {
+    if (keyframe instanceof this.accept) {
+      this.list.push(keyframe);
+      this.list.sort((a, b) => a.xPos - b.xPos);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  remove(keyframe: Keyframe): boolean {
+    if (!(keyframe instanceof this.accept)) return false;
+    const idx = this.list.indexOf(keyframe);
+    if (idx === -1) return false;
+    this.list.splice(idx, 1);
+    return true;
+  }
+
+  forEach(callback: (keyframe: T) => void): void {
+    this.list.forEach(callback);
+  }
+
+  map<TReturn>(callback: (keyframe: T) => TReturn): TReturn[] {
+    return this.list.map(callback);
+  }
+
+  filter(callback: (keyframe: T) => boolean): T[] {
+    return this.list.filter(callback);
+  }
+
+  get length(): number {
+    return this.list.length;
+  }
+
+  get list(): T[] {
+    return this.listGetter();
+  }
+}
+
 export enum SegmentVariant {
   Linear = "linear",
   Cubic = "cubic"
@@ -399,6 +441,7 @@ export type CubicSegmentControls = [EndControl, Control, Control, EndControl];
 export type SegmentControls = LinearSegmentControls | CubicSegmentControls;
 
 export type SegmentKeyframeKey = "speedProfiles" | "lookaheadKeyframes";
+export type SegmentKeyframeKeyMap = { speedProfiles: SpeedKeyframe; lookaheadKeyframes: LookaheadKeyframe };
 
 // observable class
 export class Segment implements CanvasEntity {
@@ -419,14 +462,18 @@ export class Segment implements CanvasEntity {
   public controls: SegmentControls;
   @ValidateNested()
   @IsArray()
-  @Expose()
+  @Expose({ name: "speedProfiles" })
   @Type(() => SpeedKeyframe)
-  public speedProfiles: SpeedKeyframe[];
+  private speedProfiles_: SpeedKeyframe[] = [];
+  @Exclude()
+  public speedProfiles = new KeyframeList(() => this.speedProfiles_, SpeedKeyframe);
   @ValidateNested()
   @IsArray()
-  @Expose()
+  @Expose({ name: "lookaheadKeyframes" })
   @Type(() => LookaheadKeyframe)
-  public lookaheadKeyframes: LookaheadKeyframe[];
+  private lookaheadKeyframes_: LookaheadKeyframe[] = [];
+  @Exclude()
+  public lookaheadKeyframes = new KeyframeList(() => this.lookaheadKeyframes_, LookaheadKeyframe);
   @Matches(/^[a-zA-Z0-9]+$/)
   @MinLength(10)
   @Expose()
@@ -437,8 +484,6 @@ export class Segment implements CanvasEntity {
   constructor(first: EndControl, idx1: Control, idx2: Control, last: EndControl);
   constructor(...list: [] | SegmentControls) {
     this.controls = list as SegmentControls;
-    this.speedProfiles = [];
-    this.lookaheadKeyframes = [];
     this.uid = makeId(10);
     makeAutoObservable(this);
   }
