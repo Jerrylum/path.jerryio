@@ -1,6 +1,16 @@
 import { CustomPathConfig } from "../format/Config.test";
 import { AddLinearSegment, AddCubicSegment, ConvertSegment, SplitSegment, DragControls, AddKeyframe } from "./Command";
-import { Control, EndControl, Keyframe, Path, Segment, SegmentVariant, SpeedKeyframe, Vector } from "./Path";
+import {
+  Control,
+  EndControl,
+  Keyframe,
+  KeyframeList,
+  Path,
+  Segment,
+  SegmentVariant,
+  SpeedKeyframe,
+  Vector
+} from "./Path";
 
 test("AddLinearSegment", () => {
   const path = new Path(new CustomPathConfig());
@@ -229,17 +239,18 @@ test("DragControls", () => {
 });
 
 test("AddKeyframe", () => {
-  const keyframes = [new SpeedKeyframe(10, 10), new SpeedKeyframe(5, 5)];
+  const list = [new SpeedKeyframe(10, 10), new SpeedKeyframe(5, 5)];
+  const keyframes = new KeyframeList(() => list, SpeedKeyframe);
   const addKeyframe = new AddKeyframe(keyframes, new SpeedKeyframe(0, 0));
   expect(keyframes.length).toBe(2);
   addKeyframe.execute();
   expect(keyframes.length).toBe(3);
-  expect(keyframes[0].xPos).toBe(0);
-  expect(keyframes[0].yPos).toBe(0);
-  expect(keyframes[1].xPos).toBe(5);
-  expect(keyframes[1].yPos).toBe(5);
-  expect(keyframes[2].xPos).toBe(10);
-  expect(keyframes[2].yPos).toBe(10);
+  expect(keyframes.list[0].xPos).toBe(0);
+  expect(keyframes.list[0].yPos).toBe(0);
+  expect(keyframes.list[1].xPos).toBe(5);
+  expect(keyframes.list[1].yPos).toBe(5);
+  expect(keyframes.list[2].xPos).toBe(10);
+  expect(keyframes.list[2].yPos).toBe(10);
 
   addKeyframe.undo();
   expect(keyframes.length).toBe(2);

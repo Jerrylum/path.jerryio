@@ -8,7 +8,8 @@ import {
   Segment,
   Vector,
   LookaheadKeyframe,
-  SegmentKeyframeKey
+  SegmentKeyframeKey,
+  SegmentKeyframeKeyMap
 } from "./Path";
 import { Quantity, UnitOfLength } from "./Unit";
 
@@ -144,22 +145,22 @@ export function processKeyframes(path: Path, points: Point[], keyframes: Keyfram
  * @param key - The key to use to get the keyframes.
  * @returns The keyframe indexes.
  */
-export function getPathKeyframeIndexes<TReturn extends SegmentKeyframeKey>(
+export function getPathKeyframeIndexes<T extends SegmentKeyframeKey>(
   segments: Segment[],
   segmentIndexes: IndexBoundary[],
-  key: TReturn
-): KeyframeIndexing<Segment[TReturn][number]>[] {
+  key: T
+): KeyframeIndexing<SegmentKeyframeKeyMap[T]>[] {
   // ALGO: result.segmentIndexes must have at least x ranges (x = number of segments)
-  const ikf: KeyframeIndexing<Keyframe>[] = [];
+  const ikf: KeyframeIndexing<SegmentKeyframeKeyMap[T]>[] = [];
 
   for (let segmentIdx = 0; segmentIdx < segments.length; segmentIdx++) {
     const segment = segments[segmentIdx];
     const pointIdxRange = segmentIndexes[segmentIdx];
     if (pointIdxRange.from === pointIdxRange.to) continue; // ALGO: Skip empty segments
-    // ALGO: Assume the keyframes are sorted
-    segment[key].forEach(kf => {
+    // ALGO: The keyframes are sorted
+    segment[key].forEach((kf: Keyframe) => {
       const pointIdx = pointIdxRange.from + Math.floor((pointIdxRange.to - pointIdxRange.from) * kf.xPos);
-      ikf.push(new KeyframeIndexing(pointIdx, segment, kf));
+      ikf.push(new KeyframeIndexing(pointIdx, segment, kf as SegmentKeyframeKeyMap[T]));
     });
   }
 

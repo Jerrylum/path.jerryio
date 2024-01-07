@@ -25,11 +25,23 @@ import { FieldImageAsset, FieldImageOriginType } from "../core/Asset";
 import { AssetManagerModalSymbol } from "./AssetManagerModal";
 
 const GeneralConfigPanel = observer((props: {}) => {
-  const { app, assetManager, confirmation, modals } = getAppStores();
+  const { app, assetManager, confirmation, modals, appPreferences } = getAppStores();
 
   const gc = app.gc;
 
   const formats = getAllFormats();
+
+  const changeFormat = action((index: number) => {
+    const oldFormat = app.format;
+    const newFormat = formats[index];
+
+    appPreferences.lastSelectedFormat = newFormat.getName();
+
+    const newPaths = newFormat.convertFromFormat(oldFormat, app.paths);
+
+    app.format = newFormat;
+    app.paths = newPaths;
+  });
 
   return (
     <>
@@ -41,14 +53,14 @@ const GeneralConfigPanel = observer((props: {}) => {
           value={formats.findIndex(x => x.getName() === app.format.getName())}
           onChange={action((e: SelectChangeEvent<number>) => {
             if (app.history.undoHistorySize === 0 && app.history.redoHistorySize === 0 && app.paths.length === 0) {
-              app.format = formats[parseInt(e.target.value + "")];
+              changeFormat(parseInt(e.target.value + ""));
             } else {
               confirmation.prompt({
                 title: "Change Format",
                 description:
                   "Some incompatible path configurations will be discarded. Edit history will be reset. Are you sure?",
                 buttons: [
-                  { label: "Confirm", onClick: () => (app.format = formats[parseInt(e.target.value + "")]) },
+                  { label: "Confirm", onClick: () => changeFormat(parseInt(e.target.value + "")) },
                   { label: "Cancel" }
                 ]
               });
