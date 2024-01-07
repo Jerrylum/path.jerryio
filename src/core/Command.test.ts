@@ -1,9 +1,19 @@
+import exp from "constants";
 import { CustomPathConfig } from "../format/Config.test";
-import { AddLinearSegment, AddCubicSegment, ConvertSegment, SplitSegment, DragControls, AddKeyframe } from "./Command";
+import {
+  AddLinearSegment,
+  AddCubicSegment,
+  ConvertSegment,
+  SplitSegment,
+  DragControls,
+  AddKeyframe,
+  MoveKeyframe
+} from "./Command";
 import {
   Control,
   EndControl,
   Keyframe,
+  KeyframePos,
   KeyframeList,
   Path,
   Segment,
@@ -256,4 +266,52 @@ test("AddKeyframe", () => {
   expect(keyframes.length).toBe(2);
   addKeyframe.redo();
   expect(keyframes.length).toBe(3);
+});
+
+test("MoveKeyframe", () => {
+  const keyframe = new SpeedKeyframe(0, 0);
+  const seg = new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90));
+  seg["speedProfiles"].add(keyframe);
+  const seglst = [new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90)), seg];
+  const movekeyframe = new MoveKeyframe(seglst, "speedProfiles", { segment: seg, xPos: 10, yPos: 10 }, keyframe);
+
+  expect(seg["speedProfiles"].length).toBe(1);
+  expect(seg["speedProfiles"].list[0].xPos).toBe(0);
+  expect(seg["speedProfiles"].list[0].yPos).toBe(0);
+  expect(movekeyframe.oldPos).toBeUndefined();
+  //dummy call
+  movekeyframe.undo();
+  movekeyframe.redo();
+
+  movekeyframe.execute();
+
+  expect(seg["speedProfiles"].length).toBe(1);
+  expect(seg["speedProfiles"].list[0].xPos).toBe(10);
+  expect(seg["speedProfiles"].list[0].yPos).toBe(10);
+  expect(movekeyframe.oldPos).toStrictEqual({ segment: seg, xPos: 0, yPos: 0 });
+
+  movekeyframe.undo();
+  expect(seg["speedProfiles"].length).toBe(1);
+  expect(seg["speedProfiles"].list[0].xPos).toBe(0);
+  expect(seg["speedProfiles"].list[0].yPos).toBe(0);
+
+  movekeyframe.redo();
+  expect(seg["speedProfiles"].length).toBe(1);
+  expect(seg["speedProfiles"].list[0].xPos).toBe(10);
+  expect(seg["speedProfiles"].list[0].yPos).toBe(10);
+
+  //merge command with different keyframe
+  const movekeyframe2 = new MoveKeyframe(
+    seglst,
+    "speedProfiles",
+    { segment: seg, xPos: 10, yPos: 10 },
+    new SpeedKeyframe(0, 0)
+  );
+  expect(movekeyframe.merge(movekeyframe2)).toBeFalsy();
+
+  //merge command with same keyframe but different new position
+  const movekeyframe3 = new MoveKeyframe(seglst, "speedProfiles", { segment: seg, xPos: 20, yPos: 20 }, keyframe);
+  expect(movekeyframe.merge(movekeyframe3)).toBeTruthy();
+  expect(movekeyframe.newPos.xPos).toBe(20);
+  expect(movekeyframe3.newPos.yPos).toBe(20);
 });
