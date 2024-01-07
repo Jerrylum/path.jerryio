@@ -1,9 +1,9 @@
-import { makeAutoObservable, reaction, action, intercept } from "mobx";
+import { makeAutoObservable, action } from "mobx";
 import { getAppStores } from "../core/MainApp";
 import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "../core/Util";
 import { BentRateApplicationDirection, Path, Segment, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
-import { GeneralConfig, PathConfig, convertFormat, convertGeneralConfigUOL } from "./Config";
+import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, IsString, MinLength, ValidateNested } from "class-validator";
@@ -157,22 +157,7 @@ class GeneralConfigImpl implements GeneralConfig {
     this.format_ = format;
     makeAutoObservable(this);
 
-    reaction(
-      () => this.uol,
-      action((_: UnitOfLength, oldUOL: UnitOfLength) => {
-        convertGeneralConfigUOL(this, oldUOL);
-      })
-    );
-
-    intercept(this, "fieldImage", change => {
-      const { assetManager } = getAppStores();
-
-      if (assetManager.getAssetBySignature(change.newValue.signature) === undefined) {
-        change.newValue = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
-      }
-
-      return change;
-    });
+    initGeneralConfig(this);
   }
 
   get format() {

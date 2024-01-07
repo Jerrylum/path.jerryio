@@ -1,8 +1,8 @@
-import { makeAutoObservable, reaction, action, intercept } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { getAppStores } from "../core/MainApp";
 import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
-import { GeneralConfig, PathConfig, convertFormat, convertGeneralConfigUOL } from "./Config";
+import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { RangeSlider } from "../component/RangeSlider";
 import { Box, Typography } from "@mui/material";
@@ -51,22 +51,7 @@ class GeneralConfigImpl implements GeneralConfig {
     this.format_ = format;
     makeAutoObservable(this);
 
-    reaction(
-      () => this.uol,
-      action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
-        convertGeneralConfigUOL(this, oldUOL);
-      })
-    );
-
-    intercept(this, "fieldImage", change => {
-      const { app, assetManager } = getAppStores();
-
-      if (app.gc === this && assetManager.getAssetBySignature(change.newValue.signature) === undefined) {
-        change.newValue = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
-      }
-
-      return change;
-    });
+    initGeneralConfig(this);
   }
 
   get format() {

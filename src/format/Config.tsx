@@ -1,8 +1,10 @@
+import { reaction, action, intercept } from "mobx";
 import { UnitConverter, UnitOfLength } from "../core/Unit";
 import { Format } from "./Format";
 import { BentRateApplicationDirection, Path } from "../core/Path";
-import { FieldImageOriginType, FieldImageSignatureAndOrigin } from "../core/Asset";
+import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
 import { EditableNumberRange, NumberRange } from "../core/Util";
+import { getAppStores } from "../core/MainApp";
 
 export function convertGeneralConfigUOL(gc: GeneralConfig, fromUOL: UnitOfLength) {
   const toUOL = gc.uol;
@@ -46,6 +48,25 @@ export function convertFormat(newFormat: Format, oldFormat: Format, oldPaths: Pa
   }
 
   return newPaths;
+}
+
+export function initGeneralConfig(gc: GeneralConfig) {
+  reaction(
+    () => gc.uol,
+    action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
+      convertGeneralConfigUOL(gc, oldUOL);
+    })
+  );
+
+  intercept(gc, "fieldImage", change => {
+    const { app, assetManager } = getAppStores();
+
+    if (app.gc === gc && assetManager.getAssetBySignature(change.newValue.signature) === undefined) {
+      change.newValue = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
+    }
+
+    return change;
+  });
 }
 
 export interface ConfigSection {

@@ -3,7 +3,7 @@ import { getAppStores } from "../core/MainApp";
 import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, clamp, makeId } from "../core/Util";
 import { BentRateApplicationDirection, Control, EndControl, Path, Segment, SpeedKeyframe, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
-import { GeneralConfig, PathConfig, convertFormat, convertGeneralConfigUOL } from "./Config";
+import { GeneralConfig, PathConfig, convertFormat, convertGeneralConfigUOL, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { Box, Slider, Typography } from "@mui/material";
 import { RangeSlider } from "../component/RangeSlider";
@@ -50,22 +50,7 @@ class GeneralConfigImpl implements GeneralConfig {
     this.format_ = format;
     makeAutoObservable(this);
 
-    reaction(
-      () => this.uol,
-      action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
-        convertGeneralConfigUOL(this, oldUOL);
-      })
-    );
-
-    intercept(this, "fieldImage", change => {
-      const { assetManager } = getAppStores();
-
-      if (assetManager.getAssetBySignature(change.newValue.signature) === undefined) {
-        change.newValue = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
-      }
-
-      return change;
-    });
+    initGeneralConfig(this);
   }
 
   get format() {
