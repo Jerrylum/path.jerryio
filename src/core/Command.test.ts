@@ -7,7 +7,8 @@ import {
   SplitSegment,
   DragControls,
   AddKeyframe,
-  MoveKeyframe
+  MoveKeyframe,
+  RemoveKeyframe
 } from "./Command";
 import {
   Control,
@@ -314,4 +315,28 @@ test("MoveKeyframe", () => {
   expect(movekeyframe.merge(movekeyframe3)).toBeTruthy();
   expect(movekeyframe.newPos.xPos).toBe(20);
   expect(movekeyframe3.newPos.yPos).toBe(20);
+});
+
+test("RemoveKeyframe", () => {
+  const keyframe = new SpeedKeyframe(0, 0);
+  const seg = new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90));
+  seg["speedProfiles"].add(keyframe);
+  const seglst = [new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90)), seg];
+  const removekeyframe = new RemoveKeyframe(seglst, "speedProfiles", keyframe);
+
+  //dummy call
+  expect(removekeyframe.oldIdx).toBe(-1);
+  expect(removekeyframe.segment).toBeUndefined();
+  removekeyframe.undo();
+  removekeyframe.redo();
+
+  expect(seg["speedProfiles"].length).toBe(1);
+  removekeyframe.execute();
+  expect(seg["speedProfiles"].length).toBe(0);
+
+  removekeyframe.undo();
+  expect(seg["speedProfiles"].length).toBe(1);
+
+  removekeyframe.redo();
+  expect(seg["speedProfiles"].length).toBe(0);
 });
