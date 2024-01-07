@@ -72,7 +72,10 @@ export interface HistoryEventMap<T extends CancellableCommand> {
 }
 
 export interface ExecutionEventListenersContainer<T extends CancellableCommand> {
-  addEventListener<K extends keyof HistoryEventMap<T>>(type: K, listener: (event: HistoryEventMap<T>[K]) => void): void;
+  addEventListener<K extends keyof HistoryEventMap<T>>(
+    type: K,
+    listener: (event: HistoryEventMap<T>[K]) => void
+  ): () => void;
   removeEventListener<K extends keyof HistoryEventMap<T>>(
     type: K,
     listener: (event: HistoryEventMap<T>[K]) => void
@@ -100,15 +103,17 @@ export class CommandHistory implements ExecutionEventListenersContainer<Cancella
   private readonly events = new Map<keyof HistoryEventMap<CancellableCommand>, Set<Function>>();
 
   constructor(private readonly app: MainApp) {
-    makeAutoObservable(this);
+    makeAutoObservable<this, "events">(this, { events: false });
   }
 
   addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
     type: K,
     listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
+  ): () => void {
     if (!this.events.has(type)) this.events.set(type, new Set());
     this.events.get(type)!.add(listener);
+
+    return () => this.removeEventListener(type, listener);
   }
 
   removeEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
@@ -123,8 +128,6 @@ export class CommandHistory implements ExecutionEventListenersContainer<Cancella
     type: keyof HistoryEventMap<CancellableCommand>,
     event: HistoryEventMap<CancellableCommand>[keyof HistoryEventMap<CancellableCommand>]
   ) {
-    this.app.format.fireEvent(type, event);
-
     if (!this.events.has(type)) return;
     for (const listener of this.events.get(type)!) {
       listener(event);

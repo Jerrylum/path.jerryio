@@ -9,7 +9,7 @@ import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, IsString, MinLength, ValidateNested } from "class-validator";
 import { PointCalculationResult, getPathPoints, getDiscretePoints, fromDegreeToRadian } from "../core/Calculation";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
-import { CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
+import { UpdateProperties } from "../core/Command";
 import { ObserverInput } from "../component/ObserverInput";
 import { Box, Button, Typography } from "@mui/material";
 import { euclideanRotation } from "../core/Coordinate";
@@ -218,7 +218,6 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
   uid: string;
 
   private gc = new GeneralConfigImpl(this);
-  private readonly events = new Map<keyof HistoryEventMap<CancellableCommand>, Set<Function>>();
 
   constructor() {
     this.uid = makeId(10);
@@ -310,31 +309,5 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
     fileContent += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPDJData());
 
     return new TextEncoder().encode(fileContent);
-  }
-
-  addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
-    type: K,
-    listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
-    if (!this.events.has(type)) this.events.set(type, new Set());
-    this.events.get(type)!.add(listener);
-  }
-
-  removeEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
-    type: K,
-    listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
-    if (!this.events.has(type)) return;
-    this.events.get(type)!.delete(listener);
-  }
-
-  fireEvent(
-    type: keyof HistoryEventMap<CancellableCommand>,
-    event: HistoryEventMap<CancellableCommand>[keyof HistoryEventMap<CancellableCommand>]
-  ) {
-    if (!this.events.has(type)) return;
-    for (const listener of this.events.get(type)!) {
-      listener(event);
-    }
   }
 }

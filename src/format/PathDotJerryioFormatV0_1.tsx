@@ -1,12 +1,12 @@
 import { makeAutoObservable } from "mobx";
-import { getAppStores } from "../core/MainApp";
+import { MainApp, getAppStores } from "../core/MainApp";
 import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
 import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { RangeSlider } from "../component/RangeSlider";
 import { Box, Typography } from "@mui/material";
-import { CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
+import { UpdateProperties } from "../core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
 import { PointCalculationResult, getPathPoints } from "../core/Calculation";
@@ -136,7 +136,6 @@ export class PathDotJerryioFormatV0_1 implements Format {
   uid: string;
 
   private gc = new GeneralConfigImpl(this);
-  private readonly events = new Map<keyof HistoryEventMap<CancellableCommand>, Set<Function>>();
 
   constructor() {
     this.uid = makeId(10);
@@ -206,31 +205,5 @@ export class PathDotJerryioFormatV0_1 implements Format {
     fileContent += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPDJData());
 
     return new TextEncoder().encode(fileContent);
-  }
-
-  addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
-    type: K,
-    listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
-    if (!this.events.has(type)) this.events.set(type, new Set());
-    this.events.get(type)!.add(listener);
-  }
-
-  removeEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
-    type: K,
-    listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
-    if (!this.events.has(type)) return;
-    this.events.get(type)!.delete(listener);
-  }
-
-  fireEvent(
-    type: keyof HistoryEventMap<CancellableCommand>,
-    event: HistoryEventMap<CancellableCommand>[keyof HistoryEventMap<CancellableCommand>]
-  ) {
-    if (!this.events.has(type)) return;
-    for (const listener of this.events.get(type)!) {
-      listener(event);
-    }
   }
 }

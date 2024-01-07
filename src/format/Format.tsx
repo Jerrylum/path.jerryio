@@ -11,7 +11,7 @@ import { CancellableCommand, ExecutionEventListenersContainer } from "../core/Co
 import { LemLibFormatV1_0 } from "./LemLibFormatV1_0";
 import { isExperimentalFeaturesEnabled } from "../core/Preferences";
 
-export interface Format extends ExecutionEventListenersContainer<CancellableCommand> {
+export interface Format {
   isInit: boolean;
   uid: string;
 

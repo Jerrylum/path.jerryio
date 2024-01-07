@@ -34,7 +34,7 @@ const GeneralConfigPanel = observer((props: {}) => {
   const changeFormat = action((index: number) => {
     const oldFormat = app.format;
     const newFormat = formats[index];
-    
+
     appPreferences.lastSelectedFormat = newFormat.getName();
 
     const newPaths = newFormat.convertFromFormat(oldFormat, app.paths);
