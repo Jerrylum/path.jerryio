@@ -28,9 +28,10 @@ export class CustomFormat implements Format {
   getName(): string {
     return "Custom";
   }
-  init(): void {
+  register(app: MainApp): void {
     this.isInit = true;
   }
+  unregister(app: MainApp): void {}
   getGeneralConfig(): GeneralConfig {
     return new CustomGeneralConfig();
   }

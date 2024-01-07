@@ -3,7 +3,7 @@ import { Box, Typography, Slider } from "@mui/material";
 import { Expose, Exclude, Type } from "class-transformer";
 import { RangeSlider } from "../component/RangeSlider";
 import { AddKeyframe, CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
-import { getAppStores } from "../core/MainApp";
+import { MainApp, getAppStores } from "../core/MainApp";
 import { BentRateApplicationDirection, Path, Segment, SpeedKeyframe } from "../core/Path";
 import { EditableNumberRange, NumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
 import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
@@ -216,6 +216,7 @@ class PathConfigImpl implements LemLibPathConfig {
     from: 0.5,
     to: 1.0
   };
+
   @ValidateEditableNumberRange(-Infinity, Infinity)
   @Expose()
   bentRateApplicableRange: EditableNumberRange = {
@@ -225,8 +226,10 @@ class PathConfigImpl implements LemLibPathConfig {
     from: 0,
     to: 0.1
   };
+
   @Exclude()
   bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
+
   @ValidateNumber(num => num >= 0.05 && num <= 10)
   @Expose()
   maxDecelerationRate: number = 1;
@@ -315,7 +318,7 @@ export class LemLibFormatV1_0 implements Format {
     return "LemLib v1.0.0 (mm, m/s)";
   }
 
-  init(): void {
+  register(app: MainApp): void {
     if (this.isInit) return;
     this.isInit = true;
 
@@ -333,6 +336,9 @@ export class LemLibFormatV1_0 implements Format {
         }
       }
     });
+  }
+
+  unregister(app: MainApp): void {
   }
 
   getGeneralConfig(): GeneralConfig {

@@ -151,10 +151,12 @@ export class PathDotJerryioFormatV0_1 implements Format {
     return "path.jerryio v0.1.x (cm, rpm)";
   }
 
-  init(): void {
+  register(app: MainApp): void {
     if (this.isInit) return;
     this.isInit = true;
   }
+
+  unregister(app: MainApp): void {}
 
   getGeneralConfig(): GeneralConfig {
     return this.gc;

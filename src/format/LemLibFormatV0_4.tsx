@@ -1,9 +1,9 @@
-import { makeAutoObservable, reaction, action, intercept } from "mobx";
-import { getAppStores } from "../core/MainApp";
+import { makeAutoObservable, action } from "mobx";
+import { MainApp, getAppStores } from "../core/MainApp";
 import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, clamp, makeId } from "../core/Util";
 import { BentRateApplicationDirection, Control, EndControl, Path, Segment, SpeedKeyframe, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
-import { GeneralConfig, PathConfig, convertFormat, convertGeneralConfigUOL, initGeneralConfig } from "./Config";
+import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { Box, Slider, Typography } from "@mui/material";
 import { RangeSlider } from "../component/RangeSlider";
@@ -171,7 +171,7 @@ export class LemLibFormatV0_4 implements Format {
     return "LemLib v0.4.x (inch, byte-voltage)";
   }
 
-  init(): void {
+  register(app: MainApp): void {
     if (this.isInit) return;
     this.isInit = true;
 
@@ -183,6 +183,9 @@ export class LemLibFormatV0_4 implements Format {
         }
       }
     });
+  }
+
+  unregister(app: MainApp): void {
   }
 
   getGeneralConfig(): GeneralConfig {

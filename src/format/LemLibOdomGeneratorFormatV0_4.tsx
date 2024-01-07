@@ -1,5 +1,5 @@
 import { makeAutoObservable, action } from "mobx";
-import { getAppStores } from "../core/MainApp";
+import { MainApp, getAppStores } from "../core/MainApp";
 import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "../core/Util";
 import { BentRateApplicationDirection, Path, Segment, Vector } from "../core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
@@ -233,10 +233,12 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
     return "LemLib Odom Code Gen v0.4.x (inch)";
   }
 
-  init(): void {
+  register(app: MainApp): void {
     if (this.isInit) return;
     this.isInit = true;
   }
+
+  unregister(app: MainApp): void {}
 
   getGeneralConfig(): GeneralConfig {
     return this.gc;

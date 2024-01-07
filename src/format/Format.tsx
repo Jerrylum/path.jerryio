@@ -1,7 +1,7 @@
 import { Path, Segment } from "../core/Path";
 import { GeneralConfig } from "./Config";
 import { PointCalculationResult } from "../core/Calculation";
-import { APP_VERSION } from "../core/MainApp";
+import { APP_VERSION, MainApp } from "../core/MainApp";
 import { Range } from "semver";
 import { UnitOfLength } from "../core/Unit";
 import { LemLibFormatV0_4 } from "./LemLibFormatV0_4";
@@ -17,7 +17,9 @@ export interface Format extends ExecutionEventListenersContainer<CancellableComm
 
   getName(): string;
 
-  init(): void;
+  register(app: MainApp): void;
+
+  unregister(app: MainApp): void;
 
   createNewInstance(): Format;
 
