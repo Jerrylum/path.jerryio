@@ -3,13 +3,13 @@ import classNames from "classnames";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import { LayoutType } from "../core/Layout";
-import { ControlAccordion } from "./ControlAccordion";
+import { ControlAccordion } from "./common.blocks/ControlAccordion";
 import { FieldCanvasElement } from "./FieldCanvasElement";
 import { GeneralConfigAccordion } from "./GeneralConfigAccordion";
-import { MenuAccordion } from "./MenuAccordion";
+import { MenuAccordion } from "./common.blocks/MenuAccordion";
 import { PathConfigAccordion } from "./PathAccordion";
-import { PathTreeAccordion } from "./PathTreeAccordion";
-import { SpeedCanvasElement } from "./SpeedCanvasElement";
+import { PathTreeAccordion } from "./common.blocks/PathTreeAccordion";
+import { SpeedCanvasElement } from "./common.blocks/SpeedCanvasElement";
 import { getAppStores } from "../core/MainApp";
 import { action, makeAutoObservable } from "mobx";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -21,10 +21,10 @@ import LinearScaleIcon from "@mui/icons-material/LinearScale";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import { Box, Typography } from "@mui/material";
 import { GeneralConfigFloatingPanel } from "./GeneralConfigAccordion";
-import { ControlFloatingPanel } from "./ControlAccordion";
+import { ControlFloatingPanel } from "./common.blocks/ControlAccordion";
 import { PathConfigFloatingPanel } from "./PathAccordion";
-import { PathTreeFloatingPanel } from "./PathTreeAccordion";
-import { MenuMainDropdown } from "./MenuAccordion";
+import { PathTreeFloatingPanel } from "./common.blocks/PathTreeAccordion";
+import { MenuMainDropdown } from "./common.blocks/MenuAccordion";
 import UndoIcon from "@mui/icons-material/Undo";
 import RedoIcon from "@mui/icons-material/Redo";
 import HomeIcon from "@mui/icons-material/Home";
@@ -157,7 +157,7 @@ export const ExclusiveLayout = observer(() => {
 
   return (
     <>
-      <Box id="exclusive-field">
+      <Box className="field-canvas__container">
         <FieldCanvasElement />
       </Box>
       <Box className="panel-icon-box" style={{ left: "8px", top: "8px" }}>
@@ -241,7 +241,7 @@ export const MobileLayout = observer(() => {
 
   return (
     <>
-      <Box id="exclusive-field">
+      <Box>
         <FieldCanvasElement />
       </Box>
       <Box id="top-nav">

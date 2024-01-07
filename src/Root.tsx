@@ -16,7 +16,7 @@ import { getAppStores } from "./core/MainApp";
 
 import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./core/InputOutput";
 import { NoticeProvider } from "./app/Notice";
-import { ConfirmationModal } from "./app/Confirmation";
+import { ConfirmationModal } from "./app/common.blocks/ConfirmationModal";
 import { DragDropBackdrop } from "./app/DragDropBackdrop";
 import { RemovePathsAndEndControls } from "./core/Command";
 import React, { useEffect } from "react";
@@ -24,10 +24,10 @@ import { FormTags } from "react-hotkeys-hook/dist/types";
 import { LayoutType, getUsableLayout } from "./core/Layout";
 import { getAppThemeInfo } from "./app/Theme";
 import { ClassisLayout, ExclusiveLayout, LayoutProvider, MobileLayout } from "./app/Layouts";
-import { AboutModal } from "./app/AboutModal";
-import { WelcomeModal } from "./app/Welcome";
-import { PreferencesModal, PreferencesModalSymbol } from "./app/PreferencesModal";
-import { AssetManagerModal } from "./app/AssetManagerModal";
+import { AboutModal } from "./app/common.blocks/AboutModal";
+import { WelcomeModal } from "./app/common.blocks/Welcome";
+import { PreferencesModal, PreferencesModalSymbol } from "./app/common.blocks/PreferencesModal";
+import { AssetManagerModal } from "./app/common.blocks/AssetManagerModal";
 import { RequireLocalFieldImageModal } from "./app/RequireLocalFieldImageModal";
 
 const Root = observer(() => {

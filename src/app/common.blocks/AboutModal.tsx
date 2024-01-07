@@ -1,7 +1,9 @@
 import { Card, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import { Modal } from "../component/Modal";
-import { APP_VERSION } from "../core/MainApp";
+import { Modal } from "./Modal";
+import { APP_VERSION } from "../../core/MainApp";
+
+import "./AboutModal.scss";
 
 export const AboutModalSymbol = Symbol("AboutModal");
 

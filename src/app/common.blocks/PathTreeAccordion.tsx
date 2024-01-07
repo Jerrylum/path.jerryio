@@ -13,7 +13,7 @@ import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp
 import { AccordionDetails, AccordionSummary, Box, Card, IconButton, Tooltip, Typography } from "@mui/material";
 import { action, makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Segment, EndControl, Path, Control, PathTreeItem } from "../core/Path";
+import { Segment, EndControl, Path, Control, PathTreeItem } from "../../core/Path";
 import {
   AddPath,
   MovePathTreeItem,
@@ -21,14 +21,16 @@ import {
   RemovePathsAndEndControls,
   UpdatePathTreeItems,
   UpdateProperties
-} from "../core/Command";
-import { getAppStores } from "../core/MainApp";
-import { Quantity, UnitOfLength } from "../core/Unit";
+} from "../../core/Command";
+import { getAppStores } from "../../core/MainApp";
+import { Quantity, UnitOfLength } from "../../core/Unit";
 import classNames from "classnames";
-import { IS_MAC_OS } from "../core/Util";
+import { IS_MAC_OS } from "../../core/Util";
 import React from "react";
-import { APP_VERSION_STRING } from "../Version";
+import { APP_VERSION_STRING } from "../../Version";
 import DOMPurify from "dompurify";
+
+import "./PathTreeAccordion.scss";
 
 const MIME_TYPE = `application/x-item-uid-path.jerryio.com-${APP_VERSION_STRING}`;
 
@@ -671,7 +673,7 @@ const PathTreeAccordion = observer((props: {}) => {
   const [variables] = React.useState(() => new PathTreeVariables());
 
   return (
-    <Card id="path-tree">
+    <Card className="path-tree">
       <AccordionSummary>
         <Typography>Paths</Typography>
         <Box>
@@ -709,8 +711,8 @@ const PathTreeFloatingPanel = observer((props: {}) => {
   const [variables] = React.useState(() => new PathTreeVariables());
 
   return (
-    <Box id="path-tree" className="floating-panel">
-      <Box id="path-tree-title">
+    <Box className="path-tree floating-panel">
+      <Box className="path-tree-title">
         <Typography className="floating-panel-title">Paths</Typography>
         <Box>
           <Tooltip title="Add New Path">

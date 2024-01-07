@@ -1,0 +1,11 @@
+.path-tree {
+  .path-tree-title {
+    position: relative;
+
+    > div {
+      position: absolute;
+      right: -8px;
+      top: -8px;
+    }
+  }
+}

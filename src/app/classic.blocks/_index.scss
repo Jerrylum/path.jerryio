@@ -19,8 +19,16 @@ $middle-section-height-svh: calc(100svh - $pg - $pg);
   margin: $hpg;
 }
 
-.panel-box {
-  margin-top: $hpg;
+#left-section {
+  float: left;
+  flex-grow: 1;
+  min-width: 288px;
+  max-width: 288px;
+  margin: calc($hpg - $qpg) !important;
+  padding-top: $qpg;
+  overflow-x: hidden;
+  height: calc(100% - $hpg - $hpg + $hpg);
+  border-radius: 4px;
 }
 
 #middle-section {
@@ -62,15 +70,6 @@ $middle-section-height-svh: calc(100svh - $pg - $pg);
   }
 }
 
-#speed-panel {
-  width: auto;
-  height: $speed-panel-height-vh;
-  height: $speed-panel-height-svh;
-  padding: $hpg;
-  overflow: hidden;
-  margin-top: $pg;
-}
-
 #right-section {
   float: left;
   flex-grow: 1;
@@ -94,18 +93,6 @@ $middle-section-height-svh: calc(100svh - $pg - $pg);
   }
 }
 
-#left-section {
-  float: left;
-  flex-grow: 1;
-  min-width: 288px;
-  max-width: 288px;
-  margin: calc($hpg - $qpg) !important;
-  padding-top: $qpg;
-  overflow-x: hidden;
-  height: calc(100% - $hpg - $hpg + $hpg);
-  border-radius: 4px;
-}
-
 #left-section::-webkit-scrollbar,
 #right-section::-webkit-scrollbar {
   width: 0;
@@ -127,59 +114,11 @@ $middle-section-height-svh: calc(100svh - $pg - $pg);
   background-color: transparent !important;
 }
 
-#path-tree {
-  height: calc(100% - $qpg - $hpg - (10px + 13px) - $hpg - $pg);
-  position: relative;
-
-  .MuiAccordionSummary-root {
-    cursor: unset;
-  }
-
-  .MuiAccordionSummary-content {
-    justify-content: space-between;
-
-    .icon {
-      cursor: pointer;
-      padding: 0;
-      margin-left: 3.2px;
-    }
-  }
-
-  .MuiAccordionDetails-root {
-    overflow-y: auto;
-    position: absolute;
-    top: 48px;
-    bottom: 1.6px;
-    right: 1.6px;
-    left: 0;
-    scrollbar-gutter: stable;
-    padding-right: calc($pg - 6.4px);
-  }
+.panel-box {
+  margin-top: $hpg;
 }
 
-#control-editor {
-  text-align: left;
-  margin-bottom: 24px;
-  position: sticky;
-  top: -4px;
-  z-index: 100;
-  padding-top: $hpg;
-}
-
-#main-menu {
-  margin-bottom: $pg !important;
-  padding: $hpg;
-  height: calc(10px + 13px);
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: row;
-  align-items: center;
-
-  > * {
-    text-transform: none;
-    min-width: 32px;
-    font-weight: 400;
-    padding: 3.2px 6.4px;
-    line-height: 1;
-  }
-}
+@import "./ControlAccordion";
+@import "./MenuAccordion";
+@import "./SpeedCanvasElement";
+@import "./PathTreeAccordion";

@@ -1,16 +1,18 @@
 import { Button, Card } from "@mui/material";
 import { Box } from "@mui/system";
 import { observer } from "mobx-react-lite";
-import { Modal } from "../component/Modal";
-import { MarkdownOverwrittenComponents } from "./MarkdownSupport";
+import { Modal } from "./Modal";
+import { MarkdownOverwrittenComponents } from "../MarkdownSupport";
 import { action } from "mobx";
 import React from "react";
-import { LayoutType } from "../core/Layout";
-import { getAppStores } from "../core/MainApp";
-import { LayoutContext } from "./Layouts";
-import WelcomeMDX from "./Welcome.mdx";
+import { LayoutType } from "../../core/Layout";
+import { getAppStores } from "../../core/MainApp";
+import { LayoutContext } from "../Layouts";
+import WelcomeMDX from "./WelcomeForOthers.mdx";
 import WelcomeForBraveMDX from "./WelcomeForBrave.mdx";
-import { isBraveBrowser } from "../core/Util";
+import { isBraveBrowser } from "../../core/Util";
+
+import "./Welcome.scss";
 
 export const WelcomeModalSymbol = Symbol("WelcomeModalSymbol");
 

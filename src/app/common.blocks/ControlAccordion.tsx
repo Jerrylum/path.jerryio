@@ -1,19 +1,21 @@
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import { EndControl } from "../core/Path";
-import { ObserverInput, clampQuantity } from "../component/ObserverInput";
-import { Quantity, UnitOfAngle, UnitOfLength } from "../core/Unit";
-import { UpdatePathTreeItems } from "../core/Command";
-import { getAppStores } from "../core/MainApp";
-import { NumberUOA, NumberUOL } from "../token/Tokens";
-import { parseFormula } from "../core/Util";
+import { EndControl } from "../../core/Path";
+import { ObserverInput, clampQuantity } from "../../component/ObserverInput";
+import { Quantity, UnitOfAngle, UnitOfLength } from "../../core/Unit";
+import { UpdatePathTreeItems } from "../../core/Command";
+import { getAppStores } from "../../core/MainApp";
+import { NumberUOA, NumberUOL } from "../../token/Tokens";
+import { parseFormula } from "../../core/Util";
+
+import "./ControlAccordion.scss";
 
 const ControlPanel = observer((props: {}) => {
   const { app } = getAppStores();
 
   return (
-    <Box id="control-editor">
+    <Box className="control-accordion">
       <Box className="flex-editor-panel">
         <ObserverInput
           label="X"

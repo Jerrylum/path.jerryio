@@ -10,7 +10,7 @@ import { instanceToPlain, plainToClassFromExist } from "class-transformer";
 import { Quantity, UnitConverter, UnitOfLength } from "./Unit";
 import { CommandHistory } from "./Command";
 import { SemVer } from "semver";
-import { Confirmation } from "../app/Confirmation";
+import { Confirmation } from "../app/common.blocks/ConfirmationModal";
 import { GoogleAnalytics } from "./GoogleAnalytics";
 import { IOFileHandle } from "./InputOutput";
 import { getPathSamplePoints, getUniformPointsFromSamples } from "./Calculation";

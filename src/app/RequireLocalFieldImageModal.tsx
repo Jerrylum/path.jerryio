@@ -4,7 +4,7 @@ import { observer } from "mobx-react-lite";
 import { action } from "mobx";
 import { Card, Typography, Box, Button } from "@mui/material";
 import { MuiFileInput } from "mui-file-input";
-import { Modal } from "../component/Modal";
+import { Modal } from "./common.blocks/Modal";
 import React from "react";
 import { RequireLocalFieldImageModalSymbol } from "../core/FieldImagePrompt";
 
@@ -20,7 +20,7 @@ export const RequireLocalFieldImageModal = observer(() => {
 
   return (
     <Modal symbol={RequireLocalFieldImageModalSymbol} onClose={action(() => modals.close())}>
-      <Card id="confirmation-modal" className="modal-container">
+      <Card className="confirmation-modal modal-container">
         <Typography variant="h2" gutterBottom>
           Upload Missing Field Image
         </Typography>

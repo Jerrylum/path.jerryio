@@ -1,0 +1,21 @@
+#welcome-modal {
+  padding: 16px;
+  width: 768px;
+  max-width: 80%;
+  min-height: 96px;
+  outline: none !important;
+  height: 80%;
+  overflow-y: auto;
+
+  .logo {
+    margin: auto;
+    width: 128px;
+    display: block;
+  }
+}
+
+@supports not (-moz-appearance: none) {
+  #welcome-modal {
+    padding-right: 10px;
+  }
+}

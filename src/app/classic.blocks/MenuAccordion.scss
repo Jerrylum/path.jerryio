@@ -1,0 +1,17 @@
+#main-menu {
+  margin-bottom: $pg !important;
+  padding: $hpg;
+  height: calc(10px + 13px);
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  align-items: center;
+
+  > * {
+    text-transform: none;
+    min-width: 32px;
+    font-weight: 400;
+    padding: 3.2px 6.4px;
+    line-height: 1;
+  }
+}

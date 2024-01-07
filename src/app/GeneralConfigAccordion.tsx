@@ -22,7 +22,7 @@ import { NumberUOL } from "../token/Tokens";
 import { parseFormula } from "../core/Util";
 import { ObserverItemsSelect } from "../component/ObserverItemsSelect";
 import { FieldImageAsset, FieldImageOriginType } from "../core/Asset";
-import { AssetManagerModalSymbol } from "./AssetManagerModal";
+import { AssetManagerModalSymbol } from "./common.blocks/AssetManagerModal";
 
 const GeneralConfigPanel = observer((props: {}) => {
   const { app, assetManager, confirmation, modals, appPreferences } = getAppStores();

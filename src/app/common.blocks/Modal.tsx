@@ -3,7 +3,9 @@ import Modal from "@mui/material/Modal";
 import { reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import React from "react";
-import { getAppStores } from "../core/MainApp";
+import { getAppStores } from "../../core/MainApp";
+
+import "./Modal.scss";
 
 export const CustomModal = observer(
   (props: {

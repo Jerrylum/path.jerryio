@@ -9,8 +9,8 @@
 /package.json
 /src/app/MarkdownSupport.tsx
 /src/app/TestMarkdown.mdx
-/src/app/Welcome.mdx
-/src/app/WelcomeForBrave.mdx
+/src/app/common.blocks/WelcomeForBrave.mdx
+/src/app/common.blocks/WelcomeForOthers.mdx
 /src/react-app-env.d.ts
 /src/setupTests.ts
 /src/token/Tokens.test.ts
