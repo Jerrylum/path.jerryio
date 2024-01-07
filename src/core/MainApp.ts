@@ -69,18 +69,8 @@ export class MainApp {
     reaction(
       () => this.format,
       action((newFormat: Format, oldFormat: Format) => {
-        if (newFormat.isInit === false) {
-          // ALGO: This should only be triggered when the format is changed by the user, not loading a file
-
-          newFormat.init();
-
-          const newPaths = newFormat.convertFromFormat(oldFormat, this.paths);
-
-          this.paths.splice(0, this.paths.length, ...newPaths); // alternative to this.paths = paths
-
-          const { appPreferences } = getAppStores();
-          appPreferences.lastSelectedFormat = newFormat.getName();
-        }
+        oldFormat.unregister(this);
+        newFormat.register(this);
 
         this.resetUserControl();
         this.resetAllEditors();
@@ -335,7 +325,6 @@ export class MainApp {
 
     const format = getAllFormats().find(f => f.getName() === data.format);
     if (format === undefined) throw new Error("Format not found.");
-    format.init(); // ALGO: Suspend format reaction in MainApp
 
     if (data.gc?.fieldImage?.origin) format.getGeneralConfig().fieldImage.origin = undefined as any; // ALGO: Remove default origin
 
@@ -377,7 +366,6 @@ export class MainApp {
 
   newFile() {
     const newFormat = this.format.createNewInstance();
-    newFormat.init(); // ALGO: Suspend format reaction in MainApp
 
     this.format = newFormat;
     this.usingUOL = this.gc.uol;

@@ -1,12 +1,12 @@
-import { makeAutoObservable, reaction, action, intercept } from "mobx";
+import { makeAutoObservable, action } from "mobx";
 import { Box, Typography, Slider } from "@mui/material";
 import { Expose, Exclude, Type } from "class-transformer";
 import { RangeSlider } from "../component/RangeSlider";
-import { AddKeyframe, CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
-import { getAppStores } from "../core/MainApp";
+import { AddKeyframe, UpdateProperties } from "../core/Command";
+import { MainApp, getAppStores } from "../core/MainApp";
 import { BentRateApplicationDirection, Path, Segment, SpeedKeyframe } from "../core/Path";
 import { EditableNumberRange, NumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
-import { GeneralConfig, PathConfig, convertFormat, convertGeneralConfigUOL } from "./Config";
+import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { IsPositive, IsBoolean, ValidateNested, IsObject } from "class-validator";
 import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFieldImage } from "../core/Asset";
 import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
@@ -186,22 +186,7 @@ class GeneralConfigImpl implements GeneralConfig {
     this.format_ = format;
     makeAutoObservable(this);
 
-    reaction(
-      () => this.uol,
-      action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
-        convertGeneralConfigUOL(this, oldUOL);
-      })
-    );
-
-    intercept(this, "fieldImage", change => {
-      const { assetManager } = getAppStores();
-
-      if (assetManager.getAssetBySignature(change.newValue.signature) === undefined) {
-        change.newValue = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
-      }
-
-      return change;
-    });
+    initGeneralConfig(this);
   }
 
   get format() {
@@ -231,6 +216,7 @@ class PathConfigImpl implements LemLibPathConfig {
     from: 0.5,
     to: 1.0
   };
+
   @ValidateEditableNumberRange(-Infinity, Infinity)
   @Expose()
   bentRateApplicableRange: EditableNumberRange = {
@@ -240,8 +226,10 @@ class PathConfigImpl implements LemLibPathConfig {
     from: 0,
     to: 0.1
   };
+
   @Exclude()
   bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
+
   @ValidateNumber(num => num >= 0.05 && num <= 10)
   @Expose()
   maxDecelerationRate: number = 1;
@@ -315,7 +303,8 @@ export class LemLibFormatV1_0 implements Format {
   uid: string;
 
   private gc = new GeneralConfigImpl(this);
-  private readonly events = new Map<keyof HistoryEventMap<CancellableCommand>, Set<Function>>();
+
+  private readonly disposers: (() => void)[] = [];
 
   constructor() {
     this.uid = makeId(10);
@@ -330,24 +319,30 @@ export class LemLibFormatV1_0 implements Format {
     return "LemLib v1.0.0 (mm, m/s)";
   }
 
-  init(): void {
+  register(app: MainApp): void {
     if (this.isInit) return;
     this.isInit = true;
 
-    this.addEventListener("beforeExecution", event => {
-      if (event.isCommandInstanceOf(AddKeyframe)) {
-        const keyframe = event.command.keyframe;
-        if (keyframe instanceof SpeedKeyframe) {
-          keyframe.followBentRate = true;
+    this.disposers.push(
+      app.history.addEventListener("beforeExecution", event => {
+        if (event.isCommandInstanceOf(AddKeyframe)) {
+          const keyframe = event.command.keyframe;
+          if (keyframe instanceof SpeedKeyframe) {
+            keyframe.followBentRate = true;
+          }
+        } else if (event.isCommandInstanceOf(UpdateProperties)) {
+          const target = event.command.target;
+          const newValues = event.command.newValues;
+          if (target instanceof Path && "name" in newValues) {
+            newValues.name = newValues.name.replace(/[^\x00-\x7F]/g, ""); // ascii only
+          }
         }
-      } else if (event.isCommandInstanceOf(UpdateProperties)) {
-        const target = event.command.target;
-        const newValues = event.command.newValues;
-        if (target instanceof Path && "name" in newValues) {
-          newValues.name = newValues.name.replace(/[^\x00-\x7F]/g, ""); // ascii only
-        }
-      }
-    });
+      })
+    );
+  }
+
+  unregister(app: MainApp): void {
+    this.disposers.forEach(disposer => disposer());
   }
 
   getGeneralConfig(): GeneralConfig {
@@ -421,31 +416,5 @@ export class LemLibFormatV1_0 implements Format {
     LemLibV1_0.writePathFile(buffer, app.paths, app.exportPDJData());
 
     return buffer.toBuffer();
-  }
-
-  addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
-    type: K,
-    listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
-    if (!this.events.has(type)) this.events.set(type, new Set());
-    this.events.get(type)!.add(listener);
-  }
-
-  removeEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
-    type: K,
-    listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
-    if (!this.events.has(type)) return;
-    this.events.get(type)!.delete(listener);
-  }
-
-  fireEvent(
-    type: keyof HistoryEventMap<CancellableCommand>,
-    event: HistoryEventMap<CancellableCommand>[keyof HistoryEventMap<CancellableCommand>]
-  ) {
-    if (!this.events.has(type)) return;
-    for (const listener of this.events.get(type)!) {
-      listener(event);
-    }
   }
 }

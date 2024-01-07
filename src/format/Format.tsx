@@ -1,7 +1,7 @@
 import { Path, Segment } from "../core/Path";
 import { GeneralConfig } from "./Config";
 import { PointCalculationResult } from "../core/Calculation";
-import { APP_VERSION } from "../core/MainApp";
+import { APP_VERSION, MainApp } from "../core/MainApp";
 import { Range } from "semver";
 import { UnitOfLength } from "../core/Unit";
 import { LemLibFormatV0_4 } from "./LemLibFormatV0_4";
@@ -11,13 +11,15 @@ import { CancellableCommand, ExecutionEventListenersContainer } from "../core/Co
 import { LemLibFormatV1_0 } from "./LemLibFormatV1_0";
 import { isExperimentalFeaturesEnabled } from "../core/Preferences";
 
-export interface Format extends ExecutionEventListenersContainer<CancellableCommand> {
+export interface Format {
   isInit: boolean;
   uid: string;
 
   getName(): string;
 
-  init(): void;
+  register(app: MainApp): void;
+
+  unregister(app: MainApp): void;
 
   createNewInstance(): Format;
 
@@ -27,6 +29,15 @@ export interface Format extends ExecutionEventListenersContainer<CancellableComm
 
   getPathPoints(path: Path): PointCalculationResult;
 
+  /**
+   * Convert the old format to the new format.
+   *
+   * The format implementation will call convertFormat() and may have custom conversion logic after calling convertFormat().
+   *
+   * @param oldFormat the old format
+   * @param oldPaths the old paths
+   * @returns the new paths with "this" as the new format
+   */
   convertFromFormat(oldFormat: Format, oldPaths: Path[]): Path[];
 
   /**

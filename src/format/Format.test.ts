@@ -7,14 +7,11 @@ import DOMPurify from "dompurify";
 import { PointCalculationResult } from "../core/Calculation";
 import { GeneralConfig, convertFormat } from "./Config";
 import { CustomGeneralConfig, CustomPathConfig } from "./Config.test";
-import { HistoryEventMap, CancellableCommand } from "../core/Command";
 import { LemLibFormatV1_0, LemLibPathConfig } from "./LemLibFormatV1_0";
 
 export class CustomFormat implements Format {
   isInit: boolean;
   uid: string;
-
-  private readonly events = new Map<keyof HistoryEventMap<CancellableCommand>, Set<Function>>();
 
   constructor() {
     this.isInit = false;
@@ -28,9 +25,10 @@ export class CustomFormat implements Format {
   getName(): string {
     return "Custom";
   }
-  init(): void {
+  register(app: MainApp): void {
     this.isInit = true;
   }
+  unregister(app: MainApp): void {}
   getGeneralConfig(): GeneralConfig {
     return new CustomGeneralConfig();
   }
@@ -51,32 +49,6 @@ export class CustomFormat implements Format {
   }
   exportFile(): ArrayBuffer {
     throw new Error("Method not implemented.");
-  }
-
-  addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
-    type: K,
-    listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
-    if (!this.events.has(type)) this.events.set(type, new Set());
-    this.events.get(type)!.add(listener);
-  }
-
-  removeEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
-    type: K,
-    listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
-    if (!this.events.has(type)) return;
-    this.events.get(type)!.delete(listener);
-  }
-
-  fireEvent(
-    type: keyof HistoryEventMap<CancellableCommand>,
-    event: HistoryEventMap<CancellableCommand>[keyof HistoryEventMap<CancellableCommand>]
-  ) {
-    if (!this.events.has(type)) return;
-    for (const listener of this.events.get(type)!) {
-      listener(event);
-    }
   }
 }
 

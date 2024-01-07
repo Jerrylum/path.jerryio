@@ -6,6 +6,7 @@ import {
   Control,
   EndControl,
   Keyframe,
+  KeyframeList,
   KeyframePos,
   Path,
   PathStructureMemento,
@@ -71,7 +72,10 @@ export interface HistoryEventMap<T extends CancellableCommand> {
 }
 
 export interface ExecutionEventListenersContainer<T extends CancellableCommand> {
-  addEventListener<K extends keyof HistoryEventMap<T>>(type: K, listener: (event: HistoryEventMap<T>[K]) => void): void;
+  addEventListener<K extends keyof HistoryEventMap<T>>(
+    type: K,
+    listener: (event: HistoryEventMap<T>[K]) => void
+  ): () => void;
   removeEventListener<K extends keyof HistoryEventMap<T>>(
     type: K,
     listener: (event: HistoryEventMap<T>[K]) => void
@@ -99,15 +103,17 @@ export class CommandHistory implements ExecutionEventListenersContainer<Cancella
   private readonly events = new Map<keyof HistoryEventMap<CancellableCommand>, Set<Function>>();
 
   constructor(private readonly app: MainApp) {
-    makeAutoObservable(this);
+    makeAutoObservable<this, "events">(this, { events: false });
   }
 
   addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
     type: K,
     listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
+  ): () => void {
     if (!this.events.has(type)) this.events.set(type, new Set());
     this.events.get(type)!.add(listener);
+
+    return () => this.removeEventListener(type, listener);
   }
 
   removeEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
@@ -122,8 +128,6 @@ export class CommandHistory implements ExecutionEventListenersContainer<Cancella
     type: keyof HistoryEventMap<CancellableCommand>,
     event: HistoryEventMap<CancellableCommand>[keyof HistoryEventMap<CancellableCommand>]
   ) {
-    this.app.format.fireEvent(type, event);
-
     if (!this.events.has(type)) return;
     for (const listener of this.events.get(type)!) {
       listener(event);
@@ -690,15 +694,14 @@ export class DragControls implements CancellableCommand, MergeableCommand, Updat
 }
 
 export class AddKeyframe implements CancellableCommand {
-  constructor(public keyframes: Keyframe[], public keyframe: Keyframe) {}
+  constructor(public keyframes: KeyframeList<Keyframe>, public keyframe: Keyframe) {}
 
   execute(): void {
-    this.keyframes.push(this.keyframe);
-    this.keyframes.sort((a, b) => a.xPos - b.xPos);
+    this.keyframes.add(this.keyframe);
   }
 
   undo(): void {
-    this.keyframes.splice(this.keyframes.indexOf(this.keyframe), 1);
+    this.keyframes.remove(this.keyframe);
   }
 
   redo(): void {
@@ -717,28 +720,22 @@ export class MoveKeyframe implements CancellableCommand, MergeableCommand {
   ) {}
 
   removeKeyframe(pos: KeyframePos) {
-    const idx = pos.segment[this.key].indexOf(this.keyframe as any);
-    if (idx === -1) return;
-
-    pos.segment[this.key].splice(idx, 1);
+    pos.segment[this.key].remove(this.keyframe);
   }
 
   addKeyframe(pos: KeyframePos) {
     this.keyframe.xPos = pos.xPos;
     this.keyframe.yPos = pos.yPos;
-    pos.segment[this.key].push(this.keyframe as any);
-    pos.segment[this.key].sort((a, b) => a.xPos - b.xPos);
+    pos.segment[this.key].add(this.keyframe);
   }
 
   execute(): void {
-    // remove keyframe from oldSegment speed control
+    // ALGO: Remove keyframe from oldSegment speed control
     for (const segment of this.segments) {
-      const idx = segment[this.key].indexOf(this.keyframe as any);
-      if (idx === -1) continue;
-
-      segment[this.key].splice(idx, 1);
-      this._oldPos = { segment, xPos: this.keyframe.xPos, yPos: this.keyframe.yPos };
-      break;
+      if (segment[this.key].remove(this.keyframe)) {
+        this._oldPos = { segment, xPos: this.keyframe.xPos, yPos: this.keyframe.yPos };
+        break;
+      }
     }
     this.addKeyframe(this.newPos);
   }
@@ -751,9 +748,6 @@ export class MoveKeyframe implements CancellableCommand, MergeableCommand {
   }
 
   redo(): void {
-    // this.execute();
-    // ALGO: Instead of executing, we just add the keyframe back
-    // ALGO: Assume that the command is executed
     if (!this._oldPos) return;
 
     this.removeKeyframe(this._oldPos);
@@ -781,29 +775,23 @@ export class RemoveKeyframe implements CancellableCommand {
 
   execute(): void {
     for (const segment of this.segments) {
-      const idx = segment[this.key].indexOf(this.keyframe as any);
-      if (idx === -1) continue;
-
-      segment.speedProfiles.splice(idx, 1);
-      this._segment = segment;
-      this._oldIdx = idx;
-      break;
+      if (segment[this.key].remove(this.keyframe)) {
+        this._segment = segment;
+        break;
+      }
     }
   }
 
   undo(): void {
-    if (this._segment === undefined || this._oldIdx === -1) return;
+    if (this._segment === undefined) return;
 
-    this._segment[this.key].splice(this._oldIdx, 0, this.keyframe);
+    this._segment[this.key].add(this.keyframe);
   }
 
   redo(): void {
-    // this.execute();
-    // ALGO: Instead of executing, we just remove the keyframe
-    // ALGO: Assume that the command is executed
-    if (this._segment === undefined || this._oldIdx === -1) return;
+    if (this._segment === undefined) return;
 
-    this._segment.speedProfiles.splice(this._oldIdx, 1);
+    this._segment[this.key].remove(this.keyframe);
   }
 
   get segment() {
