@@ -8,7 +8,12 @@ import {
   DragControls,
   AddKeyframe,
   MoveKeyframe,
-  RemoveKeyframe
+  RemoveKeyframe,
+  InsertPaths,
+  InsertControls,
+  AddPath,
+  MovePath,
+  MovePathTreeItem
 } from "./Command";
 import {
   Control,
@@ -20,7 +25,8 @@ import {
   Segment,
   SegmentVariant,
   SpeedKeyframe,
-  Vector
+  Vector,
+  traversal
 } from "./Path";
 
 test("AddLinearSegment", () => {
@@ -339,4 +345,172 @@ test("RemoveKeyframe", () => {
 
   removekeyframe.redo();
   expect(seg["speedProfiles"].length).toBe(0);
+});
+
+test("InsertPath", () => {
+  const i1 = new EndControl(1, 0, 0);
+  const i2 = new Control(2, 0);
+  const i3 = new Control(3, 0);
+  const i4 = new EndControl(4, 0, 0);
+  const i5 = new EndControl(5, 0, 0);
+  const i6 = new EndControl(6, 0, 0);
+  const path = new Path(new CustomPathConfig(), new Segment(i5, i6));
+  const path2 = new Path(new CustomPathConfig(), new Segment(i1, i2, i3, i4));
+  const lst = [path];
+
+  //invalid index dummy calls
+  const insertPath = new InsertPaths(lst, -1, [path2]);
+  const insertPath2 = new InsertPaths(lst, 3, [path2]);
+  expect(insertPath.execute()).toBeFalsy();
+  expect(insertPath2.execute()).toBeFalsy();
+
+  const insertPath3 = new InsertPaths(lst, 0, [path2]);
+  expect(insertPath3.addedItems.length).toBe(0);
+  expect(traversal(lst).length).toBe(3);
+  insertPath3.execute();
+  expect(insertPath3.addedItems.length).toBe(5);
+  expect(traversal(lst).length).toBe(8);
+
+  insertPath3.undo();
+  expect(traversal(lst).length).toBe(3);
+
+  insertPath3.redo();
+  expect(traversal(lst).length).toBe(8);
+});
+
+test("InsertControl", () => {
+  const i1 = new EndControl(1, 0, 0);
+  const i2 = new Control(2, 0);
+  const i3 = new Control(3, 0);
+  const i4 = new EndControl(4, 0, 0);
+  const i5 = new EndControl(5, 0, 0);
+  const i6 = new EndControl(6, 0, 0);
+  const pathtree = [i1, i4];
+
+  //invalid pathtree without path
+  const insertControl = new InsertControls(pathtree, 1, [i5]);
+  expect(insertControl.execute()).toBeFalsy();
+  //invalid index
+  const insertControl2 = new InsertControls(pathtree, -1, [i5]);
+  expect(insertControl2.execute()).toBeFalsy();
+
+  const lstpath = [new Path(new CustomPathConfig(), new Segment(i1, i2, i3, i4))];
+  const insertControl3 = new InsertControls(traversal(lstpath), 1, [i5, i6]);
+  expect(traversal(lstpath).length).toBe(5); // path, i1, i2, i3, i4
+  expect(insertControl3.execute()).toBeTruthy();
+  expect(traversal(lstpath).length).toBe(7); // path, i1, i5, i6, i2, i3, i4
+  expect(insertControl3.addedItems.length).toBe(2);
+
+  insertControl3.undo();
+  expect(traversal(lstpath).length).toBe(5);
+
+  insertControl3.redo();
+  expect(traversal(lstpath).length).toBe(7);
+
+  const lstpath2 = [new Path(new CustomPathConfig(), new Segment(i1, i2, i3, i4))];
+  const insertControl4 = new InsertControls(traversal(lstpath2), 3, [i5, i6]);
+  expect(insertControl4.originalStructure.length).toBe(0);
+  expect(insertControl4.modifiedStructure.length).toBe(0);
+  expect(traversal(lstpath2).length).toBe(5); // path, i1, i2, i3, i4
+  expect(insertControl4.execute()).toBeTruthy();
+  expect(traversal(lstpath2).length).toBe(5); // path, i1, i5, i6, i4
+  expect(insertControl4.removedItems.length).toBe(2);
+  expect(insertControl4.addedItems.length).toBe(2);
+  expect(insertControl4.originalStructure.length).toBe(1);
+  expect(insertControl4.modifiedStructure.length).toBe(1);
+});
+
+test("AddPath", () => {
+  const i1 = new EndControl(1, 0, 0);
+  const i2 = new Control(2, 0);
+  const i3 = new Control(3, 0);
+  const i4 = new EndControl(4, 0, 0);
+  const i5 = new EndControl(5, 0, 0);
+  const i6 = new EndControl(6, 0, 0);
+  const path = new Path(new CustomPathConfig(), new Segment(i5, i6));
+  const path2 = new Path(new CustomPathConfig(), new Segment(i1, i2, i3, i4));
+  const lst = [path];
+
+  const addPath = new AddPath(lst, path2);
+  expect(addPath.addedItems.length).toBe(0);
+  expect(traversal(lst).length).toBe(3);
+  addPath.execute();
+  expect(addPath.addedItems.length).toBe(5);
+  expect(traversal(lst).length).toBe(8);
+});
+
+test("MovePath", () => {
+  const i1 = new EndControl(5, 0, 0);
+  const i2 = new EndControl(6, 0, 0);
+  const lstpath = [
+    new Path(new CustomPathConfig(), new Segment(i1, i2)),
+    new Path(new CustomPathConfig()),
+    new Path(new CustomPathConfig())
+  ];
+
+  // invalid from index
+  const movePath = new MovePath(lstpath, -1, 2);
+  expect(movePath.execute()).toBeFalsy();
+  const movePath2 = new MovePath(lstpath, 10, 2);
+  expect(movePath2.execute()).toBeFalsy();
+  // invalid to index
+  const movePath3 = new MovePath(lstpath, 0, -1);
+  expect(movePath3.execute()).toBeFalsy();
+  const movePath4 = new MovePath(lstpath, 0, 10);
+  expect(movePath4.execute()).toBeFalsy();
+  movePath4.undo();
+
+  const movePath5 = new MovePath(lstpath, 0, 2);
+  expect(movePath5.updatedItems.length).toBe(0);
+  expect(movePath5.execute()).toBeTruthy();
+  expect(movePath5.updatedItems.length).toBe(1);
+  expect(lstpath[2].segments.length).toBe(1);
+
+  movePath5.undo();
+  expect(lstpath[0].segments.length).toBe(1);
+  expect(lstpath[2].segments.length).toBe(0);
+
+  movePath5.redo();
+  expect(lstpath[0].segments.length).toBe(0);
+  expect(lstpath[2].segments.length).toBe(1);
+});
+
+test("MovePathTreeItem", () => {
+  const i1 = new EndControl(1, 0, 0);
+  const i2 = new Control(2, 0);
+  const i3 = new Control(3, 0);
+  const i4 = new EndControl(4, 0, 0);
+  const i5 = new EndControl(5, 0, 0);
+  const i6 = new EndControl(6, 0, 0);
+  const pathtree = [i1, i4];
+
+  //invalid pathtree without path
+  const movePathTreeItem = new MovePathTreeItem(pathtree, 1, 1);
+  expect(movePathTreeItem.execute()).toBeFalsy();
+  //invalid from index
+  const movePathTreeItem2 = new MovePathTreeItem(pathtree, -1, 2);
+  expect(movePathTreeItem2.execute()).toBeFalsy();
+  //invalid to index
+  const movePathTreeItem3 = new MovePathTreeItem(pathtree, 0, -1);
+  expect(movePathTreeItem3.execute()).toBeFalsy();
+
+  const lstpath = [new Path(new CustomPathConfig(), new Segment(i1, i2, i3, i4))];
+  const movePathTreeItem4 = new MovePathTreeItem(traversal(lstpath), 2, 4);
+  expect(traversal(lstpath).length).toBe(5); // path, i1, i2, i3, i4
+  expect(movePathTreeItem4.removedItems.length).toBe(0);
+  expect(movePathTreeItem4.updatedItems.length).toBe(0);
+  expect(movePathTreeItem4.originalStructure.length).toBe(0);
+  expect(movePathTreeItem4.modifiedStructure.length).toBe(0);
+  expect(movePathTreeItem4.execute()).toBeTruthy();
+  expect(traversal(lstpath).length).toBe(3); // path, i1, i4
+  expect(movePathTreeItem4.removedItems.length).toBe(2);
+  expect(movePathTreeItem4.updatedItems.length).toBe(1);
+  expect(movePathTreeItem4.originalStructure.length).toBe(1);
+  expect(movePathTreeItem4.modifiedStructure.length).toBe(1);
+
+  movePathTreeItem4.undo();
+  expect(traversal(lstpath).length).toBe(5);
+
+  movePathTreeItem4.redo();
+  expect(traversal(lstpath).length).toBe(3);
 });
