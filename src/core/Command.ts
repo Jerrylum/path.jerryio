@@ -719,11 +719,11 @@ export class MoveKeyframe implements CancellableCommand, MergeableCommand {
     public keyframe: Keyframe
   ) {}
 
-  removeKeyframe(pos: KeyframePos) {
+  protected removeKeyframe(pos: KeyframePos) {
     pos.segment[this.key].remove(this.keyframe);
   }
 
-  addKeyframe(pos: KeyframePos) {
+  protected addKeyframe(pos: KeyframePos) {
     this.keyframe.xPos = pos.xPos;
     this.keyframe.yPos = pos.yPos;
     pos.segment[this.key].add(this.keyframe);
