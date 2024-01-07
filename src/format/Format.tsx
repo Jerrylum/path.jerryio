@@ -27,6 +27,15 @@ export interface Format extends ExecutionEventListenersContainer<CancellableComm
 
   getPathPoints(path: Path): PointCalculationResult;
 
+  /**
+   * Convert the old format to the new format.
+   *
+   * The format implementation will call convertFormat() and may have custom conversion logic after calling convertFormat().
+   *
+   * @param oldFormat the old format
+   * @param oldPaths the old paths
+   * @returns the new paths with "this" as the new format
+   */
   convertFromFormat(oldFormat: Format, oldPaths: Path[]): Path[];
 
   /**
