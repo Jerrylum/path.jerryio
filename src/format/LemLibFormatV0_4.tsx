@@ -224,7 +224,6 @@ export class LemLibFormatV0_4 implements Format {
       // v = sqrt(v_0^2 + 2ad)
       const newSpeed = Math.sqrt(Math.pow(last.speed, 2) + 2 * rate * uc.fromAtoB(last.distance(current)));
       current.speed = Math.min(current.speed, newSpeed);
-      console.log(minSpeed);
       current.speed = Math.max(current.speed, minSpeed);
     }
     return result;
