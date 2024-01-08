@@ -14,7 +14,7 @@ import { Instance } from "@popperjs/core";
 import { useMobxStorage, useTouchEvent, useWindowSize } from "@core/Hook";
 import { getAppThemeInfo } from "@app/Theme";
 import { TouchEventListener } from "@core/TouchEventListener";
-import { Label, Padding0Tooltip } from "@app/component.blocks/TooltipLabel";
+import { CanvasTooltip, Padding0Tooltip } from "@app/component.blocks/CanvasTooltip";
 import { getFieldCanvasHalfHeight } from "@core/Util";
 
 import "./SpeedCanvasElement.scss";
@@ -48,7 +48,7 @@ const SpeedCanvasTooltipContent = observer((props: {}) => {
     const keyframe = lastInteraction.keyframe;
     return (
       <Box>
-        <Label
+        <CanvasTooltip
           text="Toggle Bent Rate"
           onClick={() => {
             const setTo = !keyframe.followBentRate;
@@ -59,7 +59,7 @@ const SpeedCanvasTooltipContent = observer((props: {}) => {
             );
           }}
         />
-        <Label
+        <CanvasTooltip
           text="Delete"
           onClick={() => {
             app.history.execute(

@@ -29,7 +29,7 @@ import { LayoutType } from "@core/Layout";
 import { Box } from "@mui/material";
 import { Instance } from "@popperjs/core";
 import { TouchEventListener } from "@core/TouchEventListener";
-import { Label, Padding0Tooltip } from "@app/component.blocks/TooltipLabel";
+import { CanvasTooltip, Padding0Tooltip } from "@app/component.blocks/CanvasTooltip";
 import { LayoutContext } from "@app/Layouts";
 import { getDefaultBuiltInFieldImage } from "@core/Asset";
 
@@ -123,9 +123,9 @@ const FieldTooltipContent = observer((props: {}) => {
 
   return (
     <Box>
-      <Label text="Curve" onClick={onAddCubic} />
-      <Label text="Line" onClick={onAddLinear} />
-      {clipboard.hasData && <Label text="Paste" onClick={onPaste} />}
+      <CanvasTooltip text="Curve" onClick={onAddCubic} />
+      <CanvasTooltip text="Line" onClick={onAddLinear} />
+      {clipboard.hasData && <CanvasTooltip text="Paste" onClick={onPaste} />}
     </Box>
   );
 });
@@ -147,8 +147,8 @@ const ControlTooltipContent = observer((props: {}) => {
 
   return (
     <Box>
-      <Label text="Delete" onClick={onDelete} />
-      <Label text="Copy" onClick={onCopy} />
+      <CanvasTooltip text="Delete" onClick={onDelete} />
+      <CanvasTooltip text="Copy" onClick={onCopy} />
     </Box>
   );
 });
@@ -184,8 +184,8 @@ const SegmentTooltipContent = observer((props: {}) => {
 
   return (
     <Box>
-      <Label text="Convert" onClick={onConvert} />
-      <Label text="Split" onClick={onSplit} />
+      <CanvasTooltip text="Convert" onClick={onConvert} />
+      <CanvasTooltip text="Split" onClick={onSplit} />
     </Box>
   );
 });

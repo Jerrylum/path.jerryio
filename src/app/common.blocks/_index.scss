@@ -85,6 +85,21 @@ th {
   padding-inline: 1ex;
 }
 
+// For menu list
+.MuiPaper-root {
+  transition: none !important;
+}
+
+// For accordion
+.MuiPaper-root {
+  background-image: none !important; // remove tiny dot pattern in accordion
+}
+
+.notistack-SnackbarContainer {
+  // cspell:disable-line
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+}
+
 // See: https://stackoverflow.com/questions/23885255/how-to-remove-ignore-hover-css-style-on-touch-devices
 @mixin on-hover {
   @media (hover: hover) and (pointer: fine) {

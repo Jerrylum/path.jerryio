@@ -74,31 +74,3 @@
     }
   }
 }
-
-// For menu list
-.MuiPaper-root {
-  transition: none !important;
-}
-
-// For accordion
-.MuiPaper-root {
-  background-image: none !important; // remove tiny dot pattern in accordion
-}
-
-.notistack-SnackbarContainer {
-  // cspell:disable-line
-  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
-}
-
-.canvas-tooltip {
-  user-select: none;
-  pointer-events: none !important;
-}
-
-.canvas-tooltip-label {
-  padding: 8px 12px;
-  display: inline-block;
-  cursor: pointer;
-  user-select: none;
-  pointer-events: auto;
-}
