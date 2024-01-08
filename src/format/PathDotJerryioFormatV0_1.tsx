@@ -1,18 +1,18 @@
 import { makeAutoObservable } from "mobx";
-import { MainApp, getAppStores } from "../core/MainApp";
-import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
-import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
+import { MainApp, getAppStores } from "@core/MainApp";
+import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "@core/Util";
+import { Quantity, UnitConverter, UnitOfLength } from "@core/Unit";
 import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { RangeSlider } from "../component/RangeSlider";
 import { Box, Typography } from "@mui/material";
-import { UpdateProperties } from "../core/Command";
+import { UpdateProperties } from "@core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
-import { PointCalculationResult, getPathPoints } from "../core/Calculation";
-import { BentRateApplicationDirection, Path, Segment } from "../core/Path";
-import { isCoordinateWithHeading } from "../core/Coordinate";
-import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
+import { PointCalculationResult, getPathPoints } from "@core/Calculation";
+import { BentRateApplicationDirection, Path, Segment } from "@core/Path";
+import { isCoordinateWithHeading } from "@core/Coordinate";
+import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {

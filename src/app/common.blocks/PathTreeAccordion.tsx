@@ -13,7 +13,7 @@ import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { action, makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Segment, EndControl, Path, Control, PathTreeItem } from "../../core/Path";
+import { Segment, EndControl, Path, Control, PathTreeItem } from "@core/Path";
 import {
   AddPath,
   MovePathTreeItem,
@@ -21,17 +21,17 @@ import {
   RemovePathsAndEndControls,
   UpdatePathTreeItems,
   UpdateProperties
-} from "../../core/Command";
-import { getAppStores } from "../../core/MainApp";
-import { Quantity, UnitOfLength } from "../../core/Unit";
+} from "@core/Command";
+import { getAppStores } from "@core/MainApp";
+import { Quantity, UnitOfLength } from "@core/Unit";
 import classNames from "classnames";
-import { IS_MAC_OS } from "../../core/Util";
+import { IS_MAC_OS } from "@core/Util";
 import React from "react";
 import { APP_VERSION_STRING } from "../../Version";
 import DOMPurify from "dompurify";
 
 import "./PathTreeAccordion.scss";
-import { LayoutType } from "../../core/Layout";
+import { LayoutType } from "@core/Layout";
 import { PanelContainer, PanelStaticContainerProps } from "./Panel";
 import ViewListIcon from "@mui/icons-material/ViewList";
 

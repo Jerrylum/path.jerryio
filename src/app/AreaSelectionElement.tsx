@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { Vector } from "../core/Path";
+import { Vector } from "@core/Path";
 import Konva from "konva";
 import { Rect } from "react-konva";
 import React from "react";

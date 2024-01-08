@@ -1,17 +1,17 @@
 import { Box } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import { EndControl } from "../../core/Path";
+import { EndControl } from "@core/Path";
 import { ObserverInput, clampQuantity } from "../../component/ObserverInput";
-import { Quantity, UnitOfAngle, UnitOfLength } from "../../core/Unit";
-import { UpdatePathTreeItems } from "../../core/Command";
-import { getAppStores } from "../../core/MainApp";
+import { Quantity, UnitOfAngle, UnitOfLength } from "@core/Unit";
+import { UpdatePathTreeItems } from "@core/Command";
+import { getAppStores } from "@core/MainApp";
 import { NumberUOA, NumberUOL } from "../../token/Tokens";
-import { parseFormula } from "../../core/Util";
+import { parseFormula } from "@core/Util";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 
 import "./ControlAccordion.scss";
 import { PanelContainer } from "./Panel";
-import { LayoutType } from "../../core/Layout";
+import { LayoutType } from "@core/Layout";
 
 const ControlPanelBody = observer((props: {}) => {
   const { app } = getAppStores();

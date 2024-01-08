@@ -28,18 +28,18 @@ import {
   getDefaultBuiltInFieldImage,
   getFieldImageOriginTypeDescription,
   validateAndPurifyFieldImageURL
-} from "../../core/Asset";
-import { getAppStores } from "../../core/MainApp";
-import { useFieldImageAsset, useImageState, useMobxStorage } from "../../core/Hook";
+} from "@core/Asset";
+import { getAppStores } from "@core/MainApp";
+import { useFieldImageAsset, useImageState, useMobxStorage } from "@core/Hook";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { ObserverInput } from "../../component/ObserverInput";
 import { NumberUOL } from "../../token/Tokens";
-import { makeId, parseFormula, runInActionAsync } from "../../core/Util";
-import { UnitOfLength } from "../../core/Unit";
+import { makeId, parseFormula, runInActionAsync } from "@core/Util";
+import { UnitOfLength } from "@core/Unit";
 import React from "react";
-import { Vector } from "../../core/Path";
+import { Vector } from "@core/Path";
 import GetAppIcon from "@mui/icons-material/GetApp";
-import { UpdateProperties } from "../../core/Command";
+import { UpdateProperties } from "@core/Command";
 
 import "./AssetManagerModal.scss";
 

@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
-import { Vector } from "../core/Path";
-import { FieldCanvasConverter } from "../core/Canvas";
+import { Vector } from "@core/Path";
+import { FieldCanvasConverter } from "@core/Canvas";
 import { Line } from "react-konva";
 
 const SegmentControlVisualLineElement = observer((props: { start: Vector; end: Vector; fcc: FieldCanvasConverter }) => {

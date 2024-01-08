@@ -1,9 +1,9 @@
 import { Box, Button, Card, Typography } from "@mui/material";
 import React from "react";
-import { getAppStores } from "../../core/MainApp";
+import { getAppStores } from "@core/MainApp";
 import { makeAutoObservable, action, when, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useMobxStorage } from "../../core/Hook";
+import { useMobxStorage } from "@core/Hook";
 import { ObserverInput } from "../../component/ObserverInput";
 import { Modal } from "./Modal";
 

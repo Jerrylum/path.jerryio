@@ -2,10 +2,10 @@ import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import Konva from "konva";
 import { Line } from "react-konva";
-import { EndControl } from "../core/Path";
+import { EndControl } from "@core/Path";
 import { SegmentElementProps } from "./SegmentElement";
-import { ConvertSegment, SplitSegment } from "../core/Command";
-import { getAppStores } from "../core/MainApp";
+import { ConvertSegment, SplitSegment } from "@core/Command";
+import { getAppStores } from "@core/MainApp";
 
 const SegmentPointsHitBoxElement = observer((props: SegmentElementProps) => {
   const { app } = getAppStores();

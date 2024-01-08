@@ -1,6 +1,6 @@
 import { action, makeAutoObservable, makeObservable, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Control, EndControl, Path, Segment, Vector, isAnyControl } from "../core/Path";
+import { Control, EndControl, Path, Segment, Vector, isAnyControl } from "@core/Path";
 import Konva from "konva";
 import { Circle, Group, Image, Layer, Line, Stage } from "react-konva";
 import { SegmentElement } from "./SegmentElement";
@@ -9,9 +9,9 @@ import useImage from "use-image";
 
 import { ControlElement } from "./ControlElement";
 import { AreaSelectionElement } from "./AreaSelectionElement";
-import { UnitConverter, UnitOfLength } from "../core/Unit";
-import { FieldCanvasConverter, getClientXY, isKonvaTouchEvent } from "../core/Canvas";
-import { clamp, getFieldCanvasFullHeight, getFieldCanvasHalfHeight } from "../core/Util";
+import { UnitConverter, UnitOfLength } from "@core/Unit";
+import { FieldCanvasConverter, getClientXY, isKonvaTouchEvent } from "@core/Canvas";
+import { clamp, getFieldCanvasFullHeight, getFieldCanvasHalfHeight } from "@core/Util";
 import {
   AddCubicSegment,
   AddLinearSegment,
@@ -19,19 +19,19 @@ import {
   ConvertSegment,
   RemovePathsAndEndControls,
   SplitSegment
-} from "../core/Command";
-import { getAppStores } from "../core/MainApp";
+} from "@core/Command";
+import { getAppStores } from "@core/MainApp";
 import { RobotElement } from "./RobotElement";
-import { fromHeadingInDegreeToAngleInRadian } from "../core/Calculation";
-import { MagnetReference } from "../core/Magnet";
-import { useFieldImageAsset, useMobxStorage, useTouchEvent, useWindowSize } from "../core/Hook";
-import { LayoutType } from "../core/Layout";
+import { fromHeadingInDegreeToAngleInRadian } from "@core/Calculation";
+import { MagnetReference } from "@core/Magnet";
+import { useFieldImageAsset, useMobxStorage, useTouchEvent, useWindowSize } from "@core/Hook";
+import { LayoutType } from "@core/Layout";
 import { Box } from "@mui/material";
 import { Instance } from "@popperjs/core";
-import { TouchEventListener } from "../core/TouchEventListener";
+import { TouchEventListener } from "@core/TouchEventListener";
 import { Label, Padding0Tooltip } from "../component/TooltipLabel";
 import { LayoutContext } from "./Layouts";
-import { getDefaultBuiltInFieldImage } from "../core/Asset";
+import { getDefaultBuiltInFieldImage } from "@core/Asset";
 
 function fixControlTooCloseToTheEndControl() {
   // UX: Fix control point too close to the end control point when adding the first new cubic segment

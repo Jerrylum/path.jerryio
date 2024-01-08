@@ -1,10 +1,10 @@
 import { action } from "mobx";
 import { instanceToPlain, plainToClassFromExist, plainToInstance, Expose, Exclude, Type } from "class-transformer";
-import { MainApp } from "../core/MainApp";
-import { Segment, EndControl, Path } from "../core/Path";
+import { MainApp } from "@core/MainApp";
+import { Segment, EndControl, Path } from "@core/Path";
 import { Format } from "./Format";
 import DOMPurify from "dompurify";
-import { PointCalculationResult } from "../core/Calculation";
+import { PointCalculationResult } from "@core/Calculation";
 import { GeneralConfig, convertFormat } from "./Config";
 import { CustomGeneralConfig, CustomPathConfig } from "./Config.test";
 import { LemLibFormatV1_0, LemLibPathConfig } from "./LemLibFormatV1_0";

@@ -1,7 +1,7 @@
 import { Slider } from "@mui/material";
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { EditableNumberRange } from "../core/Util";
+import { EditableNumberRange } from "@core/Util";
 
 const RangeSlider = observer(
   (props: { range: EditableNumberRange; inverted?: boolean; onChange: (from: number, to: number) => void }) => {

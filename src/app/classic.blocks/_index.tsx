@@ -1,8 +1,8 @@
 import { Box, Card } from "@mui/material";
 import classNames from "classnames";
 import { observer } from "mobx-react-lite";
-import { LayoutType } from "../../core/Layout";
-import { getAppStores } from "../../core/MainApp";
+import { LayoutType } from "@core/Layout";
+import { getAppStores } from "@core/MainApp";
 import { FieldCanvasElement } from "../FieldCanvasElement";
 import { getAllPanelContainers } from "../Layouts";
 import { MenuAccordion } from "../common.blocks/MenuAccordion";

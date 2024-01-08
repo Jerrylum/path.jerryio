@@ -1,6 +1,6 @@
 import { Typography } from "@mui/material";
-import { getAppStores } from "../core/MainApp";
-import { LayoutType } from "../core/Layout";
+import { getAppStores } from "@core/MainApp";
+import { LayoutType } from "@core/Layout";
 import { PanelContainer } from "./common.blocks/Panel";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
 

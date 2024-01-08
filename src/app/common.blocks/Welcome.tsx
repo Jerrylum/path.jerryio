@@ -5,12 +5,12 @@ import { Modal } from "./Modal";
 import { MarkdownOverwrittenComponents } from "../MarkdownSupport";
 import { action } from "mobx";
 import React from "react";
-import { LayoutType } from "../../core/Layout";
-import { getAppStores } from "../../core/MainApp";
+import { LayoutType } from "@core/Layout";
+import { getAppStores } from "@core/MainApp";
 import { LayoutContext } from "../Layouts";
 import WelcomeMDX from "./WelcomeForOthers.mdx";
 import WelcomeForBraveMDX from "./WelcomeForBrave.mdx";
-import { isBraveBrowser } from "../../core/Util";
+import { isBraveBrowser } from "@core/Util";
 
 import "./Welcome.scss";
 

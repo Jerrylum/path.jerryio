@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
-import { EndControl, Vector } from "../core/Path";
-import { FieldCanvasConverter } from "../core/Canvas";
+import { EndControl, Vector } from "@core/Path";
+import { FieldCanvasConverter } from "@core/Canvas";
 import { Group, Line, Rect } from "react-konva";
 
 const RobotElement = observer(

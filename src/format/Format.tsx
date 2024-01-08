@@ -1,15 +1,15 @@
-import { Path, Segment } from "../core/Path";
+import { Path, Segment } from "@core/Path";
 import { GeneralConfig } from "./Config";
-import { PointCalculationResult } from "../core/Calculation";
-import { APP_VERSION, MainApp } from "../core/MainApp";
+import { PointCalculationResult } from "@core/Calculation";
+import { APP_VERSION, MainApp } from "@core/MainApp";
 import { Range } from "semver";
-import { UnitOfLength } from "../core/Unit";
+import { UnitOfLength } from "@core/Unit";
 import { LemLibFormatV0_4 } from "./LemLibFormatV0_4";
 import { PathDotJerryioFormatV0_1 } from "./PathDotJerryioFormatV0_1";
 import { LemLibOdomGeneratorFormatV0_4 } from "./LemLibOdomGeneratorFormatV0_4";
-import { CancellableCommand, ExecutionEventListenersContainer } from "../core/Command";
+import { CancellableCommand, ExecutionEventListenersContainer } from "@core/Command";
 import { LemLibFormatV1_0 } from "./LemLibFormatV1_0";
-import { isExperimentalFeaturesEnabled } from "../core/Preferences";
+import { isExperimentalFeaturesEnabled } from "@core/Preferences";
 
 export interface Format {
   isInit: boolean;

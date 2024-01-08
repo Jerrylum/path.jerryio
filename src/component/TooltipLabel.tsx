@@ -1,6 +1,6 @@
 import { action } from "mobx";
 import { Tooltip, TooltipProps, Typography, styled, tooltipClasses } from "@mui/material";
-import { getAppStores } from "../core/MainApp";
+import { getAppStores } from "@core/MainApp";
 import classNames from "classnames";
 
 export const Padding0Tooltip = styled(({ className, ...props }: TooltipProps) => (

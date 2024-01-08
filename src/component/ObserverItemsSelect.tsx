@@ -2,7 +2,7 @@ import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { FormControlProps, FormControl, InputLabel, Select, SelectChangeEvent, MenuItem } from "@mui/material";
 import React from "react";
-import { makeId } from "../core/Util";
+import { makeId } from "@core/Util";
 
 export type Item<TValue> = {
   key: string | number;

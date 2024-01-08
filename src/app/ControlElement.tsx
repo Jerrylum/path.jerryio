@@ -1,17 +1,17 @@
 import { makeObservable, makeAutoObservable, action, observable } from "mobx";
 import { observer } from "mobx-react-lite";
-import { AnyControl, Control, EndControl, Path, Vector } from "../core/Path";
+import { AnyControl, Control, EndControl, Path, Vector } from "@core/Path";
 import Konva from "konva";
 import { Circle, Line, Path as KonvaPath } from "react-konva";
 import { Portal } from "react-konva-utils";
-import { DragControls, RemovePathsAndEndControls, UpdatePathTreeItems } from "../core/Command";
-import { getAppStores } from "../core/MainApp";
-import { boundHeading, fromHeadingInDegreeToAngleInRadian, toHeading } from "../core/Calculation";
-import { MagnetReference, magnet } from "../core/Magnet";
+import { DragControls, RemovePathsAndEndControls, UpdatePathTreeItems } from "@core/Command";
+import { getAppStores } from "@core/MainApp";
+import { boundHeading, fromHeadingInDegreeToAngleInRadian, toHeading } from "@core/Calculation";
+import { MagnetReference, magnet } from "@core/Magnet";
 import React from "react";
-import { TouchEventListener } from "../core/TouchEventListener";
-import { useMobxStorage } from "../core/Hook";
-import { FieldCanvasConverter, isKonvaTouchEvent } from "../core/Canvas";
+import { TouchEventListener } from "@core/TouchEventListener";
+import { useMobxStorage } from "@core/Hook";
+import { FieldCanvasConverter, isKonvaTouchEvent } from "@core/Canvas";
 
 export interface ControlElementProps {
   lastControl: boolean;

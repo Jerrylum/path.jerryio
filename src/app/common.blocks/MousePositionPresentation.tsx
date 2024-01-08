@@ -1,8 +1,8 @@
 import { observer } from "mobx-react-lite";
-import { getAppStores } from "../../core/MainApp";
+import { getAppStores } from "@core/MainApp";
 import { Box, BoxProps, Card, Typography } from "@mui/material";
 import classNames from "classnames";
-import { LayoutType } from "../../core/Layout";
+import { LayoutType } from "@core/Layout";
 import { FieldCanvasElement } from "../FieldCanvasElement";
 import { getAllPanelContainers } from "../Layouts";
 import { MenuAccordion } from "./MenuAccordion";
