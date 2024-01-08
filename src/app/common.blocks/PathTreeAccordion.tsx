@@ -732,7 +732,7 @@ export const PathTreeAccordion = (props: { layout: LayoutType }): PanelStaticCon
     children: (
       <>
         <TreeView variables={variables} />
-        {app.paths.length === 0 && <Typography>(The file is empty)</Typography>}
+        {props.layout !== LayoutType.Classic && app.paths.length === 0 && <Typography>(The file is empty)</Typography>}
       </>
     ),
     icon: <ViewListIcon fontSize="large" />

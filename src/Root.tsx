@@ -23,12 +23,15 @@ import React, { useEffect } from "react";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 import { LayoutType, getUsableLayout } from "./core/Layout";
 import { getAppThemeInfo } from "./app/Theme";
-import { ClassisLayout, ExclusiveLayout, LayoutProvider, MobileLayout } from "./app/Layouts";
+import { LayoutProvider } from "./app/Layouts";
 import { AboutModal } from "./app/common.blocks/AboutModal";
 import { WelcomeModal } from "./app/common.blocks/Welcome";
 import { PreferencesModal, PreferencesModalSymbol } from "./app/common.blocks/PreferencesModal";
 import { AssetManagerModal } from "./app/common.blocks/AssetManagerModal";
 import { RequireLocalFieldImageModal } from "./app/RequireLocalFieldImageModal";
+import { ClassisLayout } from "./app/classic.blocks/_index";
+import { ExclusiveLayout } from "./app/exclusive.blocks/_index";
+import { MobileLayout } from "./app/mobile.blocks/_index";
 
 const Root = observer(() => {
   const { app, confirmation, modals, appPreferences, clipboard } = getAppStores();
