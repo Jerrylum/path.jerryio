@@ -3,12 +3,12 @@ import classNames from "classnames";
 import { observer } from "mobx-react-lite";
 import { LayoutType } from "@core/Layout";
 import { getAppStores } from "@core/MainApp";
-import { FieldCanvasElement } from "../FieldCanvasElement";
+import { FieldCanvasElement } from "../common.blocks/field-canvas/FieldCanvasElement";
 import { getAllPanelContainers } from "../Layouts";
-import { MenuAccordion } from "../common.blocks/MenuAccordion";
-import { PanelStaticContainer, PanelAccordionContainer } from "../common.blocks/Panel";
-import { PathTreeAccordion } from "../common.blocks/PathTreeAccordion";
-import { SpeedCanvasElement } from "../common.blocks/SpeedCanvasElement";
+import { MenuAccordion } from "../common.blocks/panel/MenuAccordion";
+import { PanelStaticContainer, PanelAccordionContainer } from "../common.blocks/panel/Panel";
+import { PathTreeAccordion } from "../common.blocks/panel/PathTreeAccordion";
+import { SpeedCanvasElement } from "../common.blocks/speed-canvas/SpeedCanvasElement";
 import { MousePositionPresentation } from "../common.blocks/MousePositionPresentation";
 
 export const ClassisLayout = observer(() => {

@@ -20,16 +20,16 @@ import React, { forwardRef } from "react";
 import { IS_MAC_OS, getMacHotKeyString, makeId } from "@core/Util";
 import { onDownload, onDownloadAs, onNew, onOpen, onSave, onSaveAs } from "@core/InputOutput";
 import { getAppStores } from "@core/MainApp";
-import { AppThemeType } from "../Theme";
+import { AppThemeType } from "../../Theme";
 import { RemovePathsAndEndControls } from "@core/Command";
 import { checkForUpdates } from "@core/Versioning";
 import { Path } from "@core/Path";
 import { LayoutType, getAvailableLayouts } from "@core/Layout";
-import { LayoutContext } from "../Layouts";
+import { LayoutContext } from "../../Layouts";
 import { useWindowSize } from "@core/Hook";
-import { AboutModalSymbol } from "./AboutModal";
-import { WelcomeModalSymbol } from "./Welcome";
-import { PreferencesModalSymbol } from "./PreferencesModal";
+import { AboutModalSymbol } from "../modal/AboutModal";
+import { WelcomeModalSymbol } from "../modal/WelcomeModal";
+import { PreferencesModalSymbol } from "../modal/PreferencesModal";
 
 import "./MenuAccordion.scss";
 

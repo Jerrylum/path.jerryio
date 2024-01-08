@@ -4,7 +4,7 @@ import { getAppStores } from "@core/MainApp";
 import { makeAutoObservable, action, when, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useMobxStorage } from "@core/Hook";
-import { ObserverInput } from "../../component/ObserverInput";
+import { ObserverInput } from "../../component.blocks/ObserverInput";
 import { Modal } from "./Modal";
 
 import "./ConfirmationModal.scss";

@@ -4,7 +4,7 @@ import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, makeI
 import { Quantity, UnitConverter, UnitOfLength } from "@core/Unit";
 import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
-import { RangeSlider } from "../component/RangeSlider";
+import { RangeSlider } from "@app/component.blocks/RangeSlider";
 import { Box, Typography } from "@mui/material";
 import { UpdateProperties } from "@core/Command";
 import { Exclude, Expose, Type } from "class-transformer";

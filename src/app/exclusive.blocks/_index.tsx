@@ -11,13 +11,13 @@ import React from "react";
 import { useWindowSize } from "@core/Hook";
 import { LayoutType } from "@core/Layout";
 import { getAppStores } from "@core/MainApp";
-import { FieldCanvasElement } from "../FieldCanvasElement";
+import { FieldCanvasElement } from "../common.blocks/field-canvas/FieldCanvasElement";
 import { getAllPanelContainers } from "../Layouts";
 import { MousePositionPresentation } from "../common.blocks/MousePositionPresentation";
-import { MenuMainDropdown } from "../common.blocks/MenuAccordion";
-import { PanelFloatingContainer } from "../common.blocks/Panel";
-import { PathTreeAccordion } from "../common.blocks/PathTreeAccordion";
-import { SpeedCanvasElement } from "../common.blocks/SpeedCanvasElement";
+import { MenuMainDropdown } from "../common.blocks/panel/MenuAccordion";
+import { PanelFloatingContainer } from "../common.blocks/panel/Panel";
+import { PathTreeAccordion } from "../common.blocks/panel/PathTreeAccordion";
+import { SpeedCanvasElement } from "../common.blocks/speed-canvas/SpeedCanvasElement";
 
 class ExclusiveLayoutVariables {
   private panelStates: { [key: string]: boolean } = {};

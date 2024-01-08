@@ -3,13 +3,12 @@ import { getAppStores } from "@core/MainApp";
 import { Box, BoxProps, Card, Typography } from "@mui/material";
 import classNames from "classnames";
 import { LayoutType } from "@core/Layout";
-import { FieldCanvasElement } from "../FieldCanvasElement";
+import { FieldCanvasElement } from "./field-canvas/FieldCanvasElement";
 import { getAllPanelContainers } from "../Layouts";
-import { MenuAccordion } from "./MenuAccordion";
-import { PanelStaticContainer, PanelAccordionContainer } from "./Panel";
-import { PathTreeAccordion } from "./PathTreeAccordion";
-import { SpeedCanvasElement } from "./SpeedCanvasElement";
-import "./MousePositionPresentation.scss";
+import { MenuAccordion } from "./panel/MenuAccordion";
+import { PanelStaticContainer, PanelAccordionContainer } from "./panel/Panel";
+import { PathTreeAccordion } from "./panel/PathTreeAccordion";
+import { SpeedCanvasElement } from "./speed-canvas/SpeedCanvasElement";
 
 export const TravelDistancePresentation = observer(() => {
   const { app } = getAppStores();

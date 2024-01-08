@@ -4,9 +4,10 @@ import { observer } from "mobx-react-lite";
 import { action } from "mobx";
 import { Card, Typography, Box, Button } from "@mui/material";
 import { MuiFileInput } from "mui-file-input";
-import { Modal } from "./common.blocks/Modal";
+import { Modal } from "./Modal";
 import React from "react";
 import { RequireLocalFieldImageModalSymbol } from "@core/FieldImagePrompt";
+import "./RequireLocalFieldImageModal.scss";
 
 export const RequireLocalFieldImageModal = observer(() => {
   const { assetManager, modals } = getAppStores();

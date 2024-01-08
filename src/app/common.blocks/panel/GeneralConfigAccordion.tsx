@@ -1,21 +1,22 @@
 import { Box, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { getAllFormats } from "../format/Format";
-import { ObserverInput, clampQuantity } from "../component/ObserverInput";
+import { getAllFormats } from "../../../format/Format";
+import { ObserverInput, clampQuantity } from "../../component.blocks/ObserverInput";
 import { Quantity, UnitOfLength } from "@core/Unit";
 import { UpdateProperties } from "@core/Command";
 import { getAppStores } from "@core/MainApp";
-import { ObserverEnumSelect } from "../component/ObserverEnumSelect";
-import { ObserverCheckbox } from "../component/ObserverCheckbox";
-import { NumberUOL } from "../token/Tokens";
+import { ObserverEnumSelect } from "../../component.blocks/ObserverEnumSelect";
+import { ObserverCheckbox } from "../../component.blocks/ObserverCheckbox";
+import { NumberUOL } from "../../../token/Tokens";
 import { parseFormula } from "@core/Util";
-import { ObserverItemsSelect } from "../component/ObserverItemsSelect";
+import { ObserverItemsSelect } from "../../component.blocks/ObserverItemsSelect";
 import { FieldImageAsset, FieldImageOriginType } from "@core/Asset";
-import { AssetManagerModalSymbol } from "./common.blocks/AssetManagerModal";
+import { AssetManagerModalSymbol } from "../modal/AssetManagerModal";
 import { LayoutType } from "@core/Layout";
-import { PanelContainer } from "./common.blocks/Panel";
+import { PanelContainer } from "./Panel";
 import TuneIcon from "@mui/icons-material/Tune";
+import "./GeneralConfigAccordion.scss";
 
 const GeneralConfigPanelBody = observer((props: {}) => {
   const { app, assetManager, confirmation, modals, appPreferences } = getAppStores();

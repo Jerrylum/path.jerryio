@@ -1,11 +1,11 @@
 import { Box } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import { EndControl } from "@core/Path";
-import { ObserverInput, clampQuantity } from "../../component/ObserverInput";
+import { ObserverInput, clampQuantity } from "../../component.blocks/ObserverInput";
 import { Quantity, UnitOfAngle, UnitOfLength } from "@core/Unit";
 import { UpdatePathTreeItems } from "@core/Command";
 import { getAppStores } from "@core/MainApp";
-import { NumberUOA, NumberUOL } from "../../token/Tokens";
+import { NumberUOA, NumberUOL } from "../../../token/Tokens";
 import { parseFormula } from "@core/Util";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 

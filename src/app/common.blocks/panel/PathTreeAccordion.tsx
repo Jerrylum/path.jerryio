@@ -27,12 +27,12 @@ import { Quantity, UnitOfLength } from "@core/Unit";
 import classNames from "classnames";
 import { IS_MAC_OS } from "@core/Util";
 import React from "react";
-import { APP_VERSION_STRING } from "../../Version";
+import { APP_VERSION_STRING } from "../../../Version";
 import DOMPurify from "dompurify";
 
 import "./PathTreeAccordion.scss";
 import { LayoutType } from "@core/Layout";
-import { PanelContainer, PanelStaticContainerProps } from "./Panel";
+import { PanelStaticContainerProps } from "./Panel";
 import ViewListIcon from "@mui/icons-material/ViewList";
 
 const MIME_TYPE = `application/x-item-uid-path.jerryio.com-${APP_VERSION_STRING}`;

@@ -6,7 +6,7 @@ import { UnitOfLength, UnitConverter, Quantity } from "@core/Unit";
 import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { Box, Slider, Typography } from "@mui/material";
-import { RangeSlider } from "../component/RangeSlider";
+import { RangeSlider } from "@app/component.blocks/RangeSlider";
 import { AddKeyframe, UpdateProperties } from "@core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";

@@ -1,13 +1,13 @@
 import { Card, Divider, Typography } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import { getAppStores } from "@core/MainApp";
-import { AppThemeType } from "../Theme";
+import { AppThemeType } from "../../Theme";
 import { clamp } from "@core/Util";
-import { ObserverEnumSelect } from "../../component/ObserverEnumSelect";
-import { ObserverCheckbox } from "../../component/ObserverCheckbox";
-import { ObserverInput } from "../../component/ObserverInput";
+import { ObserverEnumSelect } from "../../component.blocks/ObserverEnumSelect";
+import { ObserverCheckbox } from "../../component.blocks/ObserverCheckbox";
+import { ObserverInput } from "../../component.blocks/ObserverInput";
 import { Modal } from "./Modal";
-import { enqueueInfoSnackbar } from "../Notice";
+import { enqueueInfoSnackbar } from "../../Notice";
 import { Logger } from "@core/Logger";
 
 import "./PreferencesModal.scss";

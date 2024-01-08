@@ -1,5 +1,5 @@
 import { makeAutoObservable, intercept } from "mobx";
-import { AppThemeType } from "../app/Theme";
+import { AppThemeType } from "@app/Theme";
 import { LayoutType } from "./Layout";
 
 export class Preferences {

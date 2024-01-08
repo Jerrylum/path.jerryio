@@ -1,7 +1,7 @@
 import { makeAutoObservable, action } from "mobx";
 import { Box, Typography, Slider } from "@mui/material";
 import { Expose, Exclude, Type } from "class-transformer";
-import { RangeSlider } from "../component/RangeSlider";
+import { RangeSlider } from "@app/component.blocks/RangeSlider";
 import { AddKeyframe, UpdateProperties } from "@core/Command";
 import { MainApp, getAppStores } from "@core/MainApp";
 import { BentRateApplicationDirection, Path, Segment, SpeedKeyframe } from "@core/Path";

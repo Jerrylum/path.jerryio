@@ -10,16 +10,16 @@ import { IsBoolean, IsObject, IsPositive, IsString, MinLength, ValidateNested } 
 import { PointCalculationResult, getPathPoints, getDiscretePoints, fromDegreeToRadian } from "@core/Calculation";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
 import { UpdateProperties } from "@core/Command";
-import { ObserverInput } from "../component/ObserverInput";
+import { ObserverInput } from "@app/component.blocks/ObserverInput";
 import { Box, Button, Typography } from "@mui/material";
 import { euclideanRotation } from "@core/Coordinate";
 import { CodePointBuffer, Int } from "../token/Tokens";
 import { observer } from "mobx-react-lite";
-import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "../app/Notice";
+import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "@app/Notice";
 import { Logger } from "@core/Logger";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 import { useCustomHotkeys } from "@core/Hook";
-import { ObserverCheckbox } from "../component/ObserverCheckbox";
+import { ObserverCheckbox } from "@app/component.blocks/ObserverCheckbox";
 
 const logger = Logger("LemLib Odom Code Gen v0.4.x (inch)");
 

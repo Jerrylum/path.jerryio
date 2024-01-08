@@ -9,12 +9,12 @@ import { observer } from "mobx-react-lite";
 import React from "react";
 import { LayoutType } from "@core/Layout";
 import { getAppStores } from "@core/MainApp";
-import { FieldCanvasElement } from "../FieldCanvasElement";
+import { FieldCanvasElement } from "../common.blocks/field-canvas/FieldCanvasElement";
 import { getAllPanelContainers } from "../Layouts";
-import { MenuMainDropdown } from "../common.blocks/MenuAccordion";
-import { PanelFloatingContainer, PanelStaticContainer } from "../common.blocks/Panel";
-import { PathTreeAccordion } from "../common.blocks/PathTreeAccordion";
-import { SpeedCanvasElement } from "../common.blocks/SpeedCanvasElement";
+import { MenuMainDropdown } from "../common.blocks/panel/MenuAccordion";
+import { PanelFloatingContainer, PanelStaticContainer } from "../common.blocks/panel/Panel";
+import { PathTreeAccordion } from "../common.blocks/panel/PathTreeAccordion";
+import { SpeedCanvasElement } from "../common.blocks/speed-canvas/SpeedCanvasElement";
 
 class MobileLayoutVariables {
   public currentPanel: string | null = null;
