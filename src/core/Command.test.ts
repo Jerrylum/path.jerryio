@@ -13,7 +13,9 @@ import {
   InsertControls,
   AddPath,
   MovePath,
-  MovePathTreeItem
+  MovePathTreeItem,
+  RemovePathsAndEndControls,
+  RemovePathTreeItems
 } from "./Command";
 import {
   Control,
@@ -480,8 +482,6 @@ test("MovePathTreeItem", () => {
   const i2 = new Control(2, 0);
   const i3 = new Control(3, 0);
   const i4 = new EndControl(4, 0, 0);
-  const i5 = new EndControl(5, 0, 0);
-  const i6 = new EndControl(6, 0, 0);
   const pathtree = [i1, i4];
 
   //invalid pathtree without path
@@ -513,4 +513,104 @@ test("MovePathTreeItem", () => {
 
   movePathTreeItem4.redo();
   expect(traversal(lstpath).length).toBe(3);
+});
+
+test("RemovePathsAndEndControls", () => {
+  const i1 = new EndControl(1, 0, 0);
+  const i2 = new Control(2, 0);
+  const i3 = new Control(3, 0);
+  const i4 = new EndControl(4, 0, 0);
+  const i5 = new Control(6, 0);
+  const i6 = new Control(7, 0);
+  const i7 = new EndControl(8, 0, 0);
+  const lstseg = [new Segment(i1, i2, i3, i4), new Segment(i4, i5, i6, i7)];
+  // const keyframe = new SpeedKeyframe(0, 0);
+  // lstseg[0]["speedProfiles"].add(keyframe);
+  const lstpath = [new Path(new CustomPathConfig()), new Path(new CustomPathConfig(), ...lstseg)];
+  // remove end control that is the first control of segment but not the first segment
+  const pathtree = traversal(lstpath); // path1, path2, i1, i2, i3, i4, i5, i6, i7
+  expect(pathtree.length).toBe(9);
+  const removePathsAndEndControls = new RemovePathsAndEndControls(lstpath, [pathtree[5]]);
+  expect(removePathsAndEndControls.execute()).toBeTruthy();
+  expect(traversal(lstpath).length).toBe(6); // path1, path2, i1, i2, i6, i7
+  expect(removePathsAndEndControls.removedItems.length).toBe(3);
+
+  removePathsAndEndControls.undo();
+  expect(traversal(lstpath).length).toBe(9);
+
+  removePathsAndEndControls.redo();
+  expect(traversal(lstpath).length).toBe(6);
+
+  // invalid pathtree without path
+  const removePathsAndEndControls2 = new RemovePathsAndEndControls([], []);
+  expect(removePathsAndEndControls2.execute()).toBeFalsy();
+
+  // remove path via its uid
+  const pathtree2 = traversal(lstpath); // path1, path2, i1, i2, i6, i7
+  const path1UID = pathtree2[0].uid;
+  const removePathsAndEndControls3 = new RemovePathsAndEndControls(lstpath, [path1UID]);
+  expect(removePathsAndEndControls3.execute()).toBeTruthy();
+  expect(traversal(lstpath).length).toBe(5); // path2, i1, i2, i6, i7
+
+  removePathsAndEndControls3.undo();
+  expect(traversal(lstpath).length).toBe(6);
+
+  removePathsAndEndControls3.redo();
+  expect(traversal(lstpath).length).toBe(5);
+
+  // remove end control that is the first control of segment and is the first segment
+  const pathtree3 = traversal(lstpath); // path2, i1, i2, i6, i7
+  const removePathsAndEndControls4 = new RemovePathsAndEndControls(lstpath, [pathtree3[1]]);
+  expect(removePathsAndEndControls4.execute()).toBeTruthy();
+  expect(traversal(lstpath).length).toBe(1); // path2
+
+  removePathsAndEndControls4.undo();
+  expect(traversal(lstpath).length).toBe(5);
+
+  removePathsAndEndControls4.redo();
+  expect(traversal(lstpath).length).toBe(1);
+
+  const lstseg2 = [new Segment(i1, i2, i3, i4), new Segment(i4, i5, i6, i7)];
+  const lstpath2 = [new Path(new CustomPathConfig()), new Path(new CustomPathConfig(), ...lstseg2)];
+  // remove end control that is the last control of segment
+  const pathtree4 = traversal(lstpath2); // path1, path2, i1, i2, i3, i4, i5, i6, i7
+  const removePathsAndEndControls5 = new RemovePathsAndEndControls(lstpath2, [pathtree4[8]]);
+  expect(removePathsAndEndControls5.execute()).toBeTruthy();
+  expect(traversal(lstpath2).length).toBe(6); // path1, path2, i1, i2, i3, i4
+
+  // remove a control that is not the first or last control of segment
+  const pathtree5 = traversal(lstpath2); // path1, path2, i1, i2, i3, i4
+  const removePathsAndEndControls6 = new RemovePathsAndEndControls(lstpath2, [pathtree5[3]]); // try to remove a control, not end control
+  expect(removePathsAndEndControls6.execute()).toBeFalsy();
+});
+
+test("RemovePathTreeItems", () => {
+  const i1 = new EndControl(1, 0, 0);
+  const i2 = new Control(2, 0);
+  const i3 = new Control(3, 0);
+  const i4 = new EndControl(4, 0, 0);
+  const i5 = new Control(6, 0);
+  const i6 = new Control(7, 0);
+  const i7 = new EndControl(8, 0, 0);
+  const lstseg = [new Segment(i1, i2, i3, i4), new Segment(i4, i5, i6, i7)];
+  // const keyframe = new SpeedKeyframe(0, 0);
+  // lstseg[0]["speedProfiles"].add(keyframe);
+  const lstpath = [new Path(new CustomPathConfig()), new Path(new CustomPathConfig(), ...lstseg)];
+  // remove end control that is the first control of segment but not the first segment
+  const pathtree = traversal(lstpath); // path1, path2, i1, i2, i3, i4, i5, i6, i7
+  expect(pathtree.length).toBe(9);
+  const removePathTreeItems = new RemovePathTreeItems(lstpath, [pathtree[5]]);
+  expect(removePathTreeItems.originalStructure.length).toBe(0);
+  expect(removePathTreeItems.modifiedStructure.length).toBe(0);
+  expect(removePathTreeItems.execute()).toBeTruthy();
+  expect(traversal(lstpath).length).toBe(6); // path1, path2, i1, i2, i6, i7
+  expect(removePathTreeItems.removedItems.length).toBe(3);
+  expect(removePathTreeItems.originalStructure.length).toBe(2);
+  expect(removePathTreeItems.modifiedStructure.length).toBe(2);
+
+  removePathTreeItems.undo();
+  expect(traversal(lstpath).length).toBe(9);
+
+  removePathTreeItems.redo();
+  expect(traversal(lstpath).length).toBe(6);
 });

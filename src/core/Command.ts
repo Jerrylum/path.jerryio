@@ -845,7 +845,6 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
 
   protected removePath(path: Path): boolean {
     const idx = this.paths.indexOf(path);
-    if (idx === -1) return false;
 
     this.paths.splice(idx, 1);
     this.pathActions.push({ index: idx, path });
@@ -883,7 +882,7 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
       } else if (isFirstControlOfSegment) {
         // ALGO: Define that all controls for the segment disappear except for the last one
         this._entities.push(...segment.controls.slice(0, -1));
-      } else if (isLastControlOfLastSegment) {
+      } else {
         // ALGO: Define that all controls for the segment disappear except for the first one
         this._entities.push(...segment.controls.slice(1)); // keep the first control
       }
