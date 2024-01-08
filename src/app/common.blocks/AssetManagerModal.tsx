@@ -92,12 +92,12 @@ export const FieldImageAssetItem = observer(
 
     return (
       <ListItem
-        className="asset-item"
+        className="FieldImageAssetsList-Item"
         disablePadding
         {...(!asset.isOriginType(FieldImageOriginType.BuiltIn)
           ? {
               secondaryAction: (
-                <IconButton edge="end" className="asset-item-delete" onClick={action(onDelete)}>
+                <IconButton edge="end" className="FieldImageAssetsList-ItemDeleteButton" onClick={action(onDelete)}>
                   <DeleteIcon />
                 </IconButton>
               )
@@ -148,15 +148,15 @@ export const FieldImagePreview = observer((props: { preview: FieldImageAsset<Fie
   })();
 
   return (
-    <Box id="asset-preview">
-      <Box id="asset-image-preview">
+    <Box id="FieldImageAssets-PreviewSection">
+      <Box id="FieldImageAssets-AssetImagePreview">
         <svg viewBox="0 0 1 1"></svg>
         <img key={imageKey} ref={imageRef} alt="" src={source} />
-        <Box id="reload-button" onClick={() => setImageKey(makeId(10))}>
+        <Box id="FieldImageAssets-ReloadButton" onClick={() => setImageKey(makeId(10))}>
           <Typography variant="body1">Click To Reload</Typography>
         </Box>
         {imageState === "failed" && (
-          <Box id="failed-message">
+          <Box id="FieldImageAssets-FailedMessage">
             <Typography variant="body1">
               Can't load this image. Check your internet connection and try again.
             </Typography>
@@ -198,8 +198,8 @@ export const FieldImagePreview = observer((props: { preview: FieldImageAsset<Fie
 
 export const FieldImagePreviewPlaceholder = observer(() => {
   return (
-    <Box id="asset-preview">
-      <Box id="asset-image-preview">
+    <Box id="FieldImageAssets-PreviewSection">
+      <Box id="FieldImageAssets-AssetImagePreview">
         <svg viewBox="0 0 1 1"></svg>
       </Box>
       <Box sx={{ marginTop: "1em", minHeight: "100px" }}></Box>
@@ -221,10 +221,10 @@ export const FieldImageList = observer((props: { variables: FieldImageManagerVar
 
   return (
     <Box>
-      <Box id="assets-list">
+      <Box id="FieldImageAssetsList">
         {/* Using the SVG viewBox solution to allow the use of min-height */}
         <svg viewBox="0 0 0.6 0.4"></svg>
-        <Box id="assets-list-content">
+        <Box id="FieldImageAssetsList-Content">
           <List dense>
             {assetManager.assets.map(asset => (
               <FieldImageAssetItem key={asset.signature} variables={variables} asset={asset} />
@@ -456,8 +456,8 @@ export const FieldImageSection = observer(() => {
       <Typography variant="h3" fontSize={18} gutterBottom>
         Field Image
       </Typography>
-      <Box id="field-image-assets">
-        <Box id="assets-list-add">
+      <Box id="FieldImageAssets">
+        <Box id="FieldImageAssets-Body">
           {!variables.draft && <FieldImageList variables={variables} />}
           {variables.draft && <NewFieldImageForm variables={variables} />}
         </Box>
@@ -493,7 +493,7 @@ export const AssetManagerModal = observer(() => {
 
   return (
     <Modal symbol={AssetManagerModalSymbol}>
-      <Card id="asset-manager-modal" className="Modal-Container">
+      <Card id="AssetManagerModal" className="Modal-Container">
         <FieldImageSection />
       </Card>
     </Modal>

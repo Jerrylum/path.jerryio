@@ -1,4 +1,4 @@
-.menu-item.MuiMenuItem-root {
+.Menu-Item.MuiMenuItem-root {
   padding-left: 4px !important;
 
   &.Mui-disabled {
@@ -15,14 +15,14 @@
     }
   }
 
-  svg.menu-item-done {
+  svg.Menu-ItemDoneIcon {
     height: 16px;
     margin-right: 4px;
     position: relative;
     top: -1px;
   }
 
-  svg.menu-item-next {
+  svg.Menu-ItemNextIcon {
     height: 24px;
     position: relative;
     top: -1px;

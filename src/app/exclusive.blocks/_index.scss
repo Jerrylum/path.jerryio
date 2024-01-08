@@ -1,4 +1,4 @@
-#left-section {
+#LeftSection {
   position: fixed;
   top: 8px;
   left: calc(8px + 48px + 8px);
@@ -7,12 +7,12 @@
   overflow-y: auto;
   max-height: calc(100% - 16px);
 
-  .floating-panel {
+  .FloatingPanel {
     width: 288px;
   }
 }
 
-#right-section {
+#RightSection {
   position: fixed;
   top: 8px;
   right: calc(8px - 8px + 48px + 8px);
@@ -21,23 +21,23 @@
   overflow-y: auto;
   max-height: calc(100% - 16px);
 
-  .floating-panel {
+  .FloatingPanel {
     margin-bottom: 8px;
     width: 352px;
   }
 
-  .floating-panel:last-child {
+  .FloatingPanel:last-child {
     margin-bottom: 0;
   }
 }
 
-.FieldCanvas-Container {
+#FieldCanvas-Container {
   width: 100%;
   height: 100%;
   margin: 0;
 }
 
-.floating-panel {
+.FloatingPanel {
   background-color: var(--bg-paper-color);
   padding: 16px;
   border-radius: 4px;
@@ -45,18 +45,18 @@
   box-sizing: border-box;
   border: 0.5px solid var(--bg-default-color);
 
-  .floating-panel-title {
+  .FloatingPanel-Header {
     font-size: 18px;
     margin-bottom: 16px;
   }
 }
 
-.panel-icon-box {
+.PanelIcon-Box {
   position: fixed;
   margin: 0;
 }
 
-.panel-icon {
+.PanelIcon {
   width: 48px;
   height: 48px;
   background-color: var(--bg-paper-color);
@@ -91,7 +91,7 @@
   }
 }
 
-#mouse-position-presentation {
+#MousePositionPresentation {
   position: fixed;
   color: var(--text-primary-color);
   user-select: none;

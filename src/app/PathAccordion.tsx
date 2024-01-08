@@ -17,7 +17,7 @@ import LinearScaleIcon from "@mui/icons-material/LinearScale";
 //         <Typography>Path</Typography>
 //       </AccordionSummary>
 //       <AccordionDetails>{pc?.getConfigPanel()}</AccordionDetails>
-//       <Box id="mouse-position-presentation">
+//       <Box id="MousePositionPresentation">
 //         {app.fieldEditor.mousePosInUOL && (
 //           <Typography>
 //             X: {app.fieldEditor.mousePosInUOL.x.toUser()}, Y: {app.fieldEditor.mousePosInUOL.y.toUser()}
@@ -29,7 +29,7 @@ import LinearScaleIcon from "@mui/icons-material/LinearScale";
 //   );
 // });
 
-// TODO mouse-position-presentation
+// TODO MousePositionPresentation
 
 export const PathConfigAccordion = (props: { layout: LayoutType }): PanelContainer => {
   const { app } = getAppStores();

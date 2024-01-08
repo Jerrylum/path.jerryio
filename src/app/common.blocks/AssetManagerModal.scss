@@ -1,21 +1,21 @@
-#asset-manager-modal {
+#AssetManagerModal {
   padding: 16px;
   width: 768px;
   max-width: 80%;
   min-height: 96px;
   outline: none !important;
 
-  #field-image-assets {
+  #FieldImageAssets {
     display: flex;
     width: 100%;
     gap: 16px;
     // background-color: red;
 
-    #assets-list-add {
+    #FieldImageAssets-Body {
       flex-grow: 1;
       max-width: calc(60% - 16px);
 
-      #assets-list {
+      #FieldImageAssetsList {
         flex-grow: 1;
         min-height: calc(256px - 8px);
         overflow-x: hidden;
@@ -23,21 +23,21 @@
         padding-bottom: 8px; // maybe 16px
         position: relative;
 
-        #assets-list-content {
+        #FieldImageAssetsList-Content {
           position: absolute;
           top: 0;
           left: 0;
           right: 0;
           bottom: 0;
 
-          .asset-item {
-            .asset-item-delete {
+          .FieldImageAssetsList-Item {
+            .FieldImageAssetsList-ItemDeleteButton {
               visibility: hidden;
             }
           }
 
-          .asset-item:hover {
-            .asset-item-delete {
+          .FieldImageAssetsList-Item:hover {
+            .FieldImageAssetsList-ItemDeleteButton {
               visibility: inherit;
             }
           }
@@ -45,17 +45,17 @@
       }
     }
 
-    #asset-preview {
+    #FieldImageAssets-PreviewSection {
       width: 40%;
       min-width: 256px;
 
-      #asset-image-preview {
+      #FieldImageAssets-AssetImagePreview {
         width: 100%;
         line-height: 0;
         border: 1px solid var(--text-primary-color);
         position: relative;
 
-        > #failed-message {
+        > #FieldImageAssets-FailedMessage {
           position: absolute;
           top: 0;
           left: 0;
@@ -81,7 +81,7 @@
           cursor: pointer;
         }
 
-        > #reload-button {
+        > #FieldImageAssets-ReloadButton {
           position: absolute;
           top: 0;
           left: 0;
@@ -104,7 +104,7 @@
           &:hover {
             opacity: 1;
 
-            & + #failed-message {
+            & + #FieldImageAssets-FailedMessage {
               display: none;
             }
           }

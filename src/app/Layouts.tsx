@@ -74,13 +74,13 @@ export const ClassisLayout = observer(() => {
 
   return (
     <>
-      <Box id="left-section">
+      <Box id="LeftSection">
         <MenuAccordion />
         <PanelStaticContainer {...PathTreeAccordion({ layout: LayoutType.Classic })} />
       </Box>
 
-      <Box id="middle-section" className={classNames({ "full-height": !appPreferences.isSpeedCanvasVisible })}>
-        <Card id="field-panel">
+      <Box id="MiddleSection" className={classNames({ "full-height": !appPreferences.isSpeedCanvasVisible })}>
+        <Card id="FieldCanvas-Container">
           <svg viewBox="0 0 1 1"></svg>
           <FieldCanvasElement />
         </Card>
@@ -91,7 +91,7 @@ export const ClassisLayout = observer(() => {
         )}
       </Box>
       {appPreferences.isRightSectionVisible && (
-        <Box id="right-section">
+        <Box id="RightSection">
           {containers.map(panelContainer => (
             <PanelAccordionContainer key={panelContainer.id} {...panelContainer} />
           ))}
@@ -167,44 +167,40 @@ export const ExclusiveLayout = observer(() => {
       <Box className="FieldCanvas-Container">
         <FieldCanvasElement />
       </Box>
-      <Box className="panel-icon-box" style={{ left: "8px", top: "8px" }}>
-        <Box className="panel-icon" onClick={() => variables.togglePanel("menu")}>
+      <Box className="PanelIcon-Box" style={{ left: "8px", top: "8px" }}>
+        <Box className="PanelIcon" onClick={() => variables.togglePanel("menu")}>
           <MenuIcon fontSize="large" />
         </Box>
-        <Box className="panel-icon" onClick={() => variables.togglePanel(pathTreeAccordion.id)}>
+        <Box className="PanelIcon" onClick={() => variables.togglePanel(pathTreeAccordion.id)}>
           {pathTreeAccordion.icon}
         </Box>
       </Box>
-      <Box className="panel-icon-box" style={{ right: "8px", top: "8px" }}>
+      <Box className="PanelIcon-Box" style={{ right: "8px", top: "8px" }}>
         {/* 
-        <Box className="panel-icon" onClick={() => variables.togglePanel("path")}>
+        <Box className="PanelIcon" onClick={() => variables.togglePanel("path")}>
           <LinearScaleIcon fontSize="large" />
         </Box> */}
         {containers.map(panelContainer => (
-          <Box className="panel-icon" onClick={() => variables.togglePanel(panelContainer.id)}>
+          <Box className="PanelIcon" onClick={() => variables.togglePanel(panelContainer.id)}>
             {panelContainer.icon}
           </Box>
         ))}
-        <Box className="panel-icon" onClick={() => variables.togglePanel("speed-graph")}>
+        <Box className="PanelIcon" onClick={() => variables.togglePanel("speed-graph")}>
           <TimelineIcon fontSize="large" />
         </Box>
       </Box>
-      <Box className="panel-icon-box" style={{ right: "8px", bottom: alpha + "px" }}>
-        <Box
-          className={classNames("panel-icon", { disabled: !app.history.canUndo })}
-          onClick={() => app.history.undo()}>
+      <Box className="PanelIcon-Box" style={{ right: "8px", bottom: alpha + "px" }}>
+        <Box className={classNames("PanelIcon", { disabled: !app.history.canUndo })} onClick={() => app.history.undo()}>
           <UndoIcon fontSize="large" />
         </Box>
-        <Box
-          className={classNames("panel-icon", { disabled: !app.history.canRedo })}
-          onClick={() => app.history.redo()}>
+        <Box className={classNames("PanelIcon", { disabled: !app.history.canRedo })} onClick={() => app.history.redo()}>
           <RedoIcon fontSize="large" />
         </Box>
-        <Box className="panel-icon" onClick={() => app.resetFieldOffsetAndScale()}>
+        <Box className="PanelIcon" onClick={() => app.resetFieldOffsetAndScale()}>
           <HomeIcon fontSize="large" />
         </Box>
       </Box>
-      <Box id="mouse-position-presentation" style={{ left: "8px", bottom: alpha + "px" }}>
+      <Box id="MousePositionPresentation" style={{ left: "8px", bottom: alpha + "px" }}>
         {app.fieldEditor.mousePosInUOL && (
           <Typography>
             X: {app.fieldEditor.mousePosInUOL.x.toUser()}, Y: {app.fieldEditor.mousePosInUOL.y.toUser()}
@@ -212,7 +208,7 @@ export const ExclusiveLayout = observer(() => {
         )}
         <TravelDistancePresentation />
       </Box>
-      <Box id="left-section">
+      <Box id="LeftSection">
         <MenuMainDropdown
           anchor={{ top: 8, left: 48 + 8 + 8 }}
           isOpen={variables.isOpenPanel("menu")}
@@ -220,7 +216,7 @@ export const ExclusiveLayout = observer(() => {
         />
         {variables.isOpenPanel(pathTreeAccordion.id) && <PanelFloatingContainer {...pathTreeAccordion} />}
       </Box>
-      <Box id="right-section">
+      <Box id="RightSection">
         {/* 
         {variables.isOpenPanel("path") && <PathConfigFloatingPanel />} */}
 
@@ -258,20 +254,20 @@ export const MobileLayout = observer(() => {
       <Box>
         <FieldCanvasElement />
       </Box>
-      <Box id="top-nav">
-        <Box id="left-div">
-          <Box className="panel-icon" onClick={action(() => (variables.isMenuOpen = true))}>
+      <Box id="TopNav">
+        <Box id="TopNav-LeftSection">
+          <Box className="PanelIcon" onClick={action(() => (variables.isMenuOpen = true))}>
             <MenuIcon fontSize="large" />
           </Box>
         </Box>
-        <Box id="undo-redo-div">
+        <Box id="TopNav-UndoRedoSection">
           <Box
-            className={classNames("panel-icon", { disabled: !app.history.canUndo })}
+            className={classNames("PanelIcon", { disabled: !app.history.canUndo })}
             onClick={() => app.history.undo()}>
             <UndoIcon fontSize="large" />
           </Box>
           <Box
-            className={classNames("panel-icon", { disabled: !app.history.canRedo })}
+            className={classNames("PanelIcon", { disabled: !app.history.canRedo })}
             onClick={() => app.history.redo()}>
             <RedoIcon fontSize="large" />
           </Box>
@@ -281,16 +277,16 @@ export const MobileLayout = observer(() => {
             onClose={action(() => (variables.isMenuOpen = false))}
           />
         </Box>
-        <Box id="right-div">
+        <Box id="TopNav-RightSection">
           {variables.currentPanel !== null && (
-            <Typography id="done-button" onClick={action(() => (variables.currentPanel = null))}>
+            <Typography id="TopNav-RightSectionDoneButton" onClick={action(() => (variables.currentPanel = null))}>
               Done
             </Typography>
           )}
         </Box>
       </Box>
       {variables.currentPanel !== null && (
-        <Box id="bottom-panel">
+        <Box id="BottomPanel">
           {variables.isOpenPanel(pathTreeAccordion.id) && <PanelFloatingContainer {...pathTreeAccordion} />}
           {containers
             .filter(panelContainer => variables.isOpenPanel(panelContainer.id))
@@ -310,16 +306,16 @@ export const MobileLayout = observer(() => {
         </Box>
       )}
       {variables.currentPanel === null && (
-        <Box id="bottom-nav">
-          <Box className="panel-icon" onClick={() => variables.openPanel(pathTreeAccordion.id)}>
+        <Box id="BottomNav">
+          <Box className="PanelIcon" onClick={() => variables.openPanel(pathTreeAccordion.id)}>
             {pathTreeAccordion.icon}
           </Box>
           {containers.map(panelContainer => (
-            <Box className="panel-icon" onClick={() => variables.openPanel(panelContainer.id)}>
+            <Box className="PanelIcon" onClick={() => variables.openPanel(panelContainer.id)}>
               {panelContainer.icon}
             </Box>
           ))}
-          <Box className="panel-icon" onClick={() => variables.openPanel("speed-graph")}>
+          <Box className="PanelIcon" onClick={() => variables.openPanel("speed-graph")}>
             <TimelineIcon fontSize="large" />
           </Box>
         </Box>

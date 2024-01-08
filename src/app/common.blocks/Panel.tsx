@@ -22,7 +22,7 @@ export interface PanelStaticContainerProps extends PanelContainer {
 
 export const PanelStaticContainer = observer((props: PanelStaticContainerProps) => {
   return (
-    <Card id="PathTreeAccordion-Container" {...props.containerProps}>
+    <Card {...props.containerProps}>
       <AccordionSummary {...props.headerProps}>{props.header}</AccordionSummary>
       <AccordionDetails {...props.bodyProps}>{props.children}</AccordionDetails>
     </Card>
@@ -58,8 +58,8 @@ export interface PanelFloatingContainerProps extends PanelContainer {
 
 export const PanelFloatingContainer = observer((props: PanelFloatingContainerProps) => {
   return (
-    <Box className="floating-panel" {...props.containerProps}>
-      <Box className="floating-panel-title" {...props.headerProps}>
+    <Box className="FloatingPanel" {...props.containerProps}>
+      <Box className="FloatingPanel-Header" {...props.headerProps}>
         {props.header}
       </Box>
       <Box {...props.bodyProps}>{props.children}</Box>

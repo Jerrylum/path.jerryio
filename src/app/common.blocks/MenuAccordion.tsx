@@ -197,7 +197,7 @@ const CustomMenuItem = observer(
       const body = (
         <MenuItem
           {...MenuItemProps}
-          className="menu-item"
+          className="Menu-Item"
           disabled={isDisabled}
           ref={menuItemRef}
           onClick={e => {
@@ -209,10 +209,10 @@ const CustomMenuItem = observer(
             Date.now() > dateOfActivation && parentMenuCtr.touch(menuItemSymbol, "focus/open-sub-menu")
           }
           onKeyDown={handleKeyDown}>
-          <DoneIcon className="menu-item-done" sx={{ visibility: !showLeftIcon ? "hidden" : "" }} />
+          <DoneIcon className="Menu-ItemDoneIcon" sx={{ visibility: !showLeftIcon ? "hidden" : "" }} />
           <ListItemText sx={{ marginRight: "1rem" }}>{label}</ListItemText>
           <HotkeyTypography hotkey={hotkey} />
-          {children && <NavigateNextIcon className="menu-item-next" />}
+          {children && <NavigateNextIcon className="Menu-ItemNextIcon" />}
           {children && (
             // ALGO: The parent of the children should be the menu instead of the Context.Provider
             // in order to make the Mui Menu keyboard navigation work
