@@ -567,12 +567,12 @@ export class ConvertSegment implements CancellableCommand, AddPathTreeItemsComma
 
   get addedItems(): readonly PathTreeItem[] {
     if (this.newControls === undefined) return [];
-    return this.variant === SegmentVariant.Linear ? [] : this.newControls.slice(1, -1);
+    return this.variant === SegmentVariant.Linear ? [] : this.newControls!.slice(1, -1);
   }
 
   get removedItems(): readonly PathTreeItem[] {
     if (this.previousControls === undefined) return [];
-    return this.variant === SegmentVariant.Linear ? this.previousControls.slice(1, -1) : [];
+    return this.variant === SegmentVariant.Linear ? this.previousControls!.slice(1, -1) : [];
   }
 }
 
@@ -719,11 +719,11 @@ export class MoveKeyframe implements CancellableCommand, MergeableCommand {
     public keyframe: Keyframe
   ) {}
 
-  removeKeyframe(pos: KeyframePos) {
+  protected removeKeyframe(pos: KeyframePos) {
     pos.segment[this.key].remove(this.keyframe);
   }
 
-  addKeyframe(pos: KeyframePos) {
+  protected addKeyframe(pos: KeyframePos) {
     this.keyframe.xPos = pos.xPos;
     this.keyframe.yPos = pos.yPos;
     pos.segment[this.key].add(this.keyframe);
@@ -845,7 +845,6 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
 
   protected removePath(path: Path): boolean {
     const idx = this.paths.indexOf(path);
-    if (idx === -1) return false;
 
     this.paths.splice(idx, 1);
     this.pathActions.push({ index: idx, path });
@@ -883,7 +882,7 @@ export class RemovePathsAndEndControls implements CancellableCommand, RemovePath
       } else if (isFirstControlOfSegment) {
         // ALGO: Define that all controls for the segment disappear except for the last one
         this._entities.push(...segment.controls.slice(0, -1));
-      } else if (isLastControlOfLastSegment) {
+      } else {
         // ALGO: Define that all controls for the segment disappear except for the first one
         this._entities.push(...segment.controls.slice(1)); // keep the first control
       }
