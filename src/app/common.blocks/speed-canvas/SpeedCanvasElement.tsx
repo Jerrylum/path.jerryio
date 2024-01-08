@@ -4,7 +4,7 @@ import { Point, Path, Vector, SpeedKeyframe, KeyframePos, BentRateApplicationDir
 import Konva from "konva";
 import { Circle, Layer, Line, Rect, Stage, Text } from "react-konva";
 import React from "react";
-import { PathConfig } from "../../../format/Config";
+import { PathConfig } from "@format/Config";
 import { AddKeyframe, MoveKeyframe, RemoveKeyframe, UpdateProperties } from "@core/Command";
 import { getAppStores } from "@core/MainApp";
 import { KeyframeIndexing } from "@core/Calculation";
@@ -12,9 +12,9 @@ import { GraphCanvasConverter, getClientXY } from "@core/Canvas";
 import { Box } from "@mui/material";
 import { Instance } from "@popperjs/core";
 import { useMobxStorage, useTouchEvent, useWindowSize } from "@core/Hook";
-import { getAppThemeInfo } from "../../Theme";
+import { getAppThemeInfo } from "@app/Theme";
 import { TouchEventListener } from "@core/TouchEventListener";
-import { Label, Padding0Tooltip } from "../../component.blocks/TooltipLabel";
+import { Label, Padding0Tooltip } from "@app/component.blocks/TooltipLabel";
 import { getFieldCanvasHalfHeight } from "@core/Util";
 
 import "./SpeedCanvasElement.scss";

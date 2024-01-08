@@ -29,8 +29,8 @@ import { LayoutType } from "@core/Layout";
 import { Box } from "@mui/material";
 import { Instance } from "@popperjs/core";
 import { TouchEventListener } from "@core/TouchEventListener";
-import { Label, Padding0Tooltip } from "../../component.blocks/TooltipLabel";
-import { LayoutContext } from "../../Layouts";
+import { Label, Padding0Tooltip } from "@app/component.blocks/TooltipLabel";
+import { LayoutContext } from "@app/Layouts";
 import { getDefaultBuiltInFieldImage } from "@core/Asset";
 
 function fixControlTooCloseToTheEndControl() {

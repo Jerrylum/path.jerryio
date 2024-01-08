@@ -27,7 +27,7 @@ import { Quantity, UnitOfLength } from "@core/Unit";
 import classNames from "classnames";
 import { IS_MAC_OS } from "@core/Util";
 import React from "react";
-import { APP_VERSION_STRING } from "../../../Version";
+import { APP_VERSION_STRING } from "@src/Version";
 import DOMPurify from "dompurify";
 
 import "./PathTreeAccordion.scss";

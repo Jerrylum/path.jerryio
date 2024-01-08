@@ -32,8 +32,8 @@ import {
 import { getAppStores } from "@core/MainApp";
 import { useFieldImageAsset, useImageState, useMobxStorage } from "@core/Hook";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { ObserverInput } from "../../component.blocks/ObserverInput";
-import { NumberUOL } from "../../../token/Tokens";
+import { ObserverInput } from "@app/component.blocks/ObserverInput";
+import { NumberUOL } from "@token/Tokens";
 import { makeId, parseFormula, runInActionAsync } from "@core/Util";
 import { UnitOfLength } from "@core/Unit";
 import React from "react";
