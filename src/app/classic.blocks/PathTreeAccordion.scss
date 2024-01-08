@@ -8,12 +8,6 @@
 
   .MuiAccordionSummary-content {
     justify-content: space-between;
-
-    .PathTreeAccordion-FunctionButton {
-      cursor: pointer;
-      padding: 0;
-      margin-left: 3.2px;
-    }
   }
 
   .MuiAccordionDetails-root {
@@ -26,4 +20,10 @@
     scrollbar-gutter: stable;
     padding-right: calc($pg - 6.4px);
   }
+}
+
+.PathTreeAccordion-FunctionButton {
+  cursor: pointer;
+  padding: 0;
+  margin-left: 3.2px;
 }

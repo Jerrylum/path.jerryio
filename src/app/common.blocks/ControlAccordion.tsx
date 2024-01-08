@@ -1,5 +1,4 @@
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import { EndControl } from "../../core/Path";
 import { ObserverInput, clampQuantity } from "../../component/ObserverInput";
@@ -8,10 +7,13 @@ import { UpdatePathTreeItems } from "../../core/Command";
 import { getAppStores } from "../../core/MainApp";
 import { NumberUOA, NumberUOL } from "../../token/Tokens";
 import { parseFormula } from "../../core/Util";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 
 import "./ControlAccordion.scss";
+import { PanelContainer } from "./Panel";
+import { LayoutType } from "../../core/Layout";
 
-const ControlPanel = observer((props: {}) => {
+const ControlPanelBody = observer((props: {}) => {
   const { app } = getAppStores();
 
   return (
@@ -116,26 +118,11 @@ const ControlPanel = observer((props: {}) => {
   );
 });
 
-const ControlAccordion = observer((props: {}) => {
-  return (
-    <Accordion defaultExpanded>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography>Control</Typography>
-      </AccordionSummary>
-      <AccordionDetails>
-        <ControlPanel />
-      </AccordionDetails>
-    </Accordion>
-  );
-});
-
-const ControlFloatingPanel = observer((props: {}) => {
-  return (
-    <Box className="floating-panel">
-      <Typography className="floating-panel-title">Control</Typography>
-      <ControlPanel />
-    </Box>
-  );
-});
-
-export { ControlAccordion, ControlFloatingPanel };
+export const ControlAccordion = (props: { layout: LayoutType }): PanelContainer => {
+  return {
+    id: "ControlAccordion",
+    header: "Control",
+    children: <ControlPanelBody />,
+    icon: <FiberManualRecordIcon fontSize="large" />
+  };
+};

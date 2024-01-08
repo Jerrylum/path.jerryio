@@ -5,30 +5,27 @@ import React from "react";
 import { LayoutType } from "../core/Layout";
 import { ControlAccordion } from "./common.blocks/ControlAccordion";
 import { FieldCanvasElement } from "./FieldCanvasElement";
-import { GeneralConfigAccordion } from "./GeneralConfigAccordion";
 import { MenuAccordion } from "./common.blocks/MenuAccordion";
-import { PathConfigAccordion } from "./PathAccordion";
 import { PathTreeAccordion } from "./common.blocks/PathTreeAccordion";
 import { SpeedCanvasElement } from "./common.blocks/SpeedCanvasElement";
 import { getAppStores } from "../core/MainApp";
 import { action, makeAutoObservable } from "mobx";
 import MenuIcon from "@mui/icons-material/Menu";
-import ViewListIcon from "@mui/icons-material/ViewList";
-import TuneIcon from "@mui/icons-material/Tune";
-import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
-import LinearScaleIcon from "@mui/icons-material/LinearScale";
-// import WidgetsIcon from "@mui/icons-material/Widgets";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import { Box, Typography } from "@mui/material";
-import { GeneralConfigFloatingPanel } from "./GeneralConfigAccordion";
-import { ControlFloatingPanel } from "./common.blocks/ControlAccordion";
-import { PathConfigFloatingPanel } from "./PathAccordion";
-import { PathTreeFloatingPanel } from "./common.blocks/PathTreeAccordion";
 import { MenuMainDropdown } from "./common.blocks/MenuAccordion";
 import UndoIcon from "@mui/icons-material/Undo";
 import RedoIcon from "@mui/icons-material/Redo";
 import HomeIcon from "@mui/icons-material/Home";
 import { useWindowSize } from "../core/Hook";
+import {
+  PanelAccordionContainer,
+  PanelContainer,
+  PanelFloatingContainer,
+  PanelStaticContainer
+} from "./common.blocks/Panel";
+import { GeneralConfigAccordion } from "./GeneralConfigAccordion";
+import { PathConfigAccordion } from "./PathAccordion";
 
 export const LayoutContext = React.createContext<LayoutType>(LayoutType.Classic);
 export const LayoutProvider = LayoutContext.Provider;
@@ -66,14 +63,20 @@ export const TravelDistancePresentation = observer(() => {
   }
 });
 
+export const getAllPanelContainers = (layout: LayoutType): PanelContainer[] => {
+  return [GeneralConfigAccordion({ layout }), ControlAccordion({ layout }), PathConfigAccordion({ layout })];
+};
+
 export const ClassisLayout = observer(() => {
   const { appPreferences } = getAppStores();
+
+  const containers = getAllPanelContainers(LayoutType.Classic);
 
   return (
     <>
       <Box id="left-section">
         <MenuAccordion />
-        <PathTreeAccordion />
+        <PanelStaticContainer {...PathTreeAccordion({ layout: LayoutType.Classic })} />
       </Box>
 
       <Box id="middle-section" className={classNames({ "full-height": !appPreferences.isSpeedCanvasVisible })}>
@@ -89,9 +92,9 @@ export const ClassisLayout = observer(() => {
       </Box>
       {appPreferences.isRightSectionVisible && (
         <Box id="right-section">
-          <GeneralConfigAccordion />
-          <ControlAccordion />
-          <PathConfigAccordion />
+          {containers.map(panelContainer => (
+            <PanelAccordionContainer key={panelContainer.id} {...panelContainer} />
+          ))}
         </Box>
       )}
     </>
@@ -155,32 +158,33 @@ export const ExclusiveLayout = observer(() => {
       ? windowSize.y * 0.12 + 8 + 16 + 8
       : 0;
 
+  const containers = getAllPanelContainers(LayoutType.Exclusive);
+
+  const pathTreeAccordion = PathTreeAccordion({ layout: LayoutType.Exclusive });
+
   return (
     <>
-      <Box className="field-canvas__container">
+      <Box className="FieldCanvas-Container">
         <FieldCanvasElement />
       </Box>
       <Box className="panel-icon-box" style={{ left: "8px", top: "8px" }}>
         <Box className="panel-icon" onClick={() => variables.togglePanel("menu")}>
           <MenuIcon fontSize="large" />
         </Box>
-        <Box className="panel-icon" onClick={() => variables.togglePanel("paths")}>
-          <ViewListIcon fontSize="large" />
+        <Box className="panel-icon" onClick={() => variables.togglePanel(pathTreeAccordion.id)}>
+          {pathTreeAccordion.icon}
         </Box>
       </Box>
       <Box className="panel-icon-box" style={{ right: "8px", top: "8px" }}>
-        <Box className="panel-icon" onClick={() => variables.togglePanel("general-config")}>
-          <TuneIcon fontSize="large" />
-        </Box>
-        <Box className="panel-icon" onClick={() => variables.togglePanel("control")}>
-          <FiberManualRecordIcon fontSize="large" />
-        </Box>
+        {/* 
         <Box className="panel-icon" onClick={() => variables.togglePanel("path")}>
           <LinearScaleIcon fontSize="large" />
-        </Box>
-        {/* <Box className="panel-icon">
-          <WidgetsIcon fontSize="large" />
         </Box> */}
+        {containers.map(panelContainer => (
+          <Box className="panel-icon" onClick={() => variables.togglePanel(panelContainer.id)}>
+            {panelContainer.icon}
+          </Box>
+        ))}
         <Box className="panel-icon" onClick={() => variables.togglePanel("speed-graph")}>
           <TimelineIcon fontSize="large" />
         </Box>
@@ -214,12 +218,18 @@ export const ExclusiveLayout = observer(() => {
           isOpen={variables.isOpenPanel("menu")}
           onClose={variables.closePanel.bind(variables, "menu")}
         />
-        {variables.isOpenPanel("paths") && <PathTreeFloatingPanel />}
+        {variables.isOpenPanel(pathTreeAccordion.id) && <PanelFloatingContainer {...pathTreeAccordion} />}
       </Box>
       <Box id="right-section">
-        {variables.isOpenPanel("general-config") && <GeneralConfigFloatingPanel />}
-        {variables.isOpenPanel("control") && <ControlFloatingPanel />}
-        {variables.isOpenPanel("path") && <PathConfigFloatingPanel />}
+        {/* 
+        {variables.isOpenPanel("path") && <PathConfigFloatingPanel />} */}
+
+        {containers
+          .filter(panelContainer => variables.isOpenPanel(panelContainer.id))
+          .filter(panelContainer => panelContainer.id !== "speed-graph")
+          .map(panelContainer => (
+            <PanelFloatingContainer key={panelContainer.id} {...panelContainer} />
+          ))}
       </Box>
       {variables.isOpenPanel("speed-graph") && (
         <Box id="SpeedCanvas-Container" className={classNames({ extended: isSpeedCanvasExtended })}>
@@ -238,6 +248,10 @@ export const MobileLayout = observer(() => {
   const { app } = getAppStores();
 
   const [variables] = React.useState(() => new MobileLayoutVariables());
+
+  const containers = getAllPanelContainers(LayoutType.Mobile);
+
+  const pathTreeAccordion = PathTreeAccordion({ layout: LayoutType.Mobile });
 
   return (
     <>
@@ -277,10 +291,13 @@ export const MobileLayout = observer(() => {
       </Box>
       {variables.currentPanel !== null && (
         <Box id="bottom-panel">
-          {variables.isOpenPanel("paths") && <PathTreeFloatingPanel />}
-          {variables.isOpenPanel("general-config") && <GeneralConfigFloatingPanel />}
-          {variables.isOpenPanel("control") && <ControlFloatingPanel />}
-          {variables.isOpenPanel("path") && <PathConfigFloatingPanel />}
+          {variables.isOpenPanel(pathTreeAccordion.id) && <PanelFloatingContainer {...pathTreeAccordion} />}
+          {containers
+            .filter(panelContainer => variables.isOpenPanel(panelContainer.id))
+            .filter(panelContainer => panelContainer.id !== "speed-graph")
+            .map(panelContainer => (
+              <PanelStaticContainer key={panelContainer.id} {...panelContainer} />
+            ))}
           {variables.isOpenPanel("speed-graph") && (
             <Box id="SpeedCanvas-Container">
               {app.interestedPath() ? (
@@ -294,18 +311,14 @@ export const MobileLayout = observer(() => {
       )}
       {variables.currentPanel === null && (
         <Box id="bottom-nav">
-          <Box className="panel-icon" onClick={() => variables.openPanel("paths")}>
-            <ViewListIcon fontSize="large" />
+          <Box className="panel-icon" onClick={() => variables.openPanel(pathTreeAccordion.id)}>
+            {pathTreeAccordion.icon}
           </Box>
-          <Box className="panel-icon" onClick={() => variables.openPanel("general-config")}>
-            <TuneIcon fontSize="large" />
-          </Box>
-          <Box className="panel-icon" onClick={() => variables.openPanel("control")}>
-            <FiberManualRecordIcon fontSize="large" />
-          </Box>
-          <Box className="panel-icon" onClick={() => variables.openPanel("path")}>
-            <LinearScaleIcon fontSize="large" />
-          </Box>
+          {containers.map(panelContainer => (
+            <Box className="panel-icon" onClick={() => variables.openPanel(panelContainer.id)}>
+              {panelContainer.icon}
+            </Box>
+          ))}
           <Box className="panel-icon" onClick={() => variables.openPanel("speed-graph")}>
             <TimelineIcon fontSize="large" />
           </Box>

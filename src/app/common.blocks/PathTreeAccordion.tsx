@@ -10,7 +10,7 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp";
-import { AccordionDetails, AccordionSummary, Box, Card, IconButton, Tooltip, Typography } from "@mui/material";
+import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { action, makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Segment, EndControl, Path, Control, PathTreeItem } from "../../core/Path";
@@ -31,6 +31,9 @@ import { APP_VERSION_STRING } from "../../Version";
 import DOMPurify from "dompurify";
 
 import "./PathTreeAccordion.scss";
+import { LayoutType } from "../../core/Layout";
+import { PanelContainer } from "./Panel";
+import ViewListIcon from "@mui/icons-material/ViewList";
 
 const MIME_TYPE = `application/x-item-uid-path.jerryio.com-${APP_VERSION_STRING}`;
 
@@ -667,14 +670,14 @@ function onExpandAllClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   }
 }
 
-const PathTreeAccordion = observer((props: {}) => {
+export const PathTreeAccordion = (props: { layout: LayoutType }): PanelContainer => {
   const { app } = getAppStores();
-
   const [variables] = React.useState(() => new PathTreeVariables());
 
-  return (
-    <Card id="PathTreeAccordion-Container">
-      <AccordionSummary>
+  return {
+    id: "PathTreeAccordion",
+    header: (
+      <>
         <Typography>Paths</Typography>
         <Box>
           <Tooltip title="Add New Path">
@@ -683,7 +686,10 @@ const PathTreeAccordion = observer((props: {}) => {
             </IconButton>
           </Tooltip>
           {app.paths.length === 0 ? (
-            <IconButton className="PathTreeAccordion-FunctionButton" onClick={action(onExpandAllClick)} disabled={app.paths.length === 0}>
+            <IconButton
+              className="PathTreeAccordion-FunctionButton"
+              onClick={action(onExpandAllClick)}
+              disabled={app.paths.length === 0}>
               <KeyboardDoubleArrowUpIcon />
             </IconButton>
           ) : (
@@ -698,49 +704,17 @@ const PathTreeAccordion = observer((props: {}) => {
             </Tooltip>
           )}
         </Box>
-      </AccordionSummary>
-      <AccordionDetails>
+      </>
+    ),
+    headerProps: {
+      className: "PathTreeAccordion-Header"
+    },
+    children: (
+      <>
         <TreeView variables={variables} />
-      </AccordionDetails>
-    </Card>
-  );
-});
-
-const PathTreeFloatingPanel = observer((props: {}) => {
-  const { app } = getAppStores();
-  const [variables] = React.useState(() => new PathTreeVariables());
-
-  return (
-    <Box className="path-tree floating-panel">
-      <Box className="path-tree-title">
-        <Typography className="floating-panel-title">Paths</Typography>
-        <Box>
-          <Tooltip title="Add New Path">
-            <IconButton className="PathTreeAccordion-FunctionButton" onClick={action(onAddPathClick)}>
-              <AddIcon />
-            </IconButton>
-          </Tooltip>
-          {app.paths.length === 0 ? (
-            <IconButton className="PathTreeAccordion-FunctionButton" onClick={action(onExpandAllClick)} disabled={app.paths.length === 0}>
-              <KeyboardDoubleArrowUpIcon />
-            </IconButton>
-          ) : (
-            <Tooltip title={app.expandedEntityIds.length !== app.paths.length ? "Expand All" : "Collapse All"}>
-              <IconButton className="PathTreeAccordion-FunctionButton" onClick={action(onExpandAllClick)}>
-                {app.expandedEntityIds.length !== app.paths.length ? (
-                  <KeyboardDoubleArrowDownIcon />
-                ) : (
-                  <KeyboardDoubleArrowUpIcon />
-                )}
-              </IconButton>
-            </Tooltip>
-          )}
-        </Box>
-      </Box>
-      <TreeView variables={variables} />
-      {app.paths.length === 0 && <Typography>(The file is empty)</Typography>}
-    </Box>
-  );
-});
-
-export { PathTreeAccordion, PathTreeFloatingPanel };
+        {app.paths.length === 0 && <Typography>(The file is empty)</Typography>}
+      </>
+    ),
+    icon: <ViewListIcon fontSize="large" />
+  };
+};

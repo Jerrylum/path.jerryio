@@ -37,7 +37,7 @@ export const RequireLocalFieldImageModal = observer(() => {
               <>
                 <br />
                 <br />
-                <span className="error-message">{errorMessage}</span>
+                <span>{errorMessage}</span>
               </>
             )}
           </Typography>

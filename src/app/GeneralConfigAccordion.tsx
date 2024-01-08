@@ -1,14 +1,4 @@
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Box,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-  Typography
-} from "@mui/material";
+import { Box, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { getAllFormats } from "../format/Format";
@@ -23,8 +13,11 @@ import { parseFormula } from "../core/Util";
 import { ObserverItemsSelect } from "../component/ObserverItemsSelect";
 import { FieldImageAsset, FieldImageOriginType } from "../core/Asset";
 import { AssetManagerModalSymbol } from "./common.blocks/AssetManagerModal";
+import { LayoutType } from "../core/Layout";
+import { PanelContainer } from "./common.blocks/Panel";
+import TuneIcon from "@mui/icons-material/Tune";
 
-const GeneralConfigPanel = observer((props: {}) => {
+const GeneralConfigPanelBody = observer((props: {}) => {
   const { app, assetManager, confirmation, modals, appPreferences } = getAppStores();
 
   const gc = app.gc;
@@ -193,26 +186,11 @@ const GeneralConfigPanel = observer((props: {}) => {
   );
 });
 
-const GeneralConfigAccordion = observer((props: {}) => {
-  return (
-    <Accordion defaultExpanded>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography>Configuration</Typography>
-      </AccordionSummary>
-      <AccordionDetails>
-        <GeneralConfigPanel />
-      </AccordionDetails>
-    </Accordion>
-  );
-});
-
-const GeneralConfigFloatingPanel = observer((props: {}) => {
-  return (
-    <Box className="floating-panel">
-      <Typography className="floating-panel-title">Configuration</Typography>
-      <GeneralConfigPanel />
-    </Box>
-  );
-});
-
-export { GeneralConfigAccordion, GeneralConfigFloatingPanel };
+export const GeneralConfigAccordion = (props: { layout: LayoutType }): PanelContainer => {
+  return {
+    id: "GeneralConfigAccordion",
+    header: "Configuration",
+    children: <GeneralConfigPanelBody />,
+    icon: <TuneIcon fontSize="large" />
+  };
+};
