@@ -66,6 +66,7 @@
     "copy-webpack-plugin": "^11.0.0",
     "husky": "^8.0.3",
     "prettier": "2.8.8",
+    "react-app-alias": "^2.2.2",
     "react-scripts": "5.0.1"
   },
   "scripts": {
