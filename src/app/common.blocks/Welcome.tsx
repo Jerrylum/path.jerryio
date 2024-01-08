@@ -40,7 +40,7 @@ export const WelcomeModal = observer(() => {
 
   return (
     <Modal symbol={WelcomeModalSymbol} onClose={onClose}>
-      <Card id="welcome-modal" className="modal-container">
+      <Card id="WelcomeModal" className="Modal-Container">
         {isMobileLayout && (
           <Box sx={{ textAlign: "right" }}>
             <Button onClick={onClose}>Continue</Button>

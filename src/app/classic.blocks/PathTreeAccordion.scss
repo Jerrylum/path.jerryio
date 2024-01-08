@@ -1,4 +1,4 @@
-.path-tree {
+#PathTreeAccordion-Container {
   height: calc(100% - $qpg - $hpg - (10px + 13px) - $hpg - $pg);
   position: relative;
 
@@ -9,7 +9,7 @@
   .MuiAccordionSummary-content {
     justify-content: space-between;
 
-    .icon {
+    .PathTreeAccordion-FunctionButton {
       cursor: pointer;
       padding: 0;
       margin-left: 3.2px;

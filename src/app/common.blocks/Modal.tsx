@@ -32,8 +32,8 @@ export const CustomModal = observer(
 
     return (
       <Modal
-        slotProps={{ backdrop: { className: "modal-backdrop" } }}
-        container={document.getElementById("root-container")!}
+        slotProps={{ backdrop: { className: "Modal-Backdrop" } }}
+        container={document.getElementById("Root-Container")!}
         open={modals.opening === props.symbol}
         onClose={() => modals.close(props.symbol)}>
         {props.children}

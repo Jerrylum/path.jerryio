@@ -46,7 +46,7 @@ const GeneralConfigPanel = observer((props: {}) => {
   return (
     <>
       <Typography gutterBottom>Format</Typography>
-      <Box className="panel-box">
+      <Box className="Panel-Box">
         <Select
           size="small"
           sx={{ maxWidth: "100%" }}
@@ -75,7 +75,7 @@ const GeneralConfigPanel = observer((props: {}) => {
           })}
         </Select>
       </Box>
-      <Box className="flex-editor-panel" sx={{ marginTop: "16px" }}>
+      <Box className="Panel-FlexBox" sx={{ marginTop: "16px" }}>
         <ObserverEnumSelect
           label="Unit of Length"
           enumValue={gc.uol}
@@ -107,7 +107,7 @@ const GeneralConfigPanel = observer((props: {}) => {
       <Typography sx={{ marginTop: "16px" }} gutterBottom>
         Robot Visualize
       </Typography>
-      <Box className="flex-editor-panel">
+      <Box className="Panel-FlexBox">
         <ObserverInput
           label="Width"
           getValue={() => gc.robotWidth.toUser() + ""}
@@ -155,7 +155,7 @@ const GeneralConfigPanel = observer((props: {}) => {
           onCheckedChange={c => (gc.showRobot = c)}
         />
       </Box>
-      <Box className="flex-editor-panel">
+      <Box className="Panel-FlexBox">
         <ObserverCheckbox
           label="Holonomic Drive"
           checked={gc.robotIsHolonomic}
@@ -167,7 +167,7 @@ const GeneralConfigPanel = observer((props: {}) => {
       <Typography sx={{ marginTop: "16px" }} gutterBottom>
         Field Layer
       </Typography>
-      <Box className="flex-editor-panel">
+      <Box className="Panel-FlexBox">
         <ObserverItemsSelect
           sx={{ width: "auto" }}
           label=""

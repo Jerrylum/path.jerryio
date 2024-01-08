@@ -250,7 +250,7 @@ class PathConfigImpl implements LemLibPathConfig {
 
     return (
       <>
-        <Box className="panel-box">
+        <Box className="Panel-Box">
           <Typography>Min/Max Speed</Typography>
           <RangeSlider
             range={this.speedLimit}
@@ -262,7 +262,7 @@ class PathConfigImpl implements LemLibPathConfig {
             }
           />
         </Box>
-        <Box className="panel-box">
+        <Box className="Panel-Box">
           <Typography>Bent Rate Applicable Range</Typography>
           <RangeSlider
             range={this.bentRateApplicableRange}
@@ -274,7 +274,7 @@ class PathConfigImpl implements LemLibPathConfig {
             }
           />
         </Box>
-        <Box className="panel-box">
+        <Box className="Panel-Box">
           <Typography>Max Deceleration Rate</Typography>
           <Slider
             step={0.1}

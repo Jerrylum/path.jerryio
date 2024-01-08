@@ -126,7 +126,7 @@ const Root = observer(() => {
   return (
     <Box
       tabIndex={-1}
-      id="root-container"
+      id="Root-Container"
       data-theme={getAppThemeInfo().styleName}
       data-layout={usingLayout}
       {...{ onDragEnter, onDragOver, onDrop }}

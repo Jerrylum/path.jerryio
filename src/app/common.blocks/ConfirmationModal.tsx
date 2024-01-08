@@ -154,18 +154,18 @@ export const ConfirmationModal = observer(() => {
 
   return (
     <Modal symbol={ConfirmationModalSymbol} onClose={action(onClick.bind(null, -1))}>
-      <Card className="confirmation-modal modal-container" onKeyDown={action(onKeyDown)}>
+      <Card id="ConfirmationModal" className="Modal-Container" onKeyDown={action(onKeyDown)}>
         <Typography variant="h2" gutterBottom>
           {cfm.title}
         </Typography>
         {/* https://stackoverflow.com/questions/9769587/set-div-to-have-its-siblings-width */}
-        <Box className="description-box">
+        <Box className="ConfirmationModal-DescriptionBox">
           <Typography component="div" variant="body1" gutterBottom>
             {cfm.description}
           </Typography>
         </Box>
         {cfm.input !== undefined && (
-          <Box className="input-box">
+          <Box className="ConfirmationModal-InputBox">
             <ObserverInput
               label={cfm.inputLabel}
               getValue={() => cfm.input ?? ""}
@@ -176,7 +176,7 @@ export const ConfirmationModal = observer(() => {
             />
           </Box>
         )}
-        <Box className="button-box">
+        <Box className="ConfirmationModal-ButtonBox">
           {cfm.buttons.map((btn, i) => {
             return (
               <Button

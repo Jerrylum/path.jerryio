@@ -1,4 +1,4 @@
-#welcome-modal {
+#WelcomeModal {
   padding: 16px;
   width: 768px;
   max-width: 80%;
@@ -15,7 +15,7 @@
 }
 
 @supports not (-moz-appearance: none) {
-  #welcome-modal {
+  #WelcomeModal {
     padding-right: 10px;
   }
 }

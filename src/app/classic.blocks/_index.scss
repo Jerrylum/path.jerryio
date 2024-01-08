@@ -1,10 +1,10 @@
 $pg: 16px; // panel gap
 $hpg: 8px; // half panel gap
 $qpg: 4px; // quarter panel gap
-$speed-panel-height-vh: 12vh;
-$speed-panel-height-svh: 12svh;
-$middle-section-width-vh: calc(100vh - $pg - $pg - $hpg - $speed-panel-height-vh - $hpg - $pg);
-$middle-section-width-svh: calc(100svh - $pg - $pg - $hpg - $speed-panel-height-svh - $hpg - $pg);
+$speed-canvas-height-vh: 12vh;
+$speed-canvas-height-svh: 12svh;
+$middle-section-width-vh: calc(100vh - $pg - $pg - $hpg - $speed-canvas-height-vh - $hpg - $pg);
+$middle-section-width-svh: calc(100svh - $pg - $pg - $hpg - $speed-canvas-height-svh - $hpg - $pg);
 $middle-section-height-vh: calc(100vh - $pg - $pg);
 $middle-section-height-svh: calc(100svh - $pg - $pg);
 
@@ -114,7 +114,7 @@ $middle-section-height-svh: calc(100svh - $pg - $pg);
   background-color: transparent !important;
 }
 
-.panel-box {
+.Panel-Box {
   margin-top: $hpg;
 }
 

@@ -60,9 +60,9 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
 
   return (
     <>
-      <Box className="panel-box">
+      <Box className="Panel-Box">
         <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
-        <Box className="flex-editor-panel">
+        <Box className="Panel-FlexBox">
           <ObserverInput
             label="Chassis Name"
             getValue={() => config.chassisName}
@@ -89,7 +89,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
             numeric
           />
         </Box>
-        <Box className="flex-editor-panel">
+        <Box className="Panel-FlexBox">
           <ObserverCheckbox
             label="Use Relative Coordinates"
             checked={config.relativeCoords}
@@ -101,7 +101,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
             }}
           />
         </Box>
-        <Box className="flex-editor-panel" sx={{ marginTop: "32px" }}>
+        <Box className="Panel-FlexBox" sx={{ marginTop: "32px" }}>
           <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
             Copy Code
           </Button>

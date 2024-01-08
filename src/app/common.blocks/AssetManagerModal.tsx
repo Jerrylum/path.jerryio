@@ -493,7 +493,7 @@ export const AssetManagerModal = observer(() => {
 
   return (
     <Modal symbol={AssetManagerModalSymbol}>
-      <Card id="asset-manager-modal" className="modal-container">
+      <Card id="asset-manager-modal" className="Modal-Container">
         <FieldImageSection />
       </Card>
     </Modal>

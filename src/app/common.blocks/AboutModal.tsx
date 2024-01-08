@@ -10,7 +10,7 @@ export const AboutModalSymbol = Symbol("AboutModal");
 export const AboutModal = observer(() => {
   return (
     <Modal symbol={AboutModalSymbol}>
-      <Card id="about-modal" className="modal-container">
+      <Card id="AboutModal" className="Modal-Container">
         <img src="static/logo464.svg" alt="app logo" />
         <Typography variant="h3" gutterBottom align="center">
           PATH.JERRYIO Version {APP_VERSION.version}

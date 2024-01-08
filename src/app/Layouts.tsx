@@ -82,7 +82,7 @@ export const ClassisLayout = observer(() => {
           <FieldCanvasElement />
         </Card>
         {appPreferences.isSpeedCanvasVisible && (
-          <Card id="speed-panel">
+          <Card id="SpeedCanvas-Container">
             <SpeedCanvasElement extended={false} />
           </Card>
         )}
@@ -222,7 +222,7 @@ export const ExclusiveLayout = observer(() => {
         {variables.isOpenPanel("path") && <PathConfigFloatingPanel />}
       </Box>
       {variables.isOpenPanel("speed-graph") && (
-        <Box id="speed-panel" className={classNames({ extended: isSpeedCanvasExtended })}>
+        <Box id="SpeedCanvas-Container" className={classNames({ extended: isSpeedCanvasExtended })}>
           {app.interestedPath() ? (
             <SpeedCanvasElement extended={isSpeedCanvasExtended} />
           ) : (
@@ -282,7 +282,7 @@ export const MobileLayout = observer(() => {
           {variables.isOpenPanel("control") && <ControlFloatingPanel />}
           {variables.isOpenPanel("path") && <PathConfigFloatingPanel />}
           {variables.isOpenPanel("speed-graph") && (
-            <Box id="speed-panel">
+            <Box id="SpeedCanvas-Container">
               {app.interestedPath() ? (
                 <SpeedCanvasElement extended={true} />
               ) : (

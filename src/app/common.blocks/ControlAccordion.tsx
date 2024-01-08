@@ -15,8 +15,8 @@ const ControlPanel = observer((props: {}) => {
   const { app } = getAppStores();
 
   return (
-    <Box className="control-accordion">
-      <Box className="flex-editor-panel">
+    <Box id="ControlAccordion">
+      <Box className="Panel-FlexBox">
         <ObserverInput
           label="X"
           getValue={() => {

@@ -673,22 +673,22 @@ const PathTreeAccordion = observer((props: {}) => {
   const [variables] = React.useState(() => new PathTreeVariables());
 
   return (
-    <Card className="path-tree">
+    <Card id="PathTreeAccordion-Container">
       <AccordionSummary>
         <Typography>Paths</Typography>
         <Box>
           <Tooltip title="Add New Path">
-            <IconButton className="icon" onClick={action(onAddPathClick)}>
+            <IconButton className="PathTreeAccordion-FunctionButton" onClick={action(onAddPathClick)}>
               <AddIcon />
             </IconButton>
           </Tooltip>
           {app.paths.length === 0 ? (
-            <IconButton className="icon" onClick={action(onExpandAllClick)} disabled={app.paths.length === 0}>
+            <IconButton className="PathTreeAccordion-FunctionButton" onClick={action(onExpandAllClick)} disabled={app.paths.length === 0}>
               <KeyboardDoubleArrowUpIcon />
             </IconButton>
           ) : (
             <Tooltip title={app.expandedEntityIds.length !== app.paths.length ? "Expand All" : "Collapse All"}>
-              <IconButton className="icon" onClick={action(onExpandAllClick)}>
+              <IconButton className="PathTreeAccordion-FunctionButton" onClick={action(onExpandAllClick)}>
                 {app.expandedEntityIds.length !== app.paths.length ? (
                   <KeyboardDoubleArrowDownIcon />
                 ) : (
@@ -716,17 +716,17 @@ const PathTreeFloatingPanel = observer((props: {}) => {
         <Typography className="floating-panel-title">Paths</Typography>
         <Box>
           <Tooltip title="Add New Path">
-            <IconButton className="icon" onClick={action(onAddPathClick)}>
+            <IconButton className="PathTreeAccordion-FunctionButton" onClick={action(onAddPathClick)}>
               <AddIcon />
             </IconButton>
           </Tooltip>
           {app.paths.length === 0 ? (
-            <IconButton className="icon" onClick={action(onExpandAllClick)} disabled={app.paths.length === 0}>
+            <IconButton className="PathTreeAccordion-FunctionButton" onClick={action(onExpandAllClick)} disabled={app.paths.length === 0}>
               <KeyboardDoubleArrowUpIcon />
             </IconButton>
           ) : (
             <Tooltip title={app.expandedEntityIds.length !== app.paths.length ? "Expand All" : "Collapse All"}>
-              <IconButton className="icon" onClick={action(onExpandAllClick)}>
+              <IconButton className="PathTreeAccordion-FunctionButton" onClick={action(onExpandAllClick)}>
                 {app.expandedEntityIds.length !== app.paths.length ? (
                   <KeyboardDoubleArrowDownIcon />
                 ) : (

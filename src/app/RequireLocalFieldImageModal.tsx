@@ -20,12 +20,12 @@ export const RequireLocalFieldImageModal = observer(() => {
 
   return (
     <Modal symbol={RequireLocalFieldImageModalSymbol} onClose={action(() => modals.close())}>
-      <Card className="confirmation-modal modal-container">
+      <Card id="ConfirmationModal" className="Modal-Container">
         <Typography variant="h2" gutterBottom>
           Upload Missing Field Image
         </Typography>
         {/* https://stackoverflow.com/questions/9769587/set-div-to-have-its-siblings-width */}
-        <Box className="description-box">
+        <Box className="ConfirmationModal-DescriptionBox">
           <Typography component="div" variant="body1" gutterBottom>
             This path file recommends the use of a custom field image and it is missing from your local storage. <br />
             <br />
@@ -71,7 +71,7 @@ export const RequireLocalFieldImageModal = observer(() => {
           })}
           size="small"
         />
-        <Box className="button-box">
+        <Box className="ConfirmationModal-ButtonBox">
           <Button
             disableRipple
             variant="text"

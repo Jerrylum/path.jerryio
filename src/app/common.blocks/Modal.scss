@@ -1,11 +1,11 @@
-.modal-backdrop {
+.Modal-Backdrop {
   margin: 0;
   background-color: transparent !important;
   backdrop-filter: blur(12px);
   outline: none !important;
 }
 
-.modal-container {
+.Modal-Container {
   position: absolute;
   top: 50%;
   left: 50%;

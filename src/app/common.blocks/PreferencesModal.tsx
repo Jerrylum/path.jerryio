@@ -20,7 +20,7 @@ export const PreferencesModal = observer(() => {
 
   return (
     <Modal symbol={PreferencesModalSymbol}>
-      <Card id="preferences-modal" className="modal-container">
+      <Card id="preferences-modal" className="Modal-Container">
         <Typography className="title">General</Typography>
         <ObserverInput
           sx={{ width: "10rem" }}

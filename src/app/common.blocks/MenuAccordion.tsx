@@ -324,7 +324,7 @@ const MenuAccordion = observer((props: {}) => {
   const [variables] = React.useState(() => new MenuVariables());
 
   return (
-    <Card id="main-menu">
+    <Card id="MenuAccordion">
       <Button
         size="small"
         color="inherit"
