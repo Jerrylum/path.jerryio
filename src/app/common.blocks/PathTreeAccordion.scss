@@ -1,4 +1,4 @@
-.tree-view {
+.PathTreeAccordion-TreeView {
   padding: 0;
   list-style: none;
   outline: 0;
@@ -9,7 +9,7 @@
   margin: 8px 0 0;
   min-height: calc(100% - 8px);
 
-  .tree-item {
+  .PathTreeAccordion-TreeItem {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -17,7 +17,7 @@
     user-select: none;
     position: relative;
 
-    .tree-item-content {
+    .PathTreeAccordion-TreeItemContent {
       padding: 0 0 0 8px;
       width: auto;
       display: flex;
@@ -26,7 +26,7 @@
       -webkit-tap-highlight-color: transparent;
       position: relative;
 
-      .tree-item-icon-container {
+      .PathTreeAccordion-TreeItemIconContainer {
         margin-right: 4px;
         width: 15px;
         display: flex;
@@ -40,7 +40,7 @@
         }
       }
 
-      .tree-item-label {
+      .PathTreeAccordion-TreeItemLabel {
         width: 100%;
         min-width: 0;
         padding-left: 4px;
@@ -54,63 +54,63 @@
         display: flex;
         align-items: center;
 
-        .tree-item-name {
+        .PathTreeAccordion-TreeItemName {
           flex-grow: 1;
           overflow: hidden;
           height: calc(1.5em - 2px);
           margin-right: 1px;
         }
 
-        .tree-item-name.edit {
+        .PathTreeAccordion-TreeItemName_edit {
           outline: 1px #7f47b3 solid;
         }
 
-        .tree-item-name.preview {
+        .PathTreeAccordion-TreeItemName_preview {
           white-space: nowrap;
           text-overflow: ellipsis;
         }
 
-        .tree-func-icon {
+        .PathTreeAccordion-TreeFuncIcon {
           height: calc(1em * 0.7) !important;
           vertical-align: middle;
           visibility: hidden;
         }
 
-        .tree-func-icon.show {
+        .PathTreeAccordion-TreeFuncIcon_show {
           visibility: visible;
         }
       }
 
-      .tree-item-label:hover > .tree-func-icon {
+      .PathTreeAccordion-TreeItemLabel:hover > .PathTreeAccordion-TreeFuncIcon {
         visibility: visible;
       }
     }
 
-    .tree-item-content:hover {
+    .PathTreeAccordion-TreeItemContent:hover {
       background-color: var(--hover-color);
     }
 
-    .tree-item-content.focused {
+    .PathTreeAccordion-TreeItemContent.focused {
       background-color: var(--focused-color);
     }
 
-    .tree-item-content.selected {
+    .PathTreeAccordion-TreeItemContent.selected {
       background-color: rgba(127, 71, 179, 0.16);
     }
 
-    .tree-item-content.selected:hover {
+    .PathTreeAccordion-TreeItemContent.selected:hover {
       background-color: rgba(127, 71, 179, 0.24);
     }
 
-    .tree-item-content.selected.focused {
+    .PathTreeAccordion-TreeItemContent.selected.focused {
       background-color: rgba(127, 71, 179, 0.28);
     }
 
-    .tree-item-content.deny-drop {
+    .PathTreeAccordion-TreeItemContent.deny-drop {
       opacity: 0.5;
     }
 
-    .tree-item-children-group {
+    .PathTreeAccordion-TreeItemChildrenGroup {
       height: auto;
       overflow: visible;
       margin: 0;
@@ -122,7 +122,7 @@
     }
   }
 
-  .dragging-divider-top::after {
+  .PathTreeAccordion-DraggingDividerTop::after {
     content: "";
     border-top: 1px solid #7f47b3;
     width: 100%;
@@ -132,7 +132,7 @@
     top: 0;
   }
 
-  .dragging-divider-bottom::after {
+  .PathTreeAccordion-DraggingDividerBottom::after {
     content: "";
     border-top: 1px solid #7f47b3;
     width: 100%;

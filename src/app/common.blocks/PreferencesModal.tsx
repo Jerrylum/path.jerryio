@@ -20,8 +20,8 @@ export const PreferencesModal = observer(() => {
 
   return (
     <Modal symbol={PreferencesModalSymbol}>
-      <Card id="preferences-modal" className="Modal-Container">
-        <Typography className="title">General</Typography>
+      <Card id="PreferencesModal" className="Modal-Container">
+        <Typography className="PreferencesModal-Title">General</Typography>
         <ObserverInput
           sx={{ width: "10rem" }}
           label="Max Undo Operations"
@@ -34,7 +34,7 @@ export const PreferencesModal = observer(() => {
 
         <Divider />
 
-        <Typography className="title">Appearance</Typography>
+        <Typography className="PreferencesModal-Title">Appearance</Typography>
         <ObserverEnumSelect
           sx={{ width: "8rem" }}
           label="Theme"
@@ -45,7 +45,7 @@ export const PreferencesModal = observer(() => {
 
         <Divider />
 
-        <Typography className="title">Other</Typography>
+        <Typography className="PreferencesModal-Title">Other</Typography>
         <ObserverCheckbox
           label="Enable Google Analytics"
           checked={appPreferences.isGoogleAnalyticsEnabled}

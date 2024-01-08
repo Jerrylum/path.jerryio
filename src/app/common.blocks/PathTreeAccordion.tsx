@@ -347,8 +347,8 @@ const TreeItem = observer((props: TreeItemProps) => {
 
   return (
     <li
-      className={classNames("tree-item", {
-        "dragging-divider-bottom":
+      className={classNames("PathTreeAccordion-TreeItem", {
+        "PathTreeAccordion-DraggingDividerBottom":
           showDraggingDivider && entityIdx > variables.dragging!.idx && variables.dragging!.entity instanceof Path
       })}
       onMouseEnter={action(() => children === undefined && (app.hoverItem = entity.uid))}
@@ -368,17 +368,17 @@ const TreeItem = observer((props: TreeItemProps) => {
         : {})}
       {...(!isDraggable && { onMouseDown: action(onDraggableFalseMouseDown) })}>
       <div
-        className={classNames("tree-item-content", {
+        className={classNames("PathTreeAccordion-TreeItemContent", {
           focused: isFocused,
           selected: app.isSelected(entity),
           "deny-drop": !allowDrop,
-          "dragging-divider-top": showDraggingDivider && entityIdx <= variables.dragging!.idx,
-          "dragging-divider-bottom":
+          "PathTreeAccordion-DraggingDividerTop": showDraggingDivider && entityIdx <= variables.dragging!.idx,
+          "PathTreeAccordion-DraggingDividerBottom":
             showDraggingDivider &&
             entityIdx > variables.dragging!.idx &&
             variables.dragging!.entity instanceof Path === false
         })}>
-        <div className="tree-item-icon-container" onClick={action(onExpandIconClick)}>
+        <div className="PathTreeAccordion-TreeItemIconContainer" onClick={action(onExpandIconClick)}>
           {children !== undefined && (
             <>
               {app.isExpanded(entity as Path) ? (
@@ -389,10 +389,13 @@ const TreeItem = observer((props: TreeItemProps) => {
             </>
           )}
         </div>
-        <div className="tree-item-label" onClick={action(onLabelClick)}>
+        <div className="PathTreeAccordion-TreeItemLabel" onClick={action(onLabelClick)}>
           {isNameEditable ? (
             <span
-              className={classNames("tree-item-name", { preview: !isEditingName, edit: isEditingName })}
+              className={classNames("PathTreeAccordion-TreeItemName", {
+                "PathTreeAccordion-TreeItemName_preview": !isEditingName,
+                "PathTreeAccordion-TreeItemName_edit": isEditingName
+              })}
               onInput={e => onItemNameChange(e)}
               onKeyDown={action(onItemNameKeyDown)}
               onDoubleClick={action(onItemNameDoubleClick)}
@@ -411,35 +414,49 @@ const TreeItem = observer((props: TreeItemProps) => {
               onClick={e => e.preventDefault()}
             />
           ) : (
-            <span className="tree-item-name preview">{entity.name}</span>
+            <span className="PathTreeAccordion-TreeItemName preview">{entity.name}</span>
           )}
           {isEditingName === false && (
             <>
-              {isNameEditable && <EditIcon className="tree-func-icon" onClick={action(onItemNameDoubleClick)} />}
-              {isDraggable && <DeleteIcon className="tree-func-icon" onClick={action(onDeleteClick)} />}
+              {isNameEditable && (
+                <EditIcon className="PathTreeAccordion-TreeFuncIcon" onClick={action(onItemNameDoubleClick)} />
+              )}
+              {isDraggable && <DeleteIcon className="PathTreeAccordion-TreeFuncIcon" onClick={action(onDeleteClick)} />}
               {entity.lock === false ? (
                 parent?.lock === true ? (
-                  <FiberManualRecordOutlinedIcon className="tree-func-icon show" onClick={action(onLockClick)} />
+                  <FiberManualRecordOutlinedIcon
+                    className="PathTreeAccordion-TreeFuncIcon PathTreeAccordion-TreeFuncIcon_show"
+                    onClick={action(onLockClick)}
+                  />
                 ) : (
-                  <LockOpenIcon className="tree-func-icon" onClick={action(onLockClick)} />
+                  <LockOpenIcon className="PathTreeAccordion-TreeFuncIcon" onClick={action(onLockClick)} />
                 )
               ) : (
-                <LockOutlinedIcon className="tree-func-icon show" onClick={action(onLockClick)} />
+                <LockOutlinedIcon
+                  className="PathTreeAccordion-TreeFuncIcon PathTreeAccordion-TreeFuncIcon_show"
+                  onClick={action(onLockClick)}
+                />
               )}
               {entity.visible === true ? (
                 parent?.visible === false ? (
-                  <FiberManualRecordOutlinedIcon className="tree-func-icon show" onClick={action(onVisibleClick)} />
+                  <FiberManualRecordOutlinedIcon
+                    className="PathTreeAccordion-TreeFuncIcon PathTreeAccordion-TreeFuncIcon_show"
+                    onClick={action(onVisibleClick)}
+                  />
                 ) : (
-                  <VisibilityIcon className="tree-func-icon" onClick={action(onVisibleClick)} />
+                  <VisibilityIcon className="PathTreeAccordion-TreeFuncIcon" onClick={action(onVisibleClick)} />
                 )
               ) : (
-                <VisibilityOffOutlinedIcon className="tree-func-icon show" onClick={action(onVisibleClick)} />
+                <VisibilityOffOutlinedIcon
+                  className="PathTreeAccordion-TreeFuncIcon PathTreeAccordion-TreeFuncIcon_show"
+                  onClick={action(onVisibleClick)}
+                />
               )}
             </>
           )}
         </div>
       </div>
-      <ul className="tree-item-children-group">
+      <ul className="PathTreeAccordion-TreeItemChildrenGroup">
         {children !== undefined &&
           app.isExpanded(entity as Path) &&
           children.map(child => (
@@ -633,7 +650,7 @@ const TreeView = observer((props: { variables: PathTreeVariables }) => {
 
   return (
     <ul
-      className="tree-view"
+      className="PathTreeAccordion-TreeView"
       ref={ref}
       tabIndex={0}
       onKeyDown={action(onKeyDown)}

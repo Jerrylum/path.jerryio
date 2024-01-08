@@ -6,12 +6,12 @@
   outline: none !important;
   height: 80%;
   overflow-y: auto;
+}
 
-  .logo {
-    margin: auto;
-    width: 128px;
-    display: block;
-  }
+.WelcomeModal-Logo {
+  margin: auto;
+  width: 128px;
+  display: block;
 }
 
 @supports not (-moz-appearance: none) {
