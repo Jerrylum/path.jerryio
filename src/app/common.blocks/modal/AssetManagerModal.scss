@@ -1,0 +1,115 @@
+#AssetManagerModal {
+  padding: 16px;
+  width: 768px;
+  max-width: 80%;
+  min-height: 96px;
+  outline: none !important;
+
+  #FieldImageAssets {
+    display: flex;
+    width: 100%;
+    gap: 16px;
+    // background-color: red;
+
+    #FieldImageAssets-Body {
+      flex-grow: 1;
+      max-width: calc(60% - 16px);
+
+      #FieldImageAssetsList {
+        flex-grow: 1;
+        min-height: calc(256px - 8px);
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-bottom: 8px; // maybe 16px
+        position: relative;
+
+        #FieldImageAssetsList-Content {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+
+          .FieldImageAssetsList-Item {
+            .FieldImageAssetsList-ItemDeleteButton {
+              visibility: hidden;
+            }
+          }
+
+          .FieldImageAssetsList-Item:hover {
+            .FieldImageAssetsList-ItemDeleteButton {
+              visibility: inherit;
+            }
+          }
+        }
+      }
+    }
+
+    #FieldImageAssets-PreviewSection {
+      width: 40%;
+      min-width: 256px;
+
+      #FieldImageAssets-AssetImagePreview {
+        width: 100%;
+        line-height: 0;
+        border: 1px solid var(--text-primary-color);
+        position: relative;
+
+        > #FieldImageAssets-FailedMessage {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          padding: 16px;
+          text-align: center;
+          display: flex;
+          align-content: center;
+          flex-wrap: wrap;
+          user-select: none;
+          pointer-events: none;
+        }
+
+        > img {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          user-select: none;
+          cursor: pointer;
+        }
+
+        > #FieldImageAssets-ReloadButton {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          text-align: center;
+          display: flex;
+          align-content: center;
+          flex-wrap: wrap;
+          background-color: rgba(255, 255, 255, 0.2);
+          opacity: 0;
+          transition: opacity 0.2s ease-in-out;
+          user-select: none;
+          cursor: pointer;
+
+          > * {
+            width: 100%;
+          }
+
+          &:hover {
+            opacity: 1;
+
+            & + #FieldImageAssets-FailedMessage {
+              display: none;
+            }
+          }
+        }
+      }
+    }
+  }
+}

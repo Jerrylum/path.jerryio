@@ -1,25 +1,25 @@
-import { makeAutoObservable, reaction, action, intercept } from "mobx";
-import { getAppStores } from "../core/MainApp";
-import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "../core/Util";
-import { BentRateApplicationDirection, Path, Segment, Vector } from "../core/Path";
-import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
-import { GeneralConfig, PathConfig, convertFormat, convertGeneralConfigUOL } from "./Config";
+import { makeAutoObservable, action } from "mobx";
+import { MainApp, getAppStores } from "@core/MainApp";
+import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "@core/Util";
+import { BentRateApplicationDirection, Path, Segment, Vector } from "@core/Path";
+import { UnitOfLength, UnitConverter, Quantity } from "@core/Unit";
+import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, IsString, MinLength, ValidateNested } from "class-validator";
-import { PointCalculationResult, getPathPoints, getDiscretePoints, fromDegreeToRadian } from "../core/Calculation";
-import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
-import { CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
-import { ObserverInput } from "../component/ObserverInput";
+import { PointCalculationResult, getPathPoints, getDiscretePoints, fromDegreeToRadian } from "@core/Calculation";
+import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
+import { UpdateProperties } from "@core/Command";
+import { ObserverInput } from "@app/component.blocks/ObserverInput";
 import { Box, Button, Typography } from "@mui/material";
-import { euclideanRotation } from "../core/Coordinate";
+import { euclideanRotation } from "@core/Coordinate";
 import { CodePointBuffer, Int } from "../token/Tokens";
 import { observer } from "mobx-react-lite";
-import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "../app/Notice";
-import { Logger } from "../core/Logger";
+import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "@app/Notice";
+import { Logger } from "@core/Logger";
 import { FormTags } from "react-hotkeys-hook/dist/types";
-import { useCustomHotkeys } from "../core/Hook";
-import { ObserverCheckbox } from "../component/ObserverCheckbox";
+import { useCustomHotkeys } from "@core/Hook";
+import { ObserverCheckbox } from "@app/component.blocks/ObserverCheckbox";
 
 const logger = Logger("LemLib Odom Code Gen v0.4.x (inch)");
 
@@ -60,9 +60,9 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
 
   return (
     <>
-      <Box className="panel-box">
+      <Box className="Panel-Box">
         <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
-        <Box className="flex-editor-panel">
+        <Box className="Panel-FlexBox">
           <ObserverInput
             label="Chassis Name"
             getValue={() => config.chassisName}
@@ -89,7 +89,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
             numeric
           />
         </Box>
-        <Box className="flex-editor-panel">
+        <Box className="Panel-FlexBox">
           <ObserverCheckbox
             label="Use Relative Coordinates"
             checked={config.relativeCoords}
@@ -101,7 +101,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
             }}
           />
         </Box>
-        <Box className="flex-editor-panel" sx={{ marginTop: "32px" }}>
+        <Box className="Panel-FlexBox" sx={{ marginTop: "32px" }}>
           <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
             Copy Code
           </Button>
@@ -157,22 +157,7 @@ class GeneralConfigImpl implements GeneralConfig {
     this.format_ = format;
     makeAutoObservable(this);
 
-    reaction(
-      () => this.uol,
-      action((_: UnitOfLength, oldUOL: UnitOfLength) => {
-        convertGeneralConfigUOL(this, oldUOL);
-      })
-    );
-
-    intercept(this, "fieldImage", change => {
-      const { assetManager } = getAppStores();
-
-      if (assetManager.getAssetBySignature(change.newValue.signature) === undefined) {
-        change.newValue = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
-      }
-
-      return change;
-    });
+    initGeneralConfig(this);
   }
 
   get format() {
@@ -233,7 +218,6 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
   uid: string;
 
   private gc = new GeneralConfigImpl(this);
-  private readonly events = new Map<keyof HistoryEventMap<CancellableCommand>, Set<Function>>();
 
   constructor() {
     this.uid = makeId(10);
@@ -248,10 +232,12 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
     return "LemLib Odom Code Gen v0.4.x (inch)";
   }
 
-  init(): void {
+  register(app: MainApp): void {
     if (this.isInit) return;
     this.isInit = true;
   }
+
+  unregister(app: MainApp): void {}
 
   getGeneralConfig(): GeneralConfig {
     return this.gc;
@@ -323,31 +309,5 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
     fileContent += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPDJData());
 
     return new TextEncoder().encode(fileContent);
-  }
-
-  addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
-    type: K,
-    listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
-    if (!this.events.has(type)) this.events.set(type, new Set());
-    this.events.get(type)!.add(listener);
-  }
-
-  removeEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
-    type: K,
-    listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
-    if (!this.events.has(type)) return;
-    this.events.get(type)!.delete(listener);
-  }
-
-  fireEvent(
-    type: keyof HistoryEventMap<CancellableCommand>,
-    event: HistoryEventMap<CancellableCommand>[keyof HistoryEventMap<CancellableCommand>]
-  ) {
-    if (!this.events.has(type)) return;
-    for (const listener of this.events.get(type)!) {
-      listener(event);
-    }
   }
 }

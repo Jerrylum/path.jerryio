@@ -1,18 +1,18 @@
-import { makeAutoObservable, reaction, action, intercept } from "mobx";
-import { getAppStores } from "../core/MainApp";
-import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "../core/Util";
-import { Quantity, UnitConverter, UnitOfLength } from "../core/Unit";
-import { GeneralConfig, PathConfig, convertFormat, convertGeneralConfigUOL } from "./Config";
+import { makeAutoObservable } from "mobx";
+import { MainApp, getAppStores } from "@core/MainApp";
+import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "@core/Util";
+import { Quantity, UnitConverter, UnitOfLength } from "@core/Unit";
+import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
-import { RangeSlider } from "../component/RangeSlider";
+import { RangeSlider } from "@app/component.blocks/RangeSlider";
 import { Box, Typography } from "@mui/material";
-import { CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
+import { UpdateProperties } from "@core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
-import { PointCalculationResult, getPathPoints } from "../core/Calculation";
-import { BentRateApplicationDirection, Path, Segment } from "../core/Path";
-import { isCoordinateWithHeading } from "../core/Coordinate";
-import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
+import { PointCalculationResult, getPathPoints } from "@core/Calculation";
+import { BentRateApplicationDirection, Path, Segment } from "@core/Path";
+import { isCoordinateWithHeading } from "@core/Coordinate";
+import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -51,22 +51,7 @@ class GeneralConfigImpl implements GeneralConfig {
     this.format_ = format;
     makeAutoObservable(this);
 
-    reaction(
-      () => this.uol,
-      action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
-        convertGeneralConfigUOL(this, oldUOL);
-      })
-    );
-
-    intercept(this, "fieldImage", change => {
-      const { app, assetManager } = getAppStores();
-
-      if (app.gc === this && assetManager.getAssetBySignature(change.newValue.signature) === undefined) {
-        change.newValue = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
-      }
-
-      return change;
-    });
+    initGeneralConfig(this);
   }
 
   get format() {
@@ -116,7 +101,7 @@ class PathConfigImpl implements PathConfig {
 
     return (
       <>
-        <Box className="panel-box">
+        <Box className="Panel-Box">
           <Typography>Min/Max Speed</Typography>
           <RangeSlider
             range={this.speedLimit}
@@ -128,7 +113,7 @@ class PathConfigImpl implements PathConfig {
             }
           />
         </Box>
-        <Box className="panel-box">
+        <Box className="Panel-Box">
           <Typography>Bent Rate Applicable Range</Typography>
           <RangeSlider
             range={this.bentRateApplicableRange}
@@ -151,7 +136,6 @@ export class PathDotJerryioFormatV0_1 implements Format {
   uid: string;
 
   private gc = new GeneralConfigImpl(this);
-  private readonly events = new Map<keyof HistoryEventMap<CancellableCommand>, Set<Function>>();
 
   constructor() {
     this.uid = makeId(10);
@@ -166,10 +150,12 @@ export class PathDotJerryioFormatV0_1 implements Format {
     return "path.jerryio v0.1.x (cm, rpm)";
   }
 
-  init(): void {
+  register(app: MainApp): void {
     if (this.isInit) return;
     this.isInit = true;
   }
+
+  unregister(app: MainApp): void {}
 
   getGeneralConfig(): GeneralConfig {
     return this.gc;
@@ -219,31 +205,5 @@ export class PathDotJerryioFormatV0_1 implements Format {
     fileContent += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPDJData());
 
     return new TextEncoder().encode(fileContent);
-  }
-
-  addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
-    type: K,
-    listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
-    if (!this.events.has(type)) this.events.set(type, new Set());
-    this.events.get(type)!.add(listener);
-  }
-
-  removeEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
-    type: K,
-    listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
-    if (!this.events.has(type)) return;
-    this.events.get(type)!.delete(listener);
-  }
-
-  fireEvent(
-    type: keyof HistoryEventMap<CancellableCommand>,
-    event: HistoryEventMap<CancellableCommand>[keyof HistoryEventMap<CancellableCommand>]
-  ) {
-    if (!this.events.has(type)) return;
-    for (const listener of this.events.get(type)!) {
-      listener(event);
-    }
   }
 }

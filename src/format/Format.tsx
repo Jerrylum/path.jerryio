@@ -1,23 +1,24 @@
-import { Path, Segment } from "../core/Path";
+import { Path, Segment } from "@core/Path";
 import { GeneralConfig } from "./Config";
-import { PointCalculationResult } from "../core/Calculation";
-import { APP_VERSION } from "../core/MainApp";
+import { PointCalculationResult } from "@core/Calculation";
+import { APP_VERSION, MainApp } from "@core/MainApp";
 import { Range } from "semver";
-import { UnitOfLength } from "../core/Unit";
+import { UnitOfLength } from "@core/Unit";
 import { LemLibFormatV0_4 } from "./LemLibFormatV0_4";
 import { PathDotJerryioFormatV0_1 } from "./PathDotJerryioFormatV0_1";
 import { LemLibOdomGeneratorFormatV0_4 } from "./LemLibOdomGeneratorFormatV0_4";
-import { CancellableCommand, ExecutionEventListenersContainer } from "../core/Command";
 import { LemLibFormatV1_0 } from "./LemLibFormatV1_0";
-import { isExperimentalFeaturesEnabled } from "../core/Preferences";
+import { isExperimentalFeaturesEnabled } from "@core/Preferences";
 
-export interface Format extends ExecutionEventListenersContainer<CancellableCommand> {
+export interface Format {
   isInit: boolean;
   uid: string;
 
   getName(): string;
 
-  init(): void;
+  register(app: MainApp): void;
+
+  unregister(app: MainApp): void;
 
   createNewInstance(): Format;
 
@@ -27,6 +28,15 @@ export interface Format extends ExecutionEventListenersContainer<CancellableComm
 
   getPathPoints(path: Path): PointCalculationResult;
 
+  /**
+   * Convert the old format to the new format.
+   *
+   * The format implementation will call convertFormat() and may have custom conversion logic after calling convertFormat().
+   *
+   * @param oldFormat the old format
+   * @param oldPaths the old paths
+   * @returns the new paths with "this" as the new format
+   */
   convertFromFormat(oldFormat: Format, oldPaths: Path[]): Path[];
 
   /**
@@ -129,10 +139,20 @@ const convertFromV0_4_0ToV0_5_0: PathFileDataConverter = {
   }
 };
 
-const convertFromV0_5_0ToCurrentAppVersion: PathFileDataConverter = {
+const convertFromV0_5_0ToV0_6_0: PathFileDataConverter = {
   version: new Range("~0.5"),
   convert: (data: Record<string, any>): void => {
-    // From v0.5.0 to current app version
+    // No conversion needed
+
+    // From v0.5.0 to v0.6.0
+    data.appVersion = "0.6.0";
+  }
+};
+
+const convertFromV0_6_0ToCurrentAppVersion: PathFileDataConverter = {
+  version: new Range("~0.6"),
+  convert: (data: Record<string, any>): void => {
+    // From v0.6.0 to current app version
     data.appVersion = APP_VERSION.version;
   }
 };
@@ -143,7 +163,8 @@ export function convertPathFileData(data: Record<string, any>): boolean {
     convertFromV0_2_0ToV0_3_0,
     convertFromV0_3_0ToV0_4_0,
     convertFromV0_4_0ToV0_5_0,
-    convertFromV0_5_0ToCurrentAppVersion
+    convertFromV0_5_0ToV0_6_0,
+    convertFromV0_6_0ToCurrentAppVersion
   ]) {
     if (version.test(data.appVersion)) {
       convert(data);

@@ -2,7 +2,7 @@ import { makeObservable, action } from "mobx";
 import { getAppStores } from "./MainApp";
 import { AnyControl, Control, EndControl, Path, PathTreeItem, relatedPaths } from "./Path";
 import { Logger } from "./Logger";
-import { enqueueInfoSnackbar } from "../app/Notice";
+import { enqueueInfoSnackbar } from "@app/Notice";
 import { UnitConverter, UnitOfLength } from "./Unit";
 import { Expose, Type, instanceToPlain, plainToClassFromExist, plainToInstance } from "class-transformer";
 import { ValidateNumber, makeId, runInActionAsync } from "./Util";

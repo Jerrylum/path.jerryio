@@ -1,0 +1,31 @@
+.Menu-Item.MuiMenuItem-root {
+  padding-left: 4px !important;
+
+  &.Mui-disabled {
+    pointer-events: auto !important;
+
+    &:hover {
+      // UX: don't change background color on hover
+      background-color: transparent !important;
+    }
+
+    &:active {
+      // https://moshfeu.github.io/show-tooltip-on-pointer-events-none-element/
+      pointer-events: none !important;
+    }
+  }
+
+  svg.Menu-ItemDoneIcon {
+    height: 16px;
+    margin-right: 4px;
+    position: relative;
+    top: -1px;
+  }
+
+  svg.Menu-ItemNextIcon {
+    height: 24px;
+    position: relative;
+    top: -1px;
+    right: -8px;
+  }
+}

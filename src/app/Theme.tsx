@@ -1,5 +1,5 @@
 import { Components, Theme, ThemeOptions, createTheme } from "@mui/material";
-import { getAppStores } from "../core/MainApp";
+import { getAppStores } from "@core/MainApp";
 
 export enum AppThemeType {
   Light = "light",

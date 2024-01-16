@@ -1,0 +1,18 @@
+#AboutModal {
+  padding: 32px;
+  width: 512px;
+  max-width: 80%;
+  min-height: 96px;
+  outline: none !important;
+
+  > img {
+    margin: auto;
+    width: 128px;
+    display: block;
+  }
+
+  a {
+    display: inline-block;
+    margin: 0 8px;
+  }
+}

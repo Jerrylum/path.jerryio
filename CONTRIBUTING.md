@@ -16,6 +16,8 @@ Before pushing a commit, run `npm run format`, or else your commit will fail.
 
 Self explanatory. Follow the conventions of the language you are using. For example, in TypeScript, use camelCase for variables and functions, and PascalCase for classes.
 
+Use [BEM Approach](https://en.bem.info/methodology/quick-start/) for CSS class names and file structure.
+
 ## Workflow
 
 ### Use Issue Templates

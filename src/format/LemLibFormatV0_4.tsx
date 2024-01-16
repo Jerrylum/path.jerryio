@@ -1,17 +1,17 @@
-import { makeAutoObservable, reaction, action, intercept } from "mobx";
-import { getAppStores } from "../core/MainApp";
-import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, clamp, makeId } from "../core/Util";
-import { BentRateApplicationDirection, Control, EndControl, Path, Segment, SpeedKeyframe, Vector } from "../core/Path";
-import { UnitOfLength, UnitConverter, Quantity } from "../core/Unit";
-import { GeneralConfig, PathConfig, convertFormat, convertGeneralConfigUOL } from "./Config";
+import { makeAutoObservable, action } from "mobx";
+import { MainApp, getAppStores } from "@core/MainApp";
+import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, clamp, makeId } from "@core/Util";
+import { BentRateApplicationDirection, Control, EndControl, Path, Segment, SpeedKeyframe, Vector } from "@core/Path";
+import { UnitOfLength, UnitConverter, Quantity } from "@core/Unit";
+import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { Box, Slider, Typography } from "@mui/material";
-import { RangeSlider } from "../component/RangeSlider";
-import { AddKeyframe, CancellableCommand, HistoryEventMap, UpdateProperties } from "../core/Command";
+import { RangeSlider } from "@app/component.blocks/RangeSlider";
+import { AddKeyframe, UpdateProperties } from "@core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
-import { PointCalculationResult, getPathPoints } from "../core/Calculation";
-import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
+import { PointCalculationResult, getPathPoints } from "@core/Calculation";
+import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
 
 // observable class
 class GeneralConfigImpl implements GeneralConfig {
@@ -50,22 +50,7 @@ class GeneralConfigImpl implements GeneralConfig {
     this.format_ = format;
     makeAutoObservable(this);
 
-    reaction(
-      () => this.uol,
-      action((newUOL: UnitOfLength, oldUOL: UnitOfLength) => {
-        convertGeneralConfigUOL(this, oldUOL);
-      })
-    );
-
-    intercept(this, "fieldImage", change => {
-      const { assetManager } = getAppStores();
-
-      if (assetManager.getAssetBySignature(change.newValue.signature) === undefined) {
-        change.newValue = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
-      }
-
-      return change;
-    });
+    initGeneralConfig(this);
   }
 
   get format() {
@@ -119,7 +104,7 @@ class PathConfigImpl implements PathConfig {
 
     return (
       <>
-        <Box className="panel-box">
+        <Box className="Panel-Box">
           <Typography>Min/Max Speed</Typography>
           <RangeSlider
             range={this.speedLimit}
@@ -131,7 +116,7 @@ class PathConfigImpl implements PathConfig {
             }
           />
         </Box>
-        <Box className="panel-box">
+        <Box className="Panel-Box">
           <Typography>Bent Rate Applicable Range</Typography>
           <RangeSlider
             range={this.bentRateApplicableRange}
@@ -143,7 +128,7 @@ class PathConfigImpl implements PathConfig {
             }
           />
         </Box>
-        <Box className="panel-box">
+        <Box className="Panel-Box">
           <Typography>Max Deceleration Rate</Typography>
           <Slider
             step={0.1}
@@ -171,7 +156,8 @@ export class LemLibFormatV0_4 implements Format {
   uid: string;
 
   private gc = new GeneralConfigImpl(this);
-  private readonly events = new Map<keyof HistoryEventMap<CancellableCommand>, Set<Function>>();
+
+  private readonly disposers: (() => void)[] = [];
 
   constructor() {
     this.uid = makeId(10);
@@ -186,18 +172,24 @@ export class LemLibFormatV0_4 implements Format {
     return "LemLib v0.4.x (inch, byte-voltage)";
   }
 
-  init(): void {
+  register(app: MainApp): void {
     if (this.isInit) return;
     this.isInit = true;
 
-    this.addEventListener("beforeExecution", event => {
-      if (event.isCommandInstanceOf(AddKeyframe)) {
-        const keyframe = event.command.keyframe;
-        if (keyframe instanceof SpeedKeyframe) {
-          keyframe.followBentRate = true;
+    this.disposers.push(
+      app.history.addEventListener("beforeExecution", event => {
+        if (event.isCommandInstanceOf(AddKeyframe)) {
+          const keyframe = event.command.keyframe;
+          if (keyframe instanceof SpeedKeyframe) {
+            keyframe.followBentRate = true;
+          }
         }
-      }
-    });
+      })
+    );
+  }
+
+  unregister(app: MainApp): void {
+    this.disposers.forEach(disposer => disposer());
   }
 
   getGeneralConfig(): GeneralConfig {
@@ -380,31 +372,5 @@ export class LemLibFormatV0_4 implements Format {
     fileContent += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPDJData());
 
     return new TextEncoder().encode(fileContent);
-  }
-
-  addEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
-    type: K,
-    listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
-    if (!this.events.has(type)) this.events.set(type, new Set());
-    this.events.get(type)!.add(listener);
-  }
-
-  removeEventListener<K extends keyof HistoryEventMap<CancellableCommand>, T extends CancellableCommand>(
-    type: K,
-    listener: (event: HistoryEventMap<T>[K]) => void
-  ): void {
-    if (!this.events.has(type)) return;
-    this.events.get(type)!.delete(listener);
-  }
-
-  fireEvent(
-    type: keyof HistoryEventMap<CancellableCommand>,
-    event: HistoryEventMap<CancellableCommand>[keyof HistoryEventMap<CancellableCommand>]
-  ) {
-    if (!this.events.has(type)) return;
-    for (const listener of this.events.get(type)!) {
-      listener(event);
-    }
   }
 }

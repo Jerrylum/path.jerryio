@@ -1,0 +1,119 @@
+$pg: 16px; // panel gap
+$hpg: 8px; // half panel gap
+$qpg: 4px; // quarter panel gap
+$speed-canvas-height-vh: 12vh;
+$speed-canvas-height-svh: 12svh;
+$middle-section-width-vh: calc(100vh - $pg - $pg - $hpg - $speed-canvas-height-vh - $hpg - $pg);
+$middle-section-width-svh: calc(100svh - $pg - $pg - $hpg - $speed-canvas-height-svh - $hpg - $pg);
+$middle-section-height-vh: calc(100vh - $pg - $pg);
+$middle-section-height-svh: calc(100svh - $pg - $pg);
+
+& {
+  padding: 8px;
+}
+
+#LeftSection,
+#MiddleSection,
+#RightSection {
+  box-sizing: border-box;
+  margin: $hpg;
+}
+
+#LeftSection {
+  float: left;
+  flex-grow: 1;
+  min-width: 288px;
+  max-width: 288px;
+  margin: calc($hpg - $qpg) !important;
+  padding-top: $qpg;
+  overflow-x: hidden;
+  height: calc(100% - $hpg - $hpg + $hpg);
+  border-radius: 4px;
+}
+
+#MiddleSection {
+  display: flex;
+  width: auto;
+  height: auto;
+  flex-direction: column;
+
+  #FieldCanvas-Container {
+    width: $middle-section-width-vh;
+    width: $middle-section-width-svh;
+    height: auto;
+    position: relative;
+    display: inline-flex;
+
+    > svg {
+      height: 100%;
+      width: 100%;
+    }
+
+    > div {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      padding: $hpg;
+      overflow: hidden;
+    }
+  }
+
+  &.full-height {
+    #FieldCanvas-Container {
+      width: $middle-section-height-vh;
+      width: $middle-section-height-svh;
+      height: $middle-section-height-vh;
+      height: $middle-section-height-svh;
+    }
+  }
+}
+
+#RightSection {
+  float: left;
+  flex-grow: 1;
+  min-width: 352px;
+  max-width: 352px;
+  margin: calc($hpg - $qpg);
+  margin-bottom: 0;
+  border-top: $qpg solid var(--bg-body-color);
+  border-bottom: $qpg solid var(--bg-body-color);
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: calc(100% - $hpg - $hpg + $hpg);
+  position: relative;
+}
+
+#LeftSection::-webkit-scrollbar,
+#RightSection::-webkit-scrollbar {
+  width: 0;
+}
+
+#LeftSection > *,
+#RightSection > * {
+  margin: 0 $qpg !important;
+}
+
+#LeftSection h3,
+#RightSection h3 {
+  margin: 0;
+  font-weight: 100;
+}
+
+#LeftSection > *::before,
+#RightSection > *::before {
+  background-color: transparent !important;
+}
+
+.Panel-Box {
+  margin-top: $hpg;
+}
+
+// Import all blocks scss file that without tsx implementation
+
+@import "./panel/ControlAccordion";
+@import "./panel/MenuAccordion";
+@import "./panel/PathTreeAccordion";
+@import "./speed-canvas/SpeedCanvasElement";
+@import "./MousePositionPresentation";

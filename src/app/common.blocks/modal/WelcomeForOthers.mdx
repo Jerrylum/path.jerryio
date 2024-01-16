@@ -1,0 +1,29 @@
+import { ObserverCheckbox } from "@app/component.blocks/ObserverCheckbox";
+
+<img src="static/logo464.svg" alt="app logo" className="WelcomeModal-Logo" />
+
+<div align='center' style={{"marginBlockStart": "16px", "marginBlockEnd": "16px"}}>
+# Welcome to PATH.JERRYIO
+Before you start, please take a few minutes to read our [tutorial](https://docs.path.jerryio.com/docs/getting-started).
+</div>
+
+<br />
+
+PATH.JERRYIO is a multi-purpose path editor/planner which can be used to design routes for one-minute driver skill and generate path files. It is a Progressive Web Apps (PWA) that is installable and can be used on any device without an internet connection.
+
+![A banner showing PATH.JERRYIO running on the IMac, MacBook, iPad, and iPhone](static/readme-banner-0.5x.png)
+
+More information about this editor can be found on the [GitHub Page](https://github.com/Jerrylum/path.jerryio).
+
+## We Respect Your Privacy
+
+This app uses Google Analytics to collect anonymous usage data after leaving this page.
+You can disable it now or at any time on the Preference Page.
+Please read our [Privacy Policy](https://github.com/Jerrylum/path.jerryio/blob/main/PRIVACY.md) for more information.
+
+<ObserverCheckbox label="Enable Google Analytics" checked={props.isGAEnabled} onCheckedChange={props.setIsGAEnabled} />
+
+## Support
+
+If you have any questions or suggestions, please join our [Discord Server](https://discord.gg/4uVSVXXBBa).
+You can also report bugs or request features on the [GitHub Page](https://github.com/Jerrylum/path.jerryio) too.

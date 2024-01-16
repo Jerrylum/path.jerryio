@@ -2,13 +2,13 @@ import { makeAutoObservable } from "mobx";
 
 import { Expose, Exclude, plainToClassFromExist, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, ValidateNested, validate } from "class-validator";
-import { BentRateApplicationDirection, Path } from "../core/Path";
-import { UnitOfLength } from "../core/Unit";
+import { BentRateApplicationDirection, Path } from "@core/Path";
+import { UnitOfLength } from "@core/Unit";
 import { GeneralConfig, PathConfig } from "./Config";
 import { Format } from "./Format";
-import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber } from "../core/Util";
+import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber } from "@core/Util";
 import { CustomFormat } from "./Format.test";
-import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "../core/Asset";
+import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
 
 export class CustomGeneralConfig implements GeneralConfig {
   public custom: string = "custom";

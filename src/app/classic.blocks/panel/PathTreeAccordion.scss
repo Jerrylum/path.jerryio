@@ -1,0 +1,29 @@
+#PathTreeAccordion-Container {
+  height: calc(100% - $qpg - $hpg - (10px + 13px) - $hpg - $pg);
+  position: relative;
+
+  .MuiAccordionSummary-root {
+    cursor: unset;
+  }
+
+  .MuiAccordionSummary-content {
+    justify-content: space-between;
+  }
+
+  .MuiAccordionDetails-root {
+    overflow-y: auto;
+    position: absolute;
+    top: 48px;
+    bottom: 1.6px;
+    right: 1.6px;
+    left: 0;
+    scrollbar-gutter: stable;
+    padding-right: calc($pg - 6.4px);
+  }
+}
+
+.PathTreeAccordion-FunctionButton {
+  cursor: pointer;
+  padding: 0;
+  margin-left: 3.2px;
+}

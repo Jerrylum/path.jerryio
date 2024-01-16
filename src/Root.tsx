@@ -16,19 +16,22 @@ import { getAppStores } from "./core/MainApp";
 
 import { onDownload, onDownloadAs, onDropFile, onNew, onOpen, onSave, onSaveAs } from "./core/InputOutput";
 import { NoticeProvider } from "./app/Notice";
-import { ConfirmationModal } from "./app/Confirmation";
-import { DragDropBackdrop } from "./app/DragDropBackdrop";
+import { ConfirmationModal } from "./app/common.blocks/modal/ConfirmationModal";
+import { DragDropBackdrop } from "./app/common.blocks/DragDropBackdrop";
 import { RemovePathsAndEndControls } from "./core/Command";
 import React, { useEffect } from "react";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 import { LayoutType, getUsableLayout } from "./core/Layout";
 import { getAppThemeInfo } from "./app/Theme";
-import { ClassisLayout, ExclusiveLayout, LayoutProvider, MobileLayout } from "./app/Layouts";
-import { AboutModal } from "./app/AboutModal";
-import { WelcomeModal } from "./app/Welcome";
-import { PreferencesModal, PreferencesModalSymbol } from "./app/PreferencesModal";
-import { AssetManagerModal } from "./app/AssetManagerModal";
-import { RequireLocalFieldImageModal } from "./app/RequireLocalFieldImageModal";
+import { LayoutProvider } from "./app/Layouts";
+import { AboutModal } from "./app/common.blocks/modal/AboutModal";
+import { WelcomeModal } from "./app/common.blocks/modal/WelcomeModal";
+import { PreferencesModal, PreferencesModalSymbol } from "./app/common.blocks/modal/PreferencesModal";
+import { AssetManagerModal } from "./app/common.blocks/modal/AssetManagerModal";
+import { RequireLocalFieldImageModal } from "./app/common.blocks/modal/RequireLocalFieldImageModal";
+import { ClassisLayout } from "./app/classic.blocks/_index";
+import { ExclusiveLayout } from "./app/exclusive.blocks/_index";
+import { MobileLayout } from "./app/mobile.blocks/_index";
 
 const Root = observer(() => {
   const { app, confirmation, modals, appPreferences, clipboard } = getAppStores();
@@ -126,7 +129,7 @@ const Root = observer(() => {
   return (
     <Box
       tabIndex={-1}
-      id="root-container"
+      id="Root-Container"
       data-theme={getAppThemeInfo().styleName}
       data-layout={usingLayout}
       {...{ onDragEnter, onDragOver, onDrop }}

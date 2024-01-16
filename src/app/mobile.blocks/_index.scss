@@ -1,0 +1,101 @@
+#BottomNav {
+  background-color: var(--bg-paper-color);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 42px;
+  display: flex;
+  justify-content: space-around;
+}
+
+#BottomPanel {
+  background-color: var(--bg-paper-color);
+  color: var(--text-primary-color);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  min-height: 10%;
+  max-height: 60%;
+  overflow-y: auto;
+
+  .FloatingPanel {
+    color: var(--text-primary-color);
+    box-sizing: border-box;
+    margin: 16px;
+
+    .FloatingPanel-Header {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+  }
+
+  #SpeedCanvas-Container {
+    margin: 8px;
+  }
+}
+
+#TopNav {
+  background-color: var(--bg-paper-color);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 42px;
+  padding-left: 16px;
+  display: flex;
+
+  #TopNav-LeftSection {
+    display: flex;
+  }
+
+  #TopNav-UndoRedoSection {
+    display: flex;
+    flex-grow: 1;
+    padding: 0 16px;
+  }
+
+  #TopNav-RightSection {
+    display: flex;
+
+    #TopNav-RightSectionDoneButton {
+      height: 42px;
+      line-height: 42px;
+      padding: 0 16px;
+      font-size: 18px;
+      float: right;
+      cursor: pointer;
+      user-select: none;
+      color: var(--text-primary-color);
+    }
+  }
+}
+
+.PanelIcon {
+  width: 42px;
+  height: 42px;
+  background-color: transparent;
+  color: var(--text-primary-color);
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  position: relative;
+
+  &.disabled {
+    cursor: auto;
+    color: var(--text-disabled-color);
+  }
+
+  > svg {
+    font-size: 24px;
+    // UX: Using vertical-align: middle with line-height can not center the icon with 1 px offset
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@import "./PathTreeAccordion";
+@import "./Welcome";

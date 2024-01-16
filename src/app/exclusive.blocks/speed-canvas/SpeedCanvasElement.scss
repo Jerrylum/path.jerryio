@@ -1,0 +1,16 @@
+#SpeedCanvas-Container {
+  position: fixed;
+  bottom: 8px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  background-color: var(--bg-paper-color);
+  padding: 16px;
+  border-radius: 4px;
+  color: var(--text-primary-color);
+  box-sizing: border-box;
+  border: 0.5px solid var(--bg-default-color);
+
+  &.extended {
+    bottom: 0;
+  }
+}

@@ -1,6 +1,6 @@
 // ALGO: Tokens implementation is adopted from https://github.com/Jerrylum/ProtocolDiagram under the GPLv3 license.
 
-import { Quantity, Unit, UnitOfAngle, UnitOfLength } from "../core/Unit";
+import { Quantity, Unit, UnitOfAngle, UnitOfLength } from "@core/Unit";
 
 /**
  * A utility function that checks whether the character is delimiter (null | ' ')

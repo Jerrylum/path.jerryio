@@ -1,0 +1,14 @@
+.Modal-Backdrop {
+  margin: 0;
+  background-color: transparent !important;
+  backdrop-filter: blur(12px);
+  outline: none !important;
+}
+
+.Modal-Container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--text-primary-color);
+}

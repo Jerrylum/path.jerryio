@@ -2,7 +2,7 @@ import { when, runInAction } from "mobx";
 import { SemVer } from "semver";
 import { Logger } from "./Logger";
 import { APP_VERSION, getAppStores } from "./MainApp";
-import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "../app/Notice";
+import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "@app/Notice";
 import * as SWR from "./ServiceWorkerRegistration";
 import { onSave } from "./InputOutput";
 import { sleep } from "./Util";
