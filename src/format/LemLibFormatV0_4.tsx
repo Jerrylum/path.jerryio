@@ -209,7 +209,13 @@ export class LemLibFormatV0_4 implements Format {
     const rate = (path.pc as PathConfigImpl).maxDecelerationRate;
     const minSpeed = (path.pc as PathConfigImpl).speedLimit.from;
 
-    for (let i = result.points.length - 2; i >= 0; i--) {
+    // set the speed of the last 3 points to 0
+    result.points[result.points.length-1].speed = 0;
+    result.points[result.points.length-2].speed = 0;
+    result.points[result.points.length-3].speed = 0;
+    
+
+    for (let i = result.points.length - 3; i >= 0; i--) {
       const last = result.points[i + 1];
       const current = result.points[i];
 
