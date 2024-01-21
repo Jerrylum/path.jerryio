@@ -78,7 +78,7 @@ export const ExclusiveLayout = observer(() => {
       </Box>
       <Box className="PanelIcon-Box" style={{ right: "8px", top: "8px" }}>
         {containers.map(panelContainer => (
-          <Box className="PanelIcon" onClick={() => variables.togglePanel(panelContainer.id)}>
+          <Box className="PanelIcon" key={panelContainer.id} onClick={() => variables.togglePanel(panelContainer.id)}>
             {panelContainer.icon}
           </Box>
         ))}

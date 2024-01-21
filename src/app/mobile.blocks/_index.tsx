@@ -104,7 +104,7 @@ export const MobileLayout = observer(() => {
             {pathTreeAccordion.icon}
           </Box>
           {containers.map(panelContainer => (
-            <Box className="PanelIcon" onClick={() => variables.openPanel(panelContainer.id)}>
+            <Box className="PanelIcon" key={panelContainer.id} onClick={() => variables.openPanel(panelContainer.id)}>
               {panelContainer.icon}
             </Box>
           ))}
