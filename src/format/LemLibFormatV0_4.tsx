@@ -207,14 +207,22 @@ export class LemLibFormatV0_4 implements Format {
       defaultFollowBentRate: true
     });
     const rate = (path.pc as PathConfigImpl).maxDecelerationRate;
+    const minSpeed = (path.pc as PathConfigImpl).speedLimit.from;
 
-    for (let i = result.points.length - 2; i >= 0; i--) {
+    // set the speed of the last 3 points to 0
+    result.points[result.points.length-1].speed = 0;
+    result.points[result.points.length-2].speed = 0;
+    result.points[result.points.length-3].speed = 0;
+    
+
+    for (let i = result.points.length - 3; i >= 0; i--) {
       const last = result.points[i + 1];
       const current = result.points[i];
 
       // v = sqrt(v_0^2 + 2ad)
       const newSpeed = Math.sqrt(Math.pow(last.speed, 2) + 2 * rate * uc.fromAtoB(last.distance(current)));
       current.speed = Math.min(current.speed, newSpeed);
+      current.speed = Math.max(current.speed, minSpeed);
     }
     return result;
   }
