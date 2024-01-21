@@ -206,14 +206,16 @@ export class LemLibFormatV0_4 implements Format {
     const result = getPathPoints(path, new Quantity(this.gc.pointDensity, this.gc.uol), {
       defaultFollowBentRate: true
     });
-    const rate = (path.pc as PathConfigImpl).maxDecelerationRate;
-    const minSpeed = (path.pc as PathConfigImpl).speedLimit.from;
 
-    // set the speed of the last 3 points to 0
-    result.points[result.points.length-1].speed = 0;
-    result.points[result.points.length-2].speed = 0;
-    result.points[result.points.length-3].speed = 0;
-    
+    const pc = path.pc as PathConfigImpl;
+    const rate = pc.maxDecelerationRate;
+    const minSpeed = pc.speedLimit.from;
+
+    if (result.points.length > 1) {
+      // the speed of the final point should always be 0
+      // set the speed of the segment end point to 0
+      result.points[result.points.length - 2].speed = 0;
+    }
 
     for (let i = result.points.length - 3; i >= 0; i--) {
       const last = result.points[i + 1];
@@ -221,8 +223,7 @@ export class LemLibFormatV0_4 implements Format {
 
       // v = sqrt(v_0^2 + 2ad)
       const newSpeed = Math.sqrt(Math.pow(last.speed, 2) + 2 * rate * uc.fromAtoB(last.distance(current)));
-      current.speed = Math.min(current.speed, newSpeed);
-      current.speed = Math.max(current.speed, minSpeed);
+      current.speed = Math.max(Math.min(current.speed, newSpeed), minSpeed);
     }
     return result;
   }
