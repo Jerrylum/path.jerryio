@@ -10,7 +10,7 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp";
-import { Box, IconButton, Tooltip, Typography } from "@mui/material";
+import { Box, Card, IconButton, Tooltip, Typography } from "@mui/material";
 import { action, makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Segment, EndControl, Path, Control, PathTreeItem } from "@core/Path";
@@ -32,7 +32,7 @@ import DOMPurify from "dompurify";
 
 import "./PathTreeAccordion.scss";
 import { LayoutType } from "@core/Layout";
-import { PanelStaticContainerProps } from "./Panel";
+import { PanelContainer } from "./Panel";
 import ViewListIcon from "@mui/icons-material/ViewList";
 
 const MIME_TYPE = `application/x-item-uid-path.jerryio.com-${APP_VERSION_STRING}`;
@@ -687,7 +687,9 @@ function onExpandAllClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   }
 }
 
-export const PathTreeAccordion = (props: { layout: LayoutType }): PanelStaticContainerProps => {
+export const PathTreeAccordion = (props: {
+  layout: LayoutType;
+}): PanelContainer & { containerProps: React.ComponentProps<typeof Card> } => {
   const { app } = getAppStores();
   const [variables] = React.useState(() => new PathTreeVariables());
 
