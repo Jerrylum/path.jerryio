@@ -1,5 +1,5 @@
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { AccordionSummary, Box, AccordionDetails, Card, Accordion, Typography } from "@mui/material";
+import { AccordionSummary, Box, AccordionDetails, Card, Accordion } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import "./Panel.scss";
 
@@ -21,7 +21,9 @@ export interface PanelStaticContainerProps extends PanelContainer {
 export const PanelStaticContainer = observer((props: PanelStaticContainerProps) => {
   return (
     <Card {...props.containerProps}>
-      <AccordionSummary {...props.headerProps}>{props.header}</AccordionSummary>
+      <AccordionSummary {...props.headerProps} className="Panel-Header">
+        {props.header}
+      </AccordionSummary>
       <AccordionDetails {...props.bodyProps}>{props.children}</AccordionDetails>
     </Card>
   );
@@ -36,7 +38,7 @@ export interface PanelAccordionContainerProps extends PanelContainer {
 export const PanelAccordionContainer = observer((props: PanelAccordionContainerProps) => {
   return (
     <Accordion defaultExpanded {...props.containerProps}>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />} {...props.headerProps}>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />} className="Panel-Header" {...props.headerProps}>
         {props.header}
       </AccordionSummary>
       <AccordionDetails {...props.bodyProps}>{props.children}</AccordionDetails>
@@ -46,16 +48,16 @@ export const PanelAccordionContainer = observer((props: PanelAccordionContainerP
 
 export interface PanelFloatingContainerProps extends PanelContainer {
   containerProps?: React.ComponentProps<typeof Box>;
-  headerProps?: React.ComponentProps<typeof Typography>;
+  headerProps?: React.ComponentProps<typeof Box>;
   bodyProps?: React.ComponentProps<typeof Box>;
 }
 
 export const PanelFloatingContainer = observer((props: PanelFloatingContainerProps) => {
   return (
     <Box className="FloatingPanel" {...props.containerProps}>
-      <Typography className="FloatingPanel-Header" {...props.headerProps}>
+      <Box className="Panel-Header FloatingPanel-Header" {...props.headerProps}>
         {props.header}
-      </Typography>
+      </Box>
       <Box {...props.bodyProps}>{props.children}</Box>
     </Box>
   );
