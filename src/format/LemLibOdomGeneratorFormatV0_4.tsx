@@ -275,18 +275,15 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
 
     if (points.length > 0) {
       const start = points[0];
-      let heading = 0;
 
-      if (start.heading !== undefined && gc.relativeCoords) {
-        heading = fromDegreeToRadian(start.heading);
+      // ALGO: Set the starting pose if using relative coordinates
+      if (gc.relativeCoords) {
+        rtn += `${gc.chassisName}.setPose(${start.x}, ${start.y}, ${start.heading});\n`
       }
-
-      // ALGO: Offsets to convert the absolute coordinates to the relative coordinates LemLib uses
-      const offsets = gc.relativeCoords ? new Vector(start.x, start.y) : new Vector(0, 0);
+      
       for (const point of points) {
         // ALGO: Only coordinate points are supported in LemLibOdom format
-        const relative = euclideanRotation(heading, point.subtract(offsets));
-        rtn += `${gc.chassisName}.moveTo(${uc.fromAtoB(relative.x).toUser()}, ${uc.fromAtoB(relative.y).toUser()}, ${
+        rtn += `${gc.chassisName}.moveTo(${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${
           gc.movementTimeout
         });\n`;
       }
