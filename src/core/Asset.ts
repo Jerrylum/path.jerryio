@@ -419,8 +419,16 @@ export class AssetManager {
 const builtInAssets: FieldImageAsset<FieldImageOriginType>[] = [
   // 3683 = 145*2.54*10 ~= 3676.528, the size of the field perimeter in Fusion 360
   createBuiltInFieldImage("VRC 2024 - Over Under", 3690, builtInFieldImage2024),
-  createBuiltInFieldImage("VRC 2024 - Over Under (Skill)", 3690, "/static/VRC-OverUnder-Skill-TileColor66_71-2000x2000.png"),
-  createBuiltInFieldImage("VRC 2024 - Over Under (VEX U)", 3690, "/static/VRC-OverUnder-VEXU-TileColor66_71-2000x2000.png"),
+  createBuiltInFieldImage(
+    "VRC 2024 - Over Under (Skill)",
+    3690,
+    "/static/VRC-OverUnder-Skill-TileColor66_71-2000x2000.png"
+  ),
+  createBuiltInFieldImage(
+    "VRC 2024 - Over Under (VEX U)",
+    3690,
+    "/static/VRC-OverUnder-VEXU-TileColor66_71-2000x2000.png"
+  ),
   createBuiltInFieldImage("VRC Field Perimeter", 3690, builtInFieldPerimeter),
   createBuiltInFieldImage("VIQC 2024 - Full Volume", 1920, "/static/VIQC-FullVolume-8ft6ft-2000x1517.png"),
   createBuiltInFieldImage("VIQC Field Perimeter 8ft×6ft", 1920, "/static/VIQC-FieldPerimeter-8ft6ft-2000x1517.png")
