@@ -1,18 +1,27 @@
 import { makeAutoObservable, action } from "mobx";
 import { MainApp, getAppStores } from "@core/MainApp";
 import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "@core/Util";
-import { BentRateApplicationDirection, Path, Segment, Vector } from "@core/Path";
+import { BentRateApplicationDirection, EndControl, Path, Segment, SegmentVariant } from "@core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "@core/Unit";
 import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, IsString, MinLength, ValidateNested } from "class-validator";
-import { PointCalculationResult, getPathPoints, getDiscretePoints, fromDegreeToRadian } from "@core/Calculation";
+import {
+  PointCalculationResult,
+  getPathPoints,
+  getDiscretePoints
+} from "@core/Calculation";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
-import { UpdateProperties } from "@core/Command";
+import {
+  AddCubicSegment,
+  AddLinearSegment,
+  AddPath,
+  ConvertSegment,
+  UpdateProperties
+} from "@core/Command";
 import { ObserverInput } from "@app/component.blocks/ObserverInput";
 import { Box, Button, Typography } from "@mui/material";
-import { euclideanRotation } from "@core/Coordinate";
 import { CodePointBuffer, Int } from "../token/Tokens";
 import { observer } from "mobx-react-lite";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "@app/Notice";
@@ -20,8 +29,15 @@ import { Logger } from "@core/Logger";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 import { useCustomHotkeys } from "@core/Hook";
 import { ObserverCheckbox } from "@app/component.blocks/ObserverCheckbox";
+import { ObserverEnumSelect } from "@src/app/component.blocks/ObserverEnumSelect";
 
-const logger = Logger("LemLib Odom Code Gen v0.4.x (inch)");
+enum LemLibMethod {
+  MoveToPoint,
+  MoveToPose,
+  MoveTo
+}
+
+const logger = Logger("LemLib Odom Code Gen v0.5.x (inch)");
 
 const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
   const { config } = props;
@@ -62,7 +78,18 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
     <>
       <Box className="Panel-Box">
         <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
-        <Box className="Panel-FlexBox">
+        <ObserverEnumSelect
+            sx={{ marginTop: "16px", width: "50%" }}
+            label="LemLib Method Call"
+            enumValue={config.lemlibMethod}
+            onEnumChange={value => {
+              app.history.execute(
+                `Set using heading output type to ${value}`,
+                new UpdateProperties(config, { lemlibMethod: value })
+              );
+            }}
+            enumType={LemLibMethod}
+          />
           <ObserverInput
             label="Chassis Name"
             getValue={() => config.chassisName}
@@ -88,7 +115,6 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
             sx={{ marginTop: "16px" }}
             numeric
           />
-        </Box>
         <Box className="Panel-FlexBox">
           <ObserverCheckbox
             label="Use Relative Coordinates"
@@ -130,7 +156,7 @@ class GeneralConfigImpl implements GeneralConfig {
   uol: UnitOfLength = UnitOfLength.Inch;
   @IsPositive()
   @Expose()
-  pointDensity: number = 2; // inches
+  pointDensity: number = 1; // inches
   @IsPositive()
   @Expose()
   controlMagnetDistance: number = 5 / 2.54;
@@ -143,6 +169,8 @@ class GeneralConfigImpl implements GeneralConfig {
   @IsString()
   @MinLength(1)
   @Expose()
+  lemlibMethod: LemLibMethod = LemLibMethod.MoveToPoint;
+  @Expose()
   chassisName: string = "chassis";
   @ValidateNumber(num => num >= 0)
   @Expose()
@@ -151,9 +179,9 @@ class GeneralConfigImpl implements GeneralConfig {
   @Expose()
   relativeCoords: boolean = true;
   @Exclude()
-  private format_: LemLibOdomGeneratorFormatV0_4;
+  private format_: LemLibOdomGeneratorFormatV0_5;
 
-  constructor(format: LemLibOdomGeneratorFormatV0_4) {
+  constructor(format: LemLibOdomGeneratorFormatV0_5) {
     this.format_ = format;
     makeAutoObservable(this);
 
@@ -173,19 +201,19 @@ class GeneralConfigImpl implements GeneralConfig {
 class PathConfigImpl implements PathConfig {
   @Exclude()
   speedLimit: EditableNumberRange = {
-    minLimit: { value: 0, label: "" },
-    maxLimit: { value: 0, label: "" },
-    step: 0,
-    from: 0,
-    to: 0
+    minLimit: { value: 0, label: "0" },
+    maxLimit: { value: 600, label: "600" },
+    step: 1,
+    from: 40,
+    to: 120
   };
   @Exclude()
   bentRateApplicableRange: EditableNumberRange = {
-    minLimit: { value: 0, label: "" },
-    maxLimit: { value: 0, label: "" },
-    step: 0,
+    minLimit: { value: 0, label: "0" },
+    maxLimit: { value: 1, label: "1" },
+    step: 0.001,
     from: 0,
-    to: 0
+    to: 0.1
   };
   @Exclude()
   bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
@@ -193,12 +221,12 @@ class PathConfigImpl implements PathConfig {
   maxDecelerationRate: number = 127;
 
   @Exclude()
-  readonly format: LemLibOdomGeneratorFormatV0_4;
+  readonly format: LemLibOdomGeneratorFormatV0_5;
 
   @Exclude()
   public path!: Path;
 
-  constructor(format: LemLibOdomGeneratorFormatV0_4) {
+  constructor(format: LemLibOdomGeneratorFormatV0_5) {
     this.format = format;
     makeAutoObservable(this);
   }
@@ -213,11 +241,12 @@ class PathConfigImpl implements PathConfig {
 }
 
 // observable class
-export class LemLibOdomGeneratorFormatV0_4 implements Format {
+export class LemLibOdomGeneratorFormatV0_5 implements Format {
   isInit: boolean = false;
   uid: string;
 
   private gc = new GeneralConfigImpl(this);
+  private readonly disposers: (() => void)[] = [];
 
   constructor() {
     this.uid = makeId(10);
@@ -225,16 +254,43 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
   }
 
   createNewInstance(): Format {
-    return new LemLibOdomGeneratorFormatV0_4();
+    return new LemLibOdomGeneratorFormatV0_5();
   }
 
   getName(): string {
-    return "LemLib Odom Code Gen v0.4.x (inch)";
+    return "LemLib Odom Code Gen v0.5.x (inch)";
   }
 
   register(app: MainApp): void {
     if (this.isInit) return;
     this.isInit = true;
+
+    this.disposers.push(
+      app.history.addEventListener("beforeExecution", event => {
+        if (event.isCommandInstanceOf(AddCubicSegment)) {
+          // UX: Cancel the event and replace the cubic segment with a linear segment
+          event.isCancelled = true;
+          let targetPath: Path | undefined = app.interestedPath();
+          if (targetPath === undefined) {
+            // UX: Create empty new path if: no path exists
+            targetPath = app.format.createPath();
+            app.history.execute(`Add path ${targetPath.uid}`, new AddPath(app.paths, targetPath));
+          }
+
+          if (targetPath.visible && !targetPath.lock) {
+            // UX: Add control point if: path is selected and visible and not locked
+            let endpoint = new EndControl(event.command.end.x, event.command.end.y, event.command.end.heading);
+
+            app.history.execute(
+              `Add linear segment with end control point ${endpoint.uid} to path ${targetPath.uid}`,
+              new AddLinearSegment(targetPath, endpoint)
+            );
+          }
+        } else if (event.isCommandInstanceOf(ConvertSegment) && event.command.variant === SegmentVariant.Cubic) {
+          event.isCancelled = true;
+        }
+      })
+    );
   }
 
   unregister(app: MainApp): void {}
@@ -275,21 +331,33 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
 
     if (points.length > 0) {
       const start = points[0];
-      let heading = 0;
 
-      if (start.heading !== undefined && gc.relativeCoords) {
-        heading = fromDegreeToRadian(start.heading);
+      // ALGO: Set the starting pose if using relative coordinates
+      if (gc.relativeCoords) {
+        rtn += `${gc.chassisName}.setPose(${start.x}, ${start.y}, ${start.heading});\n`;
       }
 
-      // ALGO: Offsets to convert the absolute coordinates to the relative coordinates LemLib uses
-      const offsets = gc.relativeCoords ? new Vector(start.x, start.y) : new Vector(0, 0);
-      for (const point of points) {
-        // ALGO: Only coordinate points are supported in LemLibOdom format
-        const relative = euclideanRotation(heading, point.subtract(offsets));
-        rtn += `${gc.chassisName}.moveTo(${uc.fromAtoB(relative.x).toUser()}, ${uc.fromAtoB(relative.y).toUser()}, ${
-          gc.movementTimeout
-        });\n`;
+      switch (gc.lemlibMethod) {
+        case LemLibMethod.MoveTo:
+          for (const point of points) {
+            // ALGO: Use only coordinates
+            rtn += `${gc.chassisName}.moveTo(${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${gc.movementTimeout});\n`;
+          }
+          break;
+        case LemLibMethod.MoveToPoint:
+          for (const point of points) {
+            // ALGO: Use only coordinates
+            rtn += `${gc.chassisName}.moveToPoint(${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${gc.movementTimeout});\n`;
+          }
+          break;
+        case LemLibMethod.MoveToPose:
+          for (const point of points) {
+            // ALGO: Use both coordinates and heading of the end point
+            rtn += `${gc.chassisName}.moveToPoint(${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${(point.heading || 0).toUser()}, ${gc.movementTimeout});\n`;
+          }
+          break;
       }
+      
     }
 
     return rtn;

@@ -10,6 +10,7 @@ import { LemLibOdomGeneratorFormatV0_4 } from "./LemLibOdomGeneratorFormatV0_4";
 import { LemLibFormatV1_0 } from "./LemLibFormatV1_0";
 import { isExperimentalFeaturesEnabled } from "@core/Preferences";
 import { RigidMovementsFormatV0_1 } from "./RigidMovementsFormatV0_1";
+import { LemLibOdomGeneratorFormatV0_5 } from "./LemLibOdomGeneratorV0_5";
 
 export interface Format {
   isInit: boolean;
@@ -79,7 +80,8 @@ export function getAllFormats(): Format[] {
   return [
     ...[
       new LemLibFormatV0_4(), //
-      new LemLibOdomGeneratorFormatV0_4()
+      new LemLibOdomGeneratorFormatV0_4(),
+      new LemLibOdomGeneratorFormatV0_5()
     ],
     ...(isExperimentalFeaturesEnabled() ? [new LemLibFormatV1_0()] : []),
     ...[new RigidMovementsFormatV0_1(), new PathDotJerryioFormatV0_1()]

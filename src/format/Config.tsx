@@ -5,6 +5,7 @@ import { BentRateApplicationDirection, Path } from "@core/Path";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
 import { EditableNumberRange, NumberRange } from "@core/Util";
 import { getAppStores } from "@core/MainApp";
+import { LemLibPathConfig } from "./LemLibFormatV1_0";
 
 export function convertGeneralConfigUOL(gc: GeneralConfig, fromUOL: UnitOfLength) {
   const toUOL = gc.uol;
