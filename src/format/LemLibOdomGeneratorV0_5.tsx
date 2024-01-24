@@ -117,12 +117,12 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
           />
         <Box className="Panel-FlexBox">
           <ObserverCheckbox
-            label="Use Relative Coordinates"
-            checked={config.relativeCoords}
+            label="Set the robot pose to the paths first point"
+            checked={config.setPose}
             onCheckedChange={value => {
               app.history.execute(
-                `Set using relative coordinates to ${value}`,
-                new UpdateProperties(config, { relativeCoords: value })
+                `Set using setPose to ${value}`,
+                new UpdateProperties(config, { setPose: value })
               );
             }}
           />
@@ -177,7 +177,7 @@ class GeneralConfigImpl implements GeneralConfig {
   movementTimeout: number = 5000;
   @IsBoolean()
   @Expose()
-  relativeCoords: boolean = true;
+  setPose: boolean = true;
   @Exclude()
   private format_: LemLibOdomGeneratorFormatV0_5;
 
@@ -333,7 +333,7 @@ export class LemLibOdomGeneratorFormatV0_5 implements Format {
       const start = points[0];
 
       // ALGO: Set the starting pose if using relative coordinates
-      if (gc.relativeCoords) {
+      if (gc.setPose) {
         rtn += `${gc.chassisName}.setPose(${start.x}, ${start.y}, ${start.heading});\n`;
       }
 
