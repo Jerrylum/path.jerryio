@@ -117,7 +117,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
           />
         <Box className="Panel-FlexBox">
           <ObserverCheckbox
-            label="Set the robot pose to the paths first point"
+            label="Set the robot pose to the path's first point"
             checked={config.setPose}
             onCheckedChange={value => {
               app.history.execute(
