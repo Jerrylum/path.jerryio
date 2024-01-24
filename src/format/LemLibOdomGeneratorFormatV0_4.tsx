@@ -353,7 +353,7 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
         case LemLibMethod.MoveToPose:
           for (const point of points) {
             // ALGO: Use both coordinates and heading of the end point
-            rtn += `${gc.chassisName}.moveToPoint(${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${uc.fromAtoB(point.heading || 0).toUser()}, ${gc.movementTimeout});\n`;
+            rtn += `${gc.chassisName}.moveToPoint(${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${(point.heading || 0).toUser()}, ${gc.movementTimeout});\n`;
           }
           break;
       }
