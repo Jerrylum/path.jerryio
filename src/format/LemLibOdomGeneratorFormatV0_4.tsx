@@ -1,18 +1,27 @@
 import { makeAutoObservable, action } from "mobx";
 import { MainApp, getAppStores } from "@core/MainApp";
 import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "@core/Util";
-import { BentRateApplicationDirection, Path, Segment, Vector } from "@core/Path";
+import { BentRateApplicationDirection, EndControl, Path, Segment, SegmentVariant } from "@core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "@core/Unit";
 import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, IsString, MinLength, ValidateNested } from "class-validator";
-import { PointCalculationResult, getPathPoints, getDiscretePoints, fromDegreeToRadian } from "@core/Calculation";
+import {
+  PointCalculationResult,
+  getPathPoints,
+  getDiscretePoints
+} from "@core/Calculation";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
-import { UpdateProperties } from "@core/Command";
+import {
+  AddCubicSegment,
+  AddLinearSegment,
+  AddPath,
+  ConvertSegment,
+  UpdateProperties
+} from "@core/Command";
 import { ObserverInput } from "@app/component.blocks/ObserverInput";
 import { Box, Button, Typography } from "@mui/material";
-import { euclideanRotation } from "@core/Coordinate";
 import { CodePointBuffer, Int } from "../token/Tokens";
 import { observer } from "mobx-react-lite";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "@app/Notice";
@@ -130,7 +139,7 @@ class GeneralConfigImpl implements GeneralConfig {
   uol: UnitOfLength = UnitOfLength.Inch;
   @IsPositive()
   @Expose()
-  pointDensity: number = 2; // inches
+  pointDensity: number = 1; // inches
   @IsPositive()
   @Expose()
   controlMagnetDistance: number = 5 / 2.54;
@@ -173,19 +182,19 @@ class GeneralConfigImpl implements GeneralConfig {
 class PathConfigImpl implements PathConfig {
   @Exclude()
   speedLimit: EditableNumberRange = {
-    minLimit: { value: 0, label: "" },
-    maxLimit: { value: 0, label: "" },
-    step: 0,
-    from: 0,
-    to: 0
+    minLimit: { value: 0, label: "0" },
+    maxLimit: { value: 600, label: "600" },
+    step: 1,
+    from: 40,
+    to: 120
   };
   @Exclude()
   bentRateApplicableRange: EditableNumberRange = {
-    minLimit: { value: 0, label: "" },
-    maxLimit: { value: 0, label: "" },
-    step: 0,
+    minLimit: { value: 0, label: "0" },
+    maxLimit: { value: 1, label: "1" },
+    step: 0.001,
     from: 0,
-    to: 0
+    to: 0.1
   };
   @Exclude()
   bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
@@ -218,6 +227,7 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
   uid: string;
 
   private gc = new GeneralConfigImpl(this);
+  private readonly disposers: (() => void)[] = [];
 
   constructor() {
     this.uid = makeId(10);
@@ -235,6 +245,33 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
   register(app: MainApp): void {
     if (this.isInit) return;
     this.isInit = true;
+
+    this.disposers.push(
+      app.history.addEventListener("beforeExecution", event => {
+        if (event.isCommandInstanceOf(AddCubicSegment)) {
+          // UX: Cancel the event and replace the cubic segment with a linear segment
+          event.isCancelled = true;
+          let targetPath: Path | undefined = app.interestedPath();
+          if (targetPath === undefined) {
+            // UX: Create empty new path if: no path exists
+            targetPath = app.format.createPath();
+            app.history.execute(`Add path ${targetPath.uid}`, new AddPath(app.paths, targetPath));
+          }
+
+          if (targetPath.visible && !targetPath.lock) {
+            // UX: Add control point if: path is selected and visible and not locked
+            let endpoint = new EndControl(event.command.end.x, event.command.end.y, event.command.end.heading);
+
+            app.history.execute(
+              `Add linear segment with end control point ${endpoint.uid} to path ${targetPath.uid}`,
+              new AddLinearSegment(targetPath, endpoint)
+            );
+          }
+        } else if (event.isCommandInstanceOf(ConvertSegment) && event.command.variant === SegmentVariant.Cubic) {
+          event.isCancelled = true;
+        }
+      })
+    );
   }
 
   unregister(app: MainApp): void {}
@@ -278,9 +315,9 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
 
       // ALGO: Set the starting pose if using relative coordinates
       if (gc.relativeCoords) {
-        rtn += `${gc.chassisName}.setPose(${start.x}, ${start.y}, ${start.heading});\n`
+        rtn += `${gc.chassisName}.setPose(${start.x}, ${start.y}, ${start.heading});\n`;
       }
-      
+
       for (const point of points) {
         // ALGO: Only coordinate points are supported in LemLibOdom format
         rtn += `${gc.chassisName}.moveTo(${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${
