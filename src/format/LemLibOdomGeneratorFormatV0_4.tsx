@@ -29,6 +29,13 @@ import { Logger } from "@core/Logger";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 import { useCustomHotkeys } from "@core/Hook";
 import { ObserverCheckbox } from "@app/component.blocks/ObserverCheckbox";
+import { ObserverEnumSelect } from "@src/app/component.blocks/ObserverEnumSelect";
+
+enum LemLibMethod {
+  MoveToPoint,
+  MoveToPose,
+  MoveTo
+}
 
 const logger = Logger("LemLib Odom Code Gen v0.4.x (inch)");
 
@@ -71,7 +78,18 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
     <>
       <Box className="Panel-Box">
         <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
-        <Box className="Panel-FlexBox">
+        <ObserverEnumSelect
+            sx={{ marginTop: "16px", width: "50%" }}
+            label="LemLib Method Call"
+            enumValue={config.lemlibMethod}
+            onEnumChange={value => {
+              app.history.execute(
+                `Set using heading output type to ${value}`,
+                new UpdateProperties(config, { lemlibMethod: value })
+              );
+            }}
+            enumType={LemLibMethod}
+          />
           <ObserverInput
             label="Chassis Name"
             getValue={() => config.chassisName}
@@ -97,7 +115,6 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
             sx={{ marginTop: "16px" }}
             numeric
           />
-        </Box>
         <Box className="Panel-FlexBox">
           <ObserverCheckbox
             label="Use Relative Coordinates"
@@ -151,6 +168,8 @@ class GeneralConfigImpl implements GeneralConfig {
     getDefaultBuiltInFieldImage().getSignatureAndOrigin();
   @IsString()
   @MinLength(1)
+  @Expose()
+  lemlibMethod: LemLibMethod = LemLibMethod.MoveToPoint;
   @Expose()
   chassisName: string = "chassis";
   @ValidateNumber(num => num >= 0)
@@ -318,12 +337,27 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
         rtn += `${gc.chassisName}.setPose(${start.x}, ${start.y}, ${start.heading});\n`;
       }
 
-      for (const point of points) {
-        // ALGO: Only coordinate points are supported in LemLibOdom format
-        rtn += `${gc.chassisName}.moveTo(${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${
-          gc.movementTimeout
-        });\n`;
+      switch (gc.lemlibMethod) {
+        case LemLibMethod.MoveTo:
+          for (const point of points) {
+            // ALGO: Use only coordinates
+            rtn += `${gc.chassisName}.moveTo(${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${gc.movementTimeout});\n`;
+          }
+          break;
+        case LemLibMethod.MoveToPoint:
+          for (const point of points) {
+            // ALGO: Use only coordinates
+            rtn += `${gc.chassisName}.moveToPoint(${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${gc.movementTimeout});\n`;
+          }
+          break;
+        case LemLibMethod.MoveToPose:
+          for (const point of points) {
+            // ALGO: Use both coordinates and heading of the end point
+            rtn += `${gc.chassisName}.moveToPoint(${uc.fromAtoB(point.x).toUser()}, ${uc.fromAtoB(point.y).toUser()}, ${uc.fromAtoB(point.heading || 0).toUser()}, ${gc.movementTimeout});\n`;
+          }
+          break;
       }
+      
     }
 
     return rtn;
