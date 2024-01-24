@@ -23,11 +23,10 @@ import {
   UpdateProperties
 } from "@core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
-import { IsBoolean, IsEnum, IsObject, IsPositive, IsString, ValidateNested } from "class-validator";
+import { IsBoolean, IsObject, IsPositive, IsString, ValidateNested } from "class-validator";
 import { PointCalculationResult, boundHeading, getPathPoints, toDerivativeHeading, toHeading } from "@core/Calculation";
 import { BentRateApplicationDirection, EndControl, Path, Segment, SegmentVariant } from "@core/Path";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
-import { ObserverEnumSelect } from "@app/component.blocks/ObserverEnumSelect";
 import { enqueueSuccessSnackbar, enqueueErrorSnackbar } from "@app/Notice";
 import { useCustomHotkeys } from "@core/Hook";
 import { observer } from "mobx-react-lite";
@@ -35,13 +34,7 @@ import { FormTags } from "react-hotkeys-hook/dist/types";
 import { Logger } from "@core/Logger";
 import { BackQuoteString, CodePointBuffer } from "@src/token/Tokens";
 
-const logger = Logger("Rigid Movements Code Gen v0.1.x");
-
-enum HeadingOutputType {
-  Absolute = "Absolute Heading",
-  Relative = "Relative Heading",
-  Derivative = "Derivative Heading"
-}
+const logger = Logger("Holonomic Movements Code Gen v0.1.x");
 
 const EditOutputTemplateConfirmationDescription = observer((props: { value: IObservableValue<string> }) => {
   return (
@@ -120,21 +113,6 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
   return (
     <>
       <Box className="Panel-Box">
-        <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
-        <Box className="Panel-FlexBox">
-          <ObserverEnumSelect
-            sx={{ marginTop: "16px", width: "50%" }}
-            label="Heading Output Type"
-            enumValue={config.headingOutputType}
-            onEnumChange={value => {
-              app.history.execute(
-                `Set using heading output type to ${value}`,
-                new UpdateProperties(config, { headingOutputType: value })
-              );
-            }}
-            enumType={HeadingOutputType}
-          />
-        </Box>
         <Box className="Panel-FlexBox" sx={{ marginTop: "32px" }}>
           <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
             Copy Code
@@ -157,7 +135,7 @@ class GeneralConfigImpl implements GeneralConfig {
   @Expose()
   robotHeight: number = 30;
   @Exclude()
-  readonly robotIsHolonomic = "force-static";
+  readonly robotIsHolonomic = "force-holonomic";
   @IsBoolean()
   @Expose()
   showRobot: boolean = false;
@@ -176,26 +154,18 @@ class GeneralConfigImpl implements GeneralConfig {
   @Expose()
   fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> =
     getDefaultBuiltInFieldImage().getSignatureAndOrigin();
-  @IsEnum(HeadingOutputType)
-  @Expose()
-  headingOutputType: HeadingOutputType = HeadingOutputType.Absolute;
   @IsString()
-  // TODO: validate
   @Expose()
   outputTemplate: string = `path: \`// \${name}
 
 \${code}
 \`
-forward: \`forward(\${distance}, \${speed});\`
-backward: \`backward(\${distance}, \${speed});\`
-turnLeft: \`turnLeft(\${heading}, \${speed});\`
-turnRight: \`turnRight(\${heading}, \${speed});\`
-turnTo: \`turnTo(\${heading}, \${speed});\``;
+moveToPoint: \`moveToPoint(\${x}, \${y}, \${heading}, \${speed});\``;
 
   @Exclude()
-  private format_: RigidMovementsFormatV0_1;
+  private format_: HolonomicMovementsFormatV0_1;
 
-  constructor(format: RigidMovementsFormatV0_1) {
+  constructor(format: HolonomicMovementsFormatV0_1) {
     this.format_ = format;
     makeAutoObservable(this);
 
@@ -234,12 +204,12 @@ class PathConfigImpl implements PathConfig {
   @Exclude()
   bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
   @Exclude()
-  readonly format: RigidMovementsFormatV0_1;
+  readonly format: HolonomicMovementsFormatV0_1;
 
   @Exclude()
   public path!: Path;
 
-  constructor(format: RigidMovementsFormatV0_1) {
+  constructor(format: HolonomicMovementsFormatV0_1) {
     this.format = format;
     makeAutoObservable(this);
   }
@@ -267,7 +237,7 @@ class PathConfigImpl implements PathConfig {
 }
 
 // observable class
-export class RigidMovementsFormatV0_1 implements Format {
+export class HolonomicMovementsFormatV0_1 implements Format {
   isInit: boolean = false;
   uid: string;
 
@@ -281,33 +251,16 @@ export class RigidMovementsFormatV0_1 implements Format {
   }
 
   createNewInstance(): Format {
-    return new RigidMovementsFormatV0_1();
+    return new HolonomicMovementsFormatV0_1();
   }
 
   getName(): string {
-    return "Rigid Code Gen v0.1.x";
+    return "Holonomic Code Gen v0.1.x";
   }
 
   register(app: MainApp): void {
     if (this.isInit) return;
     this.isInit = true;
-
-    const fixEndControlsHeading = () => {
-      app.paths.forEach(path => {
-        path.segments.forEach(segment => {
-          const first = segment.first;
-          const last = segment.last;
-          const suggestedHeading = toHeading(last.subtract(first));
-          const acceptableHeading1 = suggestedHeading;
-          const acceptableHeading2 = boundHeading(suggestedHeading + 180);
-          const currentHeading = first.heading;
-          const delta1 = Math.abs(toDerivativeHeading(currentHeading, acceptableHeading1));
-          const delta2 = Math.abs(toDerivativeHeading(currentHeading, acceptableHeading2));
-          if (delta1 < delta2) first.heading = acceptableHeading1;
-          else first.heading = acceptableHeading2;
-        });
-      });
-    };
 
     this.disposers.push(
       app.history.addEventListener("beforeExecution", event => {
@@ -321,48 +274,15 @@ export class RigidMovementsFormatV0_1 implements Format {
           );
         } else if (event.isCommandInstanceOf(ConvertSegment) && event.command.variant === SegmentVariant.Cubic) {
           event.isCancelled = true;
-        } else if (event.isCommandInstanceOf(UpdatePathTreeItems)) {
-          const targets = event.command.targets;
-          const newValues = event.command.newValues;
-
-          const isLastEndControlOfPath = (target: EndControl) => {
-            return app.paths.some(path => path.segments.at(-1)?.last === target);
-          };
-
-          targets.forEach(target => {
-            if (target instanceof EndControl) {
-              const isChangingHeadingValue = "heading" in newValues && newValues.heading !== undefined;
-              if (!isChangingHeadingValue) return;
-
-              if (isLastEndControlOfPath(target)) return;
-
-              const oldValue = target.heading;
-              newValues.heading = boundHeading(oldValue + 180);
-            }
-          });
         } else if (event.isCommandInstanceOf(InsertPaths)) {
           event.command.inserting.forEach(path => {
             path.segments.forEach(segment => {
               segment.controls = [segment.first, segment.last];
-
-              segment.first.heading = toHeading(segment.last.subtract(segment.first));
             });
           });
         } else if (event.isCommandInstanceOf(InsertControls)) {
           event.command.inserting = event.command.inserting.filter(control => control instanceof EndControl);
         }
-      }),
-      app.history.addEventListener("merge", event => {
-        fixEndControlsHeading();
-      }),
-      app.history.addEventListener("execute", event => {
-        fixEndControlsHeading();
-      }),
-      app.history.addEventListener("afterUndo", event => {
-        fixEndControlsHeading();
-      }),
-      app.history.addEventListener("afterRedo", event => {
-        fixEndControlsHeading();
       })
     );
   }
@@ -436,44 +356,21 @@ export class RigidMovementsFormatV0_1 implements Format {
     return template.replace(/\${([^}]+)}/g, (_, key) => (values[key] ?? "") + "");
   }
 
-  private exportRigidMovementCode(path: Path, templates: { [key: string]: string }) {
+  private exportHolonomicMovementCode(path: Path, templates: { [key: string]: string }) {
     let rtn = "";
 
-    const gc = this.gc as GeneralConfigImpl;
-
-    const startHeading = path.segments[0].first.heading;
-
     for (const segment of path.segments) {
-      const first = segment.first;
       const last = segment.last;
 
-      const distance = first.distance(last);
-
-      const forwardHeading = toHeading(last.subtract(first));
-      const movementTemplate = (first.heading === forwardHeading ? templates.forward : templates.backward) ?? "";
-      const movementTemplateValues = {
-        fromX: first.x.toUser(),
-        fromY: first.y.toUser(),
-        x: last.x.toUser(),
-        y: last.y.toUser(),
-        distance: distance.toUser(),
-        speed: 0
-      };
-      rtn += this.applyTemplate(movementTemplate, movementTemplateValues) + "\n";
-
       const nextHeading = last.heading;
-      if (gc.headingOutputType === HeadingOutputType.Absolute) {
-        rtn += this.applyTemplate(templates.turnTo ?? "", { heading: nextHeading.toUser(), speed: 0 }) + "\n";
-      } else if (gc.headingOutputType === HeadingOutputType.Relative) {
-        const deltaHeading = boundHeading(nextHeading - startHeading);
-        rtn += this.applyTemplate(templates.turnTo ?? "", { heading: deltaHeading.toUser(), speed: 0 }) + "\n";
-      } else {
-        const deltaHeading = toDerivativeHeading(forwardHeading, nextHeading);
-        if (deltaHeading > 0)
-          rtn += this.applyTemplate(templates.turnRight ?? "", { heading: deltaHeading.toUser(), speed: 0 }) + "\n";
-        else if (deltaHeading < 0)
-          rtn += this.applyTemplate(templates.turnLeft ?? "", { heading: -deltaHeading.toUser(), speed: 0 }) + "\n";
-      }
+
+      rtn +=
+        this.applyTemplate(templates.moveToPoint ?? "", {
+          x: last.x.toUser(),
+          y: last.y.toUser(),
+          heading: nextHeading.toUser(),
+          speed: 0
+        }) + "\n";
     }
 
     return rtn;
@@ -489,7 +386,7 @@ export class RigidMovementsFormatV0_1 implements Format {
     app.paths.forEach(path => {
       rtn += this.applyTemplate(templates.path ?? "", {
         name: path.name,
-        code: this.exportRigidMovementCode(path, templates)
+        code: this.exportHolonomicMovementCode(path, templates)
       });
     });
 

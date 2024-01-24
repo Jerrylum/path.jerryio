@@ -150,13 +150,15 @@ const GeneralConfigPanelBody = observer((props: {}) => {
         />
       </Box>
       <Box className="Panel-FlexBox">
-        <ObserverCheckbox
-          label="Holonomic Drive"
-          checked={gc.robotIsHolonomic}
-          onCheckedChange={c => {
-            app.history.execute(`Change robot is holonomic drive`, new UpdateProperties(gc, { robotIsHolonomic: c }));
-          }}
-        />
+        {typeof gc.robotIsHolonomic === "boolean" && (
+          <ObserverCheckbox
+            label="Holonomic Drive"
+            checked={gc.robotIsHolonomic && true}
+            onCheckedChange={c => {
+              app.history.execute(`Change robot is holonomic drive`, new UpdateProperties(gc, { robotIsHolonomic: c }));
+            }}
+          />
+        )}
       </Box>
       <Typography sx={{ marginTop: "16px" }} gutterBottom>
         Field Layer

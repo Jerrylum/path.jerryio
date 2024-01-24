@@ -77,7 +77,7 @@ export interface ConfigSection {
 export interface GeneralConfig extends ConfigSection {
   robotWidth: number;
   robotHeight: number;
-  robotIsHolonomic: boolean;
+  robotIsHolonomic: boolean | "force-static" | "force-holonomic";
   showRobot: boolean;
   uol: UnitOfLength;
   pointDensity: number;

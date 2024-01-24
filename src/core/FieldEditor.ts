@@ -188,7 +188,9 @@ export class FieldEditor {
       const c0 = segment.first;
       const c3 = segment.last;
 
-      if (app.gc.robotIsHolonomic) {
+      if (app.gc.robotIsHolonomic === "force-static") {
+        app.robot.position.heading = c0.heading;
+      } else if (app.gc.robotIsHolonomic === true || app.gc.robotIsHolonomic === "force-holonomic") {
         const c3Heading = toDerivativeHeading(c0.heading, c3.heading);
         app.robot.position.heading = c0.heading + c3Heading * t;
       } else {
