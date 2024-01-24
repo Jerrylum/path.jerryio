@@ -1,5 +1,5 @@
 import { Unit, UnitOfAngle, UnitOfLength } from "@core/Unit";
-import { Zero, CodePointBuffer, isDelimiter, isSafeDelimiter, BooleanT, DecimalPoint, Digit1To9, Digit, DoubleQuoteString, Frac, Int, Minus, NegativeInt, NumberT, PositiveInt, SingleQuoteString, StringT, NumberUOL, Operator, CloseBracket, OpenBracket, Expression, Computation, Computable, NumberWithUnit, NumberUOA } from "./Tokens";
+import { Zero, CodePointBuffer, isDelimiter, isSafeDelimiter, BooleanT, DecimalPoint, Digit1To9, Digit, DoubleQuoteString, Frac, Int, Minus, NegativeInt, NumberT, PositiveInt, SingleQuoteString, StringT, NumberUOL, Operator, CloseBracket, OpenBracket, Expression, Computation, Computable, NumberWithUnit, NumberUOA, BackQuoteString } from "./Tokens";
 
 function cpb(s: string): CodePointBuffer {
   return new CodePointBuffer(s);
@@ -20,6 +20,26 @@ test('Token delimiter methods', () => {
   expect(isSafeDelimiter(':')).toBe(true);
   expect(isSafeDelimiter(',')).toBe(true);
   expect(isSafeDelimiter('\'')).toBe(false);
+});
+
+test('BackQuoteString valid case', () => {
+  expect(new BackQuoteString("`\\\\`", "\\")).toStrictEqual(BackQuoteString.parse(cpb("`\\\\`"))); // \
+  expect(new BackQuoteString("`\\``", "`")).toStrictEqual(BackQuoteString.parse(cpb("`\\``"))); // `
+  expect(new BackQuoteString("`\\\\\\``", "\\`")).toStrictEqual(BackQuoteString.parse(cpb("`\\\\\\``"))); // \`
+  expect(new BackQuoteString("`\\\\\\\\`", "\\\\")).toStrictEqual(BackQuoteString.parse(cpb("`\\\\\\\\`"))); // \\
+  expect(new BackQuoteString("`test\\\\`", "test\\")).toStrictEqual(BackQuoteString.parse(cpb("`test\\\\`"))); // test\
+  expect(new BackQuoteString("`test\\``", "test`")).toStrictEqual(BackQuoteString.parse(cpb("`test\\``"))); // test`
+  expect(new BackQuoteString("`test\\\\\\``", "test\\`")).toStrictEqual(BackQuoteString.parse(cpb("`test\\\\\\``"))); // test\`
+  expect(new BackQuoteString("``", "")).toStrictEqual(BackQuoteString.parse(cpb("``"))); // empty
+});
+
+test('BackQuoteString invalid case', () => {
+  expect(BackQuoteString.parse(cpb("test"))).toBeNull(); // no quote
+  expect(BackQuoteString.parse(cpb(""))).toBeNull();
+  expect(BackQuoteString.parse(cpb("234"))).toBeNull();
+  expect(BackQuoteString.parse(cpb("`"))).toBeNull(); // missing end quote
+  expect(BackQuoteString.parse(cpb("`test"))).toBeNull();
+  expect(BackQuoteString.parse(cpb("`234"))).toBeNull();
 });
 
 test('BooleanT valid case', () => {
