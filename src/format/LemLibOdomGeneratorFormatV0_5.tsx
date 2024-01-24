@@ -270,22 +270,11 @@ export class LemLibOdomGeneratorFormatV0_5 implements Format {
         if (event.isCommandInstanceOf(AddCubicSegment)) {
           // UX: Cancel the event and replace the cubic segment with a linear segment
           event.isCancelled = true;
-          let targetPath: Path | undefined = app.interestedPath();
-          if (targetPath === undefined) {
-            // UX: Create empty new path if: no path exists
-            targetPath = app.format.createPath();
-            app.history.execute(`Add path ${targetPath.uid}`, new AddPath(app.paths, targetPath));
-          }
-
-          if (targetPath.visible && !targetPath.lock) {
-            // UX: Add control point if: path is selected and visible and not locked
-            let endpoint = new EndControl(event.command.end.x, event.command.end.y, event.command.end.heading);
-
-            app.history.execute(
-              `Add linear segment with end control point ${endpoint.uid} to path ${targetPath.uid}`,
-              new AddLinearSegment(targetPath, endpoint)
-            );
-          }
+          const cancelledCommand = event.command;
+          app.history.execute(
+            `Add linear segment with end control point ${cancelledCommand.end.uid} to path ${cancelledCommand.path.uid}`,
+            new AddLinearSegment(cancelledCommand.path, cancelledCommand.end)
+          );
         } else if (event.isCommandInstanceOf(ConvertSegment) && event.command.variant === SegmentVariant.Cubic) {
           event.isCancelled = true;
         }
