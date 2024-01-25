@@ -189,8 +189,6 @@ class PathConfigImpl implements PathConfig {
   };
   @Exclude()
   bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
-  @Exclude()
-  maxDecelerationRate: number = 127;
 
   @Exclude()
   readonly format: LemLibOdomGeneratorFormatV0_4;
