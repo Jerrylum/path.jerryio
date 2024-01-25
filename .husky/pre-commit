@@ -1,4 +1,11 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-npm run check-format
+if npm run check-format 
+then
+  :
+else
+  echo 'Please run `npm run format` and commit again'
+  echo 'If this problem persists, try running `npm run check-format` to gain more information'
+  exit 1
+fi
