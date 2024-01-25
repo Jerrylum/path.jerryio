@@ -6,7 +6,8 @@ import {
   ValidateEditableNumberRange,
   ValidateNumber,
   getMacHotKeyString,
-  makeId
+  makeId,
+  parseFormula
 } from "@core/Util";
 import { Quantity, UnitOfLength } from "@core/Unit";
 import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
@@ -15,15 +16,17 @@ import { RangeSlider } from "@app/component.blocks/RangeSlider";
 import { Box, Button, TextField, Typography } from "@mui/material";
 import {
   AddCubicSegment,
+  AddKeyframe,
   AddLinearSegment,
   ConvertSegment,
   InsertControls,
   InsertPaths,
+  MoveKeyframe,
   UpdatePathTreeItems,
   UpdateProperties
 } from "@core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
-import { IsBoolean, IsEnum, IsObject, IsPositive, IsString, ValidateNested } from "class-validator";
+import { IsBoolean, IsEnum, IsNumber, IsObject, IsPositive, IsString, ValidateNested } from "class-validator";
 import { PointCalculationResult, boundHeading, getPathPoints, toDerivativeHeading, toHeading } from "@core/Calculation";
 import { BentRateApplicationDirection, EndControl, Path, Segment, SegmentVariant } from "@core/Path";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
@@ -33,7 +36,8 @@ import { useCustomHotkeys } from "@core/Hook";
 import { observer } from "mobx-react-lite";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 import { Logger } from "@core/Logger";
-import { BackQuoteString, CodePointBuffer } from "@src/token/Tokens";
+import { BackQuoteString, CodePointBuffer, NumberT } from "@src/token/Tokens";
+import { ObserverInput } from "@src/app/component.blocks/ObserverInput";
 
 const logger = Logger("Rigid Movements Code Gen v0.1.x");
 
@@ -213,26 +217,27 @@ turnTo: \`turnTo(\${heading}, \${speed});\``;
 
 // observable class
 class PathConfigImpl implements PathConfig {
-  @ValidateEditableNumberRange(-Infinity, Infinity)
-  @Expose()
+  @Exclude()
   speedLimit: EditableNumberRange = {
     minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 600, label: "600" },
+    maxLimit: { value: 1, label: "1" },
     step: 1,
-    from: 40,
-    to: 120
+    from: 0,
+    to: 1
   };
-  @ValidateEditableNumberRange(-Infinity, Infinity)
-  @Expose()
+  @Exclude()
   bentRateApplicableRange: EditableNumberRange = {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 1, label: "1" },
     step: 0.001,
     from: 0,
-    to: 0.1
+    to: 1
   };
   @Exclude()
-  bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
+  bentRateApplicationDirection = BentRateApplicationDirection.LowToHigh;
+  @IsNumber()
+  @Expose()
+  speed: number = 30;
   @Exclude()
   readonly format: RigidMovementsFormatV0_1;
 
@@ -245,20 +250,19 @@ class PathConfigImpl implements PathConfig {
   }
 
   getConfigPanel() {
-    const { app } = getAppStores();
-
     return (
       <>
         <Box className="Panel-Box">
-          <Typography>Min/Max Speed</Typography>
-          <RangeSlider
-            range={this.speedLimit}
-            onChange={(from, to) =>
-              app.history.execute(
-                `Change path ${this.path.uid} min/max speed`,
-                new UpdateProperties(this.speedLimit, { from, to })
-              )
-            }
+          <ObserverInput
+            label="Speed"
+            sx={{ width: "50%" }}
+            getValue={() => this.speed.toUser() + ""}
+            setValue={(value: string) => {
+              this.speed = parseFloat(value);
+            }}
+            isValidIntermediate={() => true}
+            isValidValue={(candidate: string) => NumberT.parse(new CodePointBuffer(candidate)) !== null}
+            numeric
           />
         </Box>
       </>
@@ -305,6 +309,8 @@ export class RigidMovementsFormatV0_1 implements Format {
           const delta2 = Math.abs(toDerivativeHeading(currentHeading, acceptableHeading2));
           if (delta1 < delta2) first.heading = acceptableHeading1;
           else first.heading = acceptableHeading2;
+          segment.speed.list.length = 0;
+          segment.lookahead.list.length = 0;
         });
       });
     };
@@ -350,6 +356,8 @@ export class RigidMovementsFormatV0_1 implements Format {
           });
         } else if (event.isCommandInstanceOf(InsertControls)) {
           event.command.inserting = event.command.inserting.filter(control => control instanceof EndControl);
+        } else if (event.isCommandInstanceOf(AddKeyframe)) {
+          event.isCancelled = true;
         }
       }),
       app.history.addEventListener("merge", event => {
@@ -389,8 +397,25 @@ export class RigidMovementsFormatV0_1 implements Format {
       path.segments.forEach(segment => {
         segment.controls = [segment.first, segment.last];
         segment.first.heading = toHeading(segment.last.subtract(segment.first));
+        segment.speed.list.length = 0;
+        segment.lookahead.list.length = 0;
       });
+      path.pc.speedLimit = {
+        minLimit: { value: 0, label: "0" },
+        maxLimit: { value: 1, label: "1" },
+        step: 1,
+        from: 0,
+        to: 1
+      };
+      path.pc.bentRateApplicableRange = {
+        minLimit: { value: 0, label: "0" },
+        maxLimit: { value: 1, label: "1" },
+        step: 0.001,
+        from: 0,
+        to: 1
+      };
     });
+
     return newPaths;
   }
 
@@ -440,6 +465,7 @@ export class RigidMovementsFormatV0_1 implements Format {
     let rtn = "";
 
     const gc = this.gc as GeneralConfigImpl;
+    const pc = path.pc as PathConfigImpl;
 
     const startHeading = path.segments[0].first.heading;
 
@@ -457,22 +483,24 @@ export class RigidMovementsFormatV0_1 implements Format {
         x: last.x.toUser(),
         y: last.y.toUser(),
         distance: distance.toUser(),
-        speed: 0
+        speed: pc.speed
       };
       rtn += this.applyTemplate(movementTemplate, movementTemplateValues) + "\n";
 
       const nextHeading = last.heading;
       if (gc.headingOutputType === HeadingOutputType.Absolute) {
-        rtn += this.applyTemplate(templates.turnTo ?? "", { heading: nextHeading.toUser(), speed: 0 }) + "\n";
+        rtn += this.applyTemplate(templates.turnTo ?? "", { heading: nextHeading.toUser(), speed: pc.speed }) + "\n";
       } else if (gc.headingOutputType === HeadingOutputType.Relative) {
         const deltaHeading = boundHeading(nextHeading - startHeading);
-        rtn += this.applyTemplate(templates.turnTo ?? "", { heading: deltaHeading.toUser(), speed: 0 }) + "\n";
+        rtn += this.applyTemplate(templates.turnTo ?? "", { heading: deltaHeading.toUser(), speed: pc.speed }) + "\n";
       } else {
         const deltaHeading = toDerivativeHeading(forwardHeading, nextHeading);
         if (deltaHeading > 0)
-          rtn += this.applyTemplate(templates.turnRight ?? "", { heading: deltaHeading.toUser(), speed: 0 }) + "\n";
+          rtn +=
+            this.applyTemplate(templates.turnRight ?? "", { heading: deltaHeading.toUser(), speed: pc.speed }) + "\n";
         else if (deltaHeading < 0)
-          rtn += this.applyTemplate(templates.turnLeft ?? "", { heading: -deltaHeading.toUser(), speed: 0 }) + "\n";
+          rtn +=
+            this.applyTemplate(templates.turnLeft ?? "", { heading: -deltaHeading.toUser(), speed: pc.speed }) + "\n";
       }
     }
 

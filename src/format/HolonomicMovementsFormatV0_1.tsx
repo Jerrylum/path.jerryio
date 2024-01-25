@@ -1,30 +1,14 @@
 import { makeAutoObservable, action, observable, IObservableValue } from "mobx";
 import { MainApp, getAppStores } from "@core/MainApp";
-import {
-  EditableNumberRange,
-  IS_MAC_OS,
-  ValidateEditableNumberRange,
-  ValidateNumber,
-  getMacHotKeyString,
-  makeId
-} from "@core/Util";
+import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "@core/Util";
 import { Quantity, UnitOfLength } from "@core/Unit";
 import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
-import { RangeSlider } from "@app/component.blocks/RangeSlider";
 import { Box, Button, TextField, Typography } from "@mui/material";
-import {
-  AddCubicSegment,
-  AddLinearSegment,
-  ConvertSegment,
-  InsertControls,
-  InsertPaths,
-  UpdatePathTreeItems,
-  UpdateProperties
-} from "@core/Command";
+import { AddCubicSegment, AddLinearSegment, ConvertSegment, InsertControls, InsertPaths } from "@core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
-import { IsBoolean, IsObject, IsPositive, IsString, ValidateNested } from "class-validator";
-import { PointCalculationResult, boundHeading, getPathPoints, toDerivativeHeading, toHeading } from "@core/Calculation";
+import { IsBoolean, IsNumber, IsObject, IsPositive, IsString, ValidateNested } from "class-validator";
+import { PointCalculationResult, getPathPoints } from "@core/Calculation";
 import { BentRateApplicationDirection, EndControl, Path, Segment, SegmentVariant } from "@core/Path";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
 import { enqueueSuccessSnackbar, enqueueErrorSnackbar } from "@app/Notice";
@@ -32,7 +16,8 @@ import { useCustomHotkeys } from "@core/Hook";
 import { observer } from "mobx-react-lite";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 import { Logger } from "@core/Logger";
-import { BackQuoteString, CodePointBuffer } from "@src/token/Tokens";
+import { BackQuoteString, CodePointBuffer, NumberT } from "@token/Tokens";
+import { ObserverInput } from "@app/component.blocks/ObserverInput";
 
 const logger = Logger("Holonomic Movements Code Gen v0.1.x");
 
@@ -183,26 +168,27 @@ moveToPoint: \`moveToPoint(\${x}, \${y}, \${heading}, \${speed});\``;
 
 // observable class
 class PathConfigImpl implements PathConfig {
-  @ValidateEditableNumberRange(-Infinity, Infinity)
-  @Expose()
+  @Exclude()
   speedLimit: EditableNumberRange = {
     minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 600, label: "600" },
+    maxLimit: { value: 1, label: "1" },
     step: 1,
-    from: 40,
-    to: 120
+    from: 0,
+    to: 1
   };
-  @ValidateEditableNumberRange(-Infinity, Infinity)
-  @Expose()
+  @Exclude()
   bentRateApplicableRange: EditableNumberRange = {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 1, label: "1" },
     step: 0.001,
     from: 0,
-    to: 0.1
+    to: 1
   };
   @Exclude()
-  bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
+  bentRateApplicationDirection = BentRateApplicationDirection.LowToHigh;
+  @IsNumber()
+  @Expose()
+  speed: number = 30;
   @Exclude()
   readonly format: HolonomicMovementsFormatV0_1;
 
@@ -220,15 +206,16 @@ class PathConfigImpl implements PathConfig {
     return (
       <>
         <Box className="Panel-Box">
-          <Typography>Min/Max Speed</Typography>
-          <RangeSlider
-            range={this.speedLimit}
-            onChange={(from, to) =>
-              app.history.execute(
-                `Change path ${this.path.uid} min/max speed`,
-                new UpdateProperties(this.speedLimit, { from, to })
-              )
-            }
+          <ObserverInput
+            label="Speed"
+            sx={{ width: "50%" }}
+            getValue={() => this.speed.toUser() + ""}
+            setValue={(value: string) => {
+              this.speed = parseFloat(value);
+            }}
+            isValidIntermediate={() => true}
+            isValidValue={(candidate: string) => NumberT.parse(new CodePointBuffer(candidate)) !== null}
+            numeric
           />
         </Box>
       </>
@@ -309,6 +296,20 @@ export class HolonomicMovementsFormatV0_1 implements Format {
       path.segments.forEach(segment => {
         segment.controls = [segment.first, segment.last];
       });
+      path.pc.speedLimit = {
+        minLimit: { value: 0, label: "0" },
+        maxLimit: { value: 1, label: "1" },
+        step: 1,
+        from: 0,
+        to: 1
+      };
+      path.pc.bentRateApplicableRange = {
+        minLimit: { value: 0, label: "0" },
+        maxLimit: { value: 1, label: "1" },
+        step: 0.001,
+        from: 0,
+        to: 1
+      };
     });
     return newPaths;
   }
@@ -358,6 +359,8 @@ export class HolonomicMovementsFormatV0_1 implements Format {
   private exportHolonomicMovementCode(path: Path, templates: { [key: string]: string }) {
     let rtn = "";
 
+    const pc = path.pc as PathConfigImpl;
+
     for (const segment of path.segments) {
       const last = segment.last;
 
@@ -368,7 +371,7 @@ export class HolonomicMovementsFormatV0_1 implements Format {
           x: last.x.toUser(),
           y: last.y.toUser(),
           heading: nextHeading.toUser(),
-          speed: 0
+          speed: pc.speed
         }) + "\n";
     }
 

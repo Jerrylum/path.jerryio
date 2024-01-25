@@ -422,6 +422,10 @@ export class KeyframeList<T extends Keyframe> {
     return this.list.filter(callback);
   }
 
+  includes(keyframe: Keyframe): boolean {
+    return this.list.includes(keyframe as T);
+  }
+
   get length(): number {
     return this.list.length;
   }
