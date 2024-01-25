@@ -144,7 +144,8 @@ const convertFromV0_4_0ToV0_5_0: PathFileDataConverter = {
 const convertFromV0_5_0ToV0_6_0: PathFileDataConverter = {
   version: new Range("~0.5"),
   convert: (data: Record<string, any>): void => {
-    // No conversion needed
+    // New algorithm for bent rate, remove the old bent rate applicable range
+    for (const path of data.paths) path.pc.bentRateApplicableRange = undefined;
 
     // From v0.5.0 to v0.6.0
     data.appVersion = "0.6.0";
