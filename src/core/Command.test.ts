@@ -280,13 +280,13 @@ test("AddKeyframe", () => {
 test("MoveKeyframe", () => {
   const keyframe = new SpeedKeyframe(0, 0);
   const seg = new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90));
-  seg["speedProfiles"].add(keyframe);
+  seg["speed"].add(keyframe);
   const seglst = [new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90)), seg];
-  const movekeyframe = new MoveKeyframe(seglst, "speedProfiles", { segment: seg, xPos: 10, yPos: 10 }, keyframe);
+  const movekeyframe = new MoveKeyframe(seglst, "speed", { segment: seg, xPos: 10, yPos: 10 }, keyframe);
 
-  expect(seg["speedProfiles"].length).toBe(1);
-  expect(seg["speedProfiles"].list[0].xPos).toBe(0);
-  expect(seg["speedProfiles"].list[0].yPos).toBe(0);
+  expect(seg["speed"].length).toBe(1);
+  expect(seg["speed"].list[0].xPos).toBe(0);
+  expect(seg["speed"].list[0].yPos).toBe(0);
   expect(movekeyframe.oldPos).toBeUndefined();
   //dummy call
   movekeyframe.undo();
@@ -294,32 +294,32 @@ test("MoveKeyframe", () => {
 
   movekeyframe.execute();
 
-  expect(seg["speedProfiles"].length).toBe(1);
-  expect(seg["speedProfiles"].list[0].xPos).toBe(10);
-  expect(seg["speedProfiles"].list[0].yPos).toBe(10);
+  expect(seg["speed"].length).toBe(1);
+  expect(seg["speed"].list[0].xPos).toBe(10);
+  expect(seg["speed"].list[0].yPos).toBe(10);
   expect(movekeyframe.oldPos).toStrictEqual({ segment: seg, xPos: 0, yPos: 0 });
 
   movekeyframe.undo();
-  expect(seg["speedProfiles"].length).toBe(1);
-  expect(seg["speedProfiles"].list[0].xPos).toBe(0);
-  expect(seg["speedProfiles"].list[0].yPos).toBe(0);
+  expect(seg["speed"].length).toBe(1);
+  expect(seg["speed"].list[0].xPos).toBe(0);
+  expect(seg["speed"].list[0].yPos).toBe(0);
 
   movekeyframe.redo();
-  expect(seg["speedProfiles"].length).toBe(1);
-  expect(seg["speedProfiles"].list[0].xPos).toBe(10);
-  expect(seg["speedProfiles"].list[0].yPos).toBe(10);
+  expect(seg["speed"].length).toBe(1);
+  expect(seg["speed"].list[0].xPos).toBe(10);
+  expect(seg["speed"].list[0].yPos).toBe(10);
 
   //merge command with different keyframe
   const movekeyframe2 = new MoveKeyframe(
     seglst,
-    "speedProfiles",
+    "speed",
     { segment: seg, xPos: 10, yPos: 10 },
     new SpeedKeyframe(0, 0)
   );
   expect(movekeyframe.merge(movekeyframe2)).toBeFalsy();
 
   //merge command with same keyframe but different new position
-  const movekeyframe3 = new MoveKeyframe(seglst, "speedProfiles", { segment: seg, xPos: 20, yPos: 20 }, keyframe);
+  const movekeyframe3 = new MoveKeyframe(seglst, "speed", { segment: seg, xPos: 20, yPos: 20 }, keyframe);
   expect(movekeyframe.merge(movekeyframe3)).toBeTruthy();
   expect(movekeyframe.newPos.xPos).toBe(20);
   expect(movekeyframe3.newPos.yPos).toBe(20);
@@ -328,9 +328,9 @@ test("MoveKeyframe", () => {
 test("RemoveKeyframe", () => {
   const keyframe = new SpeedKeyframe(0, 0);
   const seg = new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90));
-  seg["speedProfiles"].add(keyframe);
+  seg["speed"].add(keyframe);
   const seglst = [new Segment(new EndControl(60, 60, 0), new EndControl(61, 60, 90)), seg];
-  const removekeyframe = new RemoveKeyframe(seglst, "speedProfiles", keyframe);
+  const removekeyframe = new RemoveKeyframe(seglst, "speed", keyframe);
 
   //dummy call
   expect(removekeyframe.oldIdx).toBe(-1);
@@ -338,15 +338,15 @@ test("RemoveKeyframe", () => {
   removekeyframe.undo();
   removekeyframe.redo();
 
-  expect(seg["speedProfiles"].length).toBe(1);
+  expect(seg["speed"].length).toBe(1);
   removekeyframe.execute();
-  expect(seg["speedProfiles"].length).toBe(0);
+  expect(seg["speed"].length).toBe(0);
 
   removekeyframe.undo();
-  expect(seg["speedProfiles"].length).toBe(1);
+  expect(seg["speed"].length).toBe(1);
 
   removekeyframe.redo();
-  expect(seg["speedProfiles"].length).toBe(0);
+  expect(seg["speed"].length).toBe(0);
 });
 
 test("InsertPath", () => {
@@ -525,7 +525,7 @@ test("RemovePathsAndEndControls", () => {
   const i7 = new EndControl(8, 0, 0);
   const lstseg = [new Segment(i1, i2, i3, i4), new Segment(i4, i5, i6, i7)];
   // const keyframe = new SpeedKeyframe(0, 0);
-  // lstseg[0]["speedProfiles"].add(keyframe);
+  // lstseg[0]["speed"].add(keyframe);
   const lstpath = [new Path(new CustomPathConfig()), new Path(new CustomPathConfig(), ...lstseg)];
   // remove end control that is the first control of segment but not the first segment
   const pathtree = traversal(lstpath); // path1, path2, i1, i2, i3, i4, i5, i6, i7
@@ -594,7 +594,7 @@ test("RemovePathTreeItems", () => {
   const i7 = new EndControl(8, 0, 0);
   const lstseg = [new Segment(i1, i2, i3, i4), new Segment(i4, i5, i6, i7)];
   // const keyframe = new SpeedKeyframe(0, 0);
-  // lstseg[0]["speedProfiles"].add(keyframe);
+  // lstseg[0]["speed"].add(keyframe);
   const lstpath = [new Path(new CustomPathConfig()), new Path(new CustomPathConfig(), ...lstseg)];
   // remove end control that is the first control of segment but not the first segment
   const pathtree = traversal(lstpath); // path1, path2, i1, i2, i3, i4, i5, i6, i7

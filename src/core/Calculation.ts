@@ -85,7 +85,7 @@ export function getPathPoints(
 
   const sampleResult = getPathSamplePoints(path, density);
   const uniformResult = getUniformPointsFromSamples(sampleResult, density);
-  const speedKeyframeIndexes = getPathKeyframeIndexes(path.segments, uniformResult.segmentIndexes, "speedProfiles");
+  const speedKeyframeIndexes = getPathKeyframeIndexes(path.segments, uniformResult.segmentIndexes, "speed");
   processKeyframes(path, uniformResult.points, [
     new KeyframeIndexing(0, undefined, new SpeedKeyframe(0, 1, options?.defaultFollowBentRate ?? false)),
     ...speedKeyframeIndexes
@@ -93,7 +93,7 @@ export function getPathPoints(
   const lookaheadKeyframeIndexes = getPathKeyframeIndexes(
     path.segments,
     uniformResult.segmentIndexes,
-    "lookaheadKeyframes"
+    "lookahead"
   );
   processKeyframes(path, uniformResult.points, [
     new KeyframeIndexing(0, undefined, new LookaheadKeyframe(0, 1)),

@@ -440,8 +440,8 @@ export type LinearSegmentControls = [EndControl, EndControl];
 export type CubicSegmentControls = [EndControl, Control, Control, EndControl];
 export type SegmentControls = LinearSegmentControls | CubicSegmentControls;
 
-export type SegmentKeyframeKey = "speedProfiles" | "lookaheadKeyframes";
-export type SegmentKeyframeKeyMap = { speedProfiles: SpeedKeyframe; lookaheadKeyframes: LookaheadKeyframe };
+export type SegmentKeyframeKey = "speed" | "lookahead";
+export type SegmentKeyframeKeyMap = { speed: SpeedKeyframe; lookahead: LookaheadKeyframe };
 
 // observable class
 export class Segment implements CanvasEntity {
@@ -462,18 +462,18 @@ export class Segment implements CanvasEntity {
   public controls: SegmentControls;
   @ValidateNested()
   @IsArray()
-  @Expose({ name: "speedProfiles" })
+  @Expose({ name: "speedProfiles" }) // XXX: Do not rename it to "speed"
   @Type(() => SpeedKeyframe)
-  private speedProfiles_: SpeedKeyframe[] = [];
+  private speed_: SpeedKeyframe[] = [];
   @Exclude()
-  public speedProfiles = new KeyframeList(() => this.speedProfiles_, SpeedKeyframe);
+  public speed = new KeyframeList(() => this.speed_, SpeedKeyframe); // XXX: Do not rename it to "speedProfiles"
   @ValidateNested()
   @IsArray()
-  @Expose({ name: "lookaheadKeyframes" })
+  @Expose({ name: "lookaheadKeyframes" }) // XXX: Do not rename it to "lookahead"
   @Type(() => LookaheadKeyframe)
-  private lookaheadKeyframes_: LookaheadKeyframe[] = [];
+  private lookahead_: LookaheadKeyframe[] = [];
   @Exclude()
-  public lookaheadKeyframes = new KeyframeList(() => this.lookaheadKeyframes_, LookaheadKeyframe);
+  public lookahead = new KeyframeList(() => this.lookahead_, LookaheadKeyframe); // XXX: Do not rename it to "lookaheadKeyframes"
   @Matches(/^[a-zA-Z0-9]+$/)
   @MinLength(10)
   @Expose()

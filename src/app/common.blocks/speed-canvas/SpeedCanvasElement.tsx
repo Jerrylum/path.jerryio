@@ -64,7 +64,7 @@ const SpeedCanvasTooltipContent = observer((props: {}) => {
           onClick={() => {
             app.history.execute(
               `Remove keyframe ${keyframe.uid} from path ${path.uid}`,
-              new RemoveKeyframe(path.segments, "speedProfiles", keyframe)
+              new RemoveKeyframe(path.segments, "speed", keyframe)
             );
           }}
         />
@@ -164,7 +164,7 @@ const SpeedKeyframeElement = observer((props: SpeedKeyframeElementProps) => {
 
     app.history.execute(
       `Move keyframe ${ikf.keyframe.uid}`,
-      new MoveKeyframe(gcc.path.segments, "speedProfiles", kfPos, ikf.keyframe)
+      new MoveKeyframe(gcc.path.segments, "speed", kfPos, ikf.keyframe)
     );
 
     const posInPx = gcc.toPx(kfPos);
@@ -190,7 +190,7 @@ const SpeedKeyframeElement = observer((props: SpeedKeyframeElementProps) => {
       // right click
       app.history.execute(
         `Remove keyframe ${ikf.keyframe.uid} from path ${gcc.path.uid}`,
-        new RemoveKeyframe(gcc.path.segments, "speedProfiles", ikf.keyframe)
+        new RemoveKeyframe(gcc.path.segments, "speed", ikf.keyframe)
       );
 
       app.speedEditor.tooltipPosition = undefined;
@@ -353,7 +353,7 @@ class TouchInteractiveHandler extends TouchEventListener {
       if (this.wasShowingTooltip === false) {
         const kfPos = this.getKeyframePos();
         if (kfPos && app.speedEditor.isAddingKeyframe) {
-          const keyframes = kfPos.segment.speedProfiles;
+          const keyframes = kfPos.segment.speed;
           const keyframe = new SpeedKeyframe(kfPos.xPos, kfPos.yPos);
 
           app.history.execute(
@@ -433,7 +433,7 @@ const SpeedCanvasElement = observer((props: { extended: boolean }) => {
     const kfPos = gcc.toPos(new Vector(e.evt.offsetX, e.evt.offsetY));
     if (kfPos === undefined) return;
 
-    const keyframes = kfPos.segment.speedProfiles;
+    const keyframes = kfPos.segment.speed;
     const keyframe = new SpeedKeyframe(kfPos.xPos, kfPos.yPos);
 
     app.history.execute(`Add speed keyframe to path ${path.uid}`, new AddKeyframe(keyframes, keyframe));
