@@ -308,7 +308,6 @@ export class HolonomicMovementsFormatV0_1 implements Format {
     newPaths.forEach(path => {
       path.segments.forEach(segment => {
         segment.controls = [segment.first, segment.last];
-        segment.first.heading = toHeading(segment.last.subtract(segment.first));
       });
     });
     return newPaths;
