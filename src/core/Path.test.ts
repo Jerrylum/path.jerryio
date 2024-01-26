@@ -189,8 +189,8 @@ test("validate Segment", async () => {
   expect(s.first).toStrictEqual(controls[0]);
   expect(s.controls).toStrictEqual(controls);
   expect(s.last).toStrictEqual(controls[3]);
-  expect(s.speedProfiles).toHaveLength(0);
-  expect(s.lookaheadKeyframes).toHaveLength(0);
+  expect(s.speed).toHaveLength(0);
+  expect(s.lookahead).toHaveLength(0);
 
   expect(await validate(s)).toHaveLength(0);
 
@@ -208,8 +208,8 @@ test("validate Segment", async () => {
 
   (s as any).uid = "";
   (s as any).controls = controls[0];
-  (s as any).speedProfiles_ = new SpeedKeyframe(0, 0);
-  (s as any).lookaheadKeyframes_ = new LookaheadKeyframe(0, 0);
+  (s as any).speed_ = new SpeedKeyframe(0, 0);
+  (s as any).lookahead_ = new LookaheadKeyframe(0, 0);
   expect(await validate(s)).toHaveLength(4);
 });
 

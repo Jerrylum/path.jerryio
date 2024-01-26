@@ -134,6 +134,8 @@ export const ConfirmationModal = observer(() => {
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
     if (e.key === "ArrowLeft") {
       focusOnButton(-1);
     } else if (e.key === "ArrowRight") {

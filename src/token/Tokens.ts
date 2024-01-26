@@ -286,6 +286,16 @@ export abstract class Token {
 export type TokenParser<T extends Token> = (buffer: CodePointBuffer, ...args: any[]) => T | null;
 export type TokenConstructor<T extends Token> = new (...args: any[]) => T;
 
+export class BackQuoteString extends Token {
+  constructor(public value: string, public content: string) {
+    super();
+  }
+
+  public static parse(buffer: CodePointBuffer): BackQuoteString | null {
+    return doParseQuoteString(buffer, "`", BackQuoteString);
+  }
+}
+
 /**
  * A class that represents a boolean token.
  * @implements {Token}

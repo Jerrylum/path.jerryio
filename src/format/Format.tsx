@@ -11,6 +11,7 @@ import { LemLibFormatV1_0 } from "./LemLibFormatV1_0";
 import { isExperimentalFeaturesEnabled } from "@core/Preferences";
 import { RigidMovementsFormatV0_1 } from "./RigidMovementsFormatV0_1";
 import { LemLibOdomGeneratorFormatV0_5 } from "./LemLibOdomGeneratorFormatV0_5";
+import { HolonomicMovementsFormatV0_1 } from "./HolonomicMovementsFormatV0_1";
 
 export interface Format {
   isInit: boolean;
@@ -84,7 +85,7 @@ export function getAllFormats(): Format[] {
       new LemLibOdomGeneratorFormatV0_5()
     ],
     ...(isExperimentalFeaturesEnabled() ? [new LemLibFormatV1_0()] : []),
-    ...[new RigidMovementsFormatV0_1(), new PathDotJerryioFormatV0_1()]
+    ...[new RigidMovementsFormatV0_1(), new HolonomicMovementsFormatV0_1(), new PathDotJerryioFormatV0_1()]
   ];
 }
 
@@ -145,7 +146,8 @@ const convertFromV0_4_0ToV0_5_0: PathFileDataConverter = {
 const convertFromV0_5_0ToV0_6_0: PathFileDataConverter = {
   version: new Range("~0.5"),
   convert: (data: Record<string, any>): void => {
-    // No conversion needed
+    // New algorithm for bent rate, remove the old bent rate applicable range
+    for (const path of data.paths) path.pc.bentRateApplicableRange = undefined;
 
     // From v0.5.0 to v0.6.0
     data.appVersion = "0.6.0";
