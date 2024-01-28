@@ -1,51 +1,25 @@
 import { makeAutoObservable, action, observable, IObservableValue } from "mobx";
 import { MainApp, getAppStores } from "@core/MainApp";
-import {
-  EditableNumberRange,
-  IS_MAC_OS,
-  ValidateEditableNumberRange,
-  ValidateNumber,
-  getMacHotKeyString,
-  makeId,
-  parseFormula
-} from "@core/Util";
+import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "@core/Util";
 import { Quantity, UnitOfLength } from "@core/Unit";
 import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
-import { RangeSlider } from "@app/component.blocks/RangeSlider";
 import { Box, Button, TextField, Typography } from "@mui/material";
-import {
-  AddCubicSegment,
-  AddKeyframe,
-  AddLinearSegment,
-  ConvertSegment,
-  InsertControls,
-  InsertPaths,
-  MoveKeyframe,
-  UpdatePathTreeItems,
-  UpdateProperties
-} from "@core/Command";
+import { AddCubicSegment, AddLinearSegment, ConvertSegment, InsertControls, InsertPaths } from "@core/Command";
 import { Exclude, Expose, Type } from "class-transformer";
-import { IsBoolean, IsEnum, IsNumber, IsObject, IsPositive, IsString, ValidateNested } from "class-validator";
-import { PointCalculationResult, boundHeading, getPathPoints, toDerivativeHeading, toHeading } from "@core/Calculation";
+import { IsBoolean, IsNumber, IsObject, IsPositive, IsString, ValidateNested } from "class-validator";
+import { PointCalculationResult, getPathPoints } from "@core/Calculation";
 import { BentRateApplicationDirection, EndControl, Path, Segment, SegmentVariant } from "@core/Path";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
-import { ObserverEnumSelect } from "@app/component.blocks/ObserverEnumSelect";
 import { enqueueSuccessSnackbar, enqueueErrorSnackbar } from "@app/Notice";
 import { useCustomHotkeys } from "@core/Hook";
 import { observer } from "mobx-react-lite";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 import { Logger } from "@core/Logger";
-import { BackQuoteString, CodePointBuffer, NumberT } from "@src/token/Tokens";
-import { ObserverInput } from "@src/app/component.blocks/ObserverInput";
+import { BackQuoteString, CodePointBuffer, NumberT } from "@token/Tokens";
+import { ObserverInput } from "@app/component.blocks/ObserverInput";
 
-const logger = Logger("Rigid Movements Code Gen v0.1.x");
-
-enum HeadingOutputType {
-  Absolute = "Absolute Heading",
-  Relative = "Relative Heading",
-  Derivative = "Derivative Heading"
-}
+const logger = Logger("Move-to-Point Code Gen v0.1.x");
 
 const EditOutputTemplateConfirmationDescription = observer((props: { value: IObservableValue<string> }) => {
   return (
@@ -68,7 +42,7 @@ const EditOutputTemplateConfirmationDescription = observer((props: { value: IObs
 const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
   const { config } = props;
 
-  const { app, confirmation, modals } = getAppStores();
+  const { confirmation, modals } = getAppStores();
 
   const isUsingEditor = !confirmation.isOpen && !modals.isOpen;
 
@@ -124,21 +98,6 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
   return (
     <>
       <Box className="Panel-Box">
-        <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
-        <Box className="Panel-FlexBox">
-          <ObserverEnumSelect
-            sx={{ marginTop: "16px", width: "50%" }}
-            label="Heading Output Type"
-            enumValue={config.headingOutputType}
-            onEnumChange={value => {
-              app.history.execute(
-                `Set using heading output type to ${value}`,
-                new UpdateProperties(config, { headingOutputType: value })
-              );
-            }}
-            enumType={HeadingOutputType}
-          />
-        </Box>
         <Box className="Panel-FlexBox" sx={{ marginTop: "32px" }}>
           <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
             Copy Code
@@ -161,7 +120,7 @@ class GeneralConfigImpl implements GeneralConfig {
   @Expose()
   robotHeight: number = 30;
   @Exclude()
-  readonly robotIsHolonomic = "force-static";
+  readonly robotIsHolonomic = "force-holonomic";
   @IsBoolean()
   @Expose()
   showRobot: boolean = false;
@@ -180,26 +139,18 @@ class GeneralConfigImpl implements GeneralConfig {
   @Expose()
   fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> =
     getDefaultBuiltInFieldImage().getSignatureAndOrigin();
-  @IsEnum(HeadingOutputType)
-  @Expose()
-  headingOutputType: HeadingOutputType = HeadingOutputType.Absolute;
   @IsString()
-  // TODO: validate
   @Expose()
   outputTemplate: string = `path: \`// \${name}
 
 \${code}
 \`
-forward: \`forward(\${distance}, \${speed});\`
-backward: \`backward(\${distance}, \${speed});\`
-turnLeft: \`turnLeft(\${heading}, \${speed});\`
-turnRight: \`turnRight(\${heading}, \${speed});\`
-turnTo: \`turnTo(\${heading}, \${speed});\``;
+moveToPoint: \`moveToPoint(\${x}, \${y}, \${heading}, \${speed});\``;
 
   @Exclude()
-  private format_: RigidMovementsFormatV0_1;
+  private format_: MoveToPointCodeGenFormatV0_1;
 
-  constructor(format: RigidMovementsFormatV0_1) {
+  constructor(format: MoveToPointCodeGenFormatV0_1) {
     this.format_ = format;
     makeAutoObservable(this);
 
@@ -239,17 +190,19 @@ class PathConfigImpl implements PathConfig {
   @Expose()
   speed: number = 30;
   @Exclude()
-  readonly format: RigidMovementsFormatV0_1;
+  readonly format: MoveToPointCodeGenFormatV0_1;
 
   @Exclude()
   public path!: Path;
 
-  constructor(format: RigidMovementsFormatV0_1) {
+  constructor(format: MoveToPointCodeGenFormatV0_1) {
     this.format = format;
     makeAutoObservable(this);
   }
 
   getConfigPanel() {
+    const { app } = getAppStores();
+
     return (
       <>
         <Box className="Panel-Box">
@@ -271,7 +224,7 @@ class PathConfigImpl implements PathConfig {
 }
 
 // observable class
-export class RigidMovementsFormatV0_1 implements Format {
+export class MoveToPointCodeGenFormatV0_1 implements Format {
   isInit: boolean = false;
   uid: string;
 
@@ -285,35 +238,16 @@ export class RigidMovementsFormatV0_1 implements Format {
   }
 
   createNewInstance(): Format {
-    return new RigidMovementsFormatV0_1();
+    return new MoveToPointCodeGenFormatV0_1();
   }
 
   getName(): string {
-    return "Rigid Code Gen v0.1.x";
+    return "Move-to-Point Code Gen v0.1.x";
   }
 
   register(app: MainApp): void {
     if (this.isInit) return;
     this.isInit = true;
-
-    const fixEndControlsHeading = () => {
-      app.paths.forEach(path => {
-        path.segments.forEach(segment => {
-          const first = segment.first;
-          const last = segment.last;
-          const suggestedHeading = toHeading(last.subtract(first));
-          const acceptableHeading1 = suggestedHeading;
-          const acceptableHeading2 = boundHeading(suggestedHeading + 180);
-          const currentHeading = first.heading;
-          const delta1 = Math.abs(toDerivativeHeading(currentHeading, acceptableHeading1));
-          const delta2 = Math.abs(toDerivativeHeading(currentHeading, acceptableHeading2));
-          if (delta1 < delta2) first.heading = acceptableHeading1;
-          else first.heading = acceptableHeading2;
-          segment.speed.list.length = 0;
-          segment.lookahead.list.length = 0;
-        });
-      });
-    };
 
     this.disposers.push(
       app.history.addEventListener("beforeExecution", event => {
@@ -327,50 +261,15 @@ export class RigidMovementsFormatV0_1 implements Format {
           );
         } else if (event.isCommandInstanceOf(ConvertSegment) && event.command.variant === SegmentVariant.Cubic) {
           event.isCancelled = true;
-        } else if (event.isCommandInstanceOf(UpdatePathTreeItems)) {
-          const targets = event.command.targets;
-          const newValues = event.command.newValues;
-
-          const isLastEndControlOfPath = (target: EndControl) => {
-            return app.paths.some(path => path.segments.at(-1)?.last === target);
-          };
-
-          targets.forEach(target => {
-            if (target instanceof EndControl) {
-              const isChangingHeadingValue = "heading" in newValues && newValues.heading !== undefined;
-              if (!isChangingHeadingValue) return;
-
-              if (isLastEndControlOfPath(target)) return;
-
-              const oldValue = target.heading;
-              newValues.heading = boundHeading(oldValue + 180);
-            }
-          });
         } else if (event.isCommandInstanceOf(InsertPaths)) {
           event.command.inserting.forEach(path => {
             path.segments.forEach(segment => {
               segment.controls = [segment.first, segment.last];
-
-              segment.first.heading = toHeading(segment.last.subtract(segment.first));
             });
           });
         } else if (event.isCommandInstanceOf(InsertControls)) {
           event.command.inserting = event.command.inserting.filter(control => control instanceof EndControl);
-        } else if (event.isCommandInstanceOf(AddKeyframe)) {
-          event.isCancelled = true;
         }
-      }),
-      app.history.addEventListener("merge", event => {
-        fixEndControlsHeading();
-      }),
-      app.history.addEventListener("execute", event => {
-        fixEndControlsHeading();
-      }),
-      app.history.addEventListener("afterUndo", event => {
-        fixEndControlsHeading();
-      }),
-      app.history.addEventListener("afterRedo", event => {
-        fixEndControlsHeading();
       })
     );
   }
@@ -396,9 +295,6 @@ export class RigidMovementsFormatV0_1 implements Format {
     newPaths.forEach(path => {
       path.segments.forEach(segment => {
         segment.controls = [segment.first, segment.last];
-        segment.first.heading = toHeading(segment.last.subtract(segment.first));
-        segment.speed.list.length = 0;
-        segment.lookahead.list.length = 0;
       });
       path.pc.speedLimit = {
         minLimit: { value: 0, label: "0" },
@@ -415,7 +311,6 @@ export class RigidMovementsFormatV0_1 implements Format {
         to: 1
       };
     });
-
     return newPaths;
   }
 
@@ -461,47 +356,23 @@ export class RigidMovementsFormatV0_1 implements Format {
     return template.replace(/\${([^}]+)}/g, (_, key) => (values[key] ?? "") + "");
   }
 
-  private exportRigidMovementCode(path: Path, templates: { [key: string]: string }) {
+  private exportHolonomicMovementCode(path: Path, templates: { [key: string]: string }) {
     let rtn = "";
 
-    const gc = this.gc as GeneralConfigImpl;
     const pc = path.pc as PathConfigImpl;
 
-    const startHeading = path.segments[0].first.heading;
-
     for (const segment of path.segments) {
-      const first = segment.first;
       const last = segment.last;
 
-      const distance = first.distance(last);
-
-      const forwardHeading = toHeading(last.subtract(first));
-      const movementTemplate = (first.heading === forwardHeading ? templates.forward : templates.backward) ?? "";
-      const movementTemplateValues = {
-        fromX: first.x.toUser(),
-        fromY: first.y.toUser(),
-        x: last.x.toUser(),
-        y: last.y.toUser(),
-        distance: distance.toUser(),
-        speed: pc.speed
-      };
-      rtn += this.applyTemplate(movementTemplate, movementTemplateValues) + "\n";
-
       const nextHeading = last.heading;
-      if (gc.headingOutputType === HeadingOutputType.Absolute) {
-        rtn += this.applyTemplate(templates.turnTo ?? "", { heading: nextHeading.toUser(), speed: pc.speed }) + "\n";
-      } else if (gc.headingOutputType === HeadingOutputType.Relative) {
-        const deltaHeading = boundHeading(nextHeading - startHeading);
-        rtn += this.applyTemplate(templates.turnTo ?? "", { heading: deltaHeading.toUser(), speed: pc.speed }) + "\n";
-      } else {
-        const deltaHeading = toDerivativeHeading(forwardHeading, nextHeading);
-        if (deltaHeading > 0)
-          rtn +=
-            this.applyTemplate(templates.turnRight ?? "", { heading: deltaHeading.toUser(), speed: pc.speed }) + "\n";
-        else if (deltaHeading < 0)
-          rtn +=
-            this.applyTemplate(templates.turnLeft ?? "", { heading: -deltaHeading.toUser(), speed: pc.speed }) + "\n";
-      }
+
+      rtn +=
+        this.applyTemplate(templates.moveToPoint ?? "", {
+          x: last.x.toUser(),
+          y: last.y.toUser(),
+          heading: nextHeading.toUser(),
+          speed: pc.speed
+        }) + "\n";
     }
 
     return rtn;
@@ -517,7 +388,7 @@ export class RigidMovementsFormatV0_1 implements Format {
     app.paths.forEach(path => {
       rtn += this.applyTemplate(templates.path ?? "", {
         name: path.name,
-        code: this.exportRigidMovementCode(path, templates)
+        code: this.exportHolonomicMovementCode(path, templates)
       });
     });
 
