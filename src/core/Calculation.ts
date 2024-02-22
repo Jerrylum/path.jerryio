@@ -90,11 +90,7 @@ export function getPathPoints(
     new KeyframeIndexing(0, undefined, new SpeedKeyframe(0, 1, options?.defaultFollowBentRate ?? false)),
     ...speedKeyframeIndexes
   ]);
-  const lookaheadKeyframeIndexes = getPathKeyframeIndexes(
-    path.segments,
-    uniformResult.segmentIndexes,
-    "lookahead"
-  );
+  const lookaheadKeyframeIndexes = getPathKeyframeIndexes(path.segments, uniformResult.segmentIndexes, "lookahead");
   processKeyframes(path, uniformResult.points, [
     new KeyframeIndexing(0, undefined, new LookaheadKeyframe(0, 1)),
     ...lookaheadKeyframeIndexes

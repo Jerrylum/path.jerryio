@@ -201,8 +201,6 @@ class PathConfigImpl implements PathConfig {
   }
 
   getConfigPanel() {
-    const { app } = getAppStores();
-
     return (
       <>
         <Box className="Panel-Box">

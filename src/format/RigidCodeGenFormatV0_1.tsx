@@ -1,18 +1,9 @@
 import { makeAutoObservable, action, observable, IObservableValue } from "mobx";
 import { MainApp, getAppStores } from "@core/MainApp";
-import {
-  EditableNumberRange,
-  IS_MAC_OS,
-  ValidateEditableNumberRange,
-  ValidateNumber,
-  getMacHotKeyString,
-  makeId,
-  parseFormula
-} from "@core/Util";
+import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "@core/Util";
 import { Quantity, UnitOfLength } from "@core/Unit";
 import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
-import { RangeSlider } from "@app/component.blocks/RangeSlider";
 import { Box, Button, TextField, Typography } from "@mui/material";
 import {
   AddCubicSegment,
@@ -21,7 +12,6 @@ import {
   ConvertSegment,
   InsertControls,
   InsertPaths,
-  MoveKeyframe,
   UpdatePathTreeItems,
   UpdateProperties
 } from "@core/Command";

@@ -19,7 +19,7 @@ import { NoticeProvider } from "./app/Notice";
 import { ConfirmationModal } from "./app/common.blocks/modal/ConfirmationModal";
 import { DragDropBackdrop } from "./app/common.blocks/DragDropBackdrop";
 import { RemovePathsAndEndControls } from "./core/Command";
-import React, { useEffect } from "react";
+import React from "react";
 import { FormTags } from "react-hotkeys-hook/dist/types";
 import { LayoutType, getUsableLayout } from "./core/Layout";
 import { getAppThemeInfo } from "./app/Theme";

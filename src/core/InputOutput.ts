@@ -1,5 +1,5 @@
 import { getAppStores } from "./MainApp";
-import { enqueueErrorSnackbar, enqueueInfoSnackbar, enqueueSuccessSnackbar } from "@app/Notice";
+import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "@app/Notice";
 import { Logger } from "./Logger";
 import { isBraveBrowser, isFirefox } from "./Util";
 
