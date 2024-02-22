@@ -213,11 +213,12 @@ export const FieldImageList = observer((props: { variables: FieldImageManagerVar
   const { variables } = props;
 
   React.useEffect(
+    // eslint-disable-line react-hooks/exhaustive-deps
     action(() => {
       variables.selected = assetManager.assets[0] ?? null;
     }),
     []
-  ); // eslint-disable-line react-hooks/exhaustive-deps
+  );
 
   return (
     <Box>
@@ -253,6 +254,7 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
   const [sourceType, setSourceType] = React.useState<"" | "url" | "file">("");
 
   React.useEffect(
+    // eslint-disable-line react-hooks/exhaustive-deps
     action(() => {
       if (draft === null) return;
 

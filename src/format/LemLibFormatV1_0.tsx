@@ -334,7 +334,7 @@ export class LemLibFormatV1_0 implements Format {
           const target = event.command.target;
           const newValues = event.command.newValues;
           if (target instanceof Path && "name" in newValues) {
-            newValues.name = newValues.name.replace(/[^\x00-\x7F]/g, ""); // ascii only
+            newValues.name = newValues.name.replace(/[^\x00-\x7F]/g, ""); // eslint-disable-line no-control-regex
           }
         }
       })
@@ -353,7 +353,7 @@ export class LemLibFormatV1_0 implements Format {
     const newPaths = convertFormat(this, oldFormat, oldPaths);
 
     for (const path of newPaths) {
-      path.name = path.name.replace(/[^\x00-\x7F]/g, ""); // ascii only
+      path.name = path.name.replace(/[^\x00-\x7F]/g, ""); // eslint-disable-line no-control-regex
     }
 
     return newPaths;
