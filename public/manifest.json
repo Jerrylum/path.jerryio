@@ -4,7 +4,7 @@
   "description": "The best path editor in the VEX Robotics Competition for designing skills routes and generating path files.",
   "icons": [
     {
-      "src": "static/favicon.ico",
+      "src": "precache/favicon.ico",
       "sizes": "48x48",
       "type": "image/x-icon"
     },

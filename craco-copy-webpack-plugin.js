@@ -7,10 +7,12 @@ module.exports = {
     /** @type {import('webpack/types'.Configuration)} */
     const newConfig = { ...webpackConfig };
 
+    // The "precache" directory is where we require the service worker to precache files.
+    // Files in other directories like "static" doesn't mean they are NOT precached.
     newConfig.plugins.push(
       new CopyPlugin({
         patterns: [
-          { from: "static/*.*", context: "public", noErrorOnMissing: true }
+          { from: "precache/*.*", context: "public", noErrorOnMissing: true }
         ]
       })
     );
