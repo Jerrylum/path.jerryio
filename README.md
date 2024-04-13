@@ -8,7 +8,7 @@
 
 ## Introduction
 
-PATH.JERRYIO is a Progressive Web Apps (PWA) that is installable and can be used without an internet connection. It is available on any device with a web browser, including desktops, laptops, tablets, and mobile phones.
+PATH.JERRYIO is a Progressive Web App (PWA) that is installable and can be used without an internet connection. It is available on any device with a web browser, including desktops, laptops, tablets, and mobile phones.
 
 It is a powerful and flexible multi-purpose path editor/planner, which allows users to design and edit paths with intuitive click-and-drag interactions. After that, a readable path file can be generated for the robot, it will be used by the robot to travel the designed paths in the autonomous period with path-following algorithms.
 
@@ -94,7 +94,7 @@ By using PATH.JERRYIO, you only need to implement the path file parser and gener
 - Unsaved change warning
 - Robot simulation with customizable robot size
 - Robot pure pursuit simulation (Coming soon)
-- Progressive Web Apps use without installation
+- Progressive Web App use without installation
 - Auto update
 - Offline support
 
