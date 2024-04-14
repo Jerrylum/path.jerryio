@@ -26,6 +26,7 @@ export function convertFormat(newFormat: Format, oldFormat: Format, oldPaths: Pa
   newGC.robotHeight = oldGC.robotHeight;
   convertGeneralConfigUOL(newGC, oldGC.uol);
   newGC.pointDensity = keepPointDensity; // UX: Use new format point density
+  newGC.fieldImage = oldGC.fieldImage;
 
   const newPaths: Path[] = [];
   for (const oldPath of oldPaths) {
