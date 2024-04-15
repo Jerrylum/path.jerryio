@@ -17,8 +17,7 @@ import { CodePointBuffer, Int } from "../token/Tokens";
 import { observer } from "mobx-react-lite";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "@app/Notice";
 import { Logger } from "@core/Logger";
-import { FormTags } from "react-hotkeys-hook/dist/types";
-import { useCustomHotkeys } from "@core/Hook";
+import { getEnableOnNonTextInputFieldsHotkeysOptions, useCustomHotkeys } from "@core/Hook";
 import { ObserverCheckbox } from "@app/component.blocks/ObserverCheckbox";
 
 const logger = Logger("LemLib Odom Code Gen v0.4.x (inch)");
@@ -29,18 +28,6 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
   const { app, confirmation, modals } = getAppStores();
 
   const isUsingEditor = !confirmation.isOpen && !modals.isOpen;
-
-  const ENABLE_ON_NON_TEXT_INPUT_FIELDS = {
-    preventDefaultOnlyIfEnabled: true,
-    enableOnFormTags: ["input", "INPUT"] as FormTags[],
-    // UX: It is okay to enable hotkeys on some input fields (e.g. checkbox, button, range)
-    enabled: (kvEvt: KeyboardEvent) => {
-      if (isUsingEditor === false) return false;
-      if (kvEvt.target instanceof HTMLInputElement)
-        return ["button", "checkbox", "radio", "range", "reset", "submit"].includes(kvEvt.target.type);
-      else return true;
-    }
-  };
 
   const onCopyCode = action(() => {
     try {
@@ -54,7 +41,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
     }
   });
 
-  useCustomHotkeys("Shift+Mod+C", onCopyCode, ENABLE_ON_NON_TEXT_INPUT_FIELDS);
+  useCustomHotkeys("Shift+Mod+C", onCopyCode, getEnableOnNonTextInputFieldsHotkeysOptions(isUsingEditor));
 
   const hotkey = IS_MAC_OS ? getMacHotKeyString("Shift+Mod+C") : "Shift+Ctrl+C";
 

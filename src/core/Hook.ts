@@ -1,7 +1,7 @@
 import { runInAction, action } from "mobx";
 import React, { DependencyList } from "react";
 import { Options, useHotkeys } from "react-hotkeys-hook";
-import { RefType, HotkeyCallback, HotkeysEvent, Trigger } from "react-hotkeys-hook/dist/types";
+import { RefType, HotkeyCallback, HotkeysEvent, Trigger, FormTags } from "react-hotkeys-hook/dist/types";
 import { getAppStores } from "./MainApp";
 import { Vector } from "./Path";
 import { IS_MAC_OS } from "./Util";
@@ -23,6 +23,28 @@ export function useTimer(ms: number) {
 
 export interface CustomHotkeysOptions extends Options {
   preventDefaultOnlyIfEnabled?: boolean;
+}
+
+export function getEnableOnAllInputFieldsHotkeysOptions(enabled: boolean): CustomHotkeysOptions {
+  return {
+    enabled,
+    enableOnContentEditable: true,
+    enableOnFormTags: true
+  };
+}
+
+export function getEnableOnNonTextInputFieldsHotkeysOptions(enabled: boolean): CustomHotkeysOptions {
+  const acceptedInputElements = ["button", "checkbox", "radio", "range", "reset", "submit"];
+  return {
+    preventDefaultOnlyIfEnabled: true,
+    enableOnFormTags: ["input", "INPUT"] as FormTags[],
+    // UX: It is okay to enable hotkeys on some input fields (e.g. checkbox, button, range)
+    enabled: (kvEvt: KeyboardEvent) => {
+      if (enabled === false) return false;
+      if (kvEvt.target instanceof HTMLInputElement) return acceptedInputElements.includes(kvEvt.target.type);
+      else return true;
+    }
+  };
 }
 
 export function useCustomHotkeys<T extends HTMLElement>(

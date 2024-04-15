@@ -6,6 +6,8 @@ import { ThemeProvider } from "@mui/material/styles";
 
 import { Box } from "@mui/material";
 import {
+  getEnableOnAllInputFieldsHotkeysOptions,
+  getEnableOnNonTextInputFieldsHotkeysOptions,
   useClipboardPasteText,
   useCustomHotkeys,
   useDragDropFile,
@@ -20,7 +22,6 @@ import { ConfirmationModal } from "./app/common.blocks/modal/ConfirmationModal";
 import { DragDropBackdrop } from "./app/common.blocks/DragDropBackdrop";
 import { RemovePathsAndEndControls } from "./core/Command";
 import React from "react";
-import { FormTags } from "react-hotkeys-hook/dist/types";
 import { LayoutType, getUsableLayout } from "./core/Layout";
 import { getAppThemeInfo } from "./app/Theme";
 import { LayoutProvider } from "./app/Layouts";
@@ -39,66 +40,51 @@ const Root = observer(() => {
   const isUsingEditor = !confirmation.isOpen && !modals.isOpen;
   const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(isUsingEditor, onDropFile);
 
-  const ENABLE_EXCEPT_INPUT_FIELDS = { enabled: isUsingEditor && !isDraggingFile };
+  const isEnableInputField = isUsingEditor && !isDraggingFile;
 
   // UX: Enable custom hotkeys on input fields (e.g. Mod+S) to prevent accidentally triggering the browser default
   // hotkeys when focusing them (e.g. Save page). However, we do not apply it to all hotkeys, because we want to keep
   // some browser default hotkeys on input fields (e.g. Mod+Z to undo user input) instead of triggering custom hotkeys
   // (e.g. Mod+Z to undo field change)
-  const ENABLE_ON_ALL_INPUT_FIELDS = {
-    ...ENABLE_EXCEPT_INPUT_FIELDS,
-    enableOnContentEditable: true,
-    enableOnFormTags: true
-  };
-  const ENABLE_ON_NON_TEXT_INPUT_FIELDS = {
-    ...ENABLE_EXCEPT_INPUT_FIELDS,
-    preventDefaultOnlyIfEnabled: true,
-    enableOnFormTags: ["input", "INPUT"] as FormTags[],
-    // UX: It is okay to enable hotkeys on some input fields (e.g. checkbox, button, range)
-    enabled: (kvEvt: KeyboardEvent) => {
-      if (ENABLE_EXCEPT_INPUT_FIELDS.enabled === false) return false;
-      if (kvEvt.target instanceof HTMLInputElement)
-        return ["button", "checkbox", "radio", "range", "reset", "submit"].includes(kvEvt.target.type);
-      else return true;
-    }
-  };
+  const option1 = getEnableOnAllInputFieldsHotkeysOptions(isEnableInputField);
+  const option2 = getEnableOnNonTextInputFieldsHotkeysOptions(isEnableInputField);
 
-  useCustomHotkeys("Mod+P", onNew, ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+O", onOpen, ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+S", onSave, ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Shift+Mod+S", onSaveAs, ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+D", onDownload, ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Shift+Mod+D", onDownloadAs, ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+Comma", () => modals.open(PreferencesModalSymbol), ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+X", () => clipboard.cut(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
-  useCustomHotkeys("Mod+C", () => clipboard.copy(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
+  useCustomHotkeys("Mod+P", onNew, option1);
+  useCustomHotkeys("Mod+O", onOpen, option1);
+  useCustomHotkeys("Mod+S", onSave, option1);
+  useCustomHotkeys("Shift+Mod+S", onSaveAs, option1);
+  useCustomHotkeys("Mod+D", onDownload, option1);
+  useCustomHotkeys("Shift+Mod+D", onDownloadAs, option1);
+  useCustomHotkeys("Mod+Comma", () => modals.open(PreferencesModalSymbol), option1);
+  useCustomHotkeys("Mod+X", () => clipboard.cut(), option2);
+  useCustomHotkeys("Mod+C", () => clipboard.copy(), option2);
 
-  useCustomHotkeys("Mod+Z", () => app.history.undo(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
-  useCustomHotkeys("Mod+Y,Shift+Mod+Z", () => app.history.redo(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
-  useCustomHotkeys("Mod+A", () => app.onSelectAll(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
-  useCustomHotkeys("Esc", () => app.clearSelected(), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
+  useCustomHotkeys("Mod+Z", () => app.history.undo(), option2);
+  useCustomHotkeys("Mod+Y,Shift+Mod+Z", () => app.history.redo(), option2);
+  useCustomHotkeys("Mod+A", () => app.onSelectAll(), option2);
+  useCustomHotkeys("Esc", () => app.clearSelected(), option2);
   useCustomHotkeys(
     "Shift+Mod+A",
     () => app.setSelected(app.allEntities.filter(e => !app.selectedEntities.includes(e))),
-    ENABLE_ON_ALL_INPUT_FIELDS
+    option1
   );
 
   useCustomHotkeys(
     "Mod+B",
     () => (appPreferences.isSpeedCanvasVisible = !appPreferences.isSpeedCanvasVisible),
-    ENABLE_ON_ALL_INPUT_FIELDS
+    option1
   );
   useCustomHotkeys(
     "Mod+J",
     () => (appPreferences.isRightSectionVisible = !appPreferences.isRightSectionVisible),
-    ENABLE_ON_ALL_INPUT_FIELDS
+    option1
   );
 
-  useCustomHotkeys("Mod+Add,Mod+Equal", () => (app.fieldEditor.scale += 0.5), ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+Subtract,Mod+Minus", () => (app.fieldEditor.scale -= 0.5), ENABLE_ON_ALL_INPUT_FIELDS);
-  useCustomHotkeys("Mod+0", () => app.resetFieldOffsetAndScale(), ENABLE_ON_ALL_INPUT_FIELDS);
+  useCustomHotkeys("Mod+Add,Mod+Equal", () => (app.fieldEditor.scale += 0.5), option1);
+  useCustomHotkeys("Mod+Subtract,Mod+Minus", () => (app.fieldEditor.scale -= 0.5), option1);
+  useCustomHotkeys("Mod+0", () => app.resetFieldOffsetAndScale(), option1);
 
-  useCustomHotkeys("R", () => (app.gc.showRobot = !app.gc.showRobot), ENABLE_ON_NON_TEXT_INPUT_FIELDS);
+  useCustomHotkeys("R", () => (app.gc.showRobot = !app.gc.showRobot), option2);
 
   useCustomHotkeys(
     "Backspace,Delete",
@@ -106,7 +92,7 @@ const Root = observer(() => {
       const command = new RemovePathsAndEndControls(app.paths, app.selectedEntityIds);
       app.history.execute(`Remove paths and end controls`, command);
     },
-    ENABLE_ON_NON_TEXT_INPUT_FIELDS
+    option2
   );
 
   useUnsavedChangesPrompt();
