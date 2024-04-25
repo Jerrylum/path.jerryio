@@ -1,6 +1,7 @@
-import { Box } from "@mui/material";
+import { Box, IconButton } from "@mui/material";
+import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { EndControl } from "@core/Path";
+import { AnyControl, Control, EndControl } from "@core/Path";
 import { ObserverInput, clampQuantity } from "@app/component.blocks/ObserverInput";
 import { Quantity, UnitOfAngle, UnitOfLength } from "@core/Unit";
 import { UpdatePathTreeItems } from "@core/Command";
@@ -8,13 +9,55 @@ import { getAppStores } from "@core/MainApp";
 import { NumberUOA, NumberUOL } from "@token/Tokens";
 import { parseFormula } from "@core/Util";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
+import FlipIcon from "@mui/icons-material/Flip";
+import RotateLeftIcon from "@mui/icons-material/RotateLeft";
+import RotateRightIcon from "@mui/icons-material/RotateRight";
 
 import "./ControlAccordion.scss";
 import { PanelContainer } from "./Panel";
 import { LayoutType } from "@core/Layout";
+import { boundHeading } from "@src/core/Calculation";
 
 const ControlPanelBody = observer((props: {}) => {
   const { app } = getAppStores();
+
+  const isDisabled = app.selectedControl === undefined;
+
+  const flipByAxisX = function () {
+    const selectedControls = app.selectedEntities.filter(
+      entity => entity instanceof EndControl || entity instanceof Control
+    ) as AnyControl[];
+
+    if (selectedControls.length === 0) return;
+
+    const updates = selectedControls.map(control => {
+      if (control instanceof EndControl) {
+        return { y: control.y * -1, heading: boundHeading(90 + (90 - control.heading)) };
+      } else {
+        return { y: control.y * -1 };
+      }
+    }) as Partial<AnyControl>[];
+
+    app.history.execute("Flip by Axis X", new UpdatePathTreeItems(selectedControls, updates));
+  };
+
+  const flipByAxisY = function () {
+    const selectedControls = app.selectedEntities.filter(
+      entity => entity instanceof EndControl || entity instanceof Control
+    ) as AnyControl[];
+
+    if (selectedControls.length === 0) return;
+
+    const updates = selectedControls.map(control => {
+      if (control instanceof EndControl) {
+        return { x: control.x * -1, heading: boundHeading(180 + (180 - control.heading)) };
+      } else {
+        return { x: control.x * -1 };
+      }
+    }) as Partial<AnyControl>[];
+
+    app.history.execute("Flip by Axis Y", new UpdatePathTreeItems(selectedControls, updates));
+  };
 
   return (
     <Box id="ControlAccordion">
@@ -113,6 +156,40 @@ const ControlPanelBody = observer((props: {}) => {
           }}
           numeric
         />
+      </Box>
+      <Box className="Panel-FlexBox" sx={{ marginTop: "8px" }}>
+        <IconButton
+          edge="end"
+          size="small"
+          className="ControlAccordion-ActionButton"
+          disabled={isDisabled}
+          onClick={action(flipByAxisY)}>
+          <FlipIcon />
+        </IconButton>
+        <IconButton
+          edge="end"
+          size="small"
+          className="ControlAccordion-ActionButton"
+          disabled={isDisabled}
+          onClick={action(flipByAxisX)}>
+          <FlipIcon sx={{ transform: "rotate(90deg)" }} />
+        </IconButton>
+        {/* <IconButton
+          edge="end"
+          size="small"
+          className="ControlAccordion-ActionButton"
+          disabled={isDisabled}
+          onClick={action(() => {})}>
+          <RotateLeftIcon />
+        </IconButton>
+        <IconButton
+          edge="end"
+          size="small"
+          className="ControlAccordion-ActionButton"
+          disabled={isDisabled}
+          onClick={action(() => {})}>
+          <RotateRightIcon />
+        </IconButton> */}
       </Box>
     </Box>
   );
