@@ -2,7 +2,7 @@ import { makeAutoObservable, action } from "mobx";
 import { Box, Typography, Slider } from "@mui/material";
 import { Expose, Exclude, Type } from "class-transformer";
 import { RangeSlider } from "@app/component.blocks/RangeSlider";
-import { AddKeyframe, UpdateProperties } from "@core/Command";
+import { AddKeyframe, UpdateProperties, UpdateInstancesPropertiesExtended } from "@core/Command";
 import { MainApp, getAppStores } from "@core/MainApp";
 import { BentRateApplicationDirection, Path, Segment, SpeedKeyframe } from "@core/Path";
 import { EditableNumberRange, NumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "@core/Util";
@@ -323,6 +323,11 @@ export class LemLibFormatV1_0 implements Format {
     if (this.isInit) return;
     this.isInit = true;
 
+    type PatchWithName = { name: string };
+    const isUpdatePathName = function (target: unknown, patch: Partial<unknown>): patch is PatchWithName {
+      return target instanceof Path && "name" in patch;
+    };
+
     this.disposers.push(
       app.history.addEventListener("beforeExecution", event => {
         if (event.isCommandInstanceOf(AddKeyframe)) {
@@ -330,12 +335,15 @@ export class LemLibFormatV1_0 implements Format {
           if (keyframe instanceof SpeedKeyframe) {
             keyframe.followBentRate = true;
           }
-        } else if (event.isCommandInstanceOf(UpdateProperties)) {
-          const target = event.command.target;
+        } else if (event.isCommandInstanceOf(UpdateInstancesPropertiesExtended)) {
+          const targets = event.command.targets;
           const newValues = event.command.newValues;
-          if (target instanceof Path && "name" in newValues) {
-            newValues.name = newValues.name.replace(/[^\x00-\x7F]/g, ""); // eslint-disable-line no-control-regex
-          }
+          newValues.forEach((value, idx) => {
+            const target = targets[idx];
+            if (isUpdatePathName(target, value)) {
+              value.name = value.name.replace(/[^\x00-\x7F]/g, ""); // eslint-disable-line no-control-regex
+            }
+          });
         }
       })
     );
