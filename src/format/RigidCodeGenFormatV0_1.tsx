@@ -24,7 +24,6 @@ import { ObserverEnumSelect } from "@app/component.blocks/ObserverEnumSelect";
 import { enqueueSuccessSnackbar, enqueueErrorSnackbar } from "@app/Notice";
 import { getEnableOnNonTextInputFieldsHotkeysOptions, useCustomHotkeys } from "@core/Hook";
 import { observer } from "mobx-react-lite";
-import { FormTags } from "react-hotkeys-hook/dist/types";
 import { Logger } from "@core/Logger";
 import { BackQuoteString, CodePointBuffer, NumberT } from "@src/token/Tokens";
 import { ObserverInput } from "@src/app/component.blocks/ObserverInput";
