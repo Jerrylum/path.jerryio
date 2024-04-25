@@ -347,16 +347,16 @@ export type ReadonlyCommand<T extends Command> = Omit<Readonly<T>, "execute" | "
  * ALGO: Assume execute() function are called before undo(), redo() and other functions defined in the class
  */
 
-export class UpdateInstancesProperties<TTarget> implements CancellableCommand, MergeableCommand {
+export class UpdateInstancesPropertiesExtended<TTarget> implements CancellableCommand, MergeableCommand {
   protected changed = false;
   protected _previousValue: Partial<TTarget>[] = [];
 
-  constructor(public targets: TTarget[], public newValues: Partial<TTarget>) {}
+  constructor(public targets: TTarget[], public newValues: Partial<TTarget>[]) {}
 
   execute(): boolean {
     this._previousValue = [];
     for (let i = 0; i < this.targets.length; i++) {
-      const { changed, previousValues } = this.updatePropertiesForTarget(this.targets[i], this.newValues);
+      const { changed, previousValues } = this.updatePropertiesForTarget(this.targets[i], this.newValues[i]);
       this.changed = this.changed || changed;
       this._previousValue.push(previousValues);
     }
@@ -374,7 +374,7 @@ export class UpdateInstancesProperties<TTarget> implements CancellableCommand, M
     this.execute();
   }
 
-  merge(latest: UpdateInstancesProperties<TTarget>): boolean {
+  merge(latest: UpdateInstancesPropertiesExtended<TTarget>): boolean {
     // ALGO: Assume that the targets are the same and both commands are executed
     for (let i = 0; i < this.targets.length; i++) {
       this._previousValue[i] = {
@@ -406,15 +406,20 @@ export class UpdateInstancesProperties<TTarget> implements CancellableCommand, M
   }
 }
 
-export class UpdateProperties<TTarget> extends UpdateInstancesProperties<TTarget> {
-  constructor(public target: TTarget, public newValues: Partial<TTarget>) {
-    super([target], newValues);
+export class UpdateProperties<TTarget> extends UpdateInstancesPropertiesExtended<TTarget> {
+  constructor(public target: TTarget, newValues: Partial<TTarget>) {
+    super([target], [newValues]);
   }
 }
 
-export class UpdatePathTreeItems extends UpdateInstancesProperties<PathTreeItem> implements UpdatePathTreeItemsCommand {
-  constructor(public targets: PathTreeItem[], public newValues: Partial<PathTreeItem>) {
-    super(targets, newValues);
+export class UpdatePathTreeItems
+  extends UpdateInstancesPropertiesExtended<PathTreeItem>
+  implements UpdatePathTreeItemsCommand
+{
+  constructor(targets: PathTreeItem[], newValues: Partial<PathTreeItem>);
+  constructor(targets: PathTreeItem[], newValues: Partial<PathTreeItem>[]);
+  constructor(public targets: PathTreeItem[], newValues: Partial<PathTreeItem> | Partial<PathTreeItem>[]) {
+    super(targets, Array.isArray(newValues) ? newValues : Array(targets.length).fill(newValues));
   }
 
   get updatedItems(): readonly PathTreeItem[] {
