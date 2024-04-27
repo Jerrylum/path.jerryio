@@ -1,4 +1,4 @@
-import { Box, IconButton } from "@mui/material";
+import { Box, IconButton, Tooltip } from "@mui/material";
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { AnyControl, Control, EndControl } from "@core/Path";
@@ -182,38 +182,46 @@ const ControlPanelBody = observer((props: {}) => {
         />
       </Box>
       <Box className="Panel-FlexBox" sx={{ marginTop: "8px" }}>
-        <IconButton
-          edge="end"
-          size="small"
-          className="ControlAccordion-ActionButton"
-          disabled={isDisabled}
-          onClick={action(flipByAxisY)}>
-          <FlipIcon />
-        </IconButton>
-        <IconButton
-          edge="end"
-          size="small"
-          className="ControlAccordion-ActionButton"
-          disabled={isDisabled}
-          onClick={action(flipByAxisX)}>
-          <FlipIcon sx={{ transform: "rotate(90deg)" }} />
-        </IconButton>
-        <IconButton
-          edge="end"
-          size="small"
-          className="ControlAccordion-ActionButton"
-          disabled={isDisabled}
-          onClick={action(rotate.bind(undefined, 90))}>
-          <RotateLeftIcon />
-        </IconButton>
-        <IconButton
-          edge="end"
-          size="small"
-          className="ControlAccordion-ActionButton"
-          disabled={isDisabled}
-          onClick={action(rotate.bind(undefined, -90))}>
-          <RotateRightIcon />
-        </IconButton>
+        <Tooltip title="Rotate Right 90°">
+          <IconButton
+            edge="end"
+            size="small"
+            className="ControlAccordion-ActionButton"
+            disabled={isDisabled}
+            onClick={action(rotate.bind(undefined, -90))}>
+            <RotateRightIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Rotate Left 90°">
+          <IconButton
+            edge="end"
+            size="small"
+            className="ControlAccordion-ActionButton"
+            disabled={isDisabled}
+            onClick={action(rotate.bind(undefined, 90))}>
+            <RotateLeftIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Flip Horizontal">
+          <IconButton
+            edge="end"
+            size="small"
+            className="ControlAccordion-ActionButton"
+            disabled={isDisabled}
+            onClick={action(flipByAxisY)}>
+            <FlipIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Flip Vertical">
+          <IconButton
+            edge="end"
+            size="small"
+            className="ControlAccordion-ActionButton"
+            disabled={isDisabled}
+            onClick={action(flipByAxisX)}>
+            <FlipIcon sx={{ transform: "rotate(90deg)" }} />
+          </IconButton>
+        </Tooltip>
       </Box>
     </Box>
   );
