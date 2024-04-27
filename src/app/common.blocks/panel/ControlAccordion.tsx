@@ -16,7 +16,8 @@ import RotateRightIcon from "@mui/icons-material/RotateRight";
 import "./ControlAccordion.scss";
 import { PanelContainer } from "./Panel";
 import { LayoutType } from "@core/Layout";
-import { boundHeading } from "@src/core/Calculation";
+import { boundHeading, findCentralPoint } from "@src/core/Calculation";
+import { Coordinate, CoordinateWithHeading, EuclideanTransformation } from "@src/core/Coordinate";
 
 const ControlPanelBody = observer((props: {}) => {
   const { app } = getAppStores();
@@ -38,7 +39,7 @@ const ControlPanelBody = observer((props: {}) => {
       }
     }) as Partial<AnyControl>[];
 
-    app.history.execute("Flip by Axis X", new UpdatePathTreeItems(selectedControls, updates));
+    app.history.execute("Flip by Axis X", new UpdatePathTreeItems(selectedControls, updates), 0);
   };
 
   const flipByAxisY = function () {
@@ -56,7 +57,30 @@ const ControlPanelBody = observer((props: {}) => {
       }
     }) as Partial<AnyControl>[];
 
-    app.history.execute("Flip by Axis Y", new UpdatePathTreeItems(selectedControls, updates));
+    app.history.execute("Flip by Axis Y", new UpdatePathTreeItems(selectedControls, updates), 0);
+  };
+
+  const rotate = function (angle: number) {
+    const selectedControls = app.selectedEntities.filter(
+      entity => entity instanceof EndControl || entity instanceof Control
+    ) as AnyControl[];
+
+    if (selectedControls.length === 0) return;
+
+    const central = findCentralPoint(selectedControls)!;
+    const t = new EuclideanTransformation({ ...central, heading: angle });
+
+    const updates = selectedControls.map(control => {
+      if (control instanceof EndControl) {
+        const { x, y, heading } = t.transform(control) as CoordinateWithHeading;
+        return { x: central.x + x, y: central.y + y, heading: heading };
+      } else {
+        const { x, y } = t.transform(control) as Coordinate;
+        return { x: central.x + x, y: central.y + y };
+      }
+    });
+
+    app.history.execute("Rotate controls right", new UpdatePathTreeItems(selectedControls, updates), 0);
   };
 
   return (
@@ -174,12 +198,12 @@ const ControlPanelBody = observer((props: {}) => {
           onClick={action(flipByAxisX)}>
           <FlipIcon sx={{ transform: "rotate(90deg)" }} />
         </IconButton>
-        {/* <IconButton
+        <IconButton
           edge="end"
           size="small"
           className="ControlAccordion-ActionButton"
           disabled={isDisabled}
-          onClick={action(() => {})}>
+          onClick={action(rotate.bind(undefined, 90))}>
           <RotateLeftIcon />
         </IconButton>
         <IconButton
@@ -187,9 +211,9 @@ const ControlPanelBody = observer((props: {}) => {
           size="small"
           className="ControlAccordion-ActionButton"
           disabled={isDisabled}
-          onClick={action(() => {})}>
+          onClick={action(rotate.bind(undefined, -90))}>
           <RotateRightIcon />
-        </IconButton> */}
+        </IconButton>
       </Box>
     </Box>
   );
