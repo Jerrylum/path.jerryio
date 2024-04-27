@@ -736,3 +736,24 @@ export function findLinesIntersection(
   const y = (tanB * tanD * (a.x - c.x) - tanD * a.y + tanB * c.y) / (tanB - tanD);
   return new Vector(x, y);
 }
+
+export function findCentralPoint(vectors: Vector[]): Vector | undefined {
+  if (vectors.length === 0) return undefined;
+
+  // find bounding box
+
+  let minX = vectors[0].x;
+  let minY = vectors[0].y;
+  let maxX = vectors[0].x;
+  let maxY = vectors[0].y;
+
+  for (let i = 1; i < vectors.length; i++) {
+    const vector = vectors[i];
+    if (vector.x < minX) minX = vector.x;
+    if (vector.x > maxX) maxX = vector.x;
+    if (vector.y < minY) minY = vector.y;
+    if (vector.y > maxY) maxY = vector.y;
+  }
+
+  return new Vector((minX + maxX) / 2, (minY + maxY) / 2);
+}

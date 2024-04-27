@@ -13,7 +13,8 @@ import {
   fromAngleInRadianToHeadingInDegree,
   boundHeading,
   boundAngle,
-  getDiscretePoints
+  getDiscretePoints,
+  findCentralPoint
 } from "./Calculation";
 import { Control, EndControl, Path, Segment, Vector } from "./Path";
 import { Quantity, UnitOfLength } from "./Unit";
@@ -470,4 +471,19 @@ test("findLinesIntersection", () => {
 
   // write test cases
   ans = findLinesIntersection(new Vector(0, 0), 0, new Vector(2, 0), 0);
+});
+
+test("findCentralPoint", () => {
+  expect(findCentralPoint([])).toBeUndefined();
+  expect(findCentralPoint([new Vector(0, 0)])).toMatchObject({ x: 0, y: 0 });
+  expect(findCentralPoint([new Vector(3, 4)])).toMatchObject({ x: 3, y: 4 });
+  expect(findCentralPoint([new Vector(0, 0), new Vector(0, 0)])).toMatchObject({ x: 0, y: 0 });
+  expect(findCentralPoint([new Vector(0, 0), new Vector(2, 0)])).toMatchObject({ x: 1, y: 0 });
+  expect(findCentralPoint([new Vector(0, 0), new Vector(2, 2)])).toMatchObject({ x: 1, y: 1 });
+  expect(findCentralPoint([new Vector(0, 0), new Vector(0, 2)])).toMatchObject({ x: 0, y: 1 });
+  expect(findCentralPoint([new Vector(0, 0), new Vector(2, 0), new Vector(2, 2)])).toMatchObject({ x: 1, y: 1 });
+  expect(findCentralPoint([new Vector(0, 0), new Vector(2, 0), new Vector(2, 2), new Vector(0, 2)])).toMatchObject({
+    x: 1,
+    y: 1
+  });
 });
