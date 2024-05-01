@@ -300,7 +300,7 @@ export function ValidateSignature(validationOptions?: ValidationOptions) {
           if (obj instanceof FieldImageSignatureAndOrigin) {
             const origin = obj.origin;
 
-            if (origin instanceof FieldImageBuiltInOrigin) return obj.displayName === obj.signature;
+            if (origin instanceof FieldImageBuiltInOrigin) return true;
             if (origin instanceof FieldImageExternalOrigin) {
               const hash = new Hash();
               hash.update(new TextEncoder().encode(`${origin.heightInMM} ${origin.location}`));
