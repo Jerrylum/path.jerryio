@@ -420,6 +420,26 @@ export class AssetManager {
 const builtInAssets: FieldImageAsset<FieldImageOriginType>[] = [
   // 3683 = 145*2.54*10 ~= 3676.528, the size of the field perimeter in Fusion 360
   createBuiltInFieldImage(
+    "V5RC 2025 - High Stakes",
+    3690,
+    "/precache/V5RC-HighStakes-H2H-TileColor66_71-2000x2000.png"
+  ),
+  createBuiltInFieldImage(
+    "V5RC 2025 - High Stakes (Skills)",
+    3690,
+    "/static/V5RC-HighStakes-Skills-TileColor66_71-2000x2000.png"
+  ),
+  createBuiltInFieldImage(
+    "VURC 2025 - High Stakes",
+    3690,
+    "/static/VURC-HighStakes-H2H-TileColor66_71-2000x2000.png" //
+  ),
+  createBuiltInFieldImage(
+    "VURC 2025 - High Stakes (Skills)",
+    3690,
+    "/static/VURC-HighStakes-Skills-TileColor66_71-2000x2000.png"
+  ),
+  createBuiltInFieldImage(
     "V5RC 2024 - Over Under",
     3690,
     "/static/V5RC-OverUnder-H2H-TileColor66_71-2000x2000.png",
