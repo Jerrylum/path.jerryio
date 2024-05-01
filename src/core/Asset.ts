@@ -208,10 +208,11 @@ export class FieldImageLocalAsset extends FieldImageAsset<FieldImageOriginType.L
 export function createBuiltInFieldImage(
   displayName: string,
   heightInMM: number,
-  location: string
+  location: string,
+  signature: string = displayName
 ): FieldImageAsset<FieldImageOriginType.BuiltIn> {
   // displayName is the signature
-  return new FieldImageAsset(FieldImageOriginType.BuiltIn, displayName, heightInMM, location, displayName);
+  return new FieldImageAsset(FieldImageOriginType.BuiltIn, displayName, heightInMM, location, signature);
 }
 
 export async function createExternalFieldImage(
@@ -418,18 +419,30 @@ export class AssetManager {
 
 const builtInAssets: FieldImageAsset<FieldImageOriginType>[] = [
   // 3683 = 145*2.54*10 ~= 3676.528, the size of the field perimeter in Fusion 360
-  createBuiltInFieldImage("VRC 2024 - Over Under", 3690, builtInFieldImage2024),
   createBuiltInFieldImage(
-    "VRC 2024 - Over Under (Skill)",
+    "V5RC 2024 - Over Under",
     3690,
-    "/static/VRC-OverUnder-Skill-TileColor66_71-2000x2000.png"
+    "/static/V5RC-OverUnder-H2H-TileColor66_71-2000x2000.png",
+    "VRC 2024 - Over Under"
   ),
   createBuiltInFieldImage(
-    "VRC 2024 - Over Under (VEX U)",
+    "V5RC 2024 - Over Under (Skills)",
     3690,
-    "/static/VRC-OverUnder-VEXU-TileColor66_71-2000x2000.png"
+    "/static/V5RC-OverUnder-Skills-TileColor66_71-2000x2000.png",
+    "VRC 2024 - Over Under (Skill)"
   ),
-  createBuiltInFieldImage("VRC Field Perimeter", 3690, builtInFieldPerimeter),
+  createBuiltInFieldImage(
+    "VURC 2024 - Over Under",
+    3690,
+    "/static/VURC-OverUnder-H2H-TileColor66_71-2000x2000.png",
+    "VRC 2024 - Over Under (VEX U)"
+  ),
+  createBuiltInFieldImage(
+    "V5RC Field Perimeter",
+    3690,
+    "/precache/V5RC-FieldPerimeter-Plain-TileColor66_71-2000x2000.png",
+    "VRC Field Perimeter"
+  ),
   createBuiltInFieldImage("VIQC 2024 - Full Volume", 1920, "/static/VIQC-FullVolume-8ft6ft-2000x1517.png"),
   createBuiltInFieldImage("VIQC Field Perimeter 8ft×6ft", 1920, "/static/VIQC-FieldPerimeter-8ft6ft-2000x1517.png")
 ];
