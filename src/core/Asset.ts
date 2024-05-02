@@ -13,8 +13,6 @@ import { Hash } from "fast-sha256";
 import { makeAutoObservable, makeObservable, observable } from "mobx";
 import { ValidateNumber, hex, makeId, TextEncoder } from "./Util";
 import localforage from "localforage";
-import builtInFieldImage2024 from "../static/VRC-OverUnder-Default-TileColor66_71-2000x2000.png";
-import builtInFieldPerimeter from "../static/VRC-FieldPerimeter-TileColor66_71-2000x2000.png";
 
 export const DEFAULT_ACCEPT_FILE_EXT = [".png", ".jpg", ".jpeg", ".gif"] as const;
 
