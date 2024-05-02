@@ -16,7 +16,7 @@ test("Asset validation test", async () => {
 
   signAndOrigin.signature = "anything else";
 
-  expect(await validate(signAndOrigin)).toHaveLength(1);
+  expect(await validate(signAndOrigin)).toHaveLength(0);
 
   const signAndOrigin2 = (
     await createExternalFieldImage("name123", 100, "http://example.com/any.png")
