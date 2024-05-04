@@ -1,14 +1,6 @@
 import { observer } from "mobx-react-lite";
 import { getAppStores } from "@core/MainApp";
-import { Box, BoxProps, Card, Typography } from "@mui/material";
-import classNames from "classnames";
-import { LayoutType } from "@core/Layout";
-import { FieldCanvasElement } from "./field-canvas/FieldCanvasElement";
-import { getAllPanelContainers } from "../Layouts";
-import { MenuAccordion } from "./panel/MenuAccordion";
-import { PanelStaticContainer, PanelAccordionContainer } from "./panel/Panel";
-import { PathTreeAccordion } from "./panel/PathTreeAccordion";
-import { SpeedCanvasElement } from "./speed-canvas/SpeedCanvasElement";
+import { Box, BoxProps, Typography } from "@mui/material";
 
 export const TravelDistancePresentation = observer(() => {
   const { app } = getAppStores();
@@ -55,39 +47,5 @@ export const MousePositionPresentation = observer((props: BoxProps) => {
       )}
       <TravelDistancePresentation />
     </Box>
-  );
-});
-
-export const ClassisLayout = observer(() => {
-  const { appPreferences } = getAppStores();
-
-  const containers = getAllPanelContainers(LayoutType.Classic);
-
-  return (
-    <>
-      <Box id="LeftSection">
-        <MenuAccordion />
-        <PanelStaticContainer {...PathTreeAccordion({ layout: LayoutType.Classic })} />
-      </Box>
-
-      <Box id="MiddleSection" className={classNames({ "full-height": !appPreferences.isSpeedCanvasVisible })}>
-        <Card id="FieldCanvas-Container">
-          <svg viewBox="0 0 1 1"></svg>
-          <FieldCanvasElement />
-        </Card>
-        {appPreferences.isSpeedCanvasVisible && (
-          <Card id="SpeedCanvas-Container">
-            <SpeedCanvasElement extended={false} />
-          </Card>
-        )}
-      </Box>
-      {appPreferences.isRightSectionVisible && (
-        <Box id="RightSection">
-          {containers.map(panelContainer => (
-            <PanelAccordionContainer key={panelContainer.id} {...panelContainer} />
-          ))}
-        </Box>
-      )}
-    </>
   );
 });
