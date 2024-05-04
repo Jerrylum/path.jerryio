@@ -1,11 +1,11 @@
 import { Typography } from "@mui/material";
 import { getAppStores } from "@core/MainApp";
 import { LayoutType } from "@core/Layout";
-import { PanelContainer } from "./Panel";
+import { PanelContainer, PanelContainerBuilderProps } from "./Panel";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
 import "./PathAccordion.scss";
 
-export const PathConfigAccordion = (props: { layout: LayoutType }): PanelContainer => {
+export const PathConfigAccordion = (props: PanelContainerBuilderProps): PanelContainer => {
   const { app } = getAppStores();
 
   const pc = app.selectedPath?.pc;

@@ -14,7 +14,7 @@ import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import RotateRightIcon from "@mui/icons-material/RotateRight";
 
 import "./ControlAccordion.scss";
-import { PanelContainer } from "./Panel";
+import { PanelContainer, PanelContainerBuilderProps } from "./Panel";
 import { LayoutType } from "@core/Layout";
 import { boundHeading, findCentralPoint } from "@src/core/Calculation";
 import { Coordinate, CoordinateWithHeading, EuclideanTransformation } from "@src/core/Coordinate";
@@ -227,7 +227,7 @@ const ControlPanelBody = observer((props: {}) => {
   );
 });
 
-export const ControlAccordion = (props: { layout: LayoutType }): PanelContainer => {
+export const ControlAccordion = (props: PanelContainerBuilderProps): PanelContainer => {
   return {
     id: "ControlAccordion",
     header: "Control",

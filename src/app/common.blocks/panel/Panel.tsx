@@ -1,6 +1,7 @@
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { AccordionSummary, Box, AccordionDetails, Card, Accordion } from "@mui/material";
 import { observer } from "mobx-react-lite";
+import { LayoutType } from "@src/core/Layout";
 import "./Panel.scss";
 
 export interface PanelContainer {
@@ -11,6 +12,12 @@ export interface PanelContainer {
   bodyProps?: { className?: string };
   icon: React.ReactNode;
 }
+
+export interface PanelContainerBuilderProps {
+  layout: LayoutType;
+}
+
+export type PanelContainerBuilder = (props: PanelContainerBuilderProps) => PanelContainer;
 
 export interface PanelStaticContainerProps extends PanelContainer {
   containerProps?: React.ComponentProps<typeof Card>;
