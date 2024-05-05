@@ -13,7 +13,7 @@ import FlipIcon from "@mui/icons-material/Flip";
 import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import RotateRightIcon from "@mui/icons-material/RotateRight";
 
-import "./ControlAccordion.scss";
+import "./ControlPanel.scss";
 import { PanelInstance, PanelInstanceBuilderProps } from "./Panel";
 import { LayoutType } from "@core/Layout";
 import { boundHeading, findCentralPoint } from "@src/core/Calculation";
@@ -84,7 +84,7 @@ const ControlPanelBody = observer((props: {}) => {
   };
 
   return (
-    <Box id="ControlAccordion">
+    <Box id="ControlPanel">
       <Box className="Panel-FlexBox">
         <ObserverInput
           label="X"
@@ -186,7 +186,7 @@ const ControlPanelBody = observer((props: {}) => {
           <IconButton
             edge="end"
             size="small"
-            className="ControlAccordion-ActionButton"
+            className="ControlPanel-ActionButton"
             disabled={isDisabled}
             onClick={action(rotate.bind(undefined, -90))}>
             <RotateRightIcon />
@@ -196,7 +196,7 @@ const ControlPanelBody = observer((props: {}) => {
           <IconButton
             edge="end"
             size="small"
-            className="ControlAccordion-ActionButton"
+            className="ControlPanel-ActionButton"
             disabled={isDisabled}
             onClick={action(rotate.bind(undefined, 90))}>
             <RotateLeftIcon />
@@ -206,7 +206,7 @@ const ControlPanelBody = observer((props: {}) => {
           <IconButton
             edge="end"
             size="small"
-            className="ControlAccordion-ActionButton"
+            className="ControlPanel-ActionButton"
             disabled={isDisabled}
             onClick={action(flipByAxisY)}>
             <FlipIcon />
@@ -216,7 +216,7 @@ const ControlPanelBody = observer((props: {}) => {
           <IconButton
             edge="end"
             size="small"
-            className="ControlAccordion-ActionButton"
+            className="ControlPanel-ActionButton"
             disabled={isDisabled}
             onClick={action(flipByAxisX)}>
             <FlipIcon sx={{ transform: "rotate(90deg)" }} />
@@ -227,9 +227,9 @@ const ControlPanelBody = observer((props: {}) => {
   );
 });
 
-export const ControlAccordion = (props: PanelInstanceBuilderProps): PanelInstance => {
+export const ControlPanel = (props: PanelInstanceBuilderProps): PanelInstance => {
   return {
-    id: "ControlAccordion",
+    id: "ControlPanel",
     header: "Control",
     children: <ControlPanelBody />,
     icon: <FiberManualRecordIcon fontSize="large" />
