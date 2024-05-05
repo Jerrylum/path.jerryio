@@ -16,7 +16,7 @@ import { AssetManagerModalSymbol } from "../modal/AssetManagerModal";
 import { LayoutType } from "@core/Layout";
 import { PanelInstance, PanelInstanceBuilderProps } from "./Panel";
 import TuneIcon from "@mui/icons-material/Tune";
-import "./GeneralConfigAccordion.scss";
+import "./GeneralConfigPanel.scss";
 
 const GeneralConfigPanelBody = observer((props: {}) => {
   const { app, assetManager, confirmation, modals, appPreferences } = getAppStores();
@@ -189,9 +189,9 @@ const GeneralConfigPanelBody = observer((props: {}) => {
   );
 });
 
-export const GeneralConfigAccordion = (props: PanelInstanceBuilderProps): PanelInstance => {
+export const GeneralConfigPanel = (props: PanelInstanceBuilderProps): PanelInstance => {
   return {
-    id: "GeneralConfigAccordion",
+    id: "GeneralConfigPanel",
     header: "Configuration",
     children: <GeneralConfigPanelBody />,
     icon: <TuneIcon fontSize="large" />
