@@ -1,11 +1,11 @@
 import { Typography } from "@mui/material";
 import { getAppStores } from "@core/MainApp";
 import { LayoutType } from "@core/Layout";
-import { PanelInstance, PanelInstanceBuilderProps } from "./Panel";
+import { PanelInstance, PanelBuilderProps } from "./Panel";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
 import "./PathConfigPanel.scss";
 
-export const PathConfigPanel = (props: PanelInstanceBuilderProps): PanelInstance => {
+export const PathConfigPanel = (props: PanelBuilderProps): PanelInstance => {
   const { app } = getAppStores();
 
   const pc = app.selectedPath?.pc;

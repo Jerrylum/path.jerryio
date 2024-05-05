@@ -13,11 +13,11 @@ export interface PanelInstance {
   icon: React.ReactNode;
 }
 
-export interface PanelInstanceBuilderProps {
+export interface PanelBuilderProps {
   layout: LayoutType;
 }
 
-export type PanelInstanceBuilder = (props: PanelInstanceBuilderProps) => PanelInstance;
+export type PanelBuilder = (props: PanelBuilderProps) => PanelInstance;
 
 export interface PanelStaticInstanceProps extends PanelInstance {
   containerProps?: React.ComponentProps<typeof Card>;

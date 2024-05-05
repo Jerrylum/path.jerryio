@@ -14,7 +14,7 @@ import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import RotateRightIcon from "@mui/icons-material/RotateRight";
 
 import "./ControlConfigPanel.scss";
-import { PanelInstance, PanelInstanceBuilderProps } from "./Panel";
+import { PanelInstance, PanelBuilderProps } from "./Panel";
 import { LayoutType } from "@core/Layout";
 import { boundHeading, findCentralPoint } from "@src/core/Calculation";
 import { Coordinate, CoordinateWithHeading, EuclideanTransformation } from "@src/core/Coordinate";
@@ -227,7 +227,7 @@ const ControlConfigPanelBody = observer((props: {}) => {
   );
 });
 
-export const ControlConfigPanel = (props: PanelInstanceBuilderProps): PanelInstance => {
+export const ControlConfigPanel = (props: PanelBuilderProps): PanelInstance => {
   return {
     id: "ControlConfigPanel",
     header: "Control",
