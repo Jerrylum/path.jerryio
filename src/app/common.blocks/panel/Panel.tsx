@@ -4,7 +4,7 @@ import { observer } from "mobx-react-lite";
 import { LayoutType } from "@src/core/Layout";
 import "./Panel.scss";
 
-export interface PanelContainer {
+export interface PanelInstance {
   id: string;
   header: React.ReactNode;
   headerProps?: { className?: string };
@@ -13,19 +13,19 @@ export interface PanelContainer {
   icon: React.ReactNode;
 }
 
-export interface PanelContainerBuilderProps {
+export interface PanelInstanceBuilderProps {
   layout: LayoutType;
 }
 
-export type PanelContainerBuilder = (props: PanelContainerBuilderProps) => PanelContainer;
+export type PanelInstanceBuilder = (props: PanelInstanceBuilderProps) => PanelInstance;
 
-export interface PanelStaticContainerProps extends PanelContainer {
+export interface PanelStaticInstanceProps extends PanelInstance {
   containerProps?: React.ComponentProps<typeof Card>;
   headerProps?: React.ComponentProps<typeof Card>;
   bodyProps?: React.ComponentProps<typeof Card>;
 }
 
-export const PanelStaticContainer = observer((props: PanelStaticContainerProps) => {
+export const PanelStaticInstance = observer((props: PanelStaticInstanceProps) => {
   return (
     <Card {...props.containerProps}>
       <AccordionSummary {...props.headerProps} className="Panel-Header">
@@ -36,13 +36,13 @@ export const PanelStaticContainer = observer((props: PanelStaticContainerProps) 
   );
 });
 
-export interface PanelAccordionContainerProps extends PanelContainer {
+export interface PanelAccordionInstanceProps extends PanelInstance {
   containerProps?: React.ComponentProps<typeof Accordion>;
   headerProps?: React.ComponentProps<typeof AccordionSummary>;
   bodyProps?: React.ComponentProps<typeof AccordionDetails>;
 }
 
-export const PanelAccordionContainer = observer((props: PanelAccordionContainerProps) => {
+export const PanelAccordionInstance = observer((props: PanelAccordionInstanceProps) => {
   return (
     <Accordion defaultExpanded {...props.containerProps}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />} className="Panel-Header" {...props.headerProps}>
@@ -53,13 +53,13 @@ export const PanelAccordionContainer = observer((props: PanelAccordionContainerP
   );
 });
 
-export interface PanelFloatingContainerProps extends PanelContainer {
+export interface PanelFloatingInstanceProps extends PanelInstance {
   containerProps?: React.ComponentProps<typeof Box>;
   headerProps?: React.ComponentProps<typeof Box>;
   bodyProps?: React.ComponentProps<typeof Box>;
 }
 
-export const PanelFloatingContainer = observer((props: PanelFloatingContainerProps) => {
+export const PanelFloatingInstance = observer((props: PanelFloatingInstanceProps) => {
   return (
     <Box className="FloatingPanel" {...props.containerProps}>
       <Box className="Panel-Header FloatingPanel-Header" {...props.headerProps}>

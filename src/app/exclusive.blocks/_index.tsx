@@ -15,7 +15,7 @@ import { FieldCanvasElement } from "../common.blocks/field-canvas/FieldCanvasEle
 import { getAllPanelContainers } from "../Layouts";
 import { MousePositionPresentation } from "../common.blocks/MousePositionPresentation";
 import { MenuMainDropdown } from "../common.blocks/panel/MenuAccordion";
-import { PanelFloatingContainer } from "../common.blocks/panel/Panel";
+import { PanelFloatingInstance } from "../common.blocks/panel/Panel";
 import { PathTreeAccordion } from "../common.blocks/panel/PathTreeAccordion";
 import { SpeedCanvasElement } from "../common.blocks/speed-canvas/SpeedCanvasElement";
 
@@ -104,14 +104,14 @@ export const ExclusiveLayout = observer(() => {
           isOpen={variables.isOpenPanel("menu")}
           onClose={variables.closePanel.bind(variables, "menu")}
         />
-        {variables.isOpenPanel(pathTreeAccordion.id) && <PanelFloatingContainer {...pathTreeAccordion} />}
+        {variables.isOpenPanel(pathTreeAccordion.id) && <PanelFloatingInstance {...pathTreeAccordion} />}
       </Box>
       <Box id="RightSection">
         {containers
           .filter(panelContainer => variables.isOpenPanel(panelContainer.id))
           .filter(panelContainer => panelContainer.id !== "speed-graph")
           .map(panelContainer => (
-            <PanelFloatingContainer key={panelContainer.id} {...panelContainer} />
+            <PanelFloatingInstance key={panelContainer.id} {...panelContainer} />
           ))}
       </Box>
       {variables.isOpenPanel("speed-graph") && (

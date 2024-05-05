@@ -6,7 +6,7 @@ import { getAppStores } from "@core/MainApp";
 import { FieldCanvasElement } from "../common.blocks/field-canvas/FieldCanvasElement";
 import { getAllPanelContainers } from "../Layouts";
 import { MenuAccordion } from "../common.blocks/panel/MenuAccordion";
-import { PanelStaticContainer, PanelAccordionContainer } from "../common.blocks/panel/Panel";
+import { PanelStaticInstance, PanelAccordionInstance } from "../common.blocks/panel/Panel";
 import { PathTreeAccordion } from "../common.blocks/panel/PathTreeAccordion";
 import { SpeedCanvasElement } from "../common.blocks/speed-canvas/SpeedCanvasElement";
 import { MousePositionPresentation } from "../common.blocks/MousePositionPresentation";
@@ -20,7 +20,7 @@ export const ClassisLayout = observer(() => {
     <>
       <Box id="LeftSection">
         <MenuAccordion />
-        <PanelStaticContainer {...PathTreeAccordion({ layout: LayoutType.Classic })} />
+        <PanelStaticInstance {...PathTreeAccordion({ layout: LayoutType.Classic })} />
       </Box>
 
       <Box id="MiddleSection" className={classNames({ "full-height": !appPreferences.isSpeedCanvasVisible })}>
@@ -37,7 +37,7 @@ export const ClassisLayout = observer(() => {
       {appPreferences.isRightSectionVisible && (
         <Box id="RightSection">
           {containers.map(panelContainer => (
-            <PanelAccordionContainer key={panelContainer.id} {...panelContainer} />
+            <PanelAccordionInstance key={panelContainer.id} {...panelContainer} />
           ))}
           <MousePositionPresentation />
         </Box>

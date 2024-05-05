@@ -12,7 +12,7 @@ import { getAppStores } from "@core/MainApp";
 import { FieldCanvasElement } from "../common.blocks/field-canvas/FieldCanvasElement";
 import { getAllPanelContainers } from "../Layouts";
 import { MenuMainDropdown } from "../common.blocks/panel/MenuAccordion";
-import { PanelFloatingContainer, PanelStaticContainer } from "../common.blocks/panel/Panel";
+import { PanelFloatingInstance, PanelStaticInstance } from "../common.blocks/panel/Panel";
 import { PathTreeAccordion } from "../common.blocks/panel/PathTreeAccordion";
 import { SpeedCanvasElement } from "../common.blocks/speed-canvas/SpeedCanvasElement";
 
@@ -80,12 +80,12 @@ export const MobileLayout = observer(() => {
       </Box>
       {variables.currentPanel !== null && (
         <Box id="BottomPanel">
-          {variables.isOpenPanel(pathTreeAccordion.id) && <PanelFloatingContainer {...pathTreeAccordion} />}
+          {variables.isOpenPanel(pathTreeAccordion.id) && <PanelFloatingInstance {...pathTreeAccordion} />}
           {containers
             .filter(panelContainer => variables.isOpenPanel(panelContainer.id))
             .filter(panelContainer => panelContainer.id !== "speed-graph")
             .map(panelContainer => (
-              <PanelStaticContainer key={panelContainer.id} {...panelContainer} />
+              <PanelStaticInstance key={panelContainer.id} {...panelContainer} />
             ))}
           {variables.isOpenPanel("speed-graph") && (
             <Box id="SpeedCanvas-Container">

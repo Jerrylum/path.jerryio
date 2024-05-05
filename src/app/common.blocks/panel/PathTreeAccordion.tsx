@@ -32,7 +32,7 @@ import DOMPurify from "dompurify";
 
 import "./PathTreeAccordion.scss";
 import { LayoutType } from "@core/Layout";
-import { PanelContainer } from "./Panel";
+import { PanelInstance } from "./Panel";
 import ViewListIcon from "@mui/icons-material/ViewList";
 
 const MIME_TYPE = `application/x-item-uid-path.jerryio.com-${APP_VERSION_STRING}`;
@@ -689,7 +689,7 @@ function onExpandAllClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>
 
 export const PathTreeAccordion = (props: {
   layout: LayoutType;
-}): PanelContainer & { containerProps: React.ComponentProps<typeof Card> } => {
+}): PanelInstance & { containerProps: React.ComponentProps<typeof Card> } => {
   const { app } = getAppStores();
   const [variables] = React.useState(() => new PathTreeVariables());
 
