@@ -5,7 +5,7 @@ import { LayoutType } from "@core/Layout";
 import { getAppStores } from "@core/MainApp";
 import { FieldCanvasElement } from "../common.blocks/field-canvas/FieldCanvasElement";
 import { getAllPanelContainers } from "../Layouts";
-import { MenuAccordion } from "../common.blocks/panel/MenuAccordion";
+import { MenuPanel } from "../common.blocks/panel/MenuPanel";
 import { PanelStaticInstance, PanelAccordionInstance } from "../common.blocks/panel/Panel";
 import { PathTreePanel } from "../common.blocks/panel/PathTreePanel";
 import { SpeedCanvasElement } from "../common.blocks/speed-canvas/SpeedCanvasElement";
@@ -19,7 +19,7 @@ export const ClassisLayout = observer(() => {
   return (
     <>
       <Box id="LeftSection">
-        <MenuAccordion />
+        <MenuPanel />
         <PanelStaticInstance {...PathTreePanel({ layout: LayoutType.Classic })} />
       </Box>
 

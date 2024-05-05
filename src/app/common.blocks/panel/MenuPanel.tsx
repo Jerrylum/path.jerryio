@@ -31,7 +31,7 @@ import { AboutModalSymbol } from "../modal/AboutModal";
 import { WelcomeModalSymbol } from "../modal/WelcomeModal";
 import { PreferencesModalSymbol } from "../modal/PreferencesModal";
 
-import "./MenuAccordion.scss";
+import "./MenuPanel.scss";
 
 const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
   const { hotkey } = props;
@@ -320,11 +320,11 @@ class MenuVariables {
   }
 }
 
-const MenuAccordion = observer((props: {}) => {
+const MenuPanel = observer((props: {}) => {
   const [variables] = React.useState(() => new MenuVariables());
 
   return (
-    <Card id="MenuAccordion">
+    <Card id="MenuPanel">
       <Button
         size="small"
         color="inherit"
@@ -662,4 +662,4 @@ const HelpMenuItems = () => {
   ];
 };
 
-export { MenuAccordion, MenuMainDropdown };
+export { MenuPanel, MenuMainDropdown };

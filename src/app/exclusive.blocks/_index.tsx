@@ -14,7 +14,7 @@ import { getAppStores } from "@core/MainApp";
 import { FieldCanvasElement } from "../common.blocks/field-canvas/FieldCanvasElement";
 import { getAllPanelContainers } from "../Layouts";
 import { MousePositionPresentation } from "../common.blocks/MousePositionPresentation";
-import { MenuMainDropdown } from "../common.blocks/panel/MenuAccordion";
+import { MenuMainDropdown } from "../common.blocks/panel/MenuPanel";
 import { PanelFloatingInstance } from "../common.blocks/panel/Panel";
 import { PathTreePanel } from "../common.blocks/panel/PathTreePanel";
 import { SpeedCanvasElement } from "../common.blocks/speed-canvas/SpeedCanvasElement";
