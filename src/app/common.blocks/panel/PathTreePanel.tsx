@@ -30,7 +30,7 @@ import React from "react";
 import { APP_VERSION_STRING } from "@src/Version";
 import DOMPurify from "dompurify";
 
-import "./PathTreeAccordion.scss";
+import "./PathTreePanel.scss";
 import { LayoutType } from "@core/Layout";
 import { PanelInstance } from "./Panel";
 import ViewListIcon from "@mui/icons-material/ViewList";
@@ -347,8 +347,8 @@ const TreeItem = observer((props: TreeItemProps) => {
 
   return (
     <li
-      className={classNames("PathTreeAccordion-TreeItem", {
-        "PathTreeAccordion-DraggingDividerBottom":
+      className={classNames("PathTreePanel-TreeItem", {
+        "PathTreePanel-DraggingDividerBottom":
           showDraggingDivider && entityIdx > variables.dragging!.idx && variables.dragging!.entity instanceof Path
       })}
       onMouseEnter={action(() => children === undefined && (app.hoverItem = entity.uid))}
@@ -368,17 +368,17 @@ const TreeItem = observer((props: TreeItemProps) => {
         : {})}
       {...(!isDraggable && { onMouseDown: action(onDraggableFalseMouseDown) })}>
       <div
-        className={classNames("PathTreeAccordion-TreeItemContent", {
+        className={classNames("PathTreePanel-TreeItemContent", {
           focused: isFocused,
           selected: app.isSelected(entity),
           "deny-drop": !allowDrop,
-          "PathTreeAccordion-DraggingDividerTop": showDraggingDivider && entityIdx <= variables.dragging!.idx,
-          "PathTreeAccordion-DraggingDividerBottom":
+          "PathTreePanel-DraggingDividerTop": showDraggingDivider && entityIdx <= variables.dragging!.idx,
+          "PathTreePanel-DraggingDividerBottom":
             showDraggingDivider &&
             entityIdx > variables.dragging!.idx &&
             variables.dragging!.entity instanceof Path === false
         })}>
-        <div className="PathTreeAccordion-TreeItemIconContainer" onClick={action(onExpandIconClick)}>
+        <div className="PathTreePanel-TreeItemIconContainer" onClick={action(onExpandIconClick)}>
           {children !== undefined && (
             <>
               {app.isExpanded(entity as Path) ? (
@@ -389,12 +389,12 @@ const TreeItem = observer((props: TreeItemProps) => {
             </>
           )}
         </div>
-        <div className="PathTreeAccordion-TreeItemLabel" onClick={action(onLabelClick)}>
+        <div className="PathTreePanel-TreeItemLabel" onClick={action(onLabelClick)}>
           {isNameEditable ? (
             <span
-              className={classNames("PathTreeAccordion-TreeItemName", {
-                "PathTreeAccordion-TreeItemName_preview": !isEditingName,
-                "PathTreeAccordion-TreeItemName_edit": isEditingName
+              className={classNames("PathTreePanel-TreeItemName", {
+                "PathTreePanel-TreeItemName_preview": !isEditingName,
+                "PathTreePanel-TreeItemName_edit": isEditingName
               })}
               onInput={e => onItemNameChange(e)}
               onKeyDown={action(onItemNameKeyDown)}
@@ -414,41 +414,41 @@ const TreeItem = observer((props: TreeItemProps) => {
               onClick={e => e.preventDefault()}
             />
           ) : (
-            <span className="PathTreeAccordion-TreeItemName preview">{entity.name}</span>
+            <span className="PathTreePanel-TreeItemName preview">{entity.name}</span>
           )}
           {isEditingName === false && (
             <>
               {isNameEditable && (
-                <EditIcon className="PathTreeAccordion-TreeFuncIcon" onClick={action(onItemNameDoubleClick)} />
+                <EditIcon className="PathTreePanel-TreeFuncIcon" onClick={action(onItemNameDoubleClick)} />
               )}
-              {isDraggable && <DeleteIcon className="PathTreeAccordion-TreeFuncIcon" onClick={action(onDeleteClick)} />}
+              {isDraggable && <DeleteIcon className="PathTreePanel-TreeFuncIcon" onClick={action(onDeleteClick)} />}
               {entity.lock === false ? (
                 parent?.lock === true ? (
                   <FiberManualRecordOutlinedIcon
-                    className="PathTreeAccordion-TreeFuncIcon PathTreeAccordion-TreeFuncIcon_show"
+                    className="PathTreePanel-TreeFuncIcon PathTreePanel-TreeFuncIcon_show"
                     onClick={action(onLockClick)}
                   />
                 ) : (
-                  <LockOpenIcon className="PathTreeAccordion-TreeFuncIcon" onClick={action(onLockClick)} />
+                  <LockOpenIcon className="PathTreePanel-TreeFuncIcon" onClick={action(onLockClick)} />
                 )
               ) : (
                 <LockOutlinedIcon
-                  className="PathTreeAccordion-TreeFuncIcon PathTreeAccordion-TreeFuncIcon_show"
+                  className="PathTreePanel-TreeFuncIcon PathTreePanel-TreeFuncIcon_show"
                   onClick={action(onLockClick)}
                 />
               )}
               {entity.visible === true ? (
                 parent?.visible === false ? (
                   <FiberManualRecordOutlinedIcon
-                    className="PathTreeAccordion-TreeFuncIcon PathTreeAccordion-TreeFuncIcon_show"
+                    className="PathTreePanel-TreeFuncIcon PathTreePanel-TreeFuncIcon_show"
                     onClick={action(onVisibleClick)}
                   />
                 ) : (
-                  <VisibilityIcon className="PathTreeAccordion-TreeFuncIcon" onClick={action(onVisibleClick)} />
+                  <VisibilityIcon className="PathTreePanel-TreeFuncIcon" onClick={action(onVisibleClick)} />
                 )
               ) : (
                 <VisibilityOffOutlinedIcon
-                  className="PathTreeAccordion-TreeFuncIcon PathTreeAccordion-TreeFuncIcon_show"
+                  className="PathTreePanel-TreeFuncIcon PathTreePanel-TreeFuncIcon_show"
                   onClick={action(onVisibleClick)}
                 />
               )}
@@ -456,7 +456,7 @@ const TreeItem = observer((props: TreeItemProps) => {
           )}
         </div>
       </div>
-      <ul className="PathTreeAccordion-TreeItemChildrenGroup">
+      <ul className="PathTreePanel-TreeItemChildrenGroup">
         {children !== undefined &&
           app.isExpanded(entity as Path) &&
           children.map(child => (
@@ -650,7 +650,7 @@ const TreeView = observer((props: { variables: PathTreeVariables }) => {
 
   return (
     <ul
-      className="PathTreeAccordion-TreeView"
+      className="PathTreePanel-TreeView"
       ref={ref}
       tabIndex={0}
       onKeyDown={action(onKeyDown)}
@@ -687,36 +687,36 @@ function onExpandAllClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   }
 }
 
-export const PathTreeAccordion = (props: {
+export const PathTreePanel = (props: {
   layout: LayoutType;
 }): PanelInstance & { containerProps: React.ComponentProps<typeof Card> } => {
   const { app } = getAppStores();
   const [variables] = React.useState(() => new PathTreeVariables());
 
   return {
-    id: "PathTreeAccordion",
+    id: "PathTreePanel",
     containerProps: {
-      id: "PathTreeAccordion-Container"
+      id: "PathTreePanel-Container"
     },
     header: (
       <>
         <Typography>Paths</Typography>
         <Box>
           <Tooltip title="Add New Path">
-            <IconButton className="PathTreeAccordion-FunctionButton" onClick={action(onAddPathClick)}>
+            <IconButton className="PathTreePanel-FunctionButton" onClick={action(onAddPathClick)}>
               <AddIcon />
             </IconButton>
           </Tooltip>
           {app.paths.length === 0 ? (
             <IconButton
-              className="PathTreeAccordion-FunctionButton"
+              className="PathTreePanel-FunctionButton"
               onClick={action(onExpandAllClick)}
               disabled={app.paths.length === 0}>
               <KeyboardDoubleArrowUpIcon />
             </IconButton>
           ) : (
             <Tooltip title={app.expandedEntityIds.length !== app.paths.length ? "Expand All" : "Collapse All"}>
-              <IconButton className="PathTreeAccordion-FunctionButton" onClick={action(onExpandAllClick)}>
+              <IconButton className="PathTreePanel-FunctionButton" onClick={action(onExpandAllClick)}>
                 {app.expandedEntityIds.length !== app.paths.length ? (
                   <KeyboardDoubleArrowDownIcon />
                 ) : (
@@ -729,7 +729,7 @@ export const PathTreeAccordion = (props: {
       </>
     ),
     headerProps: {
-      className: "PathTreeAccordion-Header"
+      className: "PathTreePanel-Header"
     },
     children: (
       <>

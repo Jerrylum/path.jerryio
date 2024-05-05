@@ -16,7 +16,7 @@ import { getAllPanelContainers } from "../Layouts";
 import { MousePositionPresentation } from "../common.blocks/MousePositionPresentation";
 import { MenuMainDropdown } from "../common.blocks/panel/MenuAccordion";
 import { PanelFloatingInstance } from "../common.blocks/panel/Panel";
-import { PathTreeAccordion } from "../common.blocks/panel/PathTreeAccordion";
+import { PathTreePanel } from "../common.blocks/panel/PathTreePanel";
 import { SpeedCanvasElement } from "../common.blocks/speed-canvas/SpeedCanvasElement";
 
 class ExclusiveLayoutVariables {
@@ -61,7 +61,7 @@ export const ExclusiveLayout = observer(() => {
 
   const containers = getAllPanelContainers(LayoutType.Exclusive);
 
-  const pathTreeAccordion = PathTreeAccordion({ layout: LayoutType.Exclusive });
+  const pathTreeAccordion = PathTreePanel({ layout: LayoutType.Exclusive });
 
   return (
     <>

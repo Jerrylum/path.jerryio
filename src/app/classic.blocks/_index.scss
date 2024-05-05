@@ -114,6 +114,6 @@ $middle-section-height-svh: calc(100svh - $pg - $pg);
 
 @import "./panel/ControlPanel";
 @import "./panel/MenuAccordion";
-@import "./panel/PathTreeAccordion";
+@import "./panel/PathTreePanel";
 @import "./speed-canvas/SpeedCanvasElement";
 @import "./MousePositionPresentation";

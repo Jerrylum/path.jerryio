@@ -13,7 +13,7 @@ import { FieldCanvasElement } from "../common.blocks/field-canvas/FieldCanvasEle
 import { getAllPanelContainers } from "../Layouts";
 import { MenuMainDropdown } from "../common.blocks/panel/MenuAccordion";
 import { PanelFloatingInstance, PanelStaticInstance } from "../common.blocks/panel/Panel";
-import { PathTreeAccordion } from "../common.blocks/panel/PathTreeAccordion";
+import { PathTreePanel } from "../common.blocks/panel/PathTreePanel";
 import { SpeedCanvasElement } from "../common.blocks/speed-canvas/SpeedCanvasElement";
 
 class MobileLayoutVariables {
@@ -40,7 +40,7 @@ export const MobileLayout = observer(() => {
 
   const containers = getAllPanelContainers(LayoutType.Mobile);
 
-  const pathTreeAccordion = PathTreeAccordion({ layout: LayoutType.Mobile });
+  const pathTreeAccordion = PathTreePanel({ layout: LayoutType.Mobile });
 
   return (
     <>

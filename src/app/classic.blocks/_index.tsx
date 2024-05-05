@@ -7,7 +7,7 @@ import { FieldCanvasElement } from "../common.blocks/field-canvas/FieldCanvasEle
 import { getAllPanelContainers } from "../Layouts";
 import { MenuAccordion } from "../common.blocks/panel/MenuAccordion";
 import { PanelStaticInstance, PanelAccordionInstance } from "../common.blocks/panel/Panel";
-import { PathTreeAccordion } from "../common.blocks/panel/PathTreeAccordion";
+import { PathTreePanel } from "../common.blocks/panel/PathTreePanel";
 import { SpeedCanvasElement } from "../common.blocks/speed-canvas/SpeedCanvasElement";
 import { MousePositionPresentation } from "../common.blocks/MousePositionPresentation";
 
@@ -20,7 +20,7 @@ export const ClassisLayout = observer(() => {
     <>
       <Box id="LeftSection">
         <MenuAccordion />
-        <PanelStaticInstance {...PathTreeAccordion({ layout: LayoutType.Classic })} />
+        <PanelStaticInstance {...PathTreePanel({ layout: LayoutType.Classic })} />
       </Box>
 
       <Box id="MiddleSection" className={classNames({ "full-height": !appPreferences.isSpeedCanvasVisible })}>
