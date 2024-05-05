@@ -3,9 +3,9 @@ import { getAppStores } from "@core/MainApp";
 import { LayoutType } from "@core/Layout";
 import { PanelInstance, PanelInstanceBuilderProps } from "./Panel";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
-import "./PathAccordion.scss";
+import "./PathConfigPanel.scss";
 
-export const PathConfigAccordion = (props: PanelInstanceBuilderProps): PanelInstance => {
+export const PathConfigPanel = (props: PanelInstanceBuilderProps): PanelInstance => {
   const { app } = getAppStores();
 
   const pc = app.selectedPath?.pc;
