@@ -32,7 +32,7 @@ import DOMPurify from "dompurify";
 
 import "./PathTreePanel.scss";
 import { LayoutType } from "@core/Layout";
-import { PanelInstance } from "./Panel";
+import { PanelInstanceProps } from "./Panel";
 import ViewListIcon from "@mui/icons-material/ViewList";
 
 const MIME_TYPE = `application/x-item-uid-path.jerryio.com-${APP_VERSION_STRING}`;
@@ -689,7 +689,7 @@ function onExpandAllClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>
 
 export const PathTreePanel = (props: {
   layout: LayoutType;
-}): PanelInstance & { containerProps: React.ComponentProps<typeof Card> } => {
+}): PanelInstanceProps & { containerProps: React.ComponentProps<typeof Card> } => {
   const { app } = getAppStores();
   const [variables] = React.useState(() => new PathTreeVariables());
 

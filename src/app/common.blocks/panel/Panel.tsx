@@ -4,7 +4,7 @@ import { observer } from "mobx-react-lite";
 import { LayoutType } from "@src/core/Layout";
 import "./Panel.scss";
 
-export interface PanelInstance {
+export interface PanelInstanceProps {
   id: string;
   header: React.ReactNode;
   headerProps?: { className?: string };
@@ -13,13 +13,11 @@ export interface PanelInstance {
   icon: React.ReactNode;
 }
 
-export interface PanelBuilderProps {
-  layout: LayoutType;
-}
+export interface PanelBuilderProps {}
 
-export type PanelBuilder = (props: PanelBuilderProps) => PanelInstance;
+export type PanelBuilder = (props: PanelBuilderProps) => PanelInstanceProps;
 
-export interface PanelStaticInstanceProps extends PanelInstance {
+export interface PanelStaticInstanceProps extends PanelInstanceProps {
   containerProps?: React.ComponentProps<typeof Card>;
   headerProps?: React.ComponentProps<typeof Card>;
   bodyProps?: React.ComponentProps<typeof Card>;
@@ -36,7 +34,7 @@ export const PanelStaticInstance = observer((props: PanelStaticInstanceProps) =>
   );
 });
 
-export interface PanelAccordionInstanceProps extends PanelInstance {
+export interface PanelAccordionInstanceProps extends PanelInstanceProps {
   containerProps?: React.ComponentProps<typeof Accordion>;
   headerProps?: React.ComponentProps<typeof AccordionSummary>;
   bodyProps?: React.ComponentProps<typeof AccordionDetails>;
@@ -53,7 +51,7 @@ export const PanelAccordionInstance = observer((props: PanelAccordionInstancePro
   );
 });
 
-export interface PanelFloatingInstanceProps extends PanelInstance {
+export interface PanelFloatingInstanceProps extends PanelInstanceProps {
   containerProps?: React.ComponentProps<typeof Box>;
   headerProps?: React.ComponentProps<typeof Box>;
   bodyProps?: React.ComponentProps<typeof Box>;

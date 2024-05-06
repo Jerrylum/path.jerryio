@@ -1,11 +1,29 @@
 import { Typography } from "@mui/material";
 import { getAppStores } from "@core/MainApp";
 import { LayoutType } from "@core/Layout";
-import { PanelInstance, PanelBuilderProps } from "./Panel";
+import { PanelInstanceProps, PanelBuilderProps } from "./Panel";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
 import "./PathConfigPanel.scss";
+import { observer } from "mobx-react-lite";
+import React from "react";
+import { LayoutContext } from "@src/app/Layouts";
 
-export const PathConfigPanel = (props: PanelBuilderProps): PanelInstance => {
+const PathConfigPanelBody = observer((props: {}) => {
+  const { app } = getAppStores();
+
+  const pc = app.selectedPath?.pc;
+
+  const isClassic = React.useContext(LayoutContext) === LayoutType.Classic;
+
+  return (
+    <>
+      {pc && pc.getConfigPanel()}
+      {pc === undefined && !isClassic && <Typography>(No selected path)</Typography>}
+    </>
+  );
+});
+
+export const PathConfigPanel = (props: PanelBuilderProps): PanelInstanceProps => {
   const { app } = getAppStores();
 
   const pc = app.selectedPath?.pc;
@@ -13,12 +31,7 @@ export const PathConfigPanel = (props: PanelBuilderProps): PanelInstance => {
   return {
     id: "PathConfigAccordion",
     header: "Path",
-    children: (
-      <>
-        {pc && pc.getConfigPanel()}
-        {pc === undefined && props.layout !== LayoutType.Classic && <Typography>(No selected path)</Typography>}
-      </>
-    ),
+    children: <PathConfigPanelBody />,
     icon: <LinearScaleIcon fontSize="large" />
   };
 };

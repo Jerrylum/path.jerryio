@@ -14,7 +14,7 @@ import { ObserverItemsSelect } from "@app/component.blocks/ObserverItemsSelect";
 import { FieldImageAsset, FieldImageOriginType } from "@core/Asset";
 import { AssetManagerModalSymbol } from "../modal/AssetManagerModal";
 import { LayoutType } from "@core/Layout";
-import { PanelInstance, PanelBuilderProps } from "./Panel";
+import { PanelInstanceProps, PanelBuilderProps } from "./Panel";
 import TuneIcon from "@mui/icons-material/Tune";
 import "./GeneralConfigPanel.scss";
 
@@ -189,7 +189,7 @@ const GeneralConfigPanelBody = observer((props: {}) => {
   );
 });
 
-export const GeneralConfigPanel = (props: PanelBuilderProps): PanelInstance => {
+export const GeneralConfigPanel = (props: PanelBuilderProps): PanelInstanceProps => {
   return {
     id: "GeneralConfigPanel",
     header: "Configuration",
