@@ -84,7 +84,12 @@ export function getAllFormats(): Format[] {
       new LemLibOdomGeneratorFormatV0_4()
     ],
     ...(isExperimentalFeaturesEnabled()
-      ? [new LemLibFormatV1_0(), new RigidCodeGenFormatV0_1(), new MoveToPointCodeGenFormatV0_1(), new xVecLibBoomerangFormatV0_1()]
+      ? [
+          new LemLibFormatV1_0(),
+          new RigidCodeGenFormatV0_1(),
+          new MoveToPointCodeGenFormatV0_1(),
+          new xVecLibBoomerangFormatV0_1()
+        ]
       : []),
     ...[new PathDotJerryioFormatV0_1()]
   ];
