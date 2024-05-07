@@ -1,5 +1,19 @@
 import { Vector } from "./Path";
 import { getFieldCanvasHalfHeight } from "./Util";
+import { makeAutoObservable } from "mobx";
+
+export interface PanelInstanceProps {
+  id: string;
+  header: React.ReactNode;
+  headerProps?: { className?: string };
+  children: React.ReactNode;
+  bodyProps?: { className?: string };
+  icon: React.ReactNode;
+}
+
+export interface PanelBuilderProps {}
+
+export type PanelBuilder = (props: PanelBuilderProps) => PanelInstanceProps;
 
 export enum LayoutType {
   Classic = "classic", // UX: Default layout
@@ -25,4 +39,40 @@ export function getUsableLayout(windowSize: Vector, preferred: LayoutType): Layo
   const available = getAvailableLayouts(windowSize);
   if (available.includes(preferred)) return preferred;
   return available[0];
+}
+
+export class UserInterface {
+  private openingModal_: {
+    symbol: Symbol;
+    priority: number;
+  } | null = null;
+
+  get openingModal(): Symbol | null {
+    return this.openingModal_?.symbol ?? null;
+  }
+
+  get currentOpeningModalPriority(): number | null {
+    return this.openingModal_?.priority ?? null;
+  }
+
+  get isOpeningModal() {
+    return this.openingModal_ !== null;
+  }
+
+  openModal(symbol: Symbol, priority: number = 0): boolean {
+    if (this.openingModal_ === null || this.openingModal_.priority <= priority) {
+      this.openingModal_ = { symbol: symbol, priority };
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  closeModal(symbol?: Symbol) {
+    if (symbol === undefined || this.openingModal_?.symbol === symbol) this.openingModal_ = null;
+  }
+
+  constructor() {
+    makeAutoObservable(this);
+  }
 }

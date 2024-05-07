@@ -24,10 +24,10 @@ import { validate } from "class-validator";
 import { FieldEditor } from "./FieldEditor";
 import { SpeedEditor } from "./SpeedEditor";
 import { AssetManager, getDefaultBuiltInFieldImage } from "./Asset";
-import { Modals } from "@core/Modals";
 import { Preferences, getPreference } from "./Preferences";
 import { LemLibFormatV0_4 } from "../format/LemLibFormatV0_4";
 import { LemLibFormatV1_0 } from "../format/LemLibFormatV1_0";
+import { UserInterface } from "./Layout";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
@@ -437,7 +437,7 @@ const appStores = {
   app: new MainApp(),
   assetManager: new AssetManager(),
   confirmation: new Confirmation(),
-  modals: new Modals(),
+  ui: new UserInterface(),
   appPreferences: new Preferences(),
   ga: new GoogleAnalytics(),
   clipboard: new AppClipboard()

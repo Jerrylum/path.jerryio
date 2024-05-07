@@ -4,6 +4,9 @@ import { observer } from "mobx-react-lite";
 import { AnyControl, Control, EndControl } from "@core/Path";
 import { ObserverInput, clampQuantity } from "@app/component.blocks/ObserverInput";
 import { Quantity, UnitOfAngle, UnitOfLength } from "@core/Unit";
+import { boundHeading, findCentralPoint } from "@src/core/Calculation";
+import { Coordinate, CoordinateWithHeading, EuclideanTransformation } from "@src/core/Coordinate";
+import { PanelBuilderProps, PanelInstanceProps } from "@src/core/Layout";
 import { UpdatePathTreeItems } from "@core/Command";
 import { getAppStores } from "@core/MainApp";
 import { NumberUOA, NumberUOL } from "@token/Tokens";
@@ -14,10 +17,6 @@ import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import RotateRightIcon from "@mui/icons-material/RotateRight";
 
 import "./ControlConfigPanel.scss";
-import { PanelInstanceProps, PanelBuilderProps } from "./Panel";
-import { LayoutType } from "@core/Layout";
-import { boundHeading, findCentralPoint } from "@src/core/Calculation";
-import { Coordinate, CoordinateWithHeading, EuclideanTransformation } from "@src/core/Coordinate";
 
 const ControlConfigPanelBody = observer((props: {}) => {
   const { app } = getAppStores();

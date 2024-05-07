@@ -37,8 +37,8 @@ export class Confirmation {
   }
 
   close() {
-    const { modals } = getAppStores();
-    modals.close(ConfirmationModalSymbol);
+    const { ui } = getAppStores();
+    ui.closeModal(ConfirmationModalSymbol);
 
     this.data = undefined;
   }
@@ -56,8 +56,8 @@ export class Confirmation {
       this.input = undefined;
     }
 
-    const { modals } = getAppStores();
-    modals.open(ConfirmationModalSymbol, priority);
+    const { ui } = getAppStores();
+    ui.openModal(ConfirmationModalSymbol, priority);
 
     await when(() => this.data === undefined);
 
@@ -65,9 +65,9 @@ export class Confirmation {
   }
 
   get isOpen() {
-    const { modals } = getAppStores();
+    const { ui } = getAppStores();
 
-    return this.data !== undefined && modals.opening === ConfirmationModalSymbol;
+    return this.data !== undefined && ui.openingModal === ConfirmationModalSymbol;
   }
 
   get title() {

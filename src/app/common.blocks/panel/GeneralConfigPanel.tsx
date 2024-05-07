@@ -13,13 +13,12 @@ import { parseFormula } from "@core/Util";
 import { ObserverItemsSelect } from "@app/component.blocks/ObserverItemsSelect";
 import { FieldImageAsset, FieldImageOriginType } from "@core/Asset";
 import { AssetManagerModalSymbol } from "../modal/AssetManagerModal";
-import { LayoutType } from "@core/Layout";
-import { PanelInstanceProps, PanelBuilderProps } from "./Panel";
+import { PanelBuilderProps, PanelInstanceProps } from "@src/core/Layout";
 import TuneIcon from "@mui/icons-material/Tune";
 import "./GeneralConfigPanel.scss";
 
 const GeneralConfigPanelBody = observer((props: {}) => {
-  const { app, assetManager, confirmation, modals, appPreferences } = getAppStores();
+  const { app, assetManager, confirmation, ui, appPreferences } = getAppStores();
 
   const gc = app.gc;
 
@@ -174,7 +173,7 @@ const GeneralConfigPanelBody = observer((props: {}) => {
           ]}
           onSelectItem={(asset: FieldImageAsset<FieldImageOriginType> | string | undefined) => {
             if (asset === "open-asset-manager") {
-              modals.open(AssetManagerModalSymbol);
+              ui.openModal(AssetManagerModalSymbol);
             } else if (asset instanceof FieldImageAsset) {
               app.history.execute(
                 `Change field layer`,

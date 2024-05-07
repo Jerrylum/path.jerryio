@@ -10,7 +10,7 @@ import { RequireLocalFieldImageModalSymbol } from "@core/FieldImagePrompt";
 import "./RequireLocalFieldImageModal.scss";
 
 export const RequireLocalFieldImageModal = observer(() => {
-  const { assetManager, modals } = getAppStores();
+  const { assetManager, ui } = getAppStores();
 
   const [errorMessage, setErrorMessage] = React.useState<string | undefined>(undefined);
 
@@ -20,7 +20,7 @@ export const RequireLocalFieldImageModal = observer(() => {
   const signAndOrigin = requirement.requireSignAndOrigin;
 
   return (
-    <Modal symbol={RequireLocalFieldImageModalSymbol} onClose={action(() => modals.close())}>
+    <Modal symbol={RequireLocalFieldImageModalSymbol} onClose={action(() => ui.closeModal())}>
       <Card id="ConfirmationModal" className="Modal-Container">
         <Typography variant="h2" gutterBottom>
           Upload Missing Field Image
@@ -68,7 +68,7 @@ export const RequireLocalFieldImageModal = observer(() => {
 
             requirement.answer = asset;
 
-            modals.close();
+            ui.closeModal();
           })}
           size="small"
         />
@@ -79,7 +79,7 @@ export const RequireLocalFieldImageModal = observer(() => {
             color={"inherit"}
             onClick={action(() => {
               requirement.answer = null;
-              modals.close();
+              ui.closeModal();
             })}>
             No
           </Button>

@@ -415,7 +415,7 @@ const MenuMainDropdown = observer((props: { anchor: PopoverPosition; isOpen: boo
 });
 
 const FileMenuItems = () => {
-  const { modals } = getAppStores();
+  const { ui } = getAppStores();
   return [
     <CustomMenuItem key={makeId(10)} showLeftIcon={false} label="New File" hotkey="Mod+P" onClick={() => onNew()} />,
     <Divider key={makeId(10)} />,
@@ -456,7 +456,7 @@ const FileMenuItems = () => {
       showLeftIcon={false}
       label="Preferences"
       hotkey="Mod+,"
-      onClick={() => modals.open(PreferencesModalSymbol)}
+      onClick={() => ui.openModal(PreferencesModalSymbol)}
     />
   ];
 };
@@ -638,13 +638,13 @@ const ViewMenuItems = () => {
 };
 
 const HelpMenuItems = () => {
-  const { modals } = getAppStores();
+  const { ui } = getAppStores();
   return [
     <CustomMenuItem
       key={makeId(10)}
       showLeftIcon={false}
       label="Welcome"
-      onClick={() => modals.open(WelcomeModalSymbol)}
+      onClick={() => ui.openModal(WelcomeModalSymbol)}
     />,
     <CustomMenuItem
       key={makeId(10)}
@@ -658,7 +658,12 @@ const HelpMenuItems = () => {
       label="Check for Updates"
       onClick={() => checkForUpdates()}
     />,
-    <CustomMenuItem key={makeId(10)} showLeftIcon={false} label="About" onClick={() => modals.open(AboutModalSymbol)} />
+    <CustomMenuItem
+      key={makeId(10)}
+      showLeftIcon={false}
+      label="About"
+      onClick={() => ui.openModal(AboutModalSymbol)}
+    />
   ];
 };
 

@@ -10,6 +10,7 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import KeyboardDoubleArrowDownIcon from "@mui/icons-material/KeyboardDoubleArrowDown";
 import KeyboardDoubleArrowUpIcon from "@mui/icons-material/KeyboardDoubleArrowUp";
+import ViewListIcon from "@mui/icons-material/ViewList";
 import { Box, Card, IconButton, Tooltip, Typography } from "@mui/material";
 import { action, makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -24,6 +25,8 @@ import {
 } from "@core/Command";
 import { getAppStores } from "@core/MainApp";
 import { Quantity, UnitOfLength } from "@core/Unit";
+import { LayoutType } from "@core/Layout";
+import { PanelInstanceProps } from "@src/core/Layout";
 import classNames from "classnames";
 import { IS_MAC_OS } from "@core/Util";
 import React from "react";
@@ -31,9 +34,6 @@ import { APP_VERSION_STRING } from "@src/Version";
 import DOMPurify from "dompurify";
 
 import "./PathTreePanel.scss";
-import { LayoutType } from "@core/Layout";
-import { PanelInstanceProps } from "./Panel";
-import ViewListIcon from "@mui/icons-material/ViewList";
 
 const MIME_TYPE = `application/x-item-uid-path.jerryio.com-${APP_VERSION_STRING}`;
 

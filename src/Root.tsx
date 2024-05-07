@@ -35,9 +35,9 @@ import { ExclusiveLayout } from "./app/exclusive.blocks/_index";
 import { MobileLayout } from "./app/mobile.blocks/_index";
 
 const Root = observer(() => {
-  const { app, confirmation, modals, appPreferences, clipboard } = getAppStores();
+  const { app, confirmation, ui, appPreferences, clipboard } = getAppStores();
 
-  const isUsingEditor = !confirmation.isOpen && !modals.isOpen;
+  const isUsingEditor = !confirmation.isOpen && !ui.isOpeningModal;
   const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(isUsingEditor, onDropFile);
 
   const isEnableInputField = isUsingEditor && !isDraggingFile;
@@ -55,7 +55,7 @@ const Root = observer(() => {
   useCustomHotkeys("Shift+Mod+S", onSaveAs, option1);
   useCustomHotkeys("Mod+D", onDownload, option1);
   useCustomHotkeys("Shift+Mod+D", onDownloadAs, option1);
-  useCustomHotkeys("Mod+Comma", () => modals.open(PreferencesModalSymbol), option1);
+  useCustomHotkeys("Mod+Comma", () => ui.openModal(PreferencesModalSymbol), option1);
   useCustomHotkeys("Mod+X", () => clipboard.cut(), option2);
   useCustomHotkeys("Mod+C", () => clipboard.copy(), option2);
 

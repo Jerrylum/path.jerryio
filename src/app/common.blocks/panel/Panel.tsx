@@ -1,21 +1,8 @@
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { AccordionSummary, Box, AccordionDetails, Card, Accordion } from "@mui/material";
+import { PanelInstanceProps } from "@src/core/Layout";
 import { observer } from "mobx-react-lite";
-import { LayoutType } from "@src/core/Layout";
 import "./Panel.scss";
-
-export interface PanelInstanceProps {
-  id: string;
-  header: React.ReactNode;
-  headerProps?: { className?: string };
-  children: React.ReactNode;
-  bodyProps?: { className?: string };
-  icon: React.ReactNode;
-}
-
-export interface PanelBuilderProps {}
-
-export type PanelBuilder = (props: PanelBuilderProps) => PanelInstanceProps;
 
 export interface PanelStaticInstanceProps extends PanelInstanceProps {
   containerProps?: React.ComponentProps<typeof Card>;

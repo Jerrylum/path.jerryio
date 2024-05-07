@@ -41,9 +41,9 @@ const EditOutputTemplateConfirmationDescription = observer((props: { value: IObs
 const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
   const { config } = props;
 
-  const { confirmation, modals } = getAppStores();
+  const { confirmation, ui } = getAppStores();
 
-  const isUsingEditor = !confirmation.isOpen && !modals.isOpen;
+  const isUsingEditor = !confirmation.isOpen && !ui.isOpeningModal;
 
   const onCopyCode = action(() => {
     try {

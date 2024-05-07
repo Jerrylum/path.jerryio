@@ -25,9 +25,9 @@ const logger = Logger("LemLib Odom Code Gen v0.4.x (inch)");
 const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
   const { config } = props;
 
-  const { app, confirmation, modals } = getAppStores();
+  const { app, confirmation, ui } = getAppStores();
 
-  const isUsingEditor = !confirmation.isOpen && !modals.isOpen;
+  const isUsingEditor = !confirmation.isOpen && !ui.isOpeningModal;
 
   const onCopyCode = action(() => {
     try {

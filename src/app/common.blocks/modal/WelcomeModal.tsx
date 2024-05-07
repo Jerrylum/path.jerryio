@@ -17,7 +17,7 @@ import "./WelcomeModal.scss";
 export const WelcomeModalSymbol = Symbol("WelcomeModalSymbol");
 
 export const WelcomeModal = observer(() => {
-  const { appPreferences, modals } = getAppStores();
+  const { appPreferences, ui } = getAppStores();
 
   const rawGAEnabled = localStorage.getItem("googleAnalyticsEnabled");
   const [isGAEnabled, setIsGAEnabled] = React.useState(rawGAEnabled !== "false"); // UX: Default to true
@@ -26,14 +26,14 @@ export const WelcomeModal = observer(() => {
 
   React.useEffect(() => {
     setIsGAEnabled(rawGAEnabled !== "false");
-    if (rawGAEnabled === null) modals.open(WelcomeModalSymbol); // UX: Show welcome page if user is new
-  }, [modals, rawGAEnabled]);
+    if (rawGAEnabled === null) ui.openModal(WelcomeModalSymbol); // UX: Show welcome page if user is new
+  }, [ui, rawGAEnabled]);
 
   // UX: Save user preference when user closes the modal
   const onClose = () => {
     // Get the latest value of isGAEnabled and save it to localStorage
     setIsGAEnabled(action((curr: boolean) => (appPreferences.isGoogleAnalyticsEnabled = curr && isBrave === false)));
-    modals.close(WelcomeModalSymbol);
+    ui.closeModal(WelcomeModalSymbol);
   };
 
   const isMobileLayout = React.useContext(LayoutContext) === LayoutType.Mobile;

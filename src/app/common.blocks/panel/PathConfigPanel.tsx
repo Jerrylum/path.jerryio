@@ -1,7 +1,6 @@
 import { Typography } from "@mui/material";
 import { getAppStores } from "@core/MainApp";
-import { LayoutType } from "@core/Layout";
-import { PanelInstanceProps, PanelBuilderProps } from "./Panel";
+import { LayoutType, PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
 import "./PathConfigPanel.scss";
 import { observer } from "mobx-react-lite";
