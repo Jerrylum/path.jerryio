@@ -1,7 +1,7 @@
 import { makeAutoObservable, action } from "mobx";
 import { MainApp, getAppStores } from "@core/MainApp";
 import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "@core/Util";
-import { BentRateApplicationDirection, Path, Segment, Vector } from "@core/Path";
+import { BentRateApplicationDirection, Control, Path, Segment, Vector } from "@core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "@core/Unit";
 import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
@@ -74,18 +74,6 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
             isValidValue={(candidate: string) => Int.parse(new CodePointBuffer(candidate)) !== null}
             sx={{ marginTop: "16px" }}
             numeric
-          />
-        </Box>
-        <Box className="Panel-FlexBox">
-          <ObserverCheckbox
-            label="Use Relative Coordinates"
-            checked={config.relativeCoords}
-            onCheckedChange={value => {
-              app.history.execute(
-                `Set using relative coordinates to ${value}`,
-                new UpdateProperties(config, { relativeCoords: value })
-              );
-            }}
           />
         </Box>
         <Box className="Panel-FlexBox" sx={{ marginTop: "32px" }}>
@@ -222,7 +210,7 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
     this.isInit = true;
   }
 
-  unregister(app: MainApp): void {}
+  unregister(app: MainApp): void { }
 
   getGeneralConfig(): GeneralConfig {
     return this.gc;
@@ -247,8 +235,9 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
 
   exportCode(): string {
     const { app } = getAppStores();
-
     let rtn = "";
+    let arr = [];
+
     const gc = app.gc as GeneralConfigImpl;
 
     const path = app.interestedPath();
@@ -256,27 +245,39 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
     if (path.segments.length === 0) throw new Error("No segment to export");
 
     const uc = new UnitConverter(this.gc.uol, UnitOfLength.Inch);
-    const points = getDiscretePoints(path);
-
+    const points = (path.segments);
     if (points.length > 0) {
-      const start = points[0];
-      let heading = 0;
-
-      if (start.heading !== undefined && gc.relativeCoords) {
-        heading = fromDegreeToRadian(start.heading);
-      }
-
-      // ALGO: Offsets to convert the absolute coordinates to the relative coordinates LemLib uses
-      const offsets = gc.relativeCoords ? new Vector(start.x, start.y) : new Vector(0, 0);
       for (const point of points) {
-        // ALGO: Only coordinate points are supported in LemLibOdom format
-        const relative = euclideanRotation(heading, point.subtract(offsets));
-        rtn += `${gc.chassisName}.moveTo(${uc.fromAtoB(relative.x).toUser()}, ${uc.fromAtoB(relative.y).toUser()}, ${
-          gc.movementTimeout
-        });\n`;
-      }
-    }
+        if (path.segments.indexOf(point) == 0) {
+          rtn += `robo.set(${Math.round(point.first.x)}, ${Math.round(point.first.y)});\n`;
+        }
+        let pnt = 0;
+        let last = path.controls.at(path.controls.length - 1);
+        let dis;
+        if (last != null) {
+          dis = path.controls.at(0)?.distance(last);
+          if (point.isCubic() && dis != null) {
+            let poin = (point.controls[1].distance(point.first)) > (point.controls[2].distance(point.last)) ? point.controls[1] : point.controls[2];
+            if (path.segments.indexOf(point) == path.segments.length - 1) {
+              pnt = (((point.first.x - poin.x)) / (dis * (Math.sin(point.first.heading))));
 
+            }else
+            {
+              pnt = (((point.last.x - poin.x)) / (dis * (Math.sin(point.last.heading))));
+
+            }
+
+          }
+        }
+        arr.push([gc.chassisName, uc.fromAtoB(point.last.x).toUser(), uc.fromAtoB(point.last.y).toUser(), point.last.heading, pnt]);
+
+
+      }
+
+    }
+    for (const s of arr) {
+      rtn += `${s[0]}.moveToBoom( ${s[1]}, ${s[2]}, ${s[3]}, ${s[4]},${gc.movementTimeout / 1000});\n`;
+    }
     return rtn;
   }
 

@@ -11,6 +11,7 @@ import { LemLibFormatV1_0 } from "./LemLibFormatV1_0";
 import { isExperimentalFeaturesEnabled } from "@core/Preferences";
 import { RigidCodeGenFormatV0_1 } from "./RigidCodeGenFormatV0_1";
 import { MoveToPointCodeGenFormatV0_1 } from "./MoveToPointCodeGenFormatV0_1";
+import { xVecLibBoomerangFormatV0_1 } from "./xVecLibBoomerangFormatV0_1";
 
 export interface Format {
   isInit: boolean;
@@ -83,7 +84,7 @@ export function getAllFormats(): Format[] {
       new LemLibOdomGeneratorFormatV0_4()
     ],
     ...(isExperimentalFeaturesEnabled()
-      ? [new LemLibFormatV1_0(), new RigidCodeGenFormatV0_1(), new MoveToPointCodeGenFormatV0_1()]
+      ? [new LemLibFormatV1_0(), new RigidCodeGenFormatV0_1(), new MoveToPointCodeGenFormatV0_1(), new xVecLibBoomerangFormatV0_1()]
       : []),
     ...[new PathDotJerryioFormatV0_1()]
   ];
