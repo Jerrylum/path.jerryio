@@ -42,6 +42,8 @@ export function getUsableLayout(windowSize: Vector, preferred: LayoutType): Layo
 }
 
 export class UserInterface {
+  private modalBuilders_: { uid: string; builder: () => React.ReactNode }[] = [];
+
   private openingModal_: {
     symbol: Symbol;
     priority: number;
@@ -70,6 +72,10 @@ export class UserInterface {
 
   closeModal(symbol?: Symbol) {
     if (symbol === undefined || this.openingModal_?.symbol === symbol) this.openingModal_ = null;
+  }
+
+  getAllModalBuilders(): { uid: string; builder: () => React.ReactNode }[] {
+    return this.modalBuilders_;
   }
 
   constructor() {

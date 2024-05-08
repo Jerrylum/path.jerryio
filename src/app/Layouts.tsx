@@ -18,7 +18,7 @@ export const getAllPanelContainers = (layout: LayoutType): PanelInstanceProps[] 
 };
 
 export const Layout = observer(() => {
-  const { appPreferences } = getAppStores();
+  const { appPreferences, ui } = getAppStores();
   const windowSize = useWindowSize();
   const usingLayout = getUsableLayout(windowSize, appPreferences.layoutType);
 
@@ -27,6 +27,9 @@ export const Layout = observer(() => {
       {usingLayout === LayoutType.Classic && <ClassisLayout />}
       {usingLayout === LayoutType.Exclusive && <ExclusiveLayout />}
       {usingLayout === LayoutType.Mobile && <MobileLayout />}
+      {ui.getAllModalBuilders().map((obj, index) => (
+        <React.Fragment key={obj.uid}>{obj.builder()}</React.Fragment>
+      ))}
     </LayoutProvider>
   );
 });
