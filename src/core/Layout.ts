@@ -1,5 +1,5 @@
 import { Vector } from "./Path";
-import { getFieldCanvasHalfHeight } from "./Util";
+import { getFieldCanvasHalfHeight, makeId } from "./Util";
 import { makeAutoObservable } from "mobx";
 
 export interface PanelInstanceProps {
@@ -14,6 +14,8 @@ export interface PanelInstanceProps {
 export interface PanelBuilderProps {}
 
 export type PanelBuilder = (props: PanelBuilderProps) => PanelInstanceProps;
+
+export type OverlayNodeBuilder = () => React.ReactNode;
 
 export enum LayoutType {
   Classic = "classic", // UX: Default layout
@@ -42,7 +44,7 @@ export function getUsableLayout(windowSize: Vector, preferred: LayoutType): Layo
 }
 
 export class UserInterface {
-  private modalBuilders_: { uid: string; builder: () => React.ReactNode }[] = [];
+  private overlayNodeBuilders_: OverlayNodeBuilder[] = [];
 
   private openingModal_: {
     symbol: Symbol;
@@ -74,8 +76,18 @@ export class UserInterface {
     if (symbol === undefined || this.openingModal_?.symbol === symbol) this.openingModal_ = null;
   }
 
-  getAllModalBuilders(): { uid: string; builder: () => React.ReactNode }[] {
-    return this.modalBuilders_;
+  registerOverlay(builder: OverlayNodeBuilder): () => void {
+    this.overlayNodeBuilders_.push(builder);
+    return () => this.unregisterOverlay(builder);
+  }
+
+  unregisterOverlay(builder: OverlayNodeBuilder): void {
+    const index = this.overlayNodeBuilders_.indexOf(builder);
+    if (index !== -1) this.overlayNodeBuilders_.splice(index, 1);
+  }
+
+  getAllOverlays(): ReadonlyArray<OverlayNodeBuilder> {
+    return this.overlayNodeBuilders_;
   }
 
   constructor() {

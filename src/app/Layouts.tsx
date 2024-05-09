@@ -1,10 +1,9 @@
 import React from "react";
-import { LayoutType, PanelInstanceProps, getUsableLayout } from "@core/Layout";
+import { LayoutType, PanelInstanceProps } from "@core/Layout";
 import { ControlConfigPanel } from "./common.blocks/panel/ControlConfigPanel";
 import { GeneralConfigPanel } from "./common.blocks/panel/GeneralConfigPanel";
 import { PathConfigPanel } from "./common.blocks/panel/PathConfigPanel";
 import { observer } from "mobx-react-lite";
-import { useWindowSize } from "@src/core/Hook";
 import { getAppStores } from "@src/core/MainApp";
 import { ClassisLayout } from "./classic.blocks/_index";
 import { ExclusiveLayout } from "./exclusive.blocks/_index";
@@ -17,17 +16,16 @@ export const getAllPanelContainers = (layout: LayoutType): PanelInstanceProps[] 
   return [GeneralConfigPanel({}), ControlConfigPanel({}), PathConfigPanel({})];
 };
 
-export const Layout = observer(() => {
-  const { appPreferences, ui } = getAppStores();
-  const windowSize = useWindowSize();
-  const usingLayout = getUsableLayout(windowSize, appPreferences.layoutType);
+export const Layout = observer((props: { targetLayout: LayoutType }) => {
+  const { targetLayout } = props;
+  const { ui } = getAppStores();
 
   return (
-    <LayoutProvider value={usingLayout}>
-      {usingLayout === LayoutType.Classic && <ClassisLayout />}
-      {usingLayout === LayoutType.Exclusive && <ExclusiveLayout />}
-      {usingLayout === LayoutType.Mobile && <MobileLayout />}
-      {ui.getAllModalBuilders().map((obj, index) => (
+    <LayoutProvider value={targetLayout}>
+      {targetLayout === LayoutType.Classic && <ClassisLayout />}
+      {targetLayout === LayoutType.Exclusive && <ExclusiveLayout />}
+      {targetLayout === LayoutType.Mobile && <MobileLayout />}
+      {ui.getAllOverlays().map(obj => (
         <React.Fragment key={obj.uid}>{obj.builder()}</React.Fragment>
       ))}
     </LayoutProvider>

@@ -22,22 +22,19 @@ import { ConfirmationModal } from "./app/common.blocks/modal/ConfirmationModal";
 import { DragDropBackdrop } from "./app/common.blocks/DragDropBackdrop";
 import { RemovePathsAndEndControls } from "./core/Command";
 import React from "react";
-import { LayoutType, getUsableLayout } from "./core/Layout";
+import { getUsableLayout } from "./core/Layout";
 import { getAppThemeInfo } from "./app/Theme";
-import { LayoutProvider } from "./app/Layouts";
+import { Layout } from "./app/Layouts";
 import { AboutModal } from "./app/common.blocks/modal/AboutModal";
 import { WelcomeModal } from "./app/common.blocks/modal/WelcomeModal";
 import { PreferencesModal, PreferencesModalSymbol } from "./app/common.blocks/modal/PreferencesModal";
 import { AssetManagerModal } from "./app/common.blocks/modal/AssetManagerModal";
 import { RequireLocalFieldImageModal } from "./app/common.blocks/modal/RequireLocalFieldImageModal";
-import { ClassisLayout } from "./app/classic.blocks/_index";
-import { ExclusiveLayout } from "./app/exclusive.blocks/_index";
-import { MobileLayout } from "./app/mobile.blocks/_index";
 
 const Root = observer(() => {
-  const { app, confirmation, ui, appPreferences, clipboard } = getAppStores();
+  const { app, ui, appPreferences, clipboard } = getAppStores();
 
-  const isUsingEditor = !confirmation.isOpen && !ui.isOpeningModal;
+  const isUsingEditor = !ui.isOpeningModal;
   const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(isUsingEditor, onDropFile);
 
   const isEnableInputField = isUsingEditor && !isDraggingFile;
@@ -111,6 +108,15 @@ const Root = observer(() => {
 
   React.useEffect(() => app.onUIReady(), [app]);
 
+  React.useEffect(() => {
+    ui.registerOverlay(() => <ConfirmationModal />);
+    ui.registerOverlay(() => <PreferencesModal />);
+    ui.registerOverlay(() => <WelcomeModal />);
+    ui.registerOverlay(() => <AboutModal />);
+    ui.registerOverlay(() => <AssetManagerModal />);
+    ui.registerOverlay(() => <RequireLocalFieldImageModal />);
+  }, [ui]);
+
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
     <Box
@@ -122,18 +128,7 @@ const Root = observer(() => {
       key={app.format.uid + "-" + app.gc.uol}>
       <ThemeProvider theme={getAppThemeInfo().theme}>
         <NoticeProvider />
-        <LayoutProvider value={usingLayout}>
-          {usingLayout === LayoutType.Classic && <ClassisLayout />}
-          {usingLayout === LayoutType.Exclusive && <ExclusiveLayout />}
-          {usingLayout === LayoutType.Mobile && <MobileLayout />}
-
-          <ConfirmationModal />
-          <PreferencesModal />
-          <WelcomeModal />
-          <AboutModal />
-          <AssetManagerModal />
-          <RequireLocalFieldImageModal />
-        </LayoutProvider>
+        <Layout targetLayout={usingLayout} />
         {isUsingEditor && isDraggingFile && <DragDropBackdrop {...{ onDragEnter, onDragLeave, onDragOver, onDrop }} />}
       </ThemeProvider>
     </Box>
