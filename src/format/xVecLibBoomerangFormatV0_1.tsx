@@ -1,24 +1,22 @@
 import { makeAutoObservable, action } from "mobx";
 import { MainApp, getAppStores } from "@core/MainApp";
 import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "@core/Util";
-import { BentRateApplicationDirection, Control, Path, Segment, Vector } from "@core/Path";
+import { BentRateApplicationDirection, Path, Segment } from "@core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "@core/Unit";
 import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
 import { Format, importPDJDataFromTextFile } from "./Format";
 import { Exclude, Expose, Type } from "class-transformer";
 import { IsBoolean, IsObject, IsPositive, IsString, MinLength, ValidateNested } from "class-validator";
-import { PointCalculationResult, getPathPoints, getDiscretePoints, fromDegreeToRadian } from "@core/Calculation";
+import { PointCalculationResult, getPathPoints } from "@core/Calculation";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
 import { UpdateProperties } from "@core/Command";
 import { ObserverInput } from "@app/component.blocks/ObserverInput";
 import { Box, Button, Typography } from "@mui/material";
-import { euclideanRotation } from "@core/Coordinate";
 import { CodePointBuffer, Int } from "../token/Tokens";
 import { observer } from "mobx-react-lite";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "@app/Notice";
 import { Logger } from "@core/Logger";
 import { getEnableOnNonTextInputFieldsHotkeysOptions, useCustomHotkeys } from "@core/Hook";
-import { ObserverCheckbox } from "@app/component.blocks/ObserverCheckbox";
 
 const logger = Logger("xVecLib Boomerang v0.1.0 (inch)");
 
@@ -248,8 +246,11 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
     const points = path.segments;
     if (points.length > 0) {
       for (const point of points) {
-        if (path.segments.indexOf(point) == 0) {
+        if (path.segments.indexOf(point) === 0) {
           rtn += `robo.set(${Math.round(point.first.x)}, ${Math.round(point.first.y)});\n`;
+          rtn += `imu.set_rotation(${point.first.heading});\n`;
+          rtn += `ou.printCoords();\n`;
+          // point.first.heading = -Math.atan2(point.first.x - point.last.x, point.first.y - point.last.y)* (180 / 3.14159265358979323846);
         }
         let pnt = 0;
         let last = path.controls.at(path.controls.length - 1);
@@ -261,11 +262,29 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
               point.controls[1].distance(point.first) > point.controls[2].distance(point.last)
                 ? point.controls[1]
                 : point.controls[2];
-            if (path.segments.indexOf(point) == path.segments.length - 1) {
-              pnt = (point.first.x - poin.x) / (dis * Math.sin(point.first.heading));
-            } else {
-              pnt = (point.last.x - poin.x) / (dis * Math.sin(point.last.heading));
+            if (point.first.heading === 0) {
+              point.first.heading =
+                Math.atan2(point.first.x - poin.x, point.first.y - poin.y) * (180 / 3.14159265358979323846);
             }
+            if (point.last.heading === 0) {
+              point.last.heading =
+                Math.atan2(point.last.x - poin.x, point.last.y - poin.y) * (180 / 3.14159265358979323846);
+            }
+            console.log(dis);
+
+            if (path.segments.indexOf(point) === path.segments.length - 1) {
+              pnt = -(point.first.x - poin.x) / (dis * Math.sin(point.first.heading));
+              console.log(point.first.heading);
+              console.log(point.first);
+              console.log(dis * Math.sin(point.first.heading));
+            } else {
+              pnt = -(point.last.x - poin.x) / (dis * Math.sin(point.last.heading));
+              console.log(point.last.heading);
+              console.log(point.last);
+              console.log(dis * Math.sin(point.last.heading));
+            }
+            console.log(poin);
+            console.log(pnt);
           }
         }
         arr.push([
