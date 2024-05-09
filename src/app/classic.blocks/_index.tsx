@@ -4,7 +4,6 @@ import { observer } from "mobx-react-lite";
 import { LayoutType } from "@core/Layout";
 import { getAppStores } from "@core/MainApp";
 import { FieldCanvasElement } from "../common.blocks/field-canvas/FieldCanvasElement";
-import { getAllPanelContainers } from "../Layouts";
 import { MenuPanel } from "../common.blocks/panel/MenuPanel";
 import { PanelStaticInstance, PanelAccordionInstance } from "../common.blocks/panel/Panel";
 import { PathTreePanel } from "../common.blocks/panel/PathTreePanel";
@@ -12,9 +11,9 @@ import { SpeedCanvasElement } from "../common.blocks/speed-canvas/SpeedCanvasEle
 import { MousePositionPresentation } from "../common.blocks/MousePositionPresentation";
 
 export const ClassisLayout = observer(() => {
-  const { appPreferences } = getAppStores();
+  const { appPreferences, ui } = getAppStores();
 
-  const containers = getAllPanelContainers(LayoutType.Classic);
+  const panelProps = ui.getAllPanels().map(obj => obj.builder({}));
 
   return (
     <>
@@ -36,8 +35,8 @@ export const ClassisLayout = observer(() => {
       </Box>
       {appPreferences.isRightSectionVisible && (
         <Box id="RightSection">
-          {containers.map(panelContainer => (
-            <PanelAccordionInstance key={panelContainer.id} {...panelContainer} />
+          {panelProps.map(panelProp => (
+            <PanelAccordionInstance key={panelProp.id} {...panelProp} />
           ))}
           <MousePositionPresentation />
         </Box>

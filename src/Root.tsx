@@ -30,6 +30,9 @@ import { WelcomeModal } from "./app/common.blocks/modal/WelcomeModal";
 import { PreferencesModal, PreferencesModalSymbol } from "./app/common.blocks/modal/PreferencesModal";
 import { AssetManagerModal } from "./app/common.blocks/modal/AssetManagerModal";
 import { RequireLocalFieldImageModal } from "./app/common.blocks/modal/RequireLocalFieldImageModal";
+import { GeneralConfigPanel } from "./app/common.blocks/panel/GeneralConfigPanel";
+import { ControlConfigPanel } from "./app/common.blocks/panel/ControlConfigPanel";
+import { PathConfigPanel } from "./app/common.blocks/panel/PathConfigPanel";
 
 const Root = observer(() => {
   const { app, ui, appPreferences, clipboard } = getAppStores();
@@ -109,12 +112,16 @@ const Root = observer(() => {
   React.useEffect(() => app.onUIReady(), [app]);
 
   React.useEffect(() => {
+    if (ui.getAllOverlays().length > 0) return;
     ui.registerOverlay(() => <ConfirmationModal />);
     ui.registerOverlay(() => <PreferencesModal />);
     ui.registerOverlay(() => <WelcomeModal />);
     ui.registerOverlay(() => <AboutModal />);
     ui.registerOverlay(() => <AssetManagerModal />);
     ui.registerOverlay(() => <RequireLocalFieldImageModal />);
+    ui.registerPanel(GeneralConfigPanel);
+    ui.registerPanel(ControlConfigPanel);
+    ui.registerPanel(PathConfigPanel);
   }, [ui]);
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed

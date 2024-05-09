@@ -44,7 +44,8 @@ export function getUsableLayout(windowSize: Vector, preferred: LayoutType): Layo
 }
 
 export class UserInterface {
-  private overlayNodeBuilders_: OverlayNodeBuilder[] = [];
+  private overlayNodeBuilders_: { uid: string; builder: OverlayNodeBuilder }[] = [];
+  private panelBuilders_: { uid: string; builder: PanelBuilder }[] = [];
 
   private openingModal_: {
     symbol: Symbol;
@@ -77,17 +78,31 @@ export class UserInterface {
   }
 
   registerOverlay(builder: OverlayNodeBuilder): () => void {
-    this.overlayNodeBuilders_.push(builder);
+    const uid = makeId(10);
+    this.overlayNodeBuilders_.push({ uid, builder });
     return () => this.unregisterOverlay(builder);
   }
 
   unregisterOverlay(builder: OverlayNodeBuilder): void {
-    const index = this.overlayNodeBuilders_.indexOf(builder);
-    if (index !== -1) this.overlayNodeBuilders_.splice(index, 1);
+    this.overlayNodeBuilders_ = this.overlayNodeBuilders_.filter(obj => obj.builder !== builder);
   }
 
-  getAllOverlays(): ReadonlyArray<OverlayNodeBuilder> {
+  registerPanel(builder: PanelBuilder): () => void {
+    const uid = makeId(10);
+    this.panelBuilders_.push({ uid, builder });
+    return () => this.unregisterPanel(builder);
+  }
+
+  unregisterPanel(builder: PanelBuilder): void {
+    this.panelBuilders_ = this.panelBuilders_.filter(obj => obj.builder !== builder);
+  }
+
+  getAllOverlays(): { uid: string; builder: OverlayNodeBuilder }[] {
     return this.overlayNodeBuilders_;
+  }
+
+  getAllPanels(): { uid: string; builder: PanelBuilder }[] {
+    return this.panelBuilders_;
   }
 
   constructor() {
