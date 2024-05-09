@@ -25,8 +25,6 @@ const PathConfigPanelBody = observer((props: {}) => {
 export const PathConfigPanel = (props: PanelBuilderProps): PanelInstanceProps => {
   const { app } = getAppStores();
 
-  const pc = app.selectedPath?.pc;
-
   return {
     id: "PathConfigAccordion",
     header: "Path",
