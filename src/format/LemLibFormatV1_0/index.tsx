@@ -6,11 +6,11 @@ import { AddKeyframe, UpdateProperties, UpdateInstancesPropertiesExtended } from
 import { MainApp, getAppStores } from "@core/MainApp";
 import { BentRateApplicationDirection, Path, Segment, SpeedKeyframe } from "@core/Path";
 import { EditableNumberRange, NumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "@core/Util";
-import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "./Config";
+import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "../Config";
 import { IsPositive, IsBoolean, ValidateNested, IsObject } from "class-validator";
 import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFieldImage } from "@core/Asset";
 import { Quantity, UnitConverter, UnitOfLength } from "@core/Unit";
-import { Format } from "./Format";
+import { Format } from "../Format";
 import { PointCalculationResult, fromDegreeToRadian, fromRadiansToDegree, getPathPoints } from "@core/Calculation";
 import { SmartBuffer } from "smart-buffer";
 
