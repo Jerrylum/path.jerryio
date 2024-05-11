@@ -1,212 +1,16 @@
-import { makeAutoObservable, action, observable, IObservableValue } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { MainApp, getAppStores } from "@core/MainApp";
-import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "@core/Util";
-import { Quantity, UnitOfLength } from "@core/Unit";
-import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "../Config";
+import { makeId } from "@core/Util";
+import { Quantity } from "@core/Unit";
+import { GeneralConfig, convertFormat } from "../Config";
 import { Format, importPDJDataFromTextFile } from "../Format";
-import { Box, Button, TextField, Typography } from "@mui/material";
 import { AddCubicSegment, AddLinearSegment, ConvertSegment, InsertControls, InsertPaths } from "@core/Command";
-import { Exclude, Expose, Type } from "class-transformer";
-import { IsBoolean, IsNumber, IsObject, IsPositive, IsString, ValidateNested } from "class-validator";
 import { PointCalculationResult, getPathPoints } from "@core/Calculation";
-import { BentRateApplicationDirection, EndControl, Path, Segment, SegmentVariant } from "@core/Path";
-import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
-import { enqueueSuccessSnackbar, enqueueErrorSnackbar } from "@app/Notice";
-import { getEnableOnNonTextInputFieldsHotkeysOptions, useCustomHotkeys } from "@core/Hook";
-import { observer } from "mobx-react-lite";
-import { Logger } from "@core/Logger";
-import { BackQuoteString, CodePointBuffer, NumberT } from "@token/Tokens";
-import { ObserverInput } from "@app/component.blocks/ObserverInput";
-
-const logger = Logger("Move-to-Point Code Gen v0.1.x");
-
-const EditOutputTemplateConfirmationDescription = observer((props: { value: IObservableValue<string> }) => {
-  return (
-    <>
-      <Typography>Edit the output template to generate your own code.</Typography>
-      <TextField
-        InputLabelProps={{ shrink: true }}
-        size="small"
-        sx={{ width: "100%" }}
-        multiline
-        maxRows={4}
-        value={props.value.get()}
-        onChange={event => props.value.set(event.target.value)}
-        data-gramm="false" // disable grammarly
-      />
-    </>
-  );
-});
-
-const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
-  const { config } = props;
-
-  const { confirmation, ui } = getAppStores();
-
-  const isUsingEditor = !confirmation.isOpen && !ui.isOpeningModal;
-
-  const onCopyCode = action(() => {
-    try {
-      const code = config.format.exportCode();
-
-      navigator.clipboard.writeText(code);
-
-      enqueueSuccessSnackbar(logger, "Copied");
-    } catch (e) {
-      enqueueErrorSnackbar(logger, e);
-    }
-  });
-
-  const onEditTemplate = action(() => {
-    const editingOutputTemplate = observable.box(config.outputTemplate);
-
-    confirmation.prompt({
-      title: "Edit Output Template",
-      description: <EditOutputTemplateConfirmationDescription value={editingOutputTemplate} />,
-      buttons: [
-        {
-          label: "Save",
-          color: "success",
-          hotkey: "s",
-          onClick: () => {
-            config.outputTemplate = editingOutputTemplate.get();
-          }
-        },
-        { label: "Don't Save", hotkey: "n" },
-        { label: "Cancel", onClick: () => {} }
-      ]
-    });
-  });
-
-  useCustomHotkeys("Shift+Mod+C", onCopyCode, getEnableOnNonTextInputFieldsHotkeysOptions(isUsingEditor));
-
-  const hotkey = IS_MAC_OS ? getMacHotKeyString("Shift+Mod+C") : "Shift+Ctrl+C";
-
-  return (
-    <>
-      <Box className="Panel-Box">
-        <Box className="Panel-FlexBox" sx={{ marginTop: "32px" }}>
-          <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
-            Copy Code
-          </Button>
-          <Button variant="text" onClick={onEditTemplate}>
-            Edit Template
-          </Button>
-        </Box>
-      </Box>
-    </>
-  );
-});
-
-// observable class
-class GeneralConfigImpl implements GeneralConfig {
-  @IsPositive()
-  @Expose()
-  robotWidth: number = 30;
-  @IsPositive()
-  @Expose()
-  robotHeight: number = 30;
-  @Exclude()
-  readonly robotIsHolonomic = "force-holonomic";
-  @IsBoolean()
-  @Expose()
-  showRobot: boolean = false;
-  @ValidateNumber(num => num > 0 && num <= 1000) // Don't use IsEnum
-  @Expose()
-  uol: UnitOfLength = UnitOfLength.Centimeter;
-  @IsPositive()
-  @Expose()
-  pointDensity: number = 2;
-  @IsPositive()
-  @Expose()
-  controlMagnetDistance: number = 5;
-  @Type(() => FieldImageSignatureAndOrigin)
-  @ValidateNested()
-  @IsObject()
-  @Expose()
-  fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> =
-    getDefaultBuiltInFieldImage().getSignatureAndOrigin();
-  @IsString()
-  @Expose()
-  outputTemplate: string = `path: \`// \${name}
-
-\${code}
-\`
-moveToPoint: \`moveToPoint(\${x}, \${y}, \${heading}, \${speed});\``;
-
-  @Exclude()
-  private format_: MoveToPointCodeGenFormatV0_1;
-
-  constructor(format: MoveToPointCodeGenFormatV0_1) {
-    this.format_ = format;
-    makeAutoObservable(this);
-
-    initGeneralConfig(this);
-  }
-
-  get format() {
-    return this.format_;
-  }
-
-  getConfigPanel() {
-    return <GeneralConfigPanel config={this} />;
-  }
-}
-
-// observable class
-class PathConfigImpl implements PathConfig {
-  @Exclude()
-  speedLimit: EditableNumberRange = {
-    minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 1, label: "1" },
-    step: 1,
-    from: 0,
-    to: 1
-  };
-  @Exclude()
-  bentRateApplicableRange: EditableNumberRange = {
-    minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 1, label: "1" },
-    step: 0.001,
-    from: 0,
-    to: 1
-  };
-  @Exclude()
-  bentRateApplicationDirection = BentRateApplicationDirection.LowToHigh;
-  @IsNumber()
-  @Expose()
-  speed: number = 30;
-  @Exclude()
-  readonly format: MoveToPointCodeGenFormatV0_1;
-
-  @Exclude()
-  public path!: Path;
-
-  constructor(format: MoveToPointCodeGenFormatV0_1) {
-    this.format = format;
-    makeAutoObservable(this);
-  }
-
-  getConfigPanel() {
-    return (
-      <>
-        <Box className="Panel-Box">
-          <ObserverInput
-            label="Speed"
-            sx={{ width: "50%" }}
-            getValue={() => this.speed.toUser() + ""}
-            setValue={(value: string) => {
-              this.speed = parseFloat(value);
-            }}
-            isValidIntermediate={() => true}
-            isValidValue={(candidate: string) => NumberT.parse(new CodePointBuffer(candidate)) !== null}
-            numeric
-          />
-        </Box>
-      </>
-    );
-  }
-}
+import { EndControl, Path, Segment, SegmentVariant } from "@core/Path";
+import { BackQuoteString, CodePointBuffer } from "@token/Tokens";
+import { UserInterface } from "@core/Layout";
+import { PathConfigImpl, PathConfigPanel } from "./PathConfig";
+import { GeneralConfigImpl } from "./GeneralConfig";
 
 // observable class
 export class MoveToPointCodeGenFormatV0_1 implements Format {
@@ -230,7 +34,7 @@ export class MoveToPointCodeGenFormatV0_1 implements Format {
     return "Move-to-Point Code Gen v0.1.x";
   }
 
-  register(app: MainApp): void {
+  register(app: MainApp, ui: UserInterface): void {
     if (this.isInit) return;
     this.isInit = true;
 
@@ -255,11 +59,12 @@ export class MoveToPointCodeGenFormatV0_1 implements Format {
         } else if (event.isCommandInstanceOf(InsertControls)) {
           event.command.inserting = event.command.inserting.filter(control => control instanceof EndControl);
         }
-      })
+      }),
+      ui.registerPanel(PathConfigPanel).disposer
     );
   }
 
-  unregister(app: MainApp): void {
+  unregister(): void {
     this.disposers.forEach(disposer => disposer());
   }
 

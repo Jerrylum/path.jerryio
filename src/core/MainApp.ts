@@ -69,8 +69,8 @@ export class MainApp {
     reaction(
       () => this.format,
       action((newFormat: Format, oldFormat: Format) => {
-        oldFormat.unregister(this);
-        newFormat.register(this);
+        oldFormat.unregister();
+        newFormat.register(this, ui);
 
         this.resetUserControl();
         this.resetAllEditors();
@@ -433,11 +433,13 @@ export class MainApp {
 
 export type AppStores = typeof appStores;
 
+const ui = new UserInterface();
+
 const appStores = {
   app: new MainApp(),
   assetManager: new AssetManager(),
   confirmation: new Confirmation(),
-  ui: new UserInterface(),
+  ui,
   appPreferences: new Preferences(),
   ga: new GoogleAnalytics(),
   clipboard: new AppClipboard()

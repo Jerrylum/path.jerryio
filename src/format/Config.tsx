@@ -72,7 +72,6 @@ export function initGeneralConfig(gc: GeneralConfig) {
 
 export interface ConfigSection {
   get format(): Format;
-  getConfigPanel(): JSX.Element;
 }
 
 export interface GeneralConfig extends ConfigSection {
@@ -84,6 +83,7 @@ export interface GeneralConfig extends ConfigSection {
   pointDensity: number;
   controlMagnetDistance: number;
   fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType>;
+  getConfigPanel(): React.ReactNode;
 }
 
 export interface PathConfig extends ConfigSection {

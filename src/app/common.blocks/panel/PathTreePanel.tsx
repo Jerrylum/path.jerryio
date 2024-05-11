@@ -26,7 +26,7 @@ import {
 import { getAppStores } from "@core/MainApp";
 import { Quantity, UnitOfLength } from "@core/Unit";
 import { LayoutType } from "@core/Layout";
-import { PanelInstanceProps } from "@src/core/Layout";
+import { PanelInstanceProps } from "@core/Layout";
 import classNames from "classnames";
 import { IS_MAC_OS } from "@core/Util";
 import React from "react";

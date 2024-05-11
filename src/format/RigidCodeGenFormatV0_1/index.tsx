@@ -1,10 +1,9 @@
-import { makeAutoObservable, action, observable, IObservableValue } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { MainApp, getAppStores } from "@core/MainApp";
-import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "@core/Util";
-import { Quantity, UnitOfLength } from "@core/Unit";
-import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "../Config";
+import { makeId } from "@core/Util";
+import { Quantity } from "@core/Unit";
+import { GeneralConfig, convertFormat } from "../Config";
 import { Format, importPDJDataFromTextFile } from "../Format";
-import { Box, Button, TextField, Typography } from "@mui/material";
 import {
   AddCubicSegment,
   AddKeyframe,
@@ -12,240 +11,14 @@ import {
   ConvertSegment,
   InsertControls,
   InsertPaths,
-  UpdatePathTreeItems,
-  UpdateProperties
+  UpdatePathTreeItems
 } from "@core/Command";
-import { Exclude, Expose, Type } from "class-transformer";
-import { IsBoolean, IsEnum, IsNumber, IsObject, IsPositive, IsString, ValidateNested } from "class-validator";
 import { PointCalculationResult, boundHeading, getPathPoints, toDerivativeHeading, toHeading } from "@core/Calculation";
-import { BentRateApplicationDirection, EndControl, Path, Segment, SegmentVariant } from "@core/Path";
-import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
-import { ObserverEnumSelect } from "@app/component.blocks/ObserverEnumSelect";
-import { enqueueSuccessSnackbar, enqueueErrorSnackbar } from "@app/Notice";
-import { getEnableOnNonTextInputFieldsHotkeysOptions, useCustomHotkeys } from "@core/Hook";
-import { observer } from "mobx-react-lite";
-import { Logger } from "@core/Logger";
-import { BackQuoteString, CodePointBuffer, NumberT } from "@src/token/Tokens";
-import { ObserverInput } from "@src/app/component.blocks/ObserverInput";
-
-const logger = Logger("Rigid Code Gen v0.1.x");
-
-enum HeadingOutputType {
-  Absolute = "Absolute Heading",
-  Relative = "Relative Heading",
-  Derivative = "Derivative Heading"
-}
-
-const EditOutputTemplateConfirmationDescription = observer((props: { value: IObservableValue<string> }) => {
-  return (
-    <>
-      <Typography>Edit the output template to generate your own code.</Typography>
-      <TextField
-        InputLabelProps={{ shrink: true }}
-        size="small"
-        sx={{ width: "100%" }}
-        multiline
-        maxRows={4}
-        value={props.value.get()}
-        onChange={event => props.value.set(event.target.value)}
-        data-gramm="false" // disable grammarly
-      />
-    </>
-  );
-});
-
-const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
-  const { config } = props;
-
-  const { app, confirmation, ui } = getAppStores();
-
-  const isUsingEditor = !confirmation.isOpen && !ui.isOpeningModal;
-
-  const onCopyCode = action(() => {
-    try {
-      const code = config.format.exportCode();
-
-      navigator.clipboard.writeText(code);
-
-      enqueueSuccessSnackbar(logger, "Copied");
-    } catch (e) {
-      enqueueErrorSnackbar(logger, e);
-    }
-  });
-
-  const onEditTemplate = action(() => {
-    const editingOutputTemplate = observable.box(config.outputTemplate);
-
-    confirmation.prompt({
-      title: "Edit Output Template",
-      description: <EditOutputTemplateConfirmationDescription value={editingOutputTemplate} />,
-      buttons: [
-        {
-          label: "Save",
-          color: "success",
-          hotkey: "s",
-          onClick: () => {
-            config.outputTemplate = editingOutputTemplate.get();
-          }
-        },
-        { label: "Don't Save", hotkey: "n" },
-        { label: "Cancel", onClick: () => {} }
-      ]
-    });
-  });
-
-  useCustomHotkeys("Shift+Mod+C", onCopyCode, getEnableOnNonTextInputFieldsHotkeysOptions(isUsingEditor));
-
-  const hotkey = IS_MAC_OS ? getMacHotKeyString("Shift+Mod+C") : "Shift+Ctrl+C";
-
-  return (
-    <>
-      <Box className="Panel-Box">
-        <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
-        <Box className="Panel-FlexBox">
-          <ObserverEnumSelect
-            sx={{ marginTop: "16px", width: "50%" }}
-            label="Heading Output Type"
-            enumValue={config.headingOutputType}
-            onEnumChange={value => {
-              app.history.execute(
-                `Set using heading output type to ${value}`,
-                new UpdateProperties(config, { headingOutputType: value })
-              );
-            }}
-            enumType={HeadingOutputType}
-          />
-        </Box>
-        <Box className="Panel-FlexBox" sx={{ marginTop: "32px" }}>
-          <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
-            Copy Code
-          </Button>
-          <Button variant="text" onClick={onEditTemplate}>
-            Edit Template
-          </Button>
-        </Box>
-      </Box>
-    </>
-  );
-});
-
-// observable class
-class GeneralConfigImpl implements GeneralConfig {
-  @IsPositive()
-  @Expose()
-  robotWidth: number = 30;
-  @IsPositive()
-  @Expose()
-  robotHeight: number = 30;
-  @Exclude()
-  readonly robotIsHolonomic = "force-static";
-  @IsBoolean()
-  @Expose()
-  showRobot: boolean = false;
-  @ValidateNumber(num => num > 0 && num <= 1000) // Don't use IsEnum
-  @Expose()
-  uol: UnitOfLength = UnitOfLength.Centimeter;
-  @IsPositive()
-  @Expose()
-  pointDensity: number = 2;
-  @IsPositive()
-  @Expose()
-  controlMagnetDistance: number = 5;
-  @Type(() => FieldImageSignatureAndOrigin)
-  @ValidateNested()
-  @IsObject()
-  @Expose()
-  fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> =
-    getDefaultBuiltInFieldImage().getSignatureAndOrigin();
-  @IsEnum(HeadingOutputType)
-  @Expose()
-  headingOutputType: HeadingOutputType = HeadingOutputType.Absolute;
-  @IsString()
-  // TODO: validate
-  @Expose()
-  outputTemplate: string = `path: \`// \${name}
-
-\${code}
-\`
-forward: \`forward(\${distance}, \${speed});\`
-backward: \`backward(\${distance}, \${speed});\`
-turnLeft: \`turnLeft(\${heading}, \${speed});\`
-turnRight: \`turnRight(\${heading}, \${speed});\`
-turnTo: \`turnTo(\${heading}, \${speed});\``;
-
-  @Exclude()
-  private format_: RigidCodeGenFormatV0_1;
-
-  constructor(format: RigidCodeGenFormatV0_1) {
-    this.format_ = format;
-    makeAutoObservable(this);
-
-    initGeneralConfig(this);
-  }
-
-  get format() {
-    return this.format_;
-  }
-
-  getConfigPanel() {
-    return <GeneralConfigPanel config={this} />;
-  }
-}
-
-// observable class
-class PathConfigImpl implements PathConfig {
-  @Exclude()
-  speedLimit: EditableNumberRange = {
-    minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 1, label: "1" },
-    step: 1,
-    from: 0,
-    to: 1
-  };
-  @Exclude()
-  bentRateApplicableRange: EditableNumberRange = {
-    minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 1, label: "1" },
-    step: 0.001,
-    from: 0,
-    to: 1
-  };
-  @Exclude()
-  bentRateApplicationDirection = BentRateApplicationDirection.LowToHigh;
-  @IsNumber()
-  @Expose()
-  speed: number = 30;
-  @Exclude()
-  readonly format: RigidCodeGenFormatV0_1;
-
-  @Exclude()
-  public path!: Path;
-
-  constructor(format: RigidCodeGenFormatV0_1) {
-    this.format = format;
-    makeAutoObservable(this);
-  }
-
-  getConfigPanel() {
-    return (
-      <>
-        <Box className="Panel-Box">
-          <ObserverInput
-            label="Speed"
-            sx={{ width: "50%" }}
-            getValue={() => this.speed.toUser() + ""}
-            setValue={(value: string) => {
-              this.speed = parseFloat(value);
-            }}
-            isValidIntermediate={() => true}
-            isValidValue={(candidate: string) => NumberT.parse(new CodePointBuffer(candidate)) !== null}
-            numeric
-          />
-        </Box>
-      </>
-    );
-  }
-}
+import { EndControl, Path, Segment, SegmentVariant } from "@core/Path";
+import { BackQuoteString, CodePointBuffer } from "@src/token/Tokens";
+import { PathConfigImpl, PathConfigPanel } from "./PathConfig";
+import { GeneralConfigImpl, HeadingOutputType } from "./GeneralConfig";
+import { UserInterface } from "@core/Layout";
 
 // observable class
 export class RigidCodeGenFormatV0_1 implements Format {
@@ -269,7 +42,7 @@ export class RigidCodeGenFormatV0_1 implements Format {
     return "Rigid Code Gen v0.1.x";
   }
 
-  register(app: MainApp): void {
+  register(app: MainApp, ui: UserInterface): void {
     if (this.isInit) return;
     this.isInit = true;
 
@@ -348,11 +121,12 @@ export class RigidCodeGenFormatV0_1 implements Format {
       }),
       app.history.addEventListener("afterRedo", event => {
         fixEndControlsHeading();
-      })
+      }),
+      ui.registerPanel(PathConfigPanel).disposer
     );
   }
 
-  unregister(app: MainApp): void {
+  unregister(): void {
     this.disposers.forEach(disposer => disposer());
   }
 

@@ -3,6 +3,7 @@ import { GeneralConfig } from "./Config";
 import { PointCalculationResult } from "@core/Calculation";
 import { APP_VERSION, MainApp } from "@core/MainApp";
 import { Range } from "semver";
+import { UserInterface } from "@core/Layout";
 import { UnitOfLength } from "@core/Unit";
 import { LemLibFormatV0_4 } from "./LemLibFormatV0_4";
 import { PathDotJerryioFormatV0_1 } from "./PathDotJerryioFormatV0_1";
@@ -18,9 +19,9 @@ export interface Format {
 
   getName(): string;
 
-  register(app: MainApp): void;
+  register(app: MainApp, ui: UserInterface): void;
 
-  unregister(app: MainApp): void;
+  unregister(): void;
 
   createNewInstance(): Format;
 

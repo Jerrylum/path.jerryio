@@ -1,134 +1,15 @@
 import { makeAutoObservable } from "mobx";
 import { MainApp, getAppStores } from "@core/MainApp";
-import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, makeId } from "@core/Util";
+import { makeId } from "@core/Util";
 import { Quantity, UnitConverter, UnitOfLength } from "@core/Unit";
-import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "../Config";
+import { GeneralConfig, convertFormat } from "../Config";
 import { Format, importPDJDataFromTextFile } from "../Format";
-import { RangeSlider } from "@app/component.blocks/RangeSlider";
-import { Box, Typography } from "@mui/material";
-import { UpdateProperties } from "@core/Command";
-import { Exclude, Expose, Type } from "class-transformer";
-import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
 import { PointCalculationResult, getPathPoints } from "@core/Calculation";
-import { BentRateApplicationDirection, Path, Segment } from "@core/Path";
+import { Path, Segment } from "@core/Path";
 import { isCoordinateWithHeading } from "@core/Coordinate";
-import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
-
-// observable class
-class GeneralConfigImpl implements GeneralConfig {
-  @IsPositive()
-  @Expose()
-  robotWidth: number = 30;
-  @IsPositive()
-  @Expose()
-  robotHeight: number = 30;
-  @IsBoolean()
-  @Expose()
-  robotIsHolonomic: boolean = false;
-  @IsBoolean()
-  @Expose()
-  showRobot: boolean = false;
-  @ValidateNumber(num => num > 0 && num <= 1000) // Don't use IsEnum
-  @Expose()
-  uol: UnitOfLength = UnitOfLength.Centimeter;
-  @IsPositive()
-  @Expose()
-  pointDensity: number = 2;
-  @IsPositive()
-  @Expose()
-  controlMagnetDistance: number = 5;
-  @Type(() => FieldImageSignatureAndOrigin)
-  @ValidateNested()
-  @IsObject()
-  @Expose()
-  fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> =
-    getDefaultBuiltInFieldImage().getSignatureAndOrigin();
-
-  @Exclude()
-  private format_: PathDotJerryioFormatV0_1;
-
-  constructor(format: PathDotJerryioFormatV0_1) {
-    this.format_ = format;
-    makeAutoObservable(this);
-
-    initGeneralConfig(this);
-  }
-
-  get format() {
-    return this.format_;
-  }
-
-  getConfigPanel() {
-    return <></>;
-  }
-}
-
-// observable class
-class PathConfigImpl implements PathConfig {
-  @ValidateEditableNumberRange(-Infinity, Infinity)
-  @Expose()
-  speedLimit: EditableNumberRange = {
-    minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 600, label: "600" },
-    step: 1,
-    from: 40,
-    to: 120
-  };
-  @ValidateEditableNumberRange(-Infinity, Infinity)
-  @Expose()
-  bentRateApplicableRange: EditableNumberRange = {
-    minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 1, label: "1" },
-    step: 0.001,
-    from: 0,
-    to: 0.1
-  };
-  @Exclude()
-  bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
-  @Exclude()
-  readonly format: PathDotJerryioFormatV0_1;
-
-  @Exclude()
-  public path!: Path;
-
-  constructor(format: PathDotJerryioFormatV0_1) {
-    this.format = format;
-    makeAutoObservable(this);
-  }
-
-  getConfigPanel() {
-    const { app } = getAppStores();
-
-    return (
-      <>
-        <Box className="Panel-Box">
-          <Typography>Min/Max Speed</Typography>
-          <RangeSlider
-            range={this.speedLimit}
-            onChange={(from, to) =>
-              app.history.execute(
-                `Change path ${this.path.uid} min/max speed`,
-                new UpdateProperties(this.speedLimit, { from, to })
-              )
-            }
-          />
-        </Box>
-        <Box className="Panel-Box">
-          <Typography>Bent Rate Applicable Range</Typography>
-          <RangeSlider
-            range={this.bentRateApplicableRange}
-            onChange={(from, to) =>
-              app.history.execute(
-                `Change path ${this.path.uid} bent rate applicable range`,
-                new UpdateProperties(this.bentRateApplicableRange, { from, to })
-              )
-            }
-          />
-        </Box>
-      </>
-    );
-  }
-}
+import { GeneralConfigImpl } from "./GeneralConfig";
+import { PathConfigImpl, PathConfigPanel } from "./PathConfig";
+import { UserInterface } from "@core/Layout";
 
 // observable class
 export class PathDotJerryioFormatV0_1 implements Format {
@@ -136,6 +17,8 @@ export class PathDotJerryioFormatV0_1 implements Format {
   uid: string;
 
   private gc = new GeneralConfigImpl(this);
+
+  private readonly disposers: (() => void)[] = [];
 
   constructor() {
     this.uid = makeId(10);
@@ -150,12 +33,16 @@ export class PathDotJerryioFormatV0_1 implements Format {
     return "path.jerryio v0.1.x (cm, rpm)";
   }
 
-  register(app: MainApp): void {
+  register(app: MainApp, ui: UserInterface): void {
     if (this.isInit) return;
     this.isInit = true;
+
+    this.disposers.push(ui.registerPanel(PathConfigPanel).disposer);
   }
 
-  unregister(app: MainApp): void {}
+  unregister(): void {
+    this.disposers.forEach(disposer => disposer());
+  }
 
   getGeneralConfig(): GeneralConfig {
     return this.gc;

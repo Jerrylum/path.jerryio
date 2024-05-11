@@ -1,3 +1,4 @@
+import React from "react";
 import { Vector } from "./Path";
 import { getFieldCanvasHalfHeight, makeId } from "./Util";
 import { makeAutoObservable } from "mobx";
@@ -22,6 +23,9 @@ export enum LayoutType {
   Exclusive = "exclusive",
   Mobile = "mobile"
 }
+
+export const LayoutContext = React.createContext<LayoutType>(LayoutType.Classic);
+export const LayoutProvider = LayoutContext.Provider;
 
 export function getAvailableLayouts(windowSize: Vector): LayoutType[] {
   const widthForClassic = 16 + 288 + 16 + getFieldCanvasHalfHeight(windowSize) + 16 + 352 + 16;
@@ -77,24 +81,29 @@ export class UserInterface {
     if (symbol === undefined || this.openingModal_?.symbol === symbol) this.openingModal_ = null;
   }
 
-  registerOverlay(builder: OverlayNodeBuilder): () => void {
+  registerOverlay(builder: OverlayNodeBuilder): { uid: string; disposer: () => void } {
     const uid = makeId(10);
     this.overlayNodeBuilders_.push({ uid, builder });
-    return () => this.unregisterOverlay(builder);
+    return { uid, disposer: () => this.unregisterOverlay(uid) };
   }
 
-  unregisterOverlay(builder: OverlayNodeBuilder): void {
-    this.overlayNodeBuilders_ = this.overlayNodeBuilders_.filter(obj => obj.builder !== builder);
+  unregisterOverlay(uid: string): void {
+    this.overlayNodeBuilders_ = this.overlayNodeBuilders_.filter(obj => obj.uid !== uid);
   }
 
-  registerPanel(builder: PanelBuilder): () => void {
+  registerPanel(builder: PanelBuilder, index?: number): { uid: string; disposer: () => void } {
     const uid = makeId(10);
-    this.panelBuilders_.push({ uid, builder });
-    return () => this.unregisterPanel(builder);
+
+    if (index === undefined) {
+      this.panelBuilders_.push({ uid, builder });
+    } else {
+      this.panelBuilders_.splice(index, 0, { uid, builder });
+    }
+    return { uid, disposer: () => this.unregisterPanel(uid) };
   }
 
-  unregisterPanel(builder: PanelBuilder): void {
-    this.panelBuilders_ = this.panelBuilders_.filter(obj => obj.builder !== builder);
+  unregisterPanel(uid: string): void {
+    this.panelBuilders_ = this.panelBuilders_.filter(obj => obj.uid !== uid);
   }
 
   getAllOverlays(): { uid: string; builder: OverlayNodeBuilder }[] {

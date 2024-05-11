@@ -25,12 +25,11 @@ import { RobotElement } from "./RobotElement";
 import { fromHeadingInDegreeToAngleInRadian } from "@core/Calculation";
 import { MagnetReference } from "@core/Magnet";
 import { useFieldImageAsset, useMobxStorage, useTouchEvent, useWindowSize } from "@core/Hook";
-import { LayoutType } from "@core/Layout";
+import { LayoutContext, LayoutType } from "@core/Layout";
 import { Box } from "@mui/material";
 import { Instance } from "@popperjs/core";
 import { TouchEventListener } from "@core/TouchEventListener";
 import { CanvasTooltip, Padding0Tooltip } from "@app/component.blocks/CanvasTooltip";
-import { LayoutContext } from "@app/Layouts";
 import { getDefaultBuiltInFieldImage } from "@core/Asset";
 
 function fixControlTooCloseToTheEndControl() {

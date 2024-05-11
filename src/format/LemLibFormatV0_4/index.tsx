@@ -1,154 +1,15 @@
-import { makeAutoObservable, action } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { MainApp, getAppStores } from "@core/MainApp";
-import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber, clamp, makeId } from "@core/Util";
-import { BentRateApplicationDirection, Control, EndControl, Path, Segment, SpeedKeyframe, Vector } from "@core/Path";
+import { clamp, makeId } from "@core/Util";
+import { Control, EndControl, Path, Segment, SpeedKeyframe, Vector } from "@core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "@core/Unit";
-import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "../Config";
+import { GeneralConfig, convertFormat } from "../Config";
 import { Format, importPDJDataFromTextFile } from "../Format";
-import { Box, Slider, Typography } from "@mui/material";
-import { RangeSlider } from "@app/component.blocks/RangeSlider";
-import { AddKeyframe, UpdateProperties } from "@core/Command";
-import { Exclude, Expose, Type } from "class-transformer";
-import { IsBoolean, IsObject, IsPositive, ValidateNested } from "class-validator";
+import { AddKeyframe } from "@core/Command";
 import { PointCalculationResult, getPathPoints } from "@core/Calculation";
-import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
-
-// observable class
-class GeneralConfigImpl implements GeneralConfig {
-  @IsPositive()
-  @Expose()
-  robotWidth: number = 12;
-  @IsPositive()
-  @Expose()
-  robotHeight: number = 12;
-  @IsBoolean()
-  @Expose()
-  robotIsHolonomic: boolean = false;
-  @IsBoolean()
-  @Expose()
-  showRobot: boolean = false;
-  @ValidateNumber(num => num > 0 && num <= 1000) // Don't use IsEnum
-  @Expose()
-  uol: UnitOfLength = UnitOfLength.Inch;
-  @IsPositive()
-  @Expose()
-  pointDensity: number = 2; // inches
-  @IsPositive()
-  @Expose()
-  controlMagnetDistance: number = 5 / 2.54;
-  @Type(() => FieldImageSignatureAndOrigin)
-  @ValidateNested()
-  @IsObject()
-  @Expose()
-  fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> =
-    getDefaultBuiltInFieldImage().getSignatureAndOrigin();
-
-  @Exclude()
-  private format_: LemLibFormatV0_4;
-
-  constructor(format: LemLibFormatV0_4) {
-    this.format_ = format;
-    makeAutoObservable(this);
-
-    initGeneralConfig(this);
-  }
-
-  get format() {
-    return this.format_;
-  }
-
-  getConfigPanel() {
-    return <></>;
-  }
-}
-
-// observable class
-class PathConfigImpl implements PathConfig {
-  @ValidateEditableNumberRange(-Infinity, Infinity)
-  @Expose()
-  speedLimit: EditableNumberRange = {
-    minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 127, label: "127" },
-    step: 1,
-    from: 20,
-    to: 100
-  };
-  @ValidateEditableNumberRange(-Infinity, Infinity)
-  @Expose()
-  bentRateApplicableRange: EditableNumberRange = {
-    minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 1, label: "1" },
-    step: 0.001,
-    from: 0,
-    to: 0.1
-  };
-  @Exclude()
-  bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
-  @ValidateNumber(num => num >= 0.1 && num <= 255)
-  @Expose()
-  maxDecelerationRate: number = 127;
-
-  @Exclude()
-  readonly format: LemLibFormatV0_4;
-
-  @Exclude()
-  public path!: Path;
-
-  constructor(format: LemLibFormatV0_4) {
-    this.format = format;
-    makeAutoObservable(this);
-  }
-
-  getConfigPanel() {
-    const { app } = getAppStores();
-
-    return (
-      <>
-        <Box className="Panel-Box">
-          <Typography>Min/Max Speed</Typography>
-          <RangeSlider
-            range={this.speedLimit}
-            onChange={(from, to) =>
-              app.history.execute(
-                `Change path ${this.path.uid} min/max speed`,
-                new UpdateProperties(this.speedLimit, { from, to })
-              )
-            }
-          />
-        </Box>
-        <Box className="Panel-Box">
-          <Typography>Bent Rate Applicable Range</Typography>
-          <RangeSlider
-            range={this.bentRateApplicableRange}
-            onChange={(from, to) =>
-              app.history.execute(
-                `Change path ${this.path.uid} bent rate applicable range`,
-                new UpdateProperties(this.bentRateApplicableRange, { from, to })
-              )
-            }
-          />
-        </Box>
-        <Box className="Panel-Box">
-          <Typography>Max Deceleration Rate</Typography>
-          <Slider
-            step={0.1}
-            valueLabelDisplay="auto"
-            value={[this.maxDecelerationRate]}
-            min={0.1}
-            max={255}
-            onChange={action((event, value) => {
-              if (Array.isArray(value)) value = value[0];
-              app.history.execute(
-                `Change path ${this.path.uid} max deceleration rate`,
-                new UpdateProperties(this as any, { maxDecelerationRate: value })
-              );
-            })}
-          />
-        </Box>
-      </>
-    );
-  }
-}
+import { GeneralConfigImpl } from "./GeneralConfig";
+import { PathConfigImpl, PathConfigPanel } from "./PathConfig";
+import { UserInterface } from "@core/Layout";
 
 // observable class
 export class LemLibFormatV0_4 implements Format {
@@ -172,7 +33,7 @@ export class LemLibFormatV0_4 implements Format {
     return "LemLib v0.4.x (inch, byte-voltage)";
   }
 
-  register(app: MainApp): void {
+  register(app: MainApp, ui: UserInterface): void {
     if (this.isInit) return;
     this.isInit = true;
 
@@ -184,11 +45,12 @@ export class LemLibFormatV0_4 implements Format {
             keyframe.followBentRate = true;
           }
         }
-      })
+      }),
+      ui.registerPanel(PathConfigPanel).disposer
     );
   }
 
-  unregister(app: MainApp): void {
+  unregister(): void {
     this.disposers.forEach(disposer => disposer());
   }
 

@@ -1,6 +1,6 @@
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { AccordionSummary, Box, AccordionDetails, Card, Accordion } from "@mui/material";
-import { PanelInstanceProps } from "@src/core/Layout";
+import { PanelInstanceProps } from "@core/Layout";
 import { observer } from "mobx-react-lite";
 import "./Panel.scss";
 

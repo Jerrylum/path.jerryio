@@ -13,7 +13,7 @@ import { parseFormula } from "@core/Util";
 import { ObserverItemsSelect } from "@app/component.blocks/ObserverItemsSelect";
 import { FieldImageAsset, FieldImageOriginType } from "@core/Asset";
 import { AssetManagerModalSymbol } from "../modal/AssetManagerModal";
-import { PanelBuilderProps, PanelInstanceProps } from "@src/core/Layout";
+import { PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
 import TuneIcon from "@mui/icons-material/Tune";
 import "./GeneralConfigPanel.scss";
 

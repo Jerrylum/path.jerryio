@@ -1,201 +1,15 @@
-import { makeAutoObservable, action } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { MainApp, getAppStores } from "@core/MainApp";
-import { EditableNumberRange, IS_MAC_OS, ValidateNumber, getMacHotKeyString, makeId } from "@core/Util";
-import { BentRateApplicationDirection, Path, Segment, Vector } from "@core/Path";
+import { makeId } from "@core/Util";
+import { Path, Segment, Vector } from "@core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "@core/Unit";
-import { GeneralConfig, PathConfig, convertFormat, initGeneralConfig } from "../Config";
+import { GeneralConfig, convertFormat } from "../Config";
 import { Format, importPDJDataFromTextFile } from "../Format";
-import { Exclude, Expose, Type } from "class-transformer";
-import { IsBoolean, IsObject, IsPositive, IsString, MinLength, ValidateNested } from "class-validator";
 import { PointCalculationResult, getPathPoints, getDiscretePoints, fromDegreeToRadian } from "@core/Calculation";
-import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
-import { UpdateProperties } from "@core/Command";
-import { ObserverInput } from "@app/component.blocks/ObserverInput";
-import { Box, Button, Typography } from "@mui/material";
 import { euclideanRotation } from "@core/Coordinate";
-import { CodePointBuffer, Int } from "../../token/Tokens";
-import { observer } from "mobx-react-lite";
-import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "@app/Notice";
-import { Logger } from "@core/Logger";
-import { getEnableOnNonTextInputFieldsHotkeysOptions, useCustomHotkeys } from "@core/Hook";
-import { ObserverCheckbox } from "@app/component.blocks/ObserverCheckbox";
-
-const logger = Logger("LemLib Odom Code Gen v0.4.x (inch)");
-
-const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
-  const { config } = props;
-
-  const { app, confirmation, ui } = getAppStores();
-
-  const isUsingEditor = !confirmation.isOpen && !ui.isOpeningModal;
-
-  const onCopyCode = action(() => {
-    try {
-      const code = config.format.exportCode();
-
-      navigator.clipboard.writeText(code);
-
-      enqueueSuccessSnackbar(logger, "Copied");
-    } catch (e) {
-      enqueueErrorSnackbar(logger, e);
-    }
-  });
-
-  useCustomHotkeys("Shift+Mod+C", onCopyCode, getEnableOnNonTextInputFieldsHotkeysOptions(isUsingEditor));
-
-  const hotkey = IS_MAC_OS ? getMacHotKeyString("Shift+Mod+C") : "Shift+Ctrl+C";
-
-  return (
-    <>
-      <Box className="Panel-Box">
-        <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
-        <Box className="Panel-FlexBox">
-          <ObserverInput
-            label="Chassis Name"
-            getValue={() => config.chassisName}
-            setValue={(value: string) => {
-              app.history.execute(`Change chassis variable name`, new UpdateProperties(config, { chassisName: value }));
-            }}
-            isValidIntermediate={() => true}
-            isValidValue={(candidate: string) => candidate !== ""}
-            sx={{ marginTop: "16px" }}
-          />
-          <ObserverInput
-            label="Movement Timeout"
-            getValue={() => config.movementTimeout.toString()}
-            setValue={(value: string) => {
-              const parsedValue = parseInt(Int.parse(new CodePointBuffer(value))!.value);
-              app.history.execute(
-                `Change default movement timeout to ${parsedValue}`,
-                new UpdateProperties(config, { movementTimeout: parsedValue })
-              );
-            }}
-            isValidIntermediate={() => true}
-            isValidValue={(candidate: string) => Int.parse(new CodePointBuffer(candidate)) !== null}
-            sx={{ marginTop: "16px" }}
-            numeric
-          />
-        </Box>
-        <Box className="Panel-FlexBox">
-          <ObserverCheckbox
-            label="Use Relative Coordinates"
-            checked={config.relativeCoords}
-            onCheckedChange={value => {
-              app.history.execute(
-                `Set using relative coordinates to ${value}`,
-                new UpdateProperties(config, { relativeCoords: value })
-              );
-            }}
-          />
-        </Box>
-        <Box className="Panel-FlexBox" sx={{ marginTop: "32px" }}>
-          <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
-            Copy Code
-          </Button>
-        </Box>
-      </Box>
-    </>
-  );
-});
-
-// observable class
-class GeneralConfigImpl implements GeneralConfig {
-  @IsPositive()
-  @Expose()
-  robotWidth: number = 12;
-  @IsPositive()
-  @Expose()
-  robotHeight: number = 12;
-  @IsBoolean()
-  @Expose()
-  robotIsHolonomic: boolean = false;
-  @IsBoolean()
-  @Expose()
-  showRobot: boolean = false;
-  @ValidateNumber(num => num > 0 && num <= 1000) // Don't use IsEnum
-  @Expose()
-  uol: UnitOfLength = UnitOfLength.Inch;
-  @IsPositive()
-  @Expose()
-  pointDensity: number = 2; // inches
-  @IsPositive()
-  @Expose()
-  controlMagnetDistance: number = 5 / 2.54;
-  @Type(() => FieldImageSignatureAndOrigin)
-  @ValidateNested()
-  @IsObject()
-  @Expose()
-  fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> =
-    getDefaultBuiltInFieldImage().getSignatureAndOrigin();
-  @IsString()
-  @MinLength(1)
-  @Expose()
-  chassisName: string = "chassis";
-  @ValidateNumber(num => num >= 0)
-  @Expose()
-  movementTimeout: number = 5000;
-  @IsBoolean()
-  @Expose()
-  relativeCoords: boolean = true;
-  @Exclude()
-  private format_: LemLibOdomGeneratorFormatV0_4;
-
-  constructor(format: LemLibOdomGeneratorFormatV0_4) {
-    this.format_ = format;
-    makeAutoObservable(this);
-
-    initGeneralConfig(this);
-  }
-
-  get format() {
-    return this.format_;
-  }
-
-  getConfigPanel() {
-    return <GeneralConfigPanel config={this} />;
-  }
-}
-
-// observable class
-class PathConfigImpl implements PathConfig {
-  @Exclude()
-  speedLimit: EditableNumberRange = {
-    minLimit: { value: 0, label: "" },
-    maxLimit: { value: 0, label: "" },
-    step: 0,
-    from: 0,
-    to: 0
-  };
-  @Exclude()
-  bentRateApplicableRange: EditableNumberRange = {
-    minLimit: { value: 0, label: "" },
-    maxLimit: { value: 0, label: "" },
-    step: 0,
-    from: 0,
-    to: 0
-  };
-  @Exclude()
-  bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
-
-  @Exclude()
-  readonly format: LemLibOdomGeneratorFormatV0_4;
-
-  @Exclude()
-  public path!: Path;
-
-  constructor(format: LemLibOdomGeneratorFormatV0_4) {
-    this.format = format;
-    makeAutoObservable(this);
-  }
-
-  getConfigPanel() {
-    return (
-      <>
-        <Typography>(No setting)</Typography>
-      </>
-    );
-  }
-}
+import { UserInterface } from "@core/Layout";
+import { GeneralConfigImpl } from "./GeneralConfig";
+import { PathConfigImpl } from "./PathConfig";
 
 // observable class
 export class LemLibOdomGeneratorFormatV0_4 implements Format {
@@ -217,12 +31,12 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
     return "LemLib Odom Code Gen v0.4.x (inch)";
   }
 
-  register(app: MainApp): void {
+  register(app: MainApp, ui: UserInterface): void {
     if (this.isInit) return;
     this.isInit = true;
   }
 
-  unregister(app: MainApp): void {}
+  unregister(): void {}
 
   getGeneralConfig(): GeneralConfig {
     return this.gc;

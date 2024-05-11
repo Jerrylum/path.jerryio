@@ -7,7 +7,9 @@ import DOMPurify from "dompurify";
 import { PointCalculationResult } from "@core/Calculation";
 import { GeneralConfig, convertFormat } from "./Config";
 import { CustomGeneralConfig, CustomPathConfig } from "./Config.test";
-import { LemLibFormatV1_0, LemLibPathConfig } from "./LemLibFormatV1_0";
+import { LemLibFormatV1_0 } from "./LemLibFormatV1_0";
+import { LemLibPathConfig } from "./LemLibFormatV1_0/PathConfig";
+import { UserInterface } from "@src/core/Layout";
 
 export class CustomFormat implements Format {
   isInit: boolean;
@@ -25,10 +27,10 @@ export class CustomFormat implements Format {
   getName(): string {
     return "Custom";
   }
-  register(app: MainApp): void {
+  register(app: MainApp, ui: UserInterface): void {
     this.isInit = true;
   }
-  unregister(app: MainApp): void {}
+  unregister(): void {}
   getGeneralConfig(): GeneralConfig {
     return new CustomGeneralConfig();
   }

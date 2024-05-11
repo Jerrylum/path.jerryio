@@ -32,7 +32,6 @@ import { AssetManagerModal } from "./app/common.blocks/modal/AssetManagerModal";
 import { RequireLocalFieldImageModal } from "./app/common.blocks/modal/RequireLocalFieldImageModal";
 import { GeneralConfigPanel } from "./app/common.blocks/panel/GeneralConfigPanel";
 import { ControlConfigPanel } from "./app/common.blocks/panel/ControlConfigPanel";
-import { PathConfigPanel } from "./app/common.blocks/panel/PathConfigPanel";
 
 const Root = observer(() => {
   const { app, ui, appPreferences, clipboard } = getAppStores();
@@ -119,9 +118,8 @@ const Root = observer(() => {
     ui.registerOverlay(() => <AboutModal />);
     ui.registerOverlay(() => <AssetManagerModal />);
     ui.registerOverlay(() => <RequireLocalFieldImageModal />);
-    ui.registerPanel(GeneralConfigPanel);
-    ui.registerPanel(ControlConfigPanel);
-    ui.registerPanel(PathConfigPanel);
+    ui.registerPanel(GeneralConfigPanel, 0);
+    ui.registerPanel(ControlConfigPanel, 1);
   }, [ui]);
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
