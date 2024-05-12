@@ -248,7 +248,10 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
       for (const point of points) {
         if (path.segments.indexOf(point) === 0) {
           rtn += `robo.set(${Math.round(point.first.x)}, ${Math.round(point.first.y)});\n`;
-          rtn += `imu.set_rotation(${point.first.heading});\n`;
+
+          rtn += `imu.set_rotation(${
+            point.first.heading / 180 > 0 ? point.first.heading - 180 : point.first.heading + 180
+          };\n`;
           rtn += `ou.printCoords();\n`;
           // point.first.heading = -Math.atan2(point.first.x - point.last.x, point.first.y - point.last.y)* (180 / 3.14159265358979323846);
         }
