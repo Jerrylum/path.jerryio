@@ -1,13 +1,23 @@
 import React from "react";
-import { LayoutType } from "@core/Layout";
-import { ControlAccordion } from "./common.blocks/panel/ControlAccordion";
-import { PanelContainer } from "./common.blocks/panel/Panel";
-import { GeneralConfigAccordion } from "./common.blocks/panel/GeneralConfigAccordion";
-import { PathConfigAccordion } from "./common.blocks/panel/PathAccordion";
+import { LayoutProvider, LayoutType } from "@core/Layout";
+import { observer } from "mobx-react-lite";
+import { getAppStores } from "@core/MainApp";
+import { ClassisLayout } from "./classic.blocks/_index";
+import { ExclusiveLayout } from "./exclusive.blocks/_index";
+import { MobileLayout } from "./mobile.blocks/_index";
 
-export const LayoutContext = React.createContext<LayoutType>(LayoutType.Classic);
-export const LayoutProvider = LayoutContext.Provider;
+export const Layout = observer((props: { targetLayout: LayoutType }) => {
+  const { targetLayout } = props;
+  const { ui } = getAppStores();
 
-export const getAllPanelContainers = (layout: LayoutType): PanelContainer[] => {
-  return [GeneralConfigAccordion({ layout }), ControlAccordion({ layout }), PathConfigAccordion({ layout })];
-};
+  return (
+    <LayoutProvider value={targetLayout}>
+      {targetLayout === LayoutType.Classic && <ClassisLayout />}
+      {targetLayout === LayoutType.Exclusive && <ExclusiveLayout />}
+      {targetLayout === LayoutType.Mobile && <MobileLayout />}
+      {ui.getAllOverlays().map(obj => (
+        <React.Fragment key={obj.uid}>{obj.builder()}</React.Fragment>
+      ))}
+    </LayoutProvider>
+  );
+});

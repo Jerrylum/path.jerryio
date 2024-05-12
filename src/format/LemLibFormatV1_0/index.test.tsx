@@ -1,7 +1,8 @@
 import { SmartBuffer } from "smart-buffer";
 import { MainApp, getAppStores } from "@core/MainApp";
-import { LemLibFormatV1_0, LemLibV1_0 } from "./LemLibFormatV1_0";
+import { LemLibFormatV1_0 } from ".";
 import { EndControl, Segment } from "@core/Path";
+import { LemLibV1_0 } from "./Serialization";
 
 test("dummy", () => {
   const { app } = getAppStores(); // suppress constructor error

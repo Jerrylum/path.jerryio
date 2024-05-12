@@ -12,11 +12,10 @@ import { useWindowSize } from "@core/Hook";
 import { LayoutType } from "@core/Layout";
 import { getAppStores } from "@core/MainApp";
 import { FieldCanvasElement } from "../common.blocks/field-canvas/FieldCanvasElement";
-import { getAllPanelContainers } from "../Layouts";
 import { MousePositionPresentation } from "../common.blocks/MousePositionPresentation";
-import { MenuMainDropdown } from "../common.blocks/panel/MenuAccordion";
-import { PanelFloatingContainer } from "../common.blocks/panel/Panel";
-import { PathTreeAccordion } from "../common.blocks/panel/PathTreeAccordion";
+import { MenuMainDropdown } from "../common.blocks/panel/MenuPanel";
+import { PanelFloatingInstance } from "../common.blocks/panel/Panel";
+import { PathTreePanel } from "../common.blocks/panel/PathTreePanel";
 import { SpeedCanvasElement } from "../common.blocks/speed-canvas/SpeedCanvasElement";
 
 class ExclusiveLayoutVariables {
@@ -44,7 +43,7 @@ class ExclusiveLayoutVariables {
 }
 
 export const ExclusiveLayout = observer(() => {
-  const { app } = getAppStores();
+  const { app, ui } = getAppStores();
 
   const [variables] = React.useState(() => new ExclusiveLayoutVariables());
 
@@ -59,9 +58,9 @@ export const ExclusiveLayout = observer(() => {
       ? windowSize.y * 0.12 + 8 + 16 + 8
       : 0;
 
-  const containers = getAllPanelContainers(LayoutType.Exclusive);
+  const panelProps = ui.getAllPanels().map(obj => obj.builder({}));
 
-  const pathTreeAccordion = PathTreeAccordion({ layout: LayoutType.Exclusive });
+  const pathTreeAccordion = PathTreePanel({ layout: LayoutType.Exclusive });
 
   return (
     <>
@@ -77,9 +76,9 @@ export const ExclusiveLayout = observer(() => {
         </Box>
       </Box>
       <Box className="PanelIcon-Box" style={{ right: "8px", top: "8px" }}>
-        {containers.map(panelContainer => (
-          <Box className="PanelIcon" key={panelContainer.id} onClick={() => variables.togglePanel(panelContainer.id)}>
-            {panelContainer.icon}
+        {panelProps.map(panelProp => (
+          <Box className="PanelIcon" key={panelProp.id} onClick={() => variables.togglePanel(panelProp.id)}>
+            {panelProp.icon}
           </Box>
         ))}
         <Box className="PanelIcon" onClick={() => variables.togglePanel("speed-graph")}>
@@ -104,14 +103,14 @@ export const ExclusiveLayout = observer(() => {
           isOpen={variables.isOpenPanel("menu")}
           onClose={variables.closePanel.bind(variables, "menu")}
         />
-        {variables.isOpenPanel(pathTreeAccordion.id) && <PanelFloatingContainer {...pathTreeAccordion} />}
+        {variables.isOpenPanel(pathTreeAccordion.id) && <PanelFloatingInstance {...pathTreeAccordion} />}
       </Box>
       <Box id="RightSection">
-        {containers
-          .filter(panelContainer => variables.isOpenPanel(panelContainer.id))
-          .filter(panelContainer => panelContainer.id !== "speed-graph")
-          .map(panelContainer => (
-            <PanelFloatingContainer key={panelContainer.id} {...panelContainer} />
+        {panelProps
+          .filter(panelProp => variables.isOpenPanel(panelProp.id))
+          .filter(panelProp => panelProp.id !== "speed-graph")
+          .map(panelProp => (
+            <PanelFloatingInstance key={panelProp.id} {...panelProp} />
           ))}
       </Box>
       {variables.isOpenPanel("speed-graph") && (

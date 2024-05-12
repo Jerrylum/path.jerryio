@@ -13,7 +13,7 @@ import { runInActionAsync } from "./Util";
 export async function promptFieldImage(
   signAndOrigin: FieldImageSignatureAndOrigin<FieldImageOriginType>
 ): Promise<boolean> {
-  const { assetManager, confirmation, modals } = getAppStores();
+  const { assetManager, confirmation, ui } = getAppStores();
 
   if (assetManager.getAssetBySignature(signAndOrigin.signature)) return true;
 
@@ -64,8 +64,8 @@ export async function promptFieldImage(
       answer: undefined
     };
 
-    modals.open(RequireLocalFieldImageModalSymbol);
-    await when(() => modals.opening !== RequireLocalFieldImageModalSymbol);
+    ui.openModal(RequireLocalFieldImageModalSymbol);
+    await when(() => ui.openingModal !== RequireLocalFieldImageModalSymbol);
 
     const answer = assetManager.requiringLocalFieldImage.answer;
 

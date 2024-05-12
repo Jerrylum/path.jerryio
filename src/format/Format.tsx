@@ -3,6 +3,7 @@ import { GeneralConfig } from "./Config";
 import { PointCalculationResult } from "@core/Calculation";
 import { APP_VERSION, MainApp } from "@core/MainApp";
 import { Range } from "semver";
+import { UserInterface } from "@core/Layout";
 import { UnitOfLength } from "@core/Unit";
 import { LemLibFormatV0_4 } from "./LemLibFormatV0_4";
 import { PathDotJerryioFormatV0_1 } from "./PathDotJerryioFormatV0_1";
@@ -19,9 +20,11 @@ export interface Format {
 
   getName(): string;
 
-  register(app: MainApp): void;
+  getDescription(): string;
 
-  unregister(app: MainApp): void;
+  register(app: MainApp, ui: UserInterface): void;
+
+  unregister(): void;
 
   createNewInstance(): Format;
 
@@ -77,22 +80,26 @@ export interface Format {
   exportFile(): ArrayBuffer;
 }
 
-export function getAllFormats(): Format[] {
+export function getAllGeneralFormats(): Format[] {
+  return [new LemLibFormatV0_4(), new PathDotJerryioFormatV0_1()];
+}
+
+export function getAllDeprecatedFormats(): Format[] {
+  return [new LemLibOdomGeneratorFormatV0_4()];
+}
+
+export function getAllExperimentalFormats(): Format[] {
+  if (!isExperimentalFeaturesEnabled()) return [];
   return [
-    ...[
-      new LemLibFormatV0_4(), //
-      new LemLibOdomGeneratorFormatV0_4()
-    ],
-    ...(isExperimentalFeaturesEnabled()
-      ? [
-          new LemLibFormatV1_0(),
-          new RigidCodeGenFormatV0_1(),
-          new MoveToPointCodeGenFormatV0_1(),
-          new xVecLibBoomerangFormatV0_1()
-        ]
-      : []),
-    ...[new PathDotJerryioFormatV0_1()]
+    new LemLibFormatV1_0(),
+    new RigidCodeGenFormatV0_1(),
+    new MoveToPointCodeGenFormatV0_1(),
+    new xVecLibBoomerangFormatV0_1()
   ];
+}
+
+export function getAllFormats(): Format[] {
+  return [...getAllGeneralFormats(), ...getAllDeprecatedFormats(), ...getAllExperimentalFormats()];
 }
 
 interface PathFileDataConverter {

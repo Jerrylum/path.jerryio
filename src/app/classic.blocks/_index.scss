@@ -112,8 +112,8 @@ $middle-section-height-svh: calc(100svh - $pg - $pg);
 
 // Import all blocks scss file that without tsx implementation
 
-@import "./panel/ControlAccordion";
-@import "./panel/MenuAccordion";
-@import "./panel/PathTreeAccordion";
+@import "./panel/ControlConfigPanel";
+@import "./panel/MenuPanel";
+@import "./panel/PathTreePanel";
 @import "./speed-canvas/SpeedCanvasElement";
 @import "./MousePositionPresentation";

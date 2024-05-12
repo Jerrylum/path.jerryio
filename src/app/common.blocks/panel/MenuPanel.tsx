@@ -24,14 +24,13 @@ import { AppThemeType } from "@app/Theme";
 import { RemovePathsAndEndControls } from "@core/Command";
 import { checkForUpdates } from "@core/Versioning";
 import { Path } from "@core/Path";
-import { LayoutType, getAvailableLayouts } from "@core/Layout";
-import { LayoutContext } from "@app/Layouts";
+import { LayoutContext, LayoutType, getAvailableLayouts } from "@core/Layout";
 import { useWindowSize } from "@core/Hook";
 import { AboutModalSymbol } from "../modal/AboutModal";
 import { WelcomeModalSymbol } from "../modal/WelcomeModal";
 import { PreferencesModalSymbol } from "../modal/PreferencesModal";
 
-import "./MenuAccordion.scss";
+import "./MenuPanel.scss";
 
 const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
   const { hotkey } = props;
@@ -320,11 +319,11 @@ class MenuVariables {
   }
 }
 
-const MenuAccordion = observer((props: {}) => {
+const MenuPanel = observer((props: {}) => {
   const [variables] = React.useState(() => new MenuVariables());
 
   return (
-    <Card id="MenuAccordion">
+    <Card id="MenuPanel">
       <Button
         size="small"
         color="inherit"
@@ -415,7 +414,7 @@ const MenuMainDropdown = observer((props: { anchor: PopoverPosition; isOpen: boo
 });
 
 const FileMenuItems = () => {
-  const { modals } = getAppStores();
+  const { ui } = getAppStores();
   return [
     <CustomMenuItem key={makeId(10)} showLeftIcon={false} label="New File" hotkey="Mod+P" onClick={() => onNew()} />,
     <Divider key={makeId(10)} />,
@@ -456,7 +455,7 @@ const FileMenuItems = () => {
       showLeftIcon={false}
       label="Preferences"
       hotkey="Mod+,"
-      onClick={() => modals.open(PreferencesModalSymbol)}
+      onClick={() => ui.openModal(PreferencesModalSymbol)}
     />
   ];
 };
@@ -638,13 +637,13 @@ const ViewMenuItems = () => {
 };
 
 const HelpMenuItems = () => {
-  const { modals } = getAppStores();
+  const { ui } = getAppStores();
   return [
     <CustomMenuItem
       key={makeId(10)}
       showLeftIcon={false}
       label="Welcome"
-      onClick={() => modals.open(WelcomeModalSymbol)}
+      onClick={() => ui.openModal(WelcomeModalSymbol)}
     />,
     <CustomMenuItem
       key={makeId(10)}
@@ -658,8 +657,13 @@ const HelpMenuItems = () => {
       label="Check for Updates"
       onClick={() => checkForUpdates()}
     />,
-    <CustomMenuItem key={makeId(10)} showLeftIcon={false} label="About" onClick={() => modals.open(AboutModalSymbol)} />
+    <CustomMenuItem
+      key={makeId(10)}
+      showLeftIcon={false}
+      label="About"
+      onClick={() => ui.openModal(AboutModalSymbol)}
+    />
   ];
 };
 
-export { MenuAccordion, MenuMainDropdown };
+export { MenuPanel, MenuMainDropdown };

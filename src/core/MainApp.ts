@@ -24,10 +24,10 @@ import { validate } from "class-validator";
 import { FieldEditor } from "./FieldEditor";
 import { SpeedEditor } from "./SpeedEditor";
 import { AssetManager, getDefaultBuiltInFieldImage } from "./Asset";
-import { Modals } from "@core/Modals";
 import { Preferences, getPreference } from "./Preferences";
 import { LemLibFormatV0_4 } from "../format/LemLibFormatV0_4";
 import { LemLibFormatV1_0 } from "../format/LemLibFormatV1_0";
+import { UserInterface } from "./Layout";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
@@ -69,8 +69,8 @@ export class MainApp {
     reaction(
       () => this.format,
       action((newFormat: Format, oldFormat: Format) => {
-        oldFormat.unregister(this);
-        newFormat.register(this);
+        oldFormat.unregister();
+        newFormat.register(this, ui);
 
         this.resetUserControl();
         this.resetAllEditors();
@@ -107,6 +107,17 @@ export class MainApp {
     );
 
     reaction(() => this.latestVersion, onLatestVersionChange);
+
+    reaction(
+      () => this.mountingFile.handle,
+      handle => {
+        if (handle !== null) {
+          document.title = `${handle.name} | PATH.JERRYIO`;
+        } else {
+          document.title = "PATH.JERRYIO";
+        }
+      }
+    );
 
     this.newFile();
   }
@@ -433,11 +444,13 @@ export class MainApp {
 
 export type AppStores = typeof appStores;
 
+const ui = new UserInterface();
+
 const appStores = {
   app: new MainApp(),
   assetManager: new AssetManager(),
   confirmation: new Confirmation(),
-  modals: new Modals(),
+  ui,
   appPreferences: new Preferences(),
   ga: new GoogleAnalytics(),
   clipboard: new AppClipboard()

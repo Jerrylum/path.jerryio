@@ -1,4 +1,4 @@
-.PathTreeAccordion-TreeView {
+.PathTreePanel-TreeView {
   padding: 0;
   list-style: none;
   outline: 0;
@@ -9,7 +9,7 @@
   margin: 8px 0 0;
   min-height: calc(100% - 8px);
 
-  .PathTreeAccordion-TreeItem {
+  .PathTreePanel-TreeItem {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -17,7 +17,7 @@
     user-select: none;
     position: relative;
 
-    .PathTreeAccordion-TreeItemContent {
+    .PathTreePanel-TreeItemContent {
       padding: 0 0 0 8px;
       width: auto;
       display: flex;
@@ -26,7 +26,7 @@
       -webkit-tap-highlight-color: transparent;
       position: relative;
 
-      .PathTreeAccordion-TreeItemIconContainer {
+      .PathTreePanel-TreeItemIconContainer {
         margin-right: 4px;
         width: 15px;
         display: flex;
@@ -40,7 +40,7 @@
         }
       }
 
-      .PathTreeAccordion-TreeItemLabel {
+      .PathTreePanel-TreeItemLabel {
         width: 100%;
         min-width: 0;
         padding-left: 4px;
@@ -54,63 +54,63 @@
         display: flex;
         align-items: center;
 
-        .PathTreeAccordion-TreeItemName {
+        .PathTreePanel-TreeItemName {
           flex-grow: 1;
           overflow: hidden;
           height: calc(1.5em - 2px);
           margin-right: 1px;
         }
 
-        .PathTreeAccordion-TreeItemName_edit {
+        .PathTreePanel-TreeItemName_edit {
           outline: 1px #7f47b3 solid;
         }
 
-        .PathTreeAccordion-TreeItemName_preview {
+        .PathTreePanel-TreeItemName_preview {
           white-space: nowrap;
           text-overflow: ellipsis;
         }
 
-        .PathTreeAccordion-TreeFuncIcon {
+        .PathTreePanel-TreeFuncIcon {
           height: calc(1em * 0.7) !important;
           vertical-align: middle;
           visibility: hidden;
         }
 
-        .PathTreeAccordion-TreeFuncIcon_show {
+        .PathTreePanel-TreeFuncIcon_show {
           visibility: visible;
         }
       }
 
-      .PathTreeAccordion-TreeItemLabel:hover > .PathTreeAccordion-TreeFuncIcon {
+      .PathTreePanel-TreeItemLabel:hover > .PathTreePanel-TreeFuncIcon {
         visibility: visible;
       }
     }
 
-    .PathTreeAccordion-TreeItemContent:hover {
+    .PathTreePanel-TreeItemContent:hover {
       background-color: var(--hover-color);
     }
 
-    .PathTreeAccordion-TreeItemContent.focused {
+    .PathTreePanel-TreeItemContent.focused {
       background-color: var(--focused-color);
     }
 
-    .PathTreeAccordion-TreeItemContent.selected {
+    .PathTreePanel-TreeItemContent.selected {
       background-color: rgba(127, 71, 179, 0.16);
     }
 
-    .PathTreeAccordion-TreeItemContent.selected:hover {
+    .PathTreePanel-TreeItemContent.selected:hover {
       background-color: rgba(127, 71, 179, 0.24);
     }
 
-    .PathTreeAccordion-TreeItemContent.selected.focused {
+    .PathTreePanel-TreeItemContent.selected.focused {
       background-color: rgba(127, 71, 179, 0.28);
     }
 
-    .PathTreeAccordion-TreeItemContent.deny-drop {
+    .PathTreePanel-TreeItemContent.deny-drop {
       opacity: 0.5;
     }
 
-    .PathTreeAccordion-TreeItemChildrenGroup {
+    .PathTreePanel-TreeItemChildrenGroup {
       height: auto;
       overflow: visible;
       margin: 0;
@@ -122,7 +122,7 @@
     }
   }
 
-  .PathTreeAccordion-DraggingDividerTop::after {
+  .PathTreePanel-DraggingDividerTop::after {
     content: "";
     border-top: 1px solid #7f47b3;
     width: 100%;
@@ -132,7 +132,7 @@
     top: 0;
   }
 
-  .PathTreeAccordion-DraggingDividerBottom::after {
+  .PathTreePanel-DraggingDividerBottom::after {
     content: "";
     border-top: 1px solid #7f47b3;
     width: 100%;

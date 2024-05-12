@@ -14,11 +14,11 @@ export const CustomModal = observer(
     onOpen?: () => void;
     onClose?: () => void;
   }) => {
-    const { modals } = getAppStores();
+    const { ui } = getAppStores();
 
     React.useEffect(() => {
       const disposer = reaction(
-        () => modals.opening,
+        () => ui.openingModal,
         (curr: Symbol | null, prev: Symbol | null) => {
           if (prev === props.symbol && curr === null) props.onClose?.();
           if (prev === null && curr === props.symbol) props.onOpen?.();
@@ -34,8 +34,8 @@ export const CustomModal = observer(
       <Modal
         slotProps={{ backdrop: { className: "Modal-Backdrop" } }}
         container={document.getElementById("Root-Container")!}
-        open={modals.opening === props.symbol}
-        onClose={() => modals.close(props.symbol)}>
+        open={ui.openingModal === props.symbol}
+        onClose={() => ui.closeModal(props.symbol)}>
         {props.children}
       </Modal>
     );

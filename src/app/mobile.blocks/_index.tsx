@@ -10,10 +10,9 @@ import React from "react";
 import { LayoutType } from "@core/Layout";
 import { getAppStores } from "@core/MainApp";
 import { FieldCanvasElement } from "../common.blocks/field-canvas/FieldCanvasElement";
-import { getAllPanelContainers } from "../Layouts";
-import { MenuMainDropdown } from "../common.blocks/panel/MenuAccordion";
-import { PanelFloatingContainer, PanelStaticContainer } from "../common.blocks/panel/Panel";
-import { PathTreeAccordion } from "../common.blocks/panel/PathTreeAccordion";
+import { MenuMainDropdown } from "../common.blocks/panel/MenuPanel";
+import { PanelFloatingInstance, PanelStaticInstance } from "../common.blocks/panel/Panel";
+import { PathTreePanel } from "../common.blocks/panel/PathTreePanel";
 import { SpeedCanvasElement } from "../common.blocks/speed-canvas/SpeedCanvasElement";
 
 class MobileLayoutVariables {
@@ -34,13 +33,13 @@ class MobileLayoutVariables {
 }
 
 export const MobileLayout = observer(() => {
-  const { app } = getAppStores();
+  const { app, ui } = getAppStores();
 
   const [variables] = React.useState(() => new MobileLayoutVariables());
 
-  const containers = getAllPanelContainers(LayoutType.Mobile);
+  const panelProps = ui.getAllPanels().map(obj => obj.builder({}));
 
-  const pathTreeAccordion = PathTreeAccordion({ layout: LayoutType.Mobile });
+  const pathTreeAccordion = PathTreePanel({ layout: LayoutType.Mobile });
 
   return (
     <>
@@ -80,12 +79,12 @@ export const MobileLayout = observer(() => {
       </Box>
       {variables.currentPanel !== null && (
         <Box id="BottomPanel">
-          {variables.isOpenPanel(pathTreeAccordion.id) && <PanelFloatingContainer {...pathTreeAccordion} />}
-          {containers
-            .filter(panelContainer => variables.isOpenPanel(panelContainer.id))
-            .filter(panelContainer => panelContainer.id !== "speed-graph")
-            .map(panelContainer => (
-              <PanelStaticContainer key={panelContainer.id} {...panelContainer} />
+          {variables.isOpenPanel(pathTreeAccordion.id) && <PanelFloatingInstance {...pathTreeAccordion} />}
+          {panelProps
+            .filter(panelProp => variables.isOpenPanel(panelProp.id))
+            .filter(panelProp => panelProp.id !== "speed-graph")
+            .map(panelProp => (
+              <PanelStaticInstance key={panelProp.id} {...panelProp} />
             ))}
           {variables.isOpenPanel("speed-graph") && (
             <Box id="SpeedCanvas-Container">
@@ -103,9 +102,9 @@ export const MobileLayout = observer(() => {
           <Box className="PanelIcon" onClick={() => variables.openPanel(pathTreeAccordion.id)}>
             {pathTreeAccordion.icon}
           </Box>
-          {containers.map(panelContainer => (
-            <Box className="PanelIcon" key={panelContainer.id} onClick={() => variables.openPanel(panelContainer.id)}>
-              {panelContainer.icon}
+          {panelProps.map(panelProp => (
+            <Box className="PanelIcon" key={panelProp.id} onClick={() => variables.openPanel(panelProp.id)}>
+              {panelProp.icon}
             </Box>
           ))}
           <Box className="PanelIcon" onClick={() => variables.openPanel("speed-graph")}>

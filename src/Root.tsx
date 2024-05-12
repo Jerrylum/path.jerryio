@@ -22,22 +22,21 @@ import { ConfirmationModal } from "./app/common.blocks/modal/ConfirmationModal";
 import { DragDropBackdrop } from "./app/common.blocks/DragDropBackdrop";
 import { RemovePathsAndEndControls } from "./core/Command";
 import React from "react";
-import { LayoutType, getUsableLayout } from "./core/Layout";
+import { getUsableLayout } from "./core/Layout";
 import { getAppThemeInfo } from "./app/Theme";
-import { LayoutProvider } from "./app/Layouts";
+import { Layout } from "./app/Layouts";
 import { AboutModal } from "./app/common.blocks/modal/AboutModal";
 import { WelcomeModal } from "./app/common.blocks/modal/WelcomeModal";
 import { PreferencesModal, PreferencesModalSymbol } from "./app/common.blocks/modal/PreferencesModal";
 import { AssetManagerModal } from "./app/common.blocks/modal/AssetManagerModal";
 import { RequireLocalFieldImageModal } from "./app/common.blocks/modal/RequireLocalFieldImageModal";
-import { ClassisLayout } from "./app/classic.blocks/_index";
-import { ExclusiveLayout } from "./app/exclusive.blocks/_index";
-import { MobileLayout } from "./app/mobile.blocks/_index";
+import { GeneralConfigPanel } from "./app/common.blocks/panel/GeneralConfigPanel";
+import { ControlConfigPanel } from "./app/common.blocks/panel/ControlConfigPanel";
 
 const Root = observer(() => {
-  const { app, confirmation, modals, appPreferences, clipboard } = getAppStores();
+  const { app, ui, appPreferences, clipboard } = getAppStores();
 
-  const isUsingEditor = !confirmation.isOpen && !modals.isOpen;
+  const isUsingEditor = !ui.isOpeningModal;
   const { isDraggingFile, onDragEnter, onDragLeave, onDragOver, onDrop } = useDragDropFile(isUsingEditor, onDropFile);
 
   const isEnableInputField = isUsingEditor && !isDraggingFile;
@@ -55,7 +54,7 @@ const Root = observer(() => {
   useCustomHotkeys("Shift+Mod+S", onSaveAs, option1);
   useCustomHotkeys("Mod+D", onDownload, option1);
   useCustomHotkeys("Shift+Mod+D", onDownloadAs, option1);
-  useCustomHotkeys("Mod+Comma", () => modals.open(PreferencesModalSymbol), option1);
+  useCustomHotkeys("Mod+Comma", () => ui.openModal(PreferencesModalSymbol), option1);
   useCustomHotkeys("Mod+X", () => clipboard.cut(), option2);
   useCustomHotkeys("Mod+C", () => clipboard.copy(), option2);
 
@@ -111,6 +110,18 @@ const Root = observer(() => {
 
   React.useEffect(() => app.onUIReady(), [app]);
 
+  React.useEffect(() => {
+    if (ui.getAllOverlays().length > 0) return;
+    ui.registerOverlay(() => <ConfirmationModal />);
+    ui.registerOverlay(() => <PreferencesModal />);
+    ui.registerOverlay(() => <WelcomeModal />);
+    ui.registerOverlay(() => <AboutModal />);
+    ui.registerOverlay(() => <AssetManagerModal />);
+    ui.registerOverlay(() => <RequireLocalFieldImageModal />);
+    ui.registerPanel(GeneralConfigPanel, 0);
+    ui.registerPanel(ControlConfigPanel, 1);
+  }, [ui]);
+
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
   return (
     <Box
@@ -122,18 +133,7 @@ const Root = observer(() => {
       key={app.format.uid + "-" + app.gc.uol}>
       <ThemeProvider theme={getAppThemeInfo().theme}>
         <NoticeProvider />
-        <LayoutProvider value={usingLayout}>
-          {usingLayout === LayoutType.Classic && <ClassisLayout />}
-          {usingLayout === LayoutType.Exclusive && <ExclusiveLayout />}
-          {usingLayout === LayoutType.Mobile && <MobileLayout />}
-
-          <ConfirmationModal />
-          <PreferencesModal />
-          <WelcomeModal />
-          <AboutModal />
-          <AssetManagerModal />
-          <RequireLocalFieldImageModal />
-        </LayoutProvider>
+        <Layout targetLayout={usingLayout} />
         {isUsingEditor && isDraggingFile && <DragDropBackdrop {...{ onDragEnter, onDragLeave, onDragOver, onDrop }} />}
       </ThemeProvider>
     </Box>
