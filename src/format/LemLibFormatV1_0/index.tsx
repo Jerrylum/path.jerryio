@@ -35,6 +35,10 @@ export class LemLibFormatV1_0 implements Format {
     return "LemLib v1.0.0 (mm, m/s)";
   }
 
+  getDescription(): string {
+    return "Path file for LemLib v1.0 (Experimental)";
+  }
+
   register(app: MainApp, ui: UserInterface): void {
     if (this.isInit) return;
     this.isInit = true;

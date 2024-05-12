@@ -31,6 +31,10 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
     return "LemLib Odom Code Gen v0.4.x (inch)";
   }
 
+  getDescription(): string {
+    return "Generates a sequence of LemLib .moveTo function calls.";
+  }
+
   register(app: MainApp, ui: UserInterface): void {
     if (this.isInit) return;
     this.isInit = true;

@@ -1,7 +1,7 @@
-import { Box, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
+import { Box, ListSubheader, MenuItem, MenuItemProps, Select, SelectChangeEvent, Typography } from "@mui/material";
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
-import { getAllFormats } from "@format/Format";
+import { Format, getAllDeprecatedFormats, getAllExperimentalFormats, getAllGeneralFormats } from "@format/Format";
 import { ObserverInput, clampQuantity } from "@app/component.blocks/ObserverInput";
 import { Quantity, UnitOfLength } from "@core/Unit";
 import { UpdateProperties } from "@core/Command";
@@ -16,17 +16,38 @@ import { AssetManagerModalSymbol } from "../modal/AssetManagerModal";
 import { PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
 import TuneIcon from "@mui/icons-material/Tune";
 import "./GeneralConfigPanel.scss";
+import { isExperimentalFeaturesEnabled } from "@src/core/Preferences";
+
+const FormatMenuItem = (props: { format: Format } & MenuItemProps) => {
+  const { format, ...rests } = props;
+
+  return (
+    <MenuItem {...rests}>
+      <Box>
+        <Typography variant="body1">{format.getName()}</Typography>
+        <Typography variant="body1" color="grey" sx={{ width: "500px", maxWidth: "90vw", textWrap: "wrap" }}>
+          {format.getDescription()}
+        </Typography>
+      </Box>
+    </MenuItem>
+  );
+};
 
 const GeneralConfigPanelBody = observer((props: {}) => {
   const { app, assetManager, confirmation, ui, appPreferences } = getAppStores();
 
   const gc = app.gc;
 
-  const formats = getAllFormats();
+  const allGeneralFormats = getAllGeneralFormats();
+  const allDeprecatedFormats = getAllDeprecatedFormats();
+  const allExperimentalFormats = getAllExperimentalFormats();
+  const allFormats = [...allGeneralFormats, ...allDeprecatedFormats, ...allExperimentalFormats];
+  const findIndex = (format: Format) => allFormats.findIndex(x => x.getName() === format.getName());
 
   const changeFormat = action((index: number) => {
     const oldFormat = app.format;
-    const newFormat = formats[index];
+
+    const newFormat = allFormats[index];
 
     appPreferences.lastSelectedFormat = newFormat.getName();
 
@@ -36,6 +57,19 @@ const GeneralConfigPanelBody = observer((props: {}) => {
     app.paths = newPaths;
   });
 
+  const onChangeFormat = action((e: SelectChangeEvent<number>) => {
+    if (app.history.undoHistorySize === 0 && app.history.redoHistorySize === 0 && app.paths.length === 0) {
+      changeFormat(parseInt(e.target.value + ""));
+    } else {
+      confirmation.prompt({
+        title: "Change Format",
+        description:
+          "Some incompatible path configurations will be discarded. Edit history will be reset. Are you sure?",
+        buttons: [{ label: "Confirm", onClick: () => changeFormat(parseInt(e.target.value + "")) }, { label: "Cancel" }]
+      });
+    }
+  });
+
   return (
     <>
       <Typography gutterBottom>Format</Typography>
@@ -43,29 +77,20 @@ const GeneralConfigPanelBody = observer((props: {}) => {
         <Select
           size="small"
           sx={{ maxWidth: "100%" }}
-          value={formats.findIndex(x => x.getName() === app.format.getName())}
-          onChange={action((e: SelectChangeEvent<number>) => {
-            if (app.history.undoHistorySize === 0 && app.history.redoHistorySize === 0 && app.paths.length === 0) {
-              changeFormat(parseInt(e.target.value + ""));
-            } else {
-              confirmation.prompt({
-                title: "Change Format",
-                description:
-                  "Some incompatible path configurations will be discarded. Edit history will be reset. Are you sure?",
-                buttons: [
-                  { label: "Confirm", onClick: () => changeFormat(parseInt(e.target.value + "")) },
-                  { label: "Cancel" }
-                ]
-              });
-            }
-          })}>
-          {formats.map((x, i) => {
-            return (
-              <MenuItem key={i} value={i}>
-                {x.getName()}
-              </MenuItem>
-            );
-          })}
+          value={findIndex(app.format)}
+          renderValue={value => allFormats[value].getName()}
+          onChange={onChangeFormat}>
+          <ListSubheader>General</ListSubheader>
+          {allGeneralFormats.map(x => (
+            <FormatMenuItem key={x.getName()} format={x} value={findIndex(x)} />
+          ))}
+          <ListSubheader>Deprecated</ListSubheader>
+          {allDeprecatedFormats.map(x => (
+            <FormatMenuItem key={x.getName()} format={x} value={findIndex(x)} />
+          ))}
+          {isExperimentalFeaturesEnabled() && <ListSubheader>Experimental</ListSubheader>}
+          {isExperimentalFeaturesEnabled() &&
+            allExperimentalFormats.map(x => <FormatMenuItem key={x.getName()} format={x} value={findIndex(x)} />)}
         </Select>
       </Box>
       <Box className="Panel-FlexBox" sx={{ marginTop: "16px" }}>

@@ -27,6 +27,9 @@ export class CustomFormat implements Format {
   getName(): string {
     return "Custom";
   }
+  getDescription(): string {
+    return "Custom description";
+  }
   register(app: MainApp, ui: UserInterface): void {
     this.isInit = true;
   }

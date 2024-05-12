@@ -33,6 +33,10 @@ export class PathDotJerryioFormatV0_1 implements Format {
     return "path.jerryio v0.1.x (cm, rpm)";
   }
 
+  getDescription(): string {
+    return "The default and official format for path planning purposes and custom library using algorithms like pure pursuit.";
+  }
+
   register(app: MainApp, ui: UserInterface): void {
     if (this.isInit) return;
     this.isInit = true;

@@ -19,6 +19,8 @@ export interface Format {
 
   getName(): string;
 
+  getDescription(): string;
+
   register(app: MainApp, ui: UserInterface): void;
 
   unregister(): void;
@@ -77,17 +79,21 @@ export interface Format {
   exportFile(): ArrayBuffer;
 }
 
+export function getAllGeneralFormats(): Format[] {
+  return [new LemLibFormatV0_4(), new PathDotJerryioFormatV0_1()];
+}
+
+export function getAllDeprecatedFormats(): Format[] {
+  return [new LemLibOdomGeneratorFormatV0_4()];
+}
+
+export function getAllExperimentalFormats(): Format[] {
+  if (!isExperimentalFeaturesEnabled()) return [];
+  return [new LemLibFormatV1_0(), new RigidCodeGenFormatV0_1(), new MoveToPointCodeGenFormatV0_1()];
+}
+
 export function getAllFormats(): Format[] {
-  return [
-    ...[
-      new LemLibFormatV0_4(), //
-      new LemLibOdomGeneratorFormatV0_4()
-    ],
-    ...(isExperimentalFeaturesEnabled()
-      ? [new LemLibFormatV1_0(), new RigidCodeGenFormatV0_1(), new MoveToPointCodeGenFormatV0_1()]
-      : []),
-    ...[new PathDotJerryioFormatV0_1()]
-  ];
+  return [...getAllGeneralFormats(), ...getAllDeprecatedFormats(), ...getAllExperimentalFormats()];
 }
 
 interface PathFileDataConverter {

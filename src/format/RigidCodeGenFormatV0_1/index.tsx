@@ -42,6 +42,10 @@ export class RigidCodeGenFormatV0_1 implements Format {
     return "Rigid Code Gen v0.1.x";
   }
 
+  getDescription(): string {
+    return "Generates a sequence of movement commands for each point in the path with a specified template.";
+  }
+
   register(app: MainApp, ui: UserInterface): void {
     if (this.isInit) return;
     this.isInit = true;

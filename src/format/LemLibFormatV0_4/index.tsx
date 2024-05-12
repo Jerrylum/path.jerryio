@@ -33,6 +33,10 @@ export class LemLibFormatV0_4 implements Format {
     return "LemLib v0.4.x (inch, byte-voltage)";
   }
 
+  getDescription(): string {
+    return "Path file format for LemLib v0.4 (or higher)";
+  }
+
   register(app: MainApp, ui: UserInterface): void {
     if (this.isInit) return;
     this.isInit = true;

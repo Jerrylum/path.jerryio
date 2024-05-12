@@ -34,6 +34,10 @@ export class MoveToPointCodeGenFormatV0_1 implements Format {
     return "Move-to-Point Code Gen v0.1.x";
   }
 
+  getDescription(): string {
+    return "Generates a sequence of moveTo commands for each point in the path with a specified template.";
+  }
+
   register(app: MainApp, ui: UserInterface): void {
     if (this.isInit) return;
     this.isInit = true;
