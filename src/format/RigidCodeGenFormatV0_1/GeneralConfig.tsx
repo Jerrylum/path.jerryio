@@ -178,7 +178,7 @@ turnTo: \`turnTo(\${heading}, \${speed});\``;
     return this.format_;
   }
 
-  getConfigPanel() {
+  getAdditionalConfigUI() {
     return <GeneralConfigPanel config={this} />;
   }
 }

@@ -1,3 +1,4 @@
+import { makeAutoObservable } from "mobx";
 import { getAppStores } from "./MainApp";
 import { enqueueErrorSnackbar, enqueueSuccessSnackbar } from "@app/Notice";
 import { Logger } from "./Logger";
@@ -200,7 +201,9 @@ async function choiceSave(): Promise<boolean> {
 
 export class IOFileHandle {
   public isNameSet: boolean = false;
-  constructor(public handle: FileSystemFileHandle | null = null, public name: string = "path.jerryio.txt") {}
+  constructor(public handle: FileSystemFileHandle | null = null, public name: string = "path.jerryio.txt") {
+    makeAutoObservable(this);
+  }
 }
 
 export function isFileSystemSupported() {

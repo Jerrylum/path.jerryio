@@ -51,7 +51,7 @@ export class GeneralConfigImpl implements GeneralConfig {
     return this.format_;
   }
 
-  getConfigPanel() {
+  getAdditionalConfigUI() {
     return <></>;
   }
 }

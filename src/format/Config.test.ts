@@ -49,7 +49,7 @@ export class CustomGeneralConfig implements GeneralConfig {
     throw new Error("Method not implemented.");
   }
 
-  getConfigPanel(): JSX.Element {
+  getAdditionalConfigUI(): JSX.Element {
     throw new Error("Method not implemented.");
   }
 }

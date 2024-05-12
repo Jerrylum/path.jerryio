@@ -183,7 +183,7 @@ const GeneralConfigPanelBody = observer((props: {}) => {
           }}
         />
       </Box>
-      {gc.getConfigPanel()}
+      {gc.getAdditionalConfigUI()}
     </>
   );
 });

@@ -147,7 +147,7 @@ moveToPoint: \`moveToPoint(\${x}, \${y}, \${heading}, \${speed});\``;
     return this.format_;
   }
 
-  getConfigPanel() {
+  getAdditionalConfigUI() {
     return <GeneralConfigPanel config={this} />;
   }
 }

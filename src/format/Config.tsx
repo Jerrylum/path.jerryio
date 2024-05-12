@@ -83,7 +83,7 @@ export interface GeneralConfig extends ConfigSection {
   pointDensity: number;
   controlMagnetDistance: number;
   fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType>;
-  getConfigPanel(): React.ReactNode;
+  getAdditionalConfigUI(): React.ReactNode;
 }
 
 export interface PathConfig extends ConfigSection {
