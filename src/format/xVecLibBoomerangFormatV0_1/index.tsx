@@ -101,21 +101,11 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
               point.last.heading =
                 Math.atan2(point.last.x - poin.x, point.last.y - poin.y) * (180 / 3.14159265358979323846);
             }
-            console.log(dis);
-
             if (path.segments.indexOf(point) === path.segments.length - 1) {
               pnt = -(point.first.x - poin.x) / (dis * Math.sin(point.first.heading));
-              console.log(point.first.heading);
-              console.log(point.first);
-              console.log(dis * Math.sin(point.first.heading));
             } else {
               pnt = -(point.last.x - poin.x) / (dis * Math.sin(point.last.heading));
-              console.log(point.last.heading);
-              console.log(point.last);
-              console.log(dis * Math.sin(point.last.heading));
             }
-            console.log(poin);
-            console.log(pnt);
           }
         }
         arr.push([
