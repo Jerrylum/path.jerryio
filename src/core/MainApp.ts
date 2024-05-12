@@ -108,6 +108,17 @@ export class MainApp {
 
     reaction(() => this.latestVersion, onLatestVersionChange);
 
+    reaction(
+      () => this.mountingFile.handle,
+      handle => {
+        if (handle !== null) {
+          document.title = `${handle.name} | PATH.JERRYIO`;
+        } else {
+          document.title = "PATH.JERRYIO";
+        }
+      }
+    );
+
     this.newFile();
   }
 
