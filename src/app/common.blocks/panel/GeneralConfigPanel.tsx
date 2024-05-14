@@ -1,4 +1,13 @@
-import { Box, ListSubheader, MenuItem, MenuItemProps, Select, SelectChangeEvent, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  ListSubheader,
+  MenuItem,
+  MenuItemProps,
+  Select,
+  SelectChangeEvent,
+  Typography
+} from "@mui/material";
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Format, getAllDeprecatedFormats, getAllExperimentalFormats, getAllGeneralFormats } from "@format/Format";
@@ -15,8 +24,10 @@ import { FieldImageAsset, FieldImageOriginType } from "@core/Asset";
 import { AssetManagerModalSymbol } from "../modal/AssetManagerModal";
 import { PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
 import TuneIcon from "@mui/icons-material/Tune";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import "./GeneralConfigPanel.scss";
 import { isExperimentalFeaturesEnabled } from "@src/core/Preferences";
+import { FormStyleButton } from "@src/app/component.blocks/FormStyleButton";
 
 const FormatMenuItem = (props: { format: Format } & MenuItemProps) => {
   const { format, ...rests } = props;
@@ -185,9 +196,9 @@ const GeneralConfigPanelBody = observer((props: {}) => {
         )}
       </Box>
       <Typography sx={{ marginTop: "16px" }} gutterBottom>
-        Field Layer
+        Field & Coordinate
       </Typography>
-      <Box className="Panel-FlexBox">
+      {/* <Box className="Panel-FlexBox">
         <ObserverItemsSelect
           sx={{ width: "auto" }}
           label=""
@@ -207,6 +218,21 @@ const GeneralConfigPanelBody = observer((props: {}) => {
             }
           }}
         />
+      </Box> */}
+      <Box className="Panel-FlexBox" marginTop="16px">
+        {/* <Button variant="outlined" color="info" size="medium" endIcon={<CreateIcon/>}>
+          {gc.fieldImage.displayName}
+        </Button> */}
+        <FormStyleButton onClick={() => ui.openModal(AssetManagerModalSymbol)}>
+          {gc.fieldImage.displayName}
+          <ChevronRightIcon fontSize="small" />
+        </FormStyleButton>
+      </Box>
+      <Box className="Panel-FlexBox" marginTop="16px">
+        <FormStyleButton onClick={() => {}}>
+          VEX Game Positioning System
+          <ChevronRightIcon fontSize="small" />
+        </FormStyleButton>
       </Box>
       {gc.getAdditionalConfigUI()}
     </>
