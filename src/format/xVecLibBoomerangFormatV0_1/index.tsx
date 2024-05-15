@@ -8,13 +8,13 @@ import { Format, importPDJDataFromTextFile } from "../Format";
 import { PointCalculationResult, getPathPoints } from "@core/Calculation";
 import { GeneralConfigImpl } from "./GeneralConfig";
 import { PathConfigImpl } from "./PathConfig";
-
+import { SmartBuffer } from "smart-buffer";
 // observable class
 export class xVecLibBoomerangFormatV0_1 implements Format {
   isInit: boolean = false;
   uid: string;
 
-  private gc = new GeneralConfigImpl(this);
+  protected gc = new GeneralConfigImpl(this);
 
   constructor() {
     this.uid = makeId(10);
@@ -100,14 +100,17 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
                 Math.atan2(point.last.x - poin.x, point.last.y - poin.y) * (180 / 3.14159265358979323846);
             }
             if (path.segments.indexOf(point) === path.segments.length - 1) {
-              pnt = -(point.first.x - poin.x) / (dis * Math.sin(point.first.heading));
+              pnt = (point.first.x - poin.x) / (dis * Math.sin(point.first.heading));
             } else {
-              pnt = -(point.last.x - poin.x) / (dis * Math.sin(point.last.heading));
+              pnt = (point.last.x - poin.x) / (dis * Math.sin(point.last.heading));
             }
+            console.log(pnt);
           }
         }
         let tmpp = point.last.heading > 180 ? point.last.heading - 360 : point.last.heading;
-
+        if (pnt > 1) {
+          pnt /= 10;
+        }
         arr.push([gc.chassisName, uc.fromAtoB(point.last.x).toUser(), uc.fromAtoB(point.last.y).toUser(), tmpp, pnt]);
       }
     }

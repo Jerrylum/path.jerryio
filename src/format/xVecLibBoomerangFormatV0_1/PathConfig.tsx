@@ -1,30 +1,42 @@
 import { makeAutoObservable } from "mobx";
+import { Box, Typography } from "@mui/material";
+import { ObserverInput } from "@src/app/component.blocks/ObserverInput";
 import { BentRateApplicationDirection, Path } from "@core/Path";
 import { EditableNumberRange } from "@core/Util";
-import { Exclude } from "class-transformer";
-import { Format } from "../Format";
+import { NumberT, CodePointBuffer } from "@src/token/Tokens";
+import { Exclude, Expose } from "class-transformer";
+import { IsNumber } from "class-validator";
 import { PathConfig } from "../Config";
+import { Format } from "../Format";
+import { LayoutContext, LayoutType, PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
+import { getAppStores } from "@core/MainApp";
+import { observer } from "mobx-react-lite";
+import React from "react";
+import LinearScaleIcon from "@mui/icons-material/LinearScale";
+
 // observable class
 export class PathConfigImpl implements PathConfig {
   @Exclude()
   speedLimit: EditableNumberRange = {
-    minLimit: { value: 0, label: "" },
-    maxLimit: { value: 0, label: "" },
-    step: 0,
+    minLimit: { value: 0, label: "0" },
+    maxLimit: { value: 127, label: "127" },
+    step: 1,
     from: 0,
-    to: 0
+    to: 1
   };
   @Exclude()
   bentRateApplicableRange: EditableNumberRange = {
-    minLimit: { value: 0, label: "" },
-    maxLimit: { value: 0, label: "" },
-    step: 0,
+    minLimit: { value: 0, label: "0" },
+    maxLimit: { value: 1, label: "1" },
+    step: 0.01,
     from: 0,
-    to: 0
+    to: 1
   };
   @Exclude()
-  bentRateApplicationDirection = BentRateApplicationDirection.HighToLow;
-
+  bentRateApplicationDirection = BentRateApplicationDirection.LowToHigh;
+  @IsNumber()
+  @Expose()
+  speed: number = 30;
   @Exclude()
   readonly format: Format;
 
@@ -36,3 +48,42 @@ export class PathConfigImpl implements PathConfig {
     makeAutoObservable(this);
   }
 }
+
+const PathConfigPanelBody = observer((props: {}) => {
+  const { app } = getAppStores();
+
+  const pc = app.selectedPath?.pc as PathConfigImpl | undefined;
+
+  const isClassic = React.useContext(LayoutContext) === LayoutType.Classic;
+
+  if (pc === undefined) {
+    return isClassic ? undefined : <Typography>(No selected path)</Typography>;
+  }
+
+  return (
+    <>
+      <Box className="Panel-Box">
+        <ObserverInput
+          label="Speed"
+          sx={{ width: "50%" }}
+          getValue={() => pc.speed.toUser() + ""}
+          setValue={(value: string) => {
+            pc.speed = parseFloat(value);
+          }}
+          isValidIntermediate={() => true}
+          isValidValue={(candidate: string) => NumberT.parse(new CodePointBuffer(candidate)) !== null}
+          numeric
+        />
+      </Box>
+    </>
+  );
+});
+
+export const PathConfigPanel = (props: PanelBuilderProps): PanelInstanceProps => {
+  return {
+    id: "PathConfigAccordion",
+    header: "Path",
+    children: <PathConfigPanelBody />,
+    icon: <LinearScaleIcon fontSize="large" />
+  };
+};
