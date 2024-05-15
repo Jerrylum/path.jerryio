@@ -24,7 +24,7 @@ import { FieldImageAsset, FieldImageOriginType } from "@core/Asset";
 import { AssetManagerModalSymbol } from "../modal/AssetManagerModal";
 import { PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
 import TuneIcon from "@mui/icons-material/Tune";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import MenuIcon from "@mui/icons-material/Menu";
 import "./GeneralConfigPanel.scss";
 import { isExperimentalFeaturesEnabled } from "@src/core/Preferences";
 import { FormStyleButton } from "@src/app/component.blocks/FormStyleButton";
@@ -225,13 +225,13 @@ const GeneralConfigPanelBody = observer((props: {}) => {
         </Button> */}
         <FormStyleButton onClick={() => ui.openModal(AssetManagerModalSymbol)}>
           {gc.fieldImage.displayName}
-          <ChevronRightIcon fontSize="small" />
+          <MenuIcon fontSize="small" />
         </FormStyleButton>
       </Box>
       <Box className="Panel-FlexBox" marginTop="16px">
         <FormStyleButton onClick={() => {}}>
           VEX Game Positioning System
-          <ChevronRightIcon fontSize="small" />
+          <MenuIcon fontSize="small" />
         </FormStyleButton>
       </Box>
       {gc.getAdditionalConfigUI()}
