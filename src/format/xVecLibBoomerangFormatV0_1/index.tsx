@@ -36,7 +36,7 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
     this.isInit = true;
   }
 
-  unregister(): void { }
+  unregister(): void {}
 
   getGeneralConfig(): GeneralConfig {
     return this.gc;
@@ -76,9 +76,9 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
       for (const point of points) {
         if (path.segments.indexOf(point) === 0) {
           console.log(point.first.heading);
-          let tmpp = (point.first.heading > 180 ? point.first.heading - 360 : point.first.heading);
-          
-          rtn += `${gc.chassisName}.setPos(${Math.round(point.first.x)}, ${Math.round(point.first.y)},${(tmpp)});\n`;
+          let tmpp = point.first.heading > 180 ? point.first.heading - 360 : point.first.heading;
+
+          rtn += `${gc.chassisName}.setPos(${Math.round(point.first.x)}, ${Math.round(point.first.y)},${tmpp});\n`;
           rtn += `${gc.chassisName}.printCoords();\n`;
         }
         let pnt = 0;
@@ -106,15 +106,9 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
             }
           }
         }
-        let tmpp = (point.last.heading > 180 ? point.last.heading - 360 : point.last.heading);
+        let tmpp = point.last.heading > 180 ? point.last.heading - 360 : point.last.heading;
 
-        arr.push([
-          gc.chassisName,
-          uc.fromAtoB(point.last.x).toUser(),
-          uc.fromAtoB(point.last.y).toUser(),
-          tmpp,
-          pnt
-        ]);
+        arr.push([gc.chassisName, uc.fromAtoB(point.last.x).toUser(), uc.fromAtoB(point.last.y).toUser(), tmpp, pnt]);
       }
     }
     for (const s of arr) {

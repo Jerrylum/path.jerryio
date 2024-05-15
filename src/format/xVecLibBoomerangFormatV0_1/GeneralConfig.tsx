@@ -26,7 +26,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
   const { config } = props;
 
   const { app, confirmation, ui } = getAppStores();
-  
+
   const isUsingEditor = !confirmation.isOpen && !ui.isOpeningModal;
 
   const onCopyCode = action(() => {
@@ -76,8 +76,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
             numeric
           />
         </Box>
-        <Box className="Panel-FlexBox">
-        </Box>
+        <Box className="Panel-FlexBox"></Box>
         <Box className="Panel-FlexBox" sx={{ marginTop: "32px" }}>
           <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
             Copy Code
