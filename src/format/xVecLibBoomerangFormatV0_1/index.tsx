@@ -36,7 +36,7 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
     this.isInit = true;
   }
 
-  unregister(): void {}
+  unregister(): void { }
 
   getGeneralConfig(): GeneralConfig {
     return this.gc;
@@ -75,13 +75,11 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
     if (points.length > 0) {
       for (const point of points) {
         if (path.segments.indexOf(point) === 0) {
-          rtn += `robo.set(${Math.round(point.first.x)}, ${Math.round(point.first.y)});\n`;
-
-          rtn += `imu.set_rotation(${
-            point.first.heading / 180 > 0 ? point.first.heading - 180 : point.first.heading + 180
-          });\n`;
-          rtn += `ou.printCoords();\n`;
-          // point.first.heading = -Math.atan2(point.first.x - point.last.x, point.first.y - point.last.y)* (180 / 3.14159265358979323846);
+          console.log(point.first.heading);
+          let tmpp = (point.first.heading > 180 ? point.first.heading - 360 : point.first.heading);
+          
+          rtn += `${gc.chassisName}.setPos(${Math.round(point.first.x)}, ${Math.round(point.first.y)},${(tmpp)});\n`;
+          rtn += `${gc.chassisName}.printCoords();\n`;
         }
         let pnt = 0;
         let last = path.controls.at(path.controls.length - 1);
@@ -108,11 +106,13 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
             }
           }
         }
+        let tmpp = (point.last.heading > 180 ? point.last.heading - 360 : point.last.heading);
+
         arr.push([
           gc.chassisName,
           uc.fromAtoB(point.last.x).toUser(),
           uc.fromAtoB(point.last.y).toUser(),
-          point.last.heading,
+          tmpp,
           pnt
         ]);
       }
