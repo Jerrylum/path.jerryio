@@ -76,18 +76,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
             numeric
           />
         </Box>
-        <Box className="Panel-FlexBox">
-          <ObserverCheckbox
-            label="Use Relative Coordinates"
-            checked={config.relativeCoords}
-            onCheckedChange={value => {
-              app.history.execute(
-                `Set using relative coordinates to ${value}`,
-                new UpdateProperties(config, { relativeCoords: value })
-              );
-            }}
-          />
-        </Box>
+        <Box className="Panel-FlexBox"></Box>
         <Box className="Panel-FlexBox" sx={{ marginTop: "32px" }}>
           <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
             Copy Code
@@ -135,8 +124,6 @@ export class GeneralConfigImpl implements GeneralConfig {
   @Expose()
   movementTimeout: number = 5000;
   @IsBoolean()
-  @Expose()
-  relativeCoords: boolean = true;
   @Exclude()
   private format_: FormatWithExportCode;
 

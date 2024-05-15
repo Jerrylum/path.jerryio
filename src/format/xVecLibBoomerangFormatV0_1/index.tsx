@@ -79,7 +79,7 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
 
           rtn += `imu.set_rotation(${
             point.first.heading / 180 > 0 ? point.first.heading - 180 : point.first.heading + 180
-          };\n`;
+          });\n`;
           rtn += `ou.printCoords();\n`;
           // point.first.heading = -Math.atan2(point.first.x - point.last.x, point.first.y - point.last.y)* (180 / 3.14159265358979323846);
         }
