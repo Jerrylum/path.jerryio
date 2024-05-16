@@ -15,7 +15,7 @@ import { ObserverInput, clampQuantity } from "@app/component.blocks/ObserverInpu
 import { Quantity, UnitOfLength } from "@core/Unit";
 import { UpdateProperties } from "@core/Command";
 import { getAppStores } from "@core/MainApp";
-import { ObserverEnumSelect } from "@app/component.blocks/ObserverEnumSelect";
+import { FormEnumSelect } from "@app/component.blocks/FormEnumSelect";
 import { ObserverCheckbox } from "@app/component.blocks/ObserverCheckbox";
 import { NumberUOL } from "@token/Tokens";
 import { parseFormula } from "@core/Util";
@@ -104,7 +104,7 @@ const GeneralConfigPanelBody = observer((props: {}) => {
         </Select>
       </Box>
       <Box className="Panel-FlexBox" sx={{ marginTop: "16px" }}>
-        <ObserverEnumSelect
+        <FormEnumSelect
           label="Unit of Length"
           enumValue={gc.uol}
           onEnumChange={v => app.history.execute(`Set Unit of Length`, new UpdateProperties(gc, { uol: v }))}

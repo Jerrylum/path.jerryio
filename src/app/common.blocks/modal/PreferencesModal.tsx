@@ -3,7 +3,7 @@ import { observer } from "mobx-react-lite";
 import { getAppStores } from "@core/MainApp";
 import { AppThemeType } from "@app/Theme";
 import { clamp } from "@core/Util";
-import { ObserverEnumSelect } from "@app/component.blocks/ObserverEnumSelect";
+import { FormEnumSelect } from "@app/component.blocks/FormEnumSelect";
 import { ObserverCheckbox } from "@app/component.blocks/ObserverCheckbox";
 import { ObserverInput } from "@app/component.blocks/ObserverInput";
 import { Modal } from "./Modal";
@@ -35,7 +35,7 @@ export const PreferencesModal = observer(() => {
         <Divider />
 
         <Typography className="PreferencesModal-Title">Appearance</Typography>
-        <ObserverEnumSelect
+        <FormEnumSelect
           sx={{ width: "8rem" }}
           label="Theme"
           enumValue={appPreferences.themeType}

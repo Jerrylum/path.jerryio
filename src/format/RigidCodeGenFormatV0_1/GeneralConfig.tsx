@@ -1,7 +1,7 @@
 import { makeAutoObservable, action, observable, IObservableValue } from "mobx";
 import { Box, Typography, Button, TextField } from "@mui/material";
 import { enqueueSuccessSnackbar, enqueueErrorSnackbar } from "@src/app/Notice";
-import { ObserverEnumSelect } from "@src/app/component.blocks/ObserverEnumSelect";
+import { FormEnumSelect } from "@src/app/component.blocks/FormEnumSelect";
 import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFieldImage } from "@core/Asset";
 import { UpdateProperties } from "@core/Command";
 import { useCustomHotkeys, getEnableOnNonTextInputFieldsHotkeysOptions } from "@core/Hook";
@@ -94,7 +94,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
       <Box className="Panel-Box">
         <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
         <Box className="Panel-FlexBox">
-          <ObserverEnumSelect
+          <FormEnumSelect
             sx={{ marginTop: "16px", width: "50%" }}
             label="Heading Output Type"
             enumValue={config.headingOutputType}

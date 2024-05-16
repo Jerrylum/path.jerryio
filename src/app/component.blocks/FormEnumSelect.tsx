@@ -4,7 +4,7 @@ import { FormControlProps, FormControl, InputLabel, Select, SelectChangeEvent, M
 import React from "react";
 import { makeId } from "@core/Util";
 
-const ObserverEnumSelect = observer(
+const FormEnumSelect = observer(
   <T extends number | string>(
     props: FormControlProps & {
       label: string;
@@ -39,4 +39,4 @@ const ObserverEnumSelect = observer(
   }
 );
 
-export { ObserverEnumSelect };
+export { FormEnumSelect };
