@@ -44,7 +44,7 @@ const FormatMenuItem = (props: { format: Format } & MenuItemProps) => {
 };
 
 const GeneralConfigPanelBody = observer((props: {}) => {
-  const { app, assetManager, confirmation, ui, appPreferences } = getAppStores();
+  const { app, confirmation, ui, appPreferences } = getAppStores();
 
   const gc = app.gc;
 
