@@ -2,7 +2,7 @@ import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Checkbox, FormControlLabel, FormControlLabelProps } from "@mui/material";
 
-const ObserverCheckbox = observer(
+const FormCheckbox = observer(
   (
     props: Omit<FormControlLabelProps, "control"> & {
       label: string;
@@ -23,4 +23,4 @@ const ObserverCheckbox = observer(
   }
 );
 
-export { ObserverCheckbox };
+export { FormCheckbox };

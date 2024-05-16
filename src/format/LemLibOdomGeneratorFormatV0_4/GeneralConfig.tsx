@@ -1,7 +1,7 @@
 import { makeAutoObservable, action } from "mobx";
 import { Box, Typography, Button } from "@mui/material";
 import { enqueueSuccessSnackbar, enqueueErrorSnackbar } from "@src/app/Notice";
-import { ObserverCheckbox } from "@src/app/component.blocks/ObserverCheckbox";
+import { FormCheckbox } from "@src/app/component.blocks/FormCheckbox";
 import { ObserverInput } from "@src/app/component.blocks/ObserverInput";
 import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFieldImage } from "@core/Asset";
 import { UpdateProperties } from "@core/Command";
@@ -78,7 +78,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
           />
         </Box>
         <Box className="Panel-FlexBox">
-          <ObserverCheckbox
+          <FormCheckbox
             label="Use Relative Coordinates"
             checked={config.relativeCoords}
             onCheckedChange={value => {

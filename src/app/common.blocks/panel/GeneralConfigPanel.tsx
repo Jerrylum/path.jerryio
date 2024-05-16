@@ -16,7 +16,7 @@ import { Quantity, UnitOfLength } from "@core/Unit";
 import { UpdateProperties } from "@core/Command";
 import { getAppStores } from "@core/MainApp";
 import { FormEnumSelect } from "@app/component.blocks/FormEnumSelect";
-import { ObserverCheckbox } from "@app/component.blocks/ObserverCheckbox";
+import { FormCheckbox } from "@app/component.blocks/FormCheckbox";
 import { NumberUOL } from "@token/Tokens";
 import { parseFormula } from "@core/Util";
 import { AssetManagerModalSymbol } from "../modal/AssetManagerModal";
@@ -176,7 +176,7 @@ const GeneralConfigPanelBody = observer((props: {}) => {
           isValidValue={(candidate: string) => parseFormula(candidate, NumberUOL.parse) !== null}
           numeric
         />
-        <ObserverCheckbox
+        <FormCheckbox
           label="Visible"
           title="Toggle Robot Visibility (R)"
           checked={gc.showRobot}
@@ -185,7 +185,7 @@ const GeneralConfigPanelBody = observer((props: {}) => {
       </Box>
       <Box className="Panel-FlexBox">
         {typeof gc.robotIsHolonomic === "boolean" && (
-          <ObserverCheckbox
+          <FormCheckbox
             label="Holonomic Drive"
             checked={gc.robotIsHolonomic && true}
             onCheckedChange={c => {

@@ -4,7 +4,7 @@ import { getAppStores } from "@core/MainApp";
 import { AppThemeType } from "@app/Theme";
 import { clamp } from "@core/Util";
 import { FormEnumSelect } from "@app/component.blocks/FormEnumSelect";
-import { ObserverCheckbox } from "@app/component.blocks/ObserverCheckbox";
+import { FormCheckbox } from "@app/component.blocks/FormCheckbox";
 import { ObserverInput } from "@app/component.blocks/ObserverInput";
 import { Modal } from "./Modal";
 import { enqueueInfoSnackbar } from "@app/Notice";
@@ -46,12 +46,12 @@ export const PreferencesModal = observer(() => {
         <Divider />
 
         <Typography className="PreferencesModal-Title">Other</Typography>
-        <ObserverCheckbox
+        <FormCheckbox
           label="Enable Google Analytics"
           checked={appPreferences.isGoogleAnalyticsEnabled}
           onCheckedChange={v => (appPreferences.isGoogleAnalyticsEnabled = v)}
         />
-        <ObserverCheckbox
+        <FormCheckbox
           label="Enable Experimental Features"
           checked={appPreferences.isExperimentalFeaturesEnabled}
           onCheckedChange={v => {
