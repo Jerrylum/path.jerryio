@@ -19,8 +19,6 @@ import { ObserverEnumSelect } from "@app/component.blocks/ObserverEnumSelect";
 import { ObserverCheckbox } from "@app/component.blocks/ObserverCheckbox";
 import { NumberUOL } from "@token/Tokens";
 import { parseFormula } from "@core/Util";
-import { ObserverItemsSelect } from "@app/component.blocks/ObserverItemsSelect";
-import { FieldImageAsset, FieldImageOriginType } from "@core/Asset";
 import { AssetManagerModalSymbol } from "../modal/AssetManagerModal";
 import { PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
 import TuneIcon from "@mui/icons-material/Tune";
@@ -28,6 +26,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import "./GeneralConfigPanel.scss";
 import { isExperimentalFeaturesEnabled } from "@src/core/Preferences";
 import { FormStyleButton } from "@src/app/component.blocks/FormStyleButton";
+import { OpenModalButton } from "@src/app/component.blocks/OpenModalButton";
 
 const FormatMenuItem = (props: { format: Format } & MenuItemProps) => {
   const { format, ...rests } = props;
@@ -198,41 +197,13 @@ const GeneralConfigPanelBody = observer((props: {}) => {
       <Typography sx={{ marginTop: "16px" }} gutterBottom>
         Field & Coordinate
       </Typography>
-      {/* <Box className="Panel-FlexBox">
-        <ObserverItemsSelect
-          sx={{ width: "auto" }}
-          label=""
-          selected={gc.fieldImage.signature}
-          items={[
-            ...assetManager.assets.map(asset => ({ key: asset.signature, value: asset, label: asset.displayName })),
-            { key: "open-asset-manager", value: "open-asset-manager", label: "(Custom)" }
-          ]}
-          onSelectItem={(asset: FieldImageAsset<FieldImageOriginType> | string | undefined) => {
-            if (asset === "open-asset-manager") {
-              ui.openModal(AssetManagerModalSymbol);
-            } else if (asset instanceof FieldImageAsset) {
-              app.history.execute(
-                `Change field layer`,
-                new UpdateProperties(gc, { fieldImage: asset?.getSignatureAndOrigin() })
-              );
-            }
-          }}
-        />
-      </Box> */}
       <Box className="Panel-FlexBox" marginTop="16px">
-        {/* <Button variant="outlined" color="info" size="medium" endIcon={<CreateIcon/>}>
+        <OpenModalButton onClick={() => ui.openModal(AssetManagerModalSymbol)}>
           {gc.fieldImage.displayName}
-        </Button> */}
-        <FormStyleButton onClick={() => ui.openModal(AssetManagerModalSymbol)}>
-          {gc.fieldImage.displayName}
-          <MenuIcon fontSize="small" />
-        </FormStyleButton>
+        </OpenModalButton>
       </Box>
       <Box className="Panel-FlexBox" marginTop="16px">
-        <FormStyleButton onClick={() => {}}>
-          VEX Game Positioning System
-          <MenuIcon fontSize="small" />
-        </FormStyleButton>
+        <OpenModalButton onClick={() => {}}>VEX Game Positioning System</OpenModalButton>
       </Box>
       {gc.getAdditionalConfigUI()}
     </>
