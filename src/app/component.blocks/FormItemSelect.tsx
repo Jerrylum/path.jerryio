@@ -10,7 +10,7 @@ export type Item<TValue> = {
   label: string;
 };
 
-const ObserverItemsSelect = observer(
+const FormItemSelect = observer(
   <TValue, TItem extends Item<TValue>, TItems extends TItem[]>(
     props: FormControlProps & {
       label: string;
@@ -43,4 +43,4 @@ const ObserverItemsSelect = observer(
   }
 );
 
-export { ObserverItemsSelect };
+export { FormItemSelect };
