@@ -11,7 +11,7 @@ import {
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Format, getAllDeprecatedFormats, getAllExperimentalFormats, getAllGeneralFormats } from "@format/Format";
-import { ObserverInput, clampQuantity } from "@app/component.blocks/ObserverInput";
+import { FormInputField, clampQuantity } from "@app/component.blocks/FormInputField";
 import { Quantity, UnitOfLength } from "@core/Unit";
 import { UpdateProperties } from "@core/Command";
 import { getAppStores } from "@core/MainApp";
@@ -110,7 +110,7 @@ const GeneralConfigPanelBody = observer((props: {}) => {
           onEnumChange={v => app.history.execute(`Set Unit of Length`, new UpdateProperties(gc, { uol: v }))}
           enumType={UnitOfLength}
         />
-        <ObserverInput
+        <FormInputField
           sx={{ width: "7rem" }}
           label="Point Density"
           getValue={() => gc.pointDensity.toUser() + ""}
@@ -136,7 +136,7 @@ const GeneralConfigPanelBody = observer((props: {}) => {
         Robot Visualize
       </Typography>
       <Box className="Panel-FlexBox">
-        <ObserverInput
+        <FormInputField
           label="Width"
           getValue={() => gc.robotWidth.toUser() + ""}
           setValue={(value: string) =>
@@ -156,7 +156,7 @@ const GeneralConfigPanelBody = observer((props: {}) => {
           isValidValue={(candidate: string) => parseFormula(candidate, NumberUOL.parse) !== null}
           numeric
         />
-        <ObserverInput
+        <FormInputField
           label="Height"
           getValue={() => gc.robotHeight.toUser() + ""}
           setValue={(value: string) =>

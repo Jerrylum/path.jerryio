@@ -2,7 +2,7 @@ import { makeAutoObservable, action } from "mobx";
 import { Box, Typography, Button } from "@mui/material";
 import { enqueueSuccessSnackbar, enqueueErrorSnackbar } from "@src/app/Notice";
 import { FormCheckbox } from "@src/app/component.blocks/FormCheckbox";
-import { ObserverInput } from "@src/app/component.blocks/ObserverInput";
+import { FormInputField } from "@src/app/component.blocks/FormInputField";
 import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFieldImage } from "@core/Asset";
 import { UpdateProperties } from "@core/Command";
 import { useCustomHotkeys, getEnableOnNonTextInputFieldsHotkeysOptions } from "@core/Hook";
@@ -51,7 +51,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
       <Box className="Panel-Box">
         <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
         <Box className="Panel-FlexBox">
-          <ObserverInput
+          <FormInputField
             label="Chassis Name"
             getValue={() => config.chassisName}
             setValue={(value: string) => {
@@ -61,7 +61,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
             isValidValue={(candidate: string) => candidate !== ""}
             sx={{ marginTop: "16px" }}
           />
-          <ObserverInput
+          <FormInputField
             label="Movement Timeout"
             getValue={() => config.movementTimeout.toString()}
             setValue={(value: string) => {

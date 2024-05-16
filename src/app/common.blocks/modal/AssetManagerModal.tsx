@@ -32,7 +32,7 @@ import {
 } from "@core/Asset";
 import { getAppStores } from "@core/MainApp";
 import { useFieldImageAsset, useImageState, useMobxStorage } from "@core/Hook";
-import { ObserverInput } from "@app/component.blocks/ObserverInput";
+import { FormInputField } from "@app/component.blocks/FormInputField";
 import { NumberUOL } from "@token/Tokens";
 import { makeId, parseFormula, runInActionAsync } from "@core/Util";
 import { UnitOfLength } from "@core/Unit";
@@ -171,7 +171,7 @@ export const FieldImagePreview = observer((props: { preview: FieldImageAsset<Fie
           {preview.isOriginType(FieldImageOriginType.BuiltIn) ? (
             <Typography variant="body1">{preview.displayName}</Typography>
           ) : (
-            <ObserverInput
+            <FormInputField
               label="Name"
               fullWidth
               getValue={() => preview.displayName}
@@ -362,7 +362,7 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
           alignItems: "center",
           width: "100%"
         }}>
-        <ObserverInput
+        <FormInputField
           label="Name"
           getValue={() => draft.name}
           setValue={(value: string) => {
@@ -374,7 +374,7 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
           sx={{ flexGrow: 1 }}
           onKeyDown={e => e.stopPropagation()}
         />
-        <ObserverInput
+        <FormInputField
           label="Height (mm)"
           getValue={() => draft.heightInMM + ""}
           setValue={(value: string) => {
@@ -403,7 +403,7 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
               value="url"
               control={<Radio />}
               label={
-                <ObserverInput
+                <FormInputField
                   label=""
                   fullWidth
                   placeholder="Image URL"

@@ -17,7 +17,7 @@ export function clampQuantity(
   return clamp(value, minInUOL, maxInUOL).toUser();
 }
 
-export type ObserverInputProps = TextFieldProps & {
+export type FormInputFieldProps = TextFieldProps & {
   getValue: () => string;
   setValue: (value: string, payload: any) => void;
   isValidIntermediate: (candidate: string) => boolean;
@@ -25,8 +25,8 @@ export type ObserverInputProps = TextFieldProps & {
   numeric?: boolean; // default false
 };
 
-const ObserverInput = observer(
-  forwardRef<HTMLInputElement | null, ObserverInputProps>((props: ObserverInputProps, ref) => {
+const FormInputField = observer(
+  forwardRef<HTMLInputElement | null, FormInputFieldProps>((props: FormInputFieldProps, ref) => {
     // rest is used to send props to TextField without custom attributes
     const { getValue, setValue, isValidIntermediate, isValidValue, numeric: isNumeric, ...rest } = props;
 
@@ -125,4 +125,4 @@ const ObserverInput = observer(
   })
 );
 
-export { ObserverInput };
+export { FormInputField };

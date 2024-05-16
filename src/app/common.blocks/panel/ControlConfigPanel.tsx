@@ -2,7 +2,7 @@ import { Box, IconButton, Tooltip } from "@mui/material";
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { AnyControl, Control, EndControl } from "@core/Path";
-import { ObserverInput, clampQuantity } from "@app/component.blocks/ObserverInput";
+import { FormInputField, clampQuantity } from "@app/component.blocks/FormInputField";
 import { Quantity, UnitOfAngle, UnitOfLength } from "@core/Unit";
 import { boundHeading, findCentralPoint } from "@core/Calculation";
 import { Coordinate, CoordinateWithHeading, EuclideanTransformation } from "@core/Coordinate";
@@ -85,7 +85,7 @@ const ControlConfigPanelBody = observer((props: {}) => {
   return (
     <Box id="ControlConfigPanel">
       <Box className="Panel-FlexBox">
-        <ObserverInput
+        <FormInputField
           label="X"
           getValue={() => {
             if (app.selectedEntityCount === 0) return "";
@@ -117,7 +117,7 @@ const ControlConfigPanelBody = observer((props: {}) => {
           disabled={app.selectedEntityCount !== 1 || app.selectedControl === undefined}
           numeric
         />
-        <ObserverInput
+        <FormInputField
           label="Y"
           getValue={() => {
             if (app.selectedEntityCount === 0) return "";
@@ -149,7 +149,7 @@ const ControlConfigPanelBody = observer((props: {}) => {
           disabled={app.selectedEntityCount !== 1 || app.selectedControl === undefined}
           numeric
         />
-        <ObserverInput
+        <FormInputField
           label="Heading"
           getValue={() => {
             if (app.selectedEntityCount === 0) return "";

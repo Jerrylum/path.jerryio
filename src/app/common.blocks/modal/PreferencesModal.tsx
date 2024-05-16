@@ -5,7 +5,7 @@ import { AppThemeType } from "@app/Theme";
 import { clamp } from "@core/Util";
 import { FormEnumSelect } from "@app/component.blocks/FormEnumSelect";
 import { FormCheckbox } from "@app/component.blocks/FormCheckbox";
-import { ObserverInput } from "@app/component.blocks/ObserverInput";
+import { FormInputField } from "@app/component.blocks/FormInputField";
 import { Modal } from "./Modal";
 import { enqueueInfoSnackbar } from "@app/Notice";
 import { Logger } from "@core/Logger";
@@ -22,7 +22,7 @@ export const PreferencesModal = observer(() => {
     <Modal symbol={PreferencesModalSymbol}>
       <Card id="PreferencesModal" className="Modal-Container">
         <Typography className="PreferencesModal-Title">General</Typography>
-        <ObserverInput
+        <FormInputField
           sx={{ width: "10rem" }}
           label="Max Undo Operations"
           getValue={() => appPreferences.maxHistory.toString()}

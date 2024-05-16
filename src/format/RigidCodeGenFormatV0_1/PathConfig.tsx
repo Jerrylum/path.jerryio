@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { Box, Typography } from "@mui/material";
-import { ObserverInput } from "@src/app/component.blocks/ObserverInput";
+import { FormInputField } from "@src/app/component.blocks/FormInputField";
 import { BentRateApplicationDirection, Path } from "@core/Path";
 import { EditableNumberRange } from "@core/Util";
 import { NumberT, CodePointBuffer } from "@src/token/Tokens";
@@ -63,7 +63,7 @@ const PathConfigPanelBody = observer((props: {}) => {
   return (
     <>
       <Box className="Panel-Box">
-        <ObserverInput
+        <FormInputField
           label="Speed"
           sx={{ width: "50%" }}
           getValue={() => pc.speed.toUser() + ""}
