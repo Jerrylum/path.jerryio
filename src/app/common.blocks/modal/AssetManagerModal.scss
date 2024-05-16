@@ -5,6 +5,12 @@
   min-height: 96px;
   outline: none !important;
 
+  .FieldImageAssets-FunctionButton {
+    cursor: pointer;
+    padding: 0;
+    margin-left: 8px;
+  }
+
   #FieldImageAssets {
     display: flex;
     width: 100%;
@@ -31,13 +37,13 @@
           bottom: 0;
 
           .FieldImageAssetsList-Item {
-            .FieldImageAssetsList-ItemDeleteButton {
+            .FieldImageAssetsList-ItemApplyButton {
               visibility: hidden;
             }
           }
 
           .FieldImageAssetsList-Item:hover {
-            .FieldImageAssetsList-ItemDeleteButton {
+            .FieldImageAssetsList-ItemApplyButton {
               visibility: inherit;
             }
           }

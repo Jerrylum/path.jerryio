@@ -17,6 +17,7 @@ import {
   ListItemText,
   Radio,
   RadioGroup,
+  Tooltip,
   Typography
 } from "@mui/material";
 import { action, makeAutoObservable } from "mobx";
@@ -31,14 +32,16 @@ import {
 } from "@core/Asset";
 import { getAppStores } from "@core/MainApp";
 import { useFieldImageAsset, useImageState, useMobxStorage } from "@core/Hook";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { ObserverInput } from "@app/component.blocks/ObserverInput";
 import { NumberUOL } from "@token/Tokens";
 import { makeId, parseFormula, runInActionAsync } from "@core/Util";
 import { UnitOfLength } from "@core/Unit";
 import React from "react";
 import { Vector } from "@core/Path";
+import InputIcon from "@mui/icons-material/Input";
 import GetAppIcon from "@mui/icons-material/GetApp";
+import AddIcon from "@mui/icons-material/Add";
+import DoneIcon from "@mui/icons-material/Done";
 import { UpdateProperties } from "@core/Command";
 
 import "./AssetManagerModal.scss";
@@ -75,35 +78,34 @@ class FieldImageManagerVariables {
 export const FieldImageAssetItem = observer(
   (props: { variables: FieldImageManagerVariables; asset: FieldImageAsset<FieldImageOriginType> }) => {
     const { variables, asset } = props;
-    const { app, assetManager } = getAppStores();
+    const { app, ui } = getAppStores();
 
-    const onDelete = () => {
-      if (variables.selected === asset) variables.selected = null;
-      if (app.gc.fieldImage.signature === asset.signature) {
-        app.history.execute(
-          `Use default field layer`,
-          new UpdateProperties(app.gc, { fieldImage: getDefaultBuiltInFieldImage().getSignatureAndOrigin() })
-        );
-      }
+    const isSelected = variables.selected === asset;
+    const isUsing = asset.signature === app.gc.fieldImage.signature;
 
-      if (asset.isOriginType(FieldImageOriginType.External) || asset.isOriginType(FieldImageOriginType.Local))
-        assetManager.removeAsset(asset);
-    };
+    const onApply = action(() => {
+      app.history.execute(
+        `Change field layer`,
+        new UpdateProperties(app.gc, { fieldImage: asset?.getSignatureAndOrigin() })
+      );
+      ui.closeModal(AssetManagerModalSymbol);
+    });
 
     return (
       <ListItem
         className="FieldImageAssetsList-Item"
         disablePadding
-        {...(!asset.isOriginType(FieldImageOriginType.BuiltIn)
-          ? {
-              secondaryAction: (
-                <IconButton edge="end" className="FieldImageAssetsList-ItemDeleteButton" onClick={action(onDelete)}>
-                  <DeleteIcon />
-                </IconButton>
-              )
-            }
-          : {})}>
+        secondaryAction={
+          !isUsing && (
+            <Tooltip title="Apply This Image">
+              <IconButton edge="end" className="FieldImageAssetsList-ItemApplyButton" onClick={action(onApply)}>
+                <InputIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )
+        }>
         <ListItemButton
+          selected={isSelected}
           onClick={action(() => {
             variables.selected = asset;
           })}>
@@ -116,6 +118,7 @@ export const FieldImageAssetItem = observer(
               </>
             }
           />
+          {isUsing && <DoneIcon />}
         </ListItemButton>
       </ListItem>
     );
@@ -208,9 +211,13 @@ export const FieldImagePreviewPlaceholder = observer(() => {
 });
 
 export const FieldImageList = observer((props: { variables: FieldImageManagerVariables }) => {
-  const { assetManager } = getAppStores();
+  const { app, ui, assetManager } = getAppStores();
 
   const { variables } = props;
+
+  const selected = variables.selected;
+  const hasSelected = selected !== null;
+  const isAppliedSelected = selected?.signature === app.gc.fieldImage.signature;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(
@@ -219,6 +226,29 @@ export const FieldImageList = observer((props: { variables: FieldImageManagerVar
     }),
     []
   );
+
+  const onApply = action(() => {
+    if (selected === null) return;
+    app.history.execute(
+      `Change field layer`,
+      new UpdateProperties(app.gc, { fieldImage: selected?.getSignatureAndOrigin() })
+    );
+    ui.closeModal(AssetManagerModalSymbol);
+  });
+
+  const onDelete = action(() => {
+    if (selected === null) return;
+    variables.selected = null;
+    if (app.gc.fieldImage.signature === selected.signature) {
+      app.history.execute(
+        `Use default field layer`,
+        new UpdateProperties(app.gc, { fieldImage: getDefaultBuiltInFieldImage().getSignatureAndOrigin() })
+      );
+    }
+
+    if (selected.isOriginType(FieldImageOriginType.External) || selected.isOriginType(FieldImageOriginType.Local))
+      assetManager.removeAsset(selected);
+  });
 
   return (
     <Box>
@@ -233,14 +263,24 @@ export const FieldImageList = observer((props: { variables: FieldImageManagerVar
           </List>
         </Box>
       </Box>
-      <Button
-        variant="contained"
-        color="primary"
-        disableElevation
-        sx={{ marginTop: "12px" }}
-        onClick={() => variables.newDraft()}>
-        Create
-      </Button>
+      <Box marginY="16px" display="flex" gap="8px">
+        <Button
+          variant="outlined"
+          color="primary"
+          disabled={!hasSelected || isAppliedSelected}
+          disableElevation
+          onClick={onApply}>
+          {isAppliedSelected ? "Applied" : "Apply"}
+        </Button>
+        <Button
+          variant="outlined"
+          color="primary"
+          disabled={!hasSelected || selected.isOriginType(FieldImageOriginType.BuiltIn)}
+          disableElevation
+          onClick={onDelete}>
+          Delete
+        </Button>
+      </Box>
     </Box>
   );
 });
@@ -432,14 +472,14 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
         )}
         <Box sx={{ marginTop: "1em", display: "flex", gap: "12px" }}>
           <Button
-            variant="contained"
+            variant="outlined"
             color="primary"
             disableElevation
             onClick={action(onSubmit)}
             disabled={variables.selected === null}>
             Submit
           </Button>
-          <Button variant="contained" color="primary" disableElevation onClick={action(() => (variables.draft = null))}>
+          <Button variant="outlined" color="primary" disableElevation onClick={action(() => (variables.draft = null))}>
             Cancel
           </Button>
         </Box>
@@ -457,6 +497,15 @@ export const FieldImageSection = observer(() => {
     <Box>
       <Typography variant="h3" fontSize={18} gutterBottom>
         Field Image
+        <Tooltip title="Create Field Image">
+          <IconButton
+            className="FieldImageAssets-FunctionButton"
+            onClick={() => {
+              if (variables.draft === null) variables.newDraft();
+            }}>
+            <AddIcon />
+          </IconButton>
+        </Tooltip>
       </Typography>
       <Box id="FieldImageAssets">
         <Box id="FieldImageAssets-Body">
