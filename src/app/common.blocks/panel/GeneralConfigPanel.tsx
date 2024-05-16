@@ -25,7 +25,7 @@ import TuneIcon from "@mui/icons-material/Tune";
 import MenuIcon from "@mui/icons-material/Menu";
 import "./GeneralConfigPanel.scss";
 import { isExperimentalFeaturesEnabled } from "@src/core/Preferences";
-import { FormStyleButton } from "@src/app/component.blocks/FormStyleButton";
+import { FormButton } from "@src/app/component.blocks/FormButton";
 import { OpenModalButton } from "@src/app/component.blocks/OpenModalButton";
 
 const FormatMenuItem = (props: { format: Format } & MenuItemProps) => {
