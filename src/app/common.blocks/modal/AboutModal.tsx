@@ -15,7 +15,7 @@ export const AboutModal = observer(() => {
         <Typography variant="h3" gutterBottom align="center">
           PATH.JERRYIO Version {APP_VERSION.version}
         </Typography>
-        <Typography variant="body1" align="center" sx={{ marginBottom: "2rem" }}>
+        <Typography variant="body1" align="center" marginBottom="2rem">
           Made by Jerry Lum
         </Typography>
         <Typography variant="body1" align="center">

@@ -180,7 +180,7 @@ const ControlConfigPanelBody = observer((props: {}) => {
           numeric
         />
       </Box>
-      <Box className="Panel-FlexBox" sx={{ marginTop: "8px" }}>
+      <Box className="Panel-FlexBox" marginTop="8px">
         <Tooltip title="Rotate Right 90°">
           <IconButton
             edge="end"

@@ -39,7 +39,7 @@ const SpeedCanvasTooltipContent = observer((props: {}) => {
     const speed = (speedFrom + pos.yPos * (speedTo - speedFrom)).toUser();
     const postfix = interaction.keyframe.followBentRate ? " (Bent Rate Interruption)" : " (Linear Interpolation)";
     return (
-      <Box sx={{ padding: "8px" }}>
+      <Box padding="8px">
         {speed}
         {postfix}
       </Box>

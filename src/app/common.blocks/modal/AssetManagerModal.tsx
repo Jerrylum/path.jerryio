@@ -166,8 +166,8 @@ export const FieldImagePreview = observer((props: { preview: FieldImageAsset<Fie
           </Box>
         )}
       </Box>
-      <Box sx={{ minHeight: "100px" }}>
-        <Box sx={{ marginTop: "1em" }}>
+      <Box minHeight="100px">
+        <Box marginTop="16px">
           {preview.isOriginType(FieldImageOriginType.BuiltIn) ? (
             <Typography variant="body1">{preview.displayName}</Typography>
           ) : (
@@ -185,7 +185,7 @@ export const FieldImagePreview = observer((props: { preview: FieldImageAsset<Fie
             />
           )}
         </Box>
-        <Box sx={{ marginTop: "0.5em" }}>
+        <Box marginTop="8px">
           {size !== null && (
             <Typography variant="body1">
               Width: {size[0].x.toUser()}px ({size[1].x.toUser()}mm)
@@ -205,7 +205,7 @@ export const FieldImagePreviewPlaceholder = observer(() => {
       <Box id="FieldImageAssets-AssetImagePreview">
         <svg viewBox="0 0 1 1"></svg>
       </Box>
-      <Box sx={{ marginTop: "1em", minHeight: "100px" }}></Box>
+      <Box marginTop="16px" minHeight="100px"></Box>
     </Box>
   );
 });
@@ -353,15 +353,7 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
 
   return (
     <Box>
-      <Box
-        sx={{
-          marginTop: "1em",
-          display: "flex",
-          gap: "12px",
-          flexWrap: "wrap",
-          alignItems: "center",
-          width: "100%"
-        }}>
+      <Box marginTop="16px" display="flex" gap="12px" flexWrap="wrap" alignItems="center" width="100%">
         <FormInputField
           label="Name"
           getValue={() => draft.name}
@@ -389,7 +381,7 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
           onKeyDown={e => e.stopPropagation()}
         />
       </Box>
-      <Box sx={{ marginTop: "1em" }}>
+      <Box marginTop="16px">
         <FormControl>
           <FormLabel id="source-radio-buttons-group-label" sx={{ marginBottom: "4px" }}>
             Source (Choose One)
@@ -466,11 +458,11 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
         </FormControl>
 
         {draft.urlValidateResult?.[1] && (
-          <Typography variant="body1" sx={{ marginTop: "0.5em" }}>
+          <Typography variant="body1" marginTop="8px">
             {draft.urlValidateResult?.[1]}
           </Typography>
         )}
-        <Box sx={{ marginTop: "1em", display: "flex", gap: "12px" }}>
+        <Box marginTop="16px" display="flex" gap="12px">
           <Button
             variant="outlined"
             color="primary"

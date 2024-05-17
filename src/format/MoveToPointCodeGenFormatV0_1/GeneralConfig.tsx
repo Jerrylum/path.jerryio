@@ -84,7 +84,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
   return (
     <>
       <Box className="Panel-Box">
-        <Box className="Panel-FlexBox" sx={{ marginTop: "32px" }}>
+        <Box className="Panel-FlexBox" marginTop="32px">
           <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
             Copy Code
           </Button>

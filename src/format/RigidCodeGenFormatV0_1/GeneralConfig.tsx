@@ -92,7 +92,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
   return (
     <>
       <Box className="Panel-Box">
-        <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
+        <Typography marginTop="16px">Export Settings</Typography>
         <Box className="Panel-FlexBox">
           <FormEnumSelect
             sx={{ marginTop: "16px", width: "50%" }}
@@ -107,7 +107,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
             enumType={HeadingOutputType}
           />
         </Box>
-        <Box className="Panel-FlexBox" sx={{ marginTop: "32px" }}>
+        <Box className="Panel-FlexBox" marginTop="32px">
           <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
             Copy Code
           </Button>

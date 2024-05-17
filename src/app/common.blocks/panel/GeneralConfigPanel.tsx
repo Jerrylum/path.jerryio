@@ -24,7 +24,7 @@ const FormatMenuItem = (props: { format: Format } & MenuItemProps) => {
     <MenuItem {...rests}>
       <Box>
         <Typography variant="body1">{format.getName()}</Typography>
-        <Typography variant="body1" color="grey" sx={{ width: "500px", maxWidth: "90vw", textWrap: "wrap" }}>
+        <Typography variant="body1" color="grey" width="500px" maxWidth="90vw" sx={{ textWrap: "wrap" }}>
           {format.getDescription()}
         </Typography>
       </Box>
@@ -92,7 +92,7 @@ const GeneralConfigPanelBody = observer((props: {}) => {
             allExperimentalFormats.map(x => <FormatMenuItem key={x.getName()} format={x} value={findIndex(x)} />)}
         </Select>
       </Box>
-      <Box className="Panel-FlexBox" sx={{ marginTop: "16px" }}>
+      <Box className="Panel-FlexBox" marginTop="16px">
         <FormEnumSelect
           label="Unit of Length"
           enumValue={gc.uol}
@@ -121,7 +121,7 @@ const GeneralConfigPanelBody = observer((props: {}) => {
           numeric
         />
       </Box>
-      <Typography sx={{ marginTop: "16px" }} gutterBottom>
+      <Typography marginTop="16px" gutterBottom>
         Robot Visualize
       </Typography>
       <Box className="Panel-FlexBox">
@@ -183,7 +183,7 @@ const GeneralConfigPanelBody = observer((props: {}) => {
           />
         )}
       </Box>
-      <Typography sx={{ marginTop: "16px" }} gutterBottom>
+      <Typography marginTop="16px" gutterBottom>
         Field & Coordinate
       </Typography>
       <Box className="Panel-FlexBox" marginTop="16px">
