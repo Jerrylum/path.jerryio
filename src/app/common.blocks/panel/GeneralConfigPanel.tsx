@@ -1,13 +1,4 @@
-import {
-  Box,
-  Button,
-  ListSubheader,
-  MenuItem,
-  MenuItemProps,
-  Select,
-  SelectChangeEvent,
-  Typography
-} from "@mui/material";
+import { Box, ListSubheader, MenuItem, MenuItemProps, Select, SelectChangeEvent, Typography } from "@mui/material";
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Format, getAllDeprecatedFormats, getAllExperimentalFormats, getAllGeneralFormats } from "@format/Format";
@@ -22,10 +13,8 @@ import { parseFormula } from "@core/Util";
 import { AssetManagerModalSymbol } from "../modal/AssetManagerModal";
 import { PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
 import TuneIcon from "@mui/icons-material/Tune";
-import MenuIcon from "@mui/icons-material/Menu";
 import "./GeneralConfigPanel.scss";
 import { isExperimentalFeaturesEnabled } from "@src/core/Preferences";
-import { FormButton } from "@src/app/component.blocks/FormButton";
 import { OpenModalButton } from "@src/app/component.blocks/OpenModalButton";
 
 const FormatMenuItem = (props: { format: Format } & MenuItemProps) => {
