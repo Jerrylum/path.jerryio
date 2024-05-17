@@ -31,7 +31,7 @@ export class MoveToPointCodeGenFormatV0_1 implements Format {
   }
 
   getName(): string {
-    return "Move-to-Point Code Gen v0.1.x";
+    return "Move-to-Point Code Gen v0.1";
   }
 
   getDescription(): string {

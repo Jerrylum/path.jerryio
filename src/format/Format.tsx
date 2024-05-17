@@ -174,7 +174,19 @@ const convertFromV0_6_0ToV0_7_0: PathFileDataConverter = {
 const convertFromV0_7_0ToV0_8_0: PathFileDataConverter = {
   version: new Range("~0.7"),
   convert: (data: Record<string, any>): void => {
-    // TODO
+    if (data.format === "LemLib v0.4.x (inch, byte-voltage)") {
+      data.format = "LemLib v0.5";
+    } else if (data.format === "path.jerryio v0.1.x (cm, rpm)") {
+      data.format = "path.jerryio v0.1";
+    } else if (data.format === "LemLib Odom Code Gen v0.4.x (inch)") {
+      data.format = "LemLib Odom Code Gen v0.4";
+    } else if (data.format === "LemLib v1.0.0 (mm, m/s)") {
+      data.format = "LemLib v1.0";
+    } else if (data.format === "Move-to-Point Code Gen v0.1.x") {
+      data.format = "Move-to-Point Code Gen v0.1";
+    } else if (data.format === "Rigid Code Gen v0.1.x") {
+      data.format = "Rigid Code Gen v0.1";
+    }
 
     // From v0.7.0 to v0.8.0
     data.appVersion = "0.8.0";

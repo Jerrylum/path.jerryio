@@ -30,11 +30,11 @@ export class LemLibFormatV0_4 implements Format {
   }
 
   getName(): string {
-    return "LemLib v0.4.x (inch, byte-voltage)";
+    return "LemLib v0.5";
   }
 
   getDescription(): string {
-    return "Path file format for LemLib v0.4 (or higher)";
+    return "Path file format for LemLib v0.4 or higher, using 0 to 127 as the speed unit.";
   }
 
   register(app: MainApp, ui: UserInterface): void {
