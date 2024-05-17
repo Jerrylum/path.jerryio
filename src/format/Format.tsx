@@ -171,8 +171,18 @@ const convertFromV0_6_0ToV0_7_0: PathFileDataConverter = {
   }
 };
 
-const convertFromV0_7_0ToCurrentAppVersion: PathFileDataConverter = {
+const convertFromV0_7_0ToV0_8_0: PathFileDataConverter = {
   version: new Range("~0.7"),
+  convert: (data: Record<string, any>): void => {
+    // TODO
+
+    // From v0.7.0 to v0.8.0
+    data.appVersion = "0.8.0";
+  }
+};
+
+const convertFromV0_8_0ToCurrentAppVersion: PathFileDataConverter = {
+  version: new Range("~0.8"),
   convert: (data: Record<string, any>): void => {
     // From v0.7.0 to current app version
     data.appVersion = APP_VERSION.version;
@@ -187,7 +197,8 @@ export function convertPathFileData(data: Record<string, any>): boolean {
     convertFromV0_4_0ToV0_5_0,
     convertFromV0_5_0ToV0_6_0,
     convertFromV0_6_0ToV0_7_0,
-    convertFromV0_7_0ToCurrentAppVersion
+    convertFromV0_7_0ToV0_8_0,
+    convertFromV0_8_0ToCurrentAppVersion
   ]) {
     if (version.test(data.appVersion)) {
       convert(data);
