@@ -13,7 +13,6 @@ import { parseFormula } from "@core/Util";
 import { AssetManagerModalSymbol } from "../modal/AssetManagerModal";
 import { PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
 import TuneIcon from "@mui/icons-material/Tune";
-import "./GeneralConfigPanel.scss";
 import { isExperimentalFeaturesEnabled } from "@src/core/Preferences";
 import { OpenModalButton } from "@src/app/component.blocks/OpenModalButton";
 
