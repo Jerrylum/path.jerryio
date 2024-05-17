@@ -17,6 +17,7 @@ import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import RotateRightIcon from "@mui/icons-material/RotateRight";
 
 import "./ControlConfigPanel.scss";
+import { PanelBox } from "@src/app/component.blocks/PanelBox";
 
 const ControlConfigPanelBody = observer((props: {}) => {
   const { app } = getAppStores();
@@ -84,7 +85,7 @@ const ControlConfigPanelBody = observer((props: {}) => {
 
   return (
     <Box id="ControlConfigPanel">
-      <Box className="Panel-FlexBox">
+      <PanelBox marginTop="0">
         <FormInputField
           label="X"
           getValue={() => {
@@ -179,8 +180,8 @@ const ControlConfigPanelBody = observer((props: {}) => {
           }}
           numeric
         />
-      </Box>
-      <Box className="Panel-FlexBox" marginTop="8px">
+      </PanelBox>
+      <PanelBox>
         <Tooltip title="Rotate Right 90°">
           <IconButton
             edge="end"
@@ -221,7 +222,7 @@ const ControlConfigPanelBody = observer((props: {}) => {
             <FlipIcon sx={{ transform: "rotate(90deg)" }} />
           </IconButton>
         </Tooltip>
-      </Box>
+      </PanelBox>
     </Box>
   );
 });

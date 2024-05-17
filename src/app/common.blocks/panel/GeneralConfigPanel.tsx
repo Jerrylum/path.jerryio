@@ -15,6 +15,7 @@ import { PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
 import TuneIcon from "@mui/icons-material/Tune";
 import { isExperimentalFeaturesEnabled } from "@src/core/Preferences";
 import { OpenModalButton } from "@src/app/component.blocks/OpenModalButton";
+import { PanelBox } from "@src/app/component.blocks/PanelBox";
 
 const FormatMenuItem = (props: { format: Format } & MenuItemProps) => {
   const { format, ...rests } = props;
@@ -71,7 +72,7 @@ const GeneralConfigPanelBody = observer((props: {}) => {
   return (
     <>
       <Typography gutterBottom>Format</Typography>
-      <Box className="Panel-Box">
+      <PanelBox>
         <Select
           size="small"
           sx={{ maxWidth: "100%" }}
@@ -90,8 +91,8 @@ const GeneralConfigPanelBody = observer((props: {}) => {
           {isExperimentalFeaturesEnabled() &&
             allExperimentalFormats.map(x => <FormatMenuItem key={x.getName()} format={x} value={findIndex(x)} />)}
         </Select>
-      </Box>
-      <Box className="Panel-FlexBox" marginTop="16px">
+      </PanelBox>
+      <PanelBox marginTop="16px">
         <FormEnumSelect
           label="Unit of Length"
           enumValue={gc.uol}
@@ -119,11 +120,11 @@ const GeneralConfigPanelBody = observer((props: {}) => {
           isValidValue={(candidate: string) => parseFormula(candidate, NumberUOL.parse) !== null}
           numeric
         />
-      </Box>
+      </PanelBox>
       <Typography marginTop="16px" gutterBottom>
         Robot Visualize
       </Typography>
-      <Box className="Panel-FlexBox">
+      <PanelBox>
         <FormInputField
           label="Width"
           getValue={() => gc.robotWidth.toUser() + ""}
@@ -170,8 +171,8 @@ const GeneralConfigPanelBody = observer((props: {}) => {
           checked={gc.showRobot}
           onCheckedChange={c => (gc.showRobot = c)}
         />
-      </Box>
-      <Box className="Panel-FlexBox">
+      </PanelBox>
+      <PanelBox>
         {typeof gc.robotIsHolonomic === "boolean" && (
           <FormCheckbox
             label="Holonomic Drive"
@@ -181,18 +182,18 @@ const GeneralConfigPanelBody = observer((props: {}) => {
             }}
           />
         )}
-      </Box>
+      </PanelBox>
       <Typography marginTop="16px" gutterBottom>
         Field & Coordinate
       </Typography>
-      <Box className="Panel-FlexBox" marginTop="16px">
+      <PanelBox>
         <OpenModalButton onClick={() => ui.openModal(AssetManagerModalSymbol)}>
           {gc.fieldImage.displayName}
         </OpenModalButton>
-      </Box>
-      <Box className="Panel-FlexBox" marginTop="16px">
+      </PanelBox>
+      <PanelBox>
         <OpenModalButton onClick={() => {}}>VEX Game Positioning System</OpenModalButton>
-      </Box>
+      </PanelBox>
       {gc.getAdditionalConfigUI()}
     </>
   );

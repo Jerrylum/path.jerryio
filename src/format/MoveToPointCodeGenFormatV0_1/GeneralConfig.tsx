@@ -12,6 +12,7 @@ import { IsPositive, IsBoolean, ValidateNested, IsObject, IsString } from "class
 import { observer } from "mobx-react-lite";
 import { GeneralConfig, initGeneralConfig } from "../Config";
 import { Format } from "../Format";
+import { PanelBox } from "@src/app/component.blocks/PanelBox";
 
 interface FormatWithExportCode extends Format {
   exportCode(): string;
@@ -83,16 +84,14 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
 
   return (
     <>
-      <Box className="Panel-Box">
-        <Box className="Panel-FlexBox" marginTop="32px">
-          <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
-            Copy Code
-          </Button>
-          <Button variant="text" onClick={onEditTemplate}>
-            Edit Template
-          </Button>
-        </Box>
-      </Box>
+      <PanelBox marginTop="32px">
+        <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
+          Copy Code
+        </Button>
+        <Button variant="text" onClick={onEditTemplate}>
+          Edit Template
+        </Button>
+      </PanelBox>
     </>
   );
 });

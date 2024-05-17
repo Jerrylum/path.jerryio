@@ -106,10 +106,6 @@ $middle-section-height-svh: calc(100svh - $pg - $pg);
   background-color: transparent !important;
 }
 
-.Panel-Box {
-  margin-top: $hpg;
-}
-
 // Import all blocks scss file that without tsx implementation
 
 @import "./panel/ControlConfigPanel";

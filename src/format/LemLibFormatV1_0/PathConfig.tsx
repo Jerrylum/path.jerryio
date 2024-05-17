@@ -12,6 +12,7 @@ import React from "react";
 import { PathConfig } from "../Config";
 import { Format } from "../Format";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
+import { PanelBox } from "@src/app/component.blocks/PanelBox";
 
 export interface LemLibPathConfig extends PathConfig {}
 
@@ -76,8 +77,8 @@ const PathConfigPanelBody = observer((props: {}) => {
 
   return (
     <>
-      <Box className="Panel-Box">
-        <Typography>Min/Max Speed</Typography>
+      <Typography>Min/Max Speed</Typography>
+      <PanelBox marginTop="0px" marginBottom="16px">
         <RangeSlider
           range={pc.speedLimit}
           onChange={(from, to) =>
@@ -87,9 +88,9 @@ const PathConfigPanelBody = observer((props: {}) => {
             )
           }
         />
-      </Box>
-      <Box className="Panel-Box">
-        <Typography>Bent Rate Applicable Range</Typography>
+      </PanelBox>
+      <Typography>Bent Rate Applicable Range</Typography>
+      <PanelBox marginTop="0px" marginBottom="16px">
         <RangeSlider
           range={pc.bentRateApplicableRange}
           onChange={(from, to) =>
@@ -99,9 +100,9 @@ const PathConfigPanelBody = observer((props: {}) => {
             )
           }
         />
-      </Box>
-      <Box className="Panel-Box">
-        <Typography>Max Deceleration Rate</Typography>
+      </PanelBox>
+      <Typography>Max Deceleration Rate</Typography>
+      <PanelBox marginTop="0px" marginBottom="16px">
         <Slider
           step={0.1}
           valueLabelDisplay="auto"
@@ -116,7 +117,7 @@ const PathConfigPanelBody = observer((props: {}) => {
             );
           })}
         />
-      </Box>
+      </PanelBox>
       {/* TODO show button to show Lookahead Graph */}
     </>
   );

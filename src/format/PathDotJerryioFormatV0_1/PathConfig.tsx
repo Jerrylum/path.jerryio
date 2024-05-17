@@ -12,6 +12,7 @@ import React from "react";
 import { PathConfig } from "../Config";
 import { Format } from "../Format";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
+import { PanelBox } from "@src/app/component.blocks/PanelBox";
 
 // observable class
 export class PathConfigImpl implements PathConfig {
@@ -60,8 +61,8 @@ const PathConfigPanelBody = observer((props: {}) => {
 
   return (
     <>
-      <Box className="Panel-Box">
-        <Typography>Min/Max Speed</Typography>
+      <Typography>Min/Max Speed</Typography>
+      <PanelBox marginTop="0px" marginBottom="16px">
         <RangeSlider
           range={pc.speedLimit}
           onChange={(from, to) =>
@@ -71,9 +72,9 @@ const PathConfigPanelBody = observer((props: {}) => {
             )
           }
         />
-      </Box>
-      <Box className="Panel-Box">
-        <Typography>Bent Rate Applicable Range</Typography>
+      </PanelBox>
+      <Typography>Bent Rate Applicable Range</Typography>
+      <PanelBox marginTop="0px">
         <RangeSlider
           range={pc.bentRateApplicableRange}
           onChange={(from, to) =>
@@ -83,7 +84,7 @@ const PathConfigPanelBody = observer((props: {}) => {
             )
           }
         />
-      </Box>
+      </PanelBox>
     </>
   );
 });

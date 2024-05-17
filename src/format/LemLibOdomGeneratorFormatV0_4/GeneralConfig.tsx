@@ -16,6 +16,7 @@ import { IsPositive, IsBoolean, ValidateNested, IsObject, IsString, MinLength } 
 import { observer } from "mobx-react-lite";
 import { GeneralConfig, initGeneralConfig } from "../Config";
 import { Format } from "../Format";
+import { PanelBox } from "@src/app/component.blocks/PanelBox";
 
 interface FormatWithExportCode extends Format {
   exportCode(): string;
@@ -48,53 +49,51 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
 
   return (
     <>
-      <Box className="Panel-Box">
-        <Typography marginTop="16px">Export Settings</Typography>
-        <Box className="Panel-FlexBox">
-          <FormInputField
-            label="Chassis Name"
-            getValue={() => config.chassisName}
-            setValue={(value: string) => {
-              app.history.execute(`Change chassis variable name`, new UpdateProperties(config, { chassisName: value }));
-            }}
-            isValidIntermediate={() => true}
-            isValidValue={(candidate: string) => candidate !== ""}
-            sx={{ marginTop: "16px" }}
-          />
-          <FormInputField
-            label="Movement Timeout"
-            getValue={() => config.movementTimeout.toString()}
-            setValue={(value: string) => {
-              const parsedValue = parseInt(Int.parse(new CodePointBuffer(value))!.value);
-              app.history.execute(
-                `Change default movement timeout to ${parsedValue}`,
-                new UpdateProperties(config, { movementTimeout: parsedValue })
-              );
-            }}
-            isValidIntermediate={() => true}
-            isValidValue={(candidate: string) => Int.parse(new CodePointBuffer(candidate)) !== null}
-            sx={{ marginTop: "16px" }}
-            numeric
-          />
-        </Box>
-        <Box className="Panel-FlexBox">
-          <FormCheckbox
-            label="Use Relative Coordinates"
-            checked={config.relativeCoords}
-            onCheckedChange={value => {
-              app.history.execute(
-                `Set using relative coordinates to ${value}`,
-                new UpdateProperties(config, { relativeCoords: value })
-              );
-            }}
-          />
-        </Box>
-        <Box className="Panel-FlexBox" marginTop="32px">
-          <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
-            Copy Code
-          </Button>
-        </Box>
-      </Box>
+      <Typography marginTop="16px">Export Settings</Typography>
+      <PanelBox>
+        <FormInputField
+          label="Chassis Name"
+          getValue={() => config.chassisName}
+          setValue={(value: string) => {
+            app.history.execute(`Change chassis variable name`, new UpdateProperties(config, { chassisName: value }));
+          }}
+          isValidIntermediate={() => true}
+          isValidValue={(candidate: string) => candidate !== ""}
+          sx={{ marginTop: "16px" }}
+        />
+        <FormInputField
+          label="Movement Timeout"
+          getValue={() => config.movementTimeout.toString()}
+          setValue={(value: string) => {
+            const parsedValue = parseInt(Int.parse(new CodePointBuffer(value))!.value);
+            app.history.execute(
+              `Change default movement timeout to ${parsedValue}`,
+              new UpdateProperties(config, { movementTimeout: parsedValue })
+            );
+          }}
+          isValidIntermediate={() => true}
+          isValidValue={(candidate: string) => Int.parse(new CodePointBuffer(candidate)) !== null}
+          sx={{ marginTop: "16px" }}
+          numeric
+        />
+      </PanelBox>
+      <PanelBox>
+        <FormCheckbox
+          label="Use Relative Coordinates"
+          checked={config.relativeCoords}
+          onCheckedChange={value => {
+            app.history.execute(
+              `Set using relative coordinates to ${value}`,
+              new UpdateProperties(config, { relativeCoords: value })
+            );
+          }}
+        />
+      </PanelBox>
+      <PanelBox marginTop="32px">
+        <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
+          Copy Code
+        </Button>
+      </PanelBox>
     </>
   );
 });

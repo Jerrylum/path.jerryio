@@ -14,6 +14,7 @@ import { IsPositive, IsBoolean, ValidateNested, IsObject, IsEnum, IsString } fro
 import { observer } from "mobx-react-lite";
 import { GeneralConfig, initGeneralConfig } from "../Config";
 import { Format } from "../Format";
+import { PanelBox } from "@src/app/component.blocks/PanelBox";
 
 interface FormatWithExportCode extends Format {
   exportCode(): string;
@@ -91,31 +92,29 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
 
   return (
     <>
-      <Box className="Panel-Box">
-        <Typography marginTop="16px">Export Settings</Typography>
-        <Box className="Panel-FlexBox">
-          <FormEnumSelect
-            sx={{ marginTop: "16px", width: "50%" }}
-            label="Heading Output Type"
-            enumValue={config.headingOutputType}
-            onEnumChange={value => {
-              app.history.execute(
-                `Set using heading output type to ${value}`,
-                new UpdateProperties(config, { headingOutputType: value })
-              );
-            }}
-            enumType={HeadingOutputType}
-          />
-        </Box>
-        <Box className="Panel-FlexBox" marginTop="32px">
-          <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
-            Copy Code
-          </Button>
-          <Button variant="text" onClick={onEditTemplate}>
-            Edit Template
-          </Button>
-        </Box>
-      </Box>
+      <Typography marginTop="16px">Export Settings</Typography>
+      <PanelBox>
+        <FormEnumSelect
+          sx={{ marginTop: "16px", width: "50%" }}
+          label="Heading Output Type"
+          enumValue={config.headingOutputType}
+          onEnumChange={value => {
+            app.history.execute(
+              `Set using heading output type to ${value}`,
+              new UpdateProperties(config, { headingOutputType: value })
+            );
+          }}
+          enumType={HeadingOutputType}
+        />
+      </PanelBox>
+      <PanelBox marginTop="32px">
+        <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
+          Copy Code
+        </Button>
+        <Button variant="text" onClick={onEditTemplate}>
+          Edit Template
+        </Button>
+      </PanelBox>
     </>
   );
 });

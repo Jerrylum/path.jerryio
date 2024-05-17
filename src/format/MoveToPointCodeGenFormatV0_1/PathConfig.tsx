@@ -13,6 +13,7 @@ import React from "react";
 import { PathConfig } from "../Config";
 import { Format } from "../Format";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
+import { PanelBox } from "@src/app/component.blocks/PanelBox";
 
 // observable class
 export class PathConfigImpl implements PathConfig {
@@ -62,7 +63,7 @@ const PathConfigPanelBody = observer((props: {}) => {
 
   return (
     <>
-      <Box className="Panel-Box">
+      <PanelBox>
         <FormInputField
           label="Speed"
           sx={{ width: "50%" }}
@@ -74,7 +75,7 @@ const PathConfigPanelBody = observer((props: {}) => {
           isValidValue={(candidate: string) => NumberT.parse(new CodePointBuffer(candidate)) !== null}
           numeric
         />
-      </Box>
+      </PanelBox>
     </>
   );
 });
