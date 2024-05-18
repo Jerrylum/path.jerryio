@@ -83,54 +83,8 @@ function getOrigin(
       ? fieldHalf.multiply(new Vector(system.originAnchor.x, system.originAnchor.y))
       : new Vector(pathBeginning.x, pathBeginning.y);
 
-  return {
-    x: originPreOffset.x + system.originOffset.x,
-    y: originPreOffset.y + system.originOffset.y,
-    heading: system.axisRotation
-  };
+  return { x: originPreOffset.x, y: originPreOffset.y, heading: system.axisRotation };
 }
-
-// export function transformToTargetSystem(
-//   system: CoordinateSystem,
-//   fieldDimension: Dimension,
-//   pathBeginning: CoordinateWithHeading,
-//   target: Coordinate
-// ): Coordinate;
-// export function transformToTargetSystem(
-//   system: CoordinateSystem,
-//   fieldDimension: Dimension,
-//   pathBeginning: CoordinateWithHeading,
-//   target: CoordinateWithHeading
-// ): CoordinateWithHeading;
-// export function transformToTargetSystem(
-//   targetSystem: CoordinateSystem,
-//   fieldDimension: Dimension,
-//   pathBeginning: CoordinateWithHeading,
-//   target: Coordinate | CoordinateWithHeading
-// ): Coordinate | CoordinateWithHeading {
-//   const fieldCenter = new Vector(fieldDimension.width / 2, fieldDimension.height / 2);
-//   const fieldHalf = new Vector(fieldDimension.width / 2, fieldDimension.height / 2);
-//   const originPreOffsetAndAxisRotation = getOrigin(targetSystem, fieldCenter, fieldHalf, pathBeginning); // Coordinate in local system
-//   const originWithOffset = new EuclideanTransformation(originPreOffsetAndAxisRotation)
-//     .inverse()
-//     .transform(targetSystem.originOffset); // Coordinate in local system
-//   const originWithOffsetAndAxisRotation = { ...originWithOffset, heading: originPreOffsetAndAxisRotation.heading }; // Coordinate in local system
-
-//   const transformed = new EuclideanTransformation(originWithOffsetAndAxisRotation).transform(target);
-
-//   transformed.y *= targetSystem.yAxisFlip;
-
-//   if (isCoordinateWithHeading(target)) {
-//     const headingStartingAxis =
-//       targetSystem.headingStartingAxis === "PathBeginning" ? pathBeginning.heading : targetSystem.headingStartingAxis;
-
-//     const heading = boundHeading(boundHeading(target.heading - headingStartingAxis) * targetSystem.headingDirection);
-
-//     return { ...transformed, heading } satisfies CoordinateWithHeading;
-//   } else {
-//     return transformed;
-//   }
-// }
 
 export class CoordinateSystemTransformation {
   private et: EuclideanTransformation;
