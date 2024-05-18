@@ -15,6 +15,18 @@ test("EuclideanTransformation class", () => {
   expect(ans2.y).toBeCloseTo(4);
   expect(ans2.heading).toBeCloseTo(32.1);
 
+  // inverse
+  converter = converter.inverse();
+
+  ans = converter.transform({ x: 3, y: 4 });
+  expect(ans.x).toBeCloseTo(3);
+  expect(ans.y).toBeCloseTo(4);
+
+  ans2 = converter.transform({ x: 3, y: 4, heading: 32.1 });
+  expect(ans2.x).toBeCloseTo(3);
+  expect(ans2.y).toBeCloseTo(4);
+  expect(ans2.heading).toBeCloseTo(32.1);
+
   converter = new EuclideanTransformation({ x: 0, y: 0, heading: 45 });
 
   ans = converter.transform({ x: 3, y: 3 });
@@ -30,6 +42,21 @@ test("EuclideanTransformation class", () => {
   expect(ans2.x).toBeCloseTo(0);
   expect(ans2.y).toBeCloseTo(Math.sqrt(3 ** 2 + 3 ** 2));
   expect(ans2.heading).toBeCloseTo(285);
+
+  // inverse
+  converter = converter.inverse();
+
+  ans = converter.transform({ x: 0, y: Math.sqrt(3 ** 2 + 3 ** 2) });
+  expect(ans.x).toBeCloseTo(3);
+  expect(ans.y).toBeCloseTo(3);
+
+  ans2 = converter.transform({ x: 0, y: Math.sqrt(3 ** 2 + 3 ** 2), heading: boundHeading(32.1 - 45) });
+  expect(ans2.x).toBeCloseTo(3);
+  expect(ans2.y).toBeCloseTo(3);
+
+  ans2 = converter.transform({ x: 0, y: Math.sqrt(3 ** 2 + 3 ** 2), heading: 285 });
+  expect(ans2.x).toBeCloseTo(3);
+  expect(ans2.y).toBeCloseTo(3);
 
   converter = new EuclideanTransformation({ x: 0, y: 0, heading: -45 });
 
@@ -47,6 +74,23 @@ test("EuclideanTransformation class", () => {
   expect(ans2.y).toBeCloseTo(0);
   expect(ans2.heading).toBeCloseTo(15);
 
+  // inverse
+  converter = converter.inverse();
+
+  ans = converter.transform({ x: Math.sqrt(3 ** 2 + 3 ** 2), y: 0 });
+  expect(ans.x).toBeCloseTo(3);
+  expect(ans.y).toBeCloseTo(3);
+
+  ans2 = converter.transform({ x: Math.sqrt(3 ** 2 + 3 ** 2), y: 0, heading: 45 + 32.1 });
+  expect(ans2.x).toBeCloseTo(3);
+  expect(ans2.y).toBeCloseTo(3);
+  expect(ans2.heading).toBeCloseTo(32.1);
+
+  ans2 = converter.transform({ x: Math.sqrt(3 ** 2 + 3 ** 2), y: 0, heading: 15 });
+  expect(ans2.x).toBeCloseTo(3);
+  expect(ans2.y).toBeCloseTo(3);
+  expect(ans2.heading).toBeCloseTo(330);
+
   converter = new EuclideanTransformation({ x: 10, y: 20, heading: -45 });
 
   ans = converter.transform({ x: 13, y: 23 });
@@ -62,4 +106,22 @@ test("EuclideanTransformation class", () => {
   expect(ans2.x).toBeCloseTo(Math.sqrt(3 ** 2 + 3 ** 2));
   expect(ans2.y).toBeCloseTo(0);
   expect(ans2.heading).toBeCloseTo(15);
+
+  // inverse
+
+  converter = converter.inverse();
+
+  ans = converter.transform({ x: Math.sqrt(3 ** 2 + 3 ** 2), y: 0 });
+  expect(ans.x).toBeCloseTo(13);
+  expect(ans.y).toBeCloseTo(23);
+
+  ans2 = converter.transform({ x: Math.sqrt(3 ** 2 + 3 ** 2), y: 0, heading: 45 + 32.1 });
+  expect(ans2.x).toBeCloseTo(13);
+  expect(ans2.y).toBeCloseTo(23);
+  expect(ans2.heading).toBeCloseTo(32.1);
+
+  ans2 = converter.transform({ x: Math.sqrt(3 ** 2 + 3 ** 2), y: 0, heading: 15 });
+  expect(ans2.x).toBeCloseTo(13);
+  expect(ans2.y).toBeCloseTo(23);
+  expect(ans2.heading).toBeCloseTo(330);
 });

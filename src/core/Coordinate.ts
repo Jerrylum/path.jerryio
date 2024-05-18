@@ -22,26 +22,35 @@ export class EuclideanTransformation {
   private sin: number;
   private cos: number;
 
-  constructor(readonly origin: CoordinateWithHeading) {
-    this.theta = fromHeadingInDegreeToAngleInRadian(boundHeading(-origin.heading + 90));
+  constructor(readonly betaOrigin: CoordinateWithHeading) {
+    this.theta = fromHeadingInDegreeToAngleInRadian(boundHeading(-betaOrigin.heading + 90));
     this.sin = Math.sin(this.theta);
     this.cos = Math.cos(this.theta);
   }
 
-  transform(target: Coordinate): Coordinate;
-  transform(target: CoordinateWithHeading): CoordinateWithHeading;
+  transform(alpha: Coordinate): Coordinate;
+  transform(alpha: CoordinateWithHeading): CoordinateWithHeading;
 
-  transform(target: Coordinate | CoordinateWithHeading): Coordinate | CoordinateWithHeading {
+  transform(alpha: Coordinate | CoordinateWithHeading): Coordinate | CoordinateWithHeading {
     const rtn: any = {
-      y: (target.x - this.origin.x) * this.sin + (target.y - this.origin.y) * this.cos,
-      x: (target.x - this.origin.x) * this.cos - (target.y - this.origin.y) * this.sin
+      y: (alpha.x - this.betaOrigin.x) * this.sin + (alpha.y - this.betaOrigin.y) * this.cos,
+      x: (alpha.x - this.betaOrigin.x) * this.cos - (alpha.y - this.betaOrigin.y) * this.sin
     };
 
-    if (isCoordinateWithHeading(target)) {
-      rtn.heading = boundHeading(target.heading - this.origin.heading);
+    if (isCoordinateWithHeading(alpha)) {
+      rtn.heading = boundHeading(alpha.heading - this.betaOrigin.heading);
     }
 
     return rtn;
+  }
+
+  inverse(): EuclideanTransformation {
+    // create a new instance of EuclideanTransformation such that we can transform the betaOrigin to the alphaOrigin
+    return new EuclideanTransformation({
+      x: this.betaOrigin.x * this.sin - this.betaOrigin.y * this.cos,
+      y: this.betaOrigin.x * this.cos + this.betaOrigin.y * this.sin,
+      heading: -this.betaOrigin.heading
+    });
   }
 }
 
