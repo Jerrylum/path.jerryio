@@ -5,6 +5,7 @@ import {
   CoordinateSystemTransformation,
   Dimension,
   HeadingDirection,
+  HeadingRotation,
   OriginAnchor,
   YAxisFlip
 } from "./CoordinateSystem";
@@ -38,7 +39,7 @@ test("CoordinateSystemTransformation original", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XEastYNorth,
     yAxisFlip: YAxisFlip.NoFlip,
-    headingStartingAxis: 0,
+    headingRotation: HeadingRotation.North,
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
     originOffset: { x: 0, y: 0 }
@@ -64,7 +65,7 @@ test("CoordinateSystemTransformation 90", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XSouthYEast, // Changed
     yAxisFlip: YAxisFlip.NoFlip,
-    headingStartingAxis: 90, // Changed
+    headingRotation: HeadingRotation.East, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
     originOffset: { x: 0, y: 0 }
@@ -85,7 +86,7 @@ test("CoordinateSystemTransformation 180", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XWestYSouth, // Changed
     yAxisFlip: YAxisFlip.NoFlip,
-    headingStartingAxis: 180, // Changed
+    headingRotation: HeadingRotation.South, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
     originOffset: { x: 0, y: 0 }
@@ -106,7 +107,7 @@ test("CoordinateSystemTransformation 270", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XNorthYWest, // Changed
     yAxisFlip: YAxisFlip.NoFlip,
-    headingStartingAxis: 270, // Changed
+    headingRotation: HeadingRotation.West, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
     originOffset: { x: 0, y: 0 }
@@ -123,11 +124,11 @@ test("CoordinateSystemTransformation 270", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 2, y: -1, heading: 0 });
 });
 
-test("CoordinateSystemTransformation 90 - 0", () => {
+test("CoordinateSystemTransformation 90 & 0", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XSouthYEast, // Changed
     yAxisFlip: YAxisFlip.NoFlip,
-    headingStartingAxis: 0, // Changed
+    headingRotation: HeadingRotation.North, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
     originOffset: { x: 0, y: 0 }
@@ -144,11 +145,11 @@ test("CoordinateSystemTransformation 90 - 0", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -2, y: 1, heading: 270 });
 });
 
-test("CoordinateSystemTransformation 90 - 180", () => {
+test("CoordinateSystemTransformation 90 & 180", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XSouthYEast, // Changed
     yAxisFlip: YAxisFlip.NoFlip,
-    headingStartingAxis: 180, // Changed
+    headingRotation: HeadingRotation.South, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
     originOffset: { x: 0, y: 0 }
@@ -165,11 +166,11 @@ test("CoordinateSystemTransformation 90 - 180", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -2, y: 1, heading: 90 });
 });
 
-test("CoordinateSystemTransformation 90 - 270", () => {
+test("CoordinateSystemTransformation 90 & 270", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XSouthYEast, // Changed
     yAxisFlip: YAxisFlip.NoFlip,
-    headingStartingAxis: 270, // Changed
+    headingRotation: HeadingRotation.West, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
     originOffset: { x: 0, y: 0 }
@@ -186,11 +187,11 @@ test("CoordinateSystemTransformation 90 - 270", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -2, y: 1, heading: 0 });
 });
 
-test("CoordinateSystemTransformation 180 - flip - 0", () => {
+test("CoordinateSystemTransformation 180 & flip & 0", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XWestYSouth, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
-    headingStartingAxis: 0, // Changed
+    headingRotation: HeadingRotation.North, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
     originOffset: { x: 0, y: 0 }
@@ -207,11 +208,11 @@ test("CoordinateSystemTransformation 180 - flip - 0", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -1, y: 2, heading: 270 });
 });
 
-test("CoordinateSystemTransformation 180 - flip - 90", () => {
+test("CoordinateSystemTransformation 180 & flip & 90", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XWestYSouth, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
-    headingStartingAxis: 90, // Changed
+    headingRotation: HeadingRotation.East, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
     originOffset: { x: 0, y: 0 }
@@ -228,11 +229,11 @@ test("CoordinateSystemTransformation 180 - flip - 90", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -1, y: 2, heading: 180 });
 });
 
-test("CoordinateSystemTransformation 180 - flip - 270", () => {
+test("CoordinateSystemTransformation 180 & flip & 270", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XWestYSouth, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
-    headingStartingAxis: 270, // Changed
+    headingRotation: HeadingRotation.West, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
     originOffset: { x: 0, y: 0 }
@@ -249,11 +250,11 @@ test("CoordinateSystemTransformation 180 - flip - 270", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -1, y: 2, heading: 0 });
 });
 
-test("CoordinateSystemTransformation 270 - flip - 0 - ccw", () => {
+test("CoordinateSystemTransformation 270 & flip & 0 & ccw", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XNorthYWest, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
-    headingStartingAxis: 0, // Changed
+    headingRotation: HeadingRotation.North, // Changed
     headingDirection: HeadingDirection.CounterClockwise, // Changed
     originAnchor: OriginAnchor.FieldCenter,
     originOffset: { x: 0, y: 0 }
@@ -270,11 +271,11 @@ test("CoordinateSystemTransformation 270 - flip - 0 - ccw", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 2, y: 1, heading: 90 });
 });
 
-test("CoordinateSystemTransformation 270 - flip - 90 - ccw", () => {
+test("CoordinateSystemTransformation 270 & flip & 90 & ccw", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XNorthYWest, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
-    headingStartingAxis: 90, // Changed
+    headingRotation: HeadingRotation.East, // Changed
     headingDirection: HeadingDirection.CounterClockwise, // Changed
     originAnchor: OriginAnchor.FieldCenter,
     originOffset: { x: 0, y: 0 }
@@ -291,11 +292,11 @@ test("CoordinateSystemTransformation 270 - flip - 90 - ccw", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 2, y: 1, heading: 180 });
 });
 
-test("CoordinateSystemTransformation 270 - flip - 180 - ccw", () => {
+test("CoordinateSystemTransformation 270 & flip & 180 & ccw", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XNorthYWest, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
-    headingStartingAxis: 180, // Changed
+    headingRotation: HeadingRotation.South, // Changed
     headingDirection: HeadingDirection.CounterClockwise, // Changed
     originAnchor: OriginAnchor.FieldCenter,
     originOffset: { x: 0, y: 0 }
@@ -312,11 +313,11 @@ test("CoordinateSystemTransformation 270 - flip - 180 - ccw", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 2, y: 1, heading: 270 });
 });
 
-test("CoordinateSystemTransformation 0 - no-flip - 0 - cw - TopRight", () => {
+test("CoordinateSystemTransformation 0 & no-flip & 0 & cw & TopRight", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XEastYNorth, // Changed
     yAxisFlip: YAxisFlip.NoFlip, // Changed
-    headingStartingAxis: 0, // Changed
+    headingRotation: HeadingRotation.North, // Changed
     headingDirection: HeadingDirection.Clockwise, // Changed
     originAnchor: OriginAnchor.FieldTopRight, // Changed
     originOffset: { x: 0, y: 0 }
@@ -333,11 +334,11 @@ test("CoordinateSystemTransformation 0 - no-flip - 0 - cw - TopRight", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 1 - 200, y: 2 - 150, heading: 270 });
 });
 
-test("CoordinateSystemTransformation 0 - flip - 90 - cw - BottomRight", () => {
+test("CoordinateSystemTransformation 0 & flip & 90 & cw & BottomRight", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XEastYNorth, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
-    headingStartingAxis: 90, // Changed
+    headingRotation: HeadingRotation.East, // Changed
     headingDirection: HeadingDirection.Clockwise, // Changed
     originAnchor: OriginAnchor.FieldBottomRight, // Changed
     originOffset: { x: 0, y: 0 }
@@ -354,11 +355,11 @@ test("CoordinateSystemTransformation 0 - flip - 90 - cw - BottomRight", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 1 - 200, y: -2 - 150, heading: 180 });
 });
 
-test("CoordinateSystemTransformation 0 - flip - 180 - cw - BottomLeft", () => {
+test("CoordinateSystemTransformation 0 & flip & 180 & cw & BottomLeft", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XEastYNorth, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
-    headingStartingAxis: 180, // Changed
+    headingRotation: HeadingRotation.South, // Changed
     headingDirection: HeadingDirection.Clockwise, // Changed
     originAnchor: OriginAnchor.FieldBottomLeft, // Changed
     originOffset: { x: 0, y: 0 }
@@ -375,11 +376,11 @@ test("CoordinateSystemTransformation 0 - flip - 180 - cw - BottomLeft", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 1 + 200, y: -2 - 150, heading: 90 });
 });
 
-test("CoordinateSystemTransformation 90 - no-flip - 270 - ccw - TopLeft", () => {
+test("CoordinateSystemTransformation 90 & no-flip & 270 & ccw & TopLeft", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XSouthYEast, // Changed
     yAxisFlip: YAxisFlip.NoFlip, // Changed
-    headingStartingAxis: 270, // Changed
+    headingRotation: HeadingRotation.West, // Changed
     headingDirection: HeadingDirection.CounterClockwise, // Changed
     originAnchor: OriginAnchor.FieldTopLeft, // Changed
     originOffset: { x: 0, y: 0 }

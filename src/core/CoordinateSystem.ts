@@ -31,7 +31,15 @@ export enum YAxisFlip {
   NoFlip = 1
 }
 
-export type HeadingStartingAxis = "PathBeginning" | 90 | 180 | 270 | 0;
+// export type HeadingStartingAxis = "PathBeginning" | 90 | 180 | 270 | 0;
+
+export enum HeadingRotation {
+  PathBeginning = "PathBeginning",
+  East = 90,
+  South = 180,
+  West = 270,
+  North = 0
+}
 
 export enum HeadingDirection {
   Clockwise = 1,
@@ -66,7 +74,7 @@ export type OriginAnchorType =
 export interface CoordinateSystem {
   axisRotation: AxisRotation;
   yAxisFlip: YAxisFlip;
-  headingStartingAxis: HeadingStartingAxis;
+  headingRotation: HeadingRotation;
   headingDirection: HeadingDirection;
   originAnchor: OriginAnchorType;
   originOffset: Coordinate; // mm
@@ -88,7 +96,7 @@ function getOrigin(
 
 export class CoordinateSystemTransformation {
   private et: EuclideanTransformation;
-  private headingStartingAxis: number;
+  private headingRotation: number;
 
   constructor(
     readonly system: CoordinateSystem,
@@ -104,8 +112,8 @@ export class CoordinateSystemTransformation {
 
     this.et = new EuclideanTransformation(originWithOffsetAndAxisRotation);
 
-    this.headingStartingAxis =
-      system.headingStartingAxis === "PathBeginning" ? this.pathBeginning.heading : system.headingStartingAxis;
+    this.headingRotation =
+      system.headingRotation === "PathBeginning" ? this.pathBeginning.heading : system.headingRotation;
   }
 
   transform(target: Coordinate): Coordinate;
@@ -116,7 +124,7 @@ export class CoordinateSystemTransformation {
     transformed.y *= this.system.yAxisFlip;
 
     if (isCoordinateWithHeading(target)) {
-      const temp = boundHeading(target.heading - this.headingStartingAxis);
+      const temp = boundHeading(target.heading - this.headingRotation);
       const heading = boundHeading(temp * this.system.headingDirection);
 
       return { ...transformed, heading };
