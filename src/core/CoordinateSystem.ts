@@ -9,10 +9,9 @@ export interface Dimension {
 }
 
 /*
-
 - Axis Rotation: `X-East Y-North` | `X-South Y-East`| `X-West Y-South`| `X-North Y-West`
 - Y Axis Flip: `True` | `False`
-- Heading Starting Axis: `Path Beginning` | `East` | `South` | `West` | `North`
+- Heading Rotation: `Path Beginning` | `East` | `South` | `West` | `North`
 - Heading Direction: `CW` | `CCW`
 - Origin Position: `Path Beginning` | `Field Top Left` | `Field Top Center` | `Field Top Right` | `Field Left` | `Field Center` | `Field Right` | `Field Bottom Left` | `Field Bottom Center` | `Field Bottom Right`
 - Origin X Offset: number (mm)
@@ -31,8 +30,6 @@ export enum YAxisFlip {
   NoFlip = 1
 }
 
-// export type HeadingStartingAxis = "PathBeginning" | 90 | 180 | 270 | 0;
-
 export enum HeadingRotation {
   PathBeginning = "PathBeginning",
   East = 90,
@@ -47,16 +44,16 @@ export enum HeadingDirection {
 }
 
 export class OriginAnchor {
-  static readonly PathBeginning = "PathBeginning";
-  static readonly FieldTopLeft: Coordinate = { x: -1, y: 1 };
-  static readonly FieldTopCenter: Coordinate = { x: 0, y: 1 };
-  static readonly FieldTopRight: Coordinate = { x: 1, y: 1 };
-  static readonly FieldLeft: Coordinate = { x: -1, y: 0 };
-  static readonly FieldCenter: Coordinate = { x: 0, y: 0 };
-  static readonly FieldRight: Coordinate = { x: 1, y: 0 };
-  static readonly FieldBottomLeft: Coordinate = { x: -1, y: -1 };
-  static readonly FieldBottomCenter: Coordinate = { x: 0, y: -1 };
-  static readonly FieldBottomRight: Coordinate = { x: 1, y: -1 };
+  static PathBeginning = "PathBeginning" as const;
+  static FieldTopLeft = { x: -1, y: 1 } as const;
+  static FieldTopCenter = { x: 0, y: 1 } as const;
+  static FieldTopRight = { x: 1, y: 1 } as const;
+  static FieldLeft = { x: -1, y: 0 } as const;
+  static FieldCenter = { x: 0, y: 0 } as const;
+  static FieldRight = { x: 1, y: 0 } as const;
+  static FieldBottomLeft = { x: -1, y: -1 } as const;
+  static FieldBottomCenter = { x: 0, y: -1 } as const;
+  static FieldBottomRight = { x: 1, y: -1 } as const;
 }
 
 export type OriginAnchorType =
@@ -80,9 +77,22 @@ export interface CoordinateSystem {
   originOffset: Coordinate; // mm
 }
 
+export interface CoordinateSystemUnrelatedToField extends CoordinateSystem {
+  originAnchor: typeof OriginAnchor.FieldCenter | typeof OriginAnchor.PathBeginning;
+}
+
+export interface CoordinateSystemUnrelatedToPath extends CoordinateSystem {
+  headingRotation: Exclude<HeadingRotation, typeof HeadingRotation.PathBeginning>;
+  originAnchor: Exclude<OriginAnchorType, typeof OriginAnchor.PathBeginning>;
+}
+
+export interface CoordinateSystemUnrelatedToFieldAndPath extends CoordinateSystem {
+  headingRotation: Exclude<HeadingRotation, typeof HeadingRotation.PathBeginning>;
+  originAnchor: Exclude<OriginAnchorType, typeof OriginAnchor.PathBeginning>;
+}
+
 function getOrigin(
   system: CoordinateSystem,
-  fieldCenter: Vector,
   fieldHalf: Vector,
   pathBeginning: CoordinateWithHeading
 ): CoordinateWithHeading {
@@ -94,6 +104,10 @@ function getOrigin(
   return { x: originPreOffset.x, y: originPreOffset.y, heading: system.axisRotation };
 }
 
+function getHeadingRotation(system: CoordinateSystem, pathBeginning: CoordinateWithHeading) {
+  return system.headingRotation === "PathBeginning" ? pathBeginning.heading : system.headingRotation;
+}
+
 export class CoordinateSystemTransformation {
   private et: EuclideanTransformation;
   private headingRotation: number;
@@ -103,17 +117,35 @@ export class CoordinateSystemTransformation {
     readonly fieldDimension: Dimension,
     readonly pathBeginning: CoordinateWithHeading
   ) {
-    const fieldCenter = new Vector(fieldDimension.width / 2, fieldDimension.height / 2);
     const fieldHalf = new Vector(fieldDimension.width / 2, fieldDimension.height / 2);
-    const originPreOffsetAndAxisRotation = getOrigin(system, fieldCenter, fieldHalf, pathBeginning); // Coordinate in local system
+    const originPreOffsetAndAxisRotation = getOrigin(system, fieldHalf, pathBeginning); // coordinate in local system
     const tempEt = new EuclideanTransformation(originPreOffsetAndAxisRotation);
-    const originWithOffset = tempEt.inverseTransform(system.originOffset); // Coordinate in local system
-    const originWithOffsetAndAxisRotation = { ...originWithOffset, heading: originPreOffsetAndAxisRotation.heading }; // Coordinate in local system
+    const originWithOffset = tempEt.inverseTransform(system.originOffset); // returns coordinate in local system
+    const originWithOffsetAndAxisRotation = { ...originWithOffset, heading: originPreOffsetAndAxisRotation.heading }; // coordinate in local system
 
     this.et = new EuclideanTransformation(originWithOffsetAndAxisRotation);
 
-    this.headingRotation =
-      system.headingRotation === "PathBeginning" ? this.pathBeginning.heading : system.headingRotation;
+    this.headingRotation = getHeadingRotation(system, pathBeginning);
+  }
+
+  static buildWithoutFieldInfo(
+    system: CoordinateSystemUnrelatedToField,
+    pathBeginning: CoordinateWithHeading
+  ): CoordinateSystemTransformation {
+    return new CoordinateSystemTransformation(system, { width: 0, height: 0 }, pathBeginning);
+  }
+
+  static buildWithoutBeginningInfo(
+    system: CoordinateSystemUnrelatedToPath,
+    fieldDimension: Dimension
+  ): CoordinateSystemTransformation {
+    return new CoordinateSystemTransformation(system, fieldDimension, { x: 0, y: 0, heading: 0 });
+  }
+
+  static buildWithoutFieldAndBeginningInfo(
+    system: CoordinateSystemUnrelatedToFieldAndPath
+  ): CoordinateSystemTransformation {
+    return new CoordinateSystemTransformation(system, { width: 0, height: 0 }, { x: 0, y: 0, heading: 0 });
   }
 
   transform(target: Coordinate): Coordinate;

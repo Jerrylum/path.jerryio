@@ -44,15 +44,14 @@ export class EuclideanTransformation {
     return rtn;
   }
 
-  // Inverse transformation method
   inverseTransform(beta: Coordinate): Coordinate;
   inverseTransform(beta: CoordinateWithHeading): CoordinateWithHeading;
 
   inverseTransform(beta: Coordinate | CoordinateWithHeading): Coordinate | CoordinateWithHeading {
-    const x = beta.x * this.cos + beta.y * this.sin + this.betaOrigin.x;
-    const y = -beta.x * this.sin + beta.y * this.cos + this.betaOrigin.y;
-
-    const rtn: any = { x, y };
+    const rtn: any = {
+      y: -beta.x * this.sin + beta.y * this.cos + this.betaOrigin.y,
+      x: beta.x * this.cos + beta.y * this.sin + this.betaOrigin.x
+    };
 
     if (isCoordinateWithHeading(beta)) {
       rtn.heading = boundHeading(beta.heading + this.betaOrigin.heading);
