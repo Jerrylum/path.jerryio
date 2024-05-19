@@ -98,8 +98,8 @@ export class CoordinateSystemTransformation {
     const fieldCenter = new Vector(fieldDimension.width / 2, fieldDimension.height / 2);
     const fieldHalf = new Vector(fieldDimension.width / 2, fieldDimension.height / 2);
     const originPreOffsetAndAxisRotation = getOrigin(system, fieldCenter, fieldHalf, pathBeginning); // Coordinate in local system
-    const targetEtInverse = new EuclideanTransformation(originPreOffsetAndAxisRotation).inverse();
-    const originWithOffset = targetEtInverse.transform(system.originOffset); // Coordinate in local system
+    const tempEt = new EuclideanTransformation(originPreOffsetAndAxisRotation);
+    const originWithOffset = tempEt.inverseTransform(system.originOffset); // Coordinate in local system
     const originWithOffsetAndAxisRotation = { ...originWithOffset, heading: originPreOffsetAndAxisRotation.heading }; // Coordinate in local system
 
     this.et = new EuclideanTransformation(originWithOffsetAndAxisRotation);

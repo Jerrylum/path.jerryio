@@ -22,7 +22,7 @@ declare global {
   }
 }
 
-test("CoordinateSystemTransformation original", () => {
+beforeAll(() => {
   expect.extend({
     // obj close to
     closeTo: (received: { [key: string]: number }, expected: { [key: string]: number }) => {
@@ -32,7 +32,9 @@ test("CoordinateSystemTransformation original", () => {
       return { pass: true, message: () => "" };
     }
   });
+});
 
+test("CoordinateSystemTransformation original", () => {
   let system: CoordinateSystem = {
     axisRotation: AxisRotation.XEastYNorth,
     yAxisFlip: YAxisFlip.NoFlip,
@@ -324,5 +326,72 @@ test("CoordinateSystemTransformation 0 - no-flip - 0 - cw - TopRight", () => {
 
   let cst = new CoordinateSystemTransformation(system, fd, beginning);
 
-  // expect(cst.transform({ x: 1, y: 2, heading: 0 })).closeTo({ x: 1 -150, y: -2, heading: 90 }); // TODO
+  expect(cst.transform({ x: 1, y: 2, heading: 0 })).closeTo({ x: 1 - 200, y: 2 - 150, heading: 0 });
+  expect(cst.transform({ x: 1, y: 2, heading: 45 })).closeTo({ x: 1 - 200, y: 2 - 150, heading: 45 });
+  expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: 1 - 200, y: 2 - 150, heading: 90 });
+  expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: 1 - 200, y: 2 - 150, heading: 315 });
+  expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 1 - 200, y: 2 - 150, heading: 270 });
+});
+
+test("CoordinateSystemTransformation 0 - flip - 90 - cw - BottomRight", () => {
+  let system: CoordinateSystem = {
+    axisRotation: AxisRotation.XEastYNorth, // Changed
+    yAxisFlip: YAxisFlip.Flip, // Changed
+    headingStartingAxis: 90, // Changed
+    headingDirection: HeadingDirection.Clockwise, // Changed
+    originAnchor: OriginAnchor.FieldBottomRight, // Changed
+    originOffset: { x: 0, y: 0 }
+  };
+  let fd: Dimension = { width: 400, height: 300 };
+  let beginning: CoordinateWithHeading = { x: 0, y: 0, heading: 0 };
+
+  let cst = new CoordinateSystemTransformation(system, fd, beginning);
+
+  expect(cst.transform({ x: 1, y: 2, heading: 0 })).closeTo({ x: 1 - 200, y: -2 - 150, heading: 270 });
+  expect(cst.transform({ x: 1, y: 2, heading: 45 })).closeTo({ x: 1 - 200, y: -2 - 150, heading: 315 });
+  expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: 1 - 200, y: -2 - 150, heading: 0 });
+  expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: 1 - 200, y: -2 - 150, heading: 225 });
+  expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 1 - 200, y: -2 - 150, heading: 180 });
+});
+
+test("CoordinateSystemTransformation 0 - flip - 180 - cw - BottomLeft", () => {
+  let system: CoordinateSystem = {
+    axisRotation: AxisRotation.XEastYNorth, // Changed
+    yAxisFlip: YAxisFlip.Flip, // Changed
+    headingStartingAxis: 180, // Changed
+    headingDirection: HeadingDirection.Clockwise, // Changed
+    originAnchor: OriginAnchor.FieldBottomLeft, // Changed
+    originOffset: { x: 0, y: 0 }
+  };
+  let fd: Dimension = { width: 400, height: 300 };
+  let beginning: CoordinateWithHeading = { x: 0, y: 0, heading: 0 };
+
+  let cst = new CoordinateSystemTransformation(system, fd, beginning);
+
+  expect(cst.transform({ x: 1, y: 2, heading: 0 })).closeTo({ x: 1 + 200, y: -2 - 150, heading: 180 });
+  expect(cst.transform({ x: 1, y: 2, heading: 45 })).closeTo({ x: 1 + 200, y: -2 - 150, heading: 225 });
+  expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: 1 + 200, y: -2 - 150, heading: 270 });
+  expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: 1 + 200, y: -2 - 150, heading: 135 });
+  expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 1 + 200, y: -2 - 150, heading: 90 });
+});
+
+test("CoordinateSystemTransformation 90 - no-flip - 270 - ccw - TopLeft", () => {
+  let system: CoordinateSystem = {
+    axisRotation: AxisRotation.XSouthYEast, // Changed
+    yAxisFlip: YAxisFlip.NoFlip, // Changed
+    headingStartingAxis: 270, // Changed
+    headingDirection: HeadingDirection.CounterClockwise, // Changed
+    originAnchor: OriginAnchor.FieldTopLeft, // Changed
+    originOffset: { x: 0, y: 0 }
+  };
+  let fd: Dimension = { width: 400, height: 300 };
+  let beginning: CoordinateWithHeading = { x: 0, y: 0, heading: 0 };
+
+  let cst = new CoordinateSystemTransformation(system, fd, beginning);
+
+  expect(cst.transform({ x: 1, y: 2, heading: 0 })).closeTo({ x: -2 + 150, y: 1 + 200, heading: 270 });
+  expect(cst.transform({ x: 1, y: 2, heading: 45 })).closeTo({ x: -2 + 150, y: 1 + 200, heading: 225 });
+  expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: -2 + 150, y: 1 + 200, heading: 180 });
+  expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: -2 + 150, y: 1 + 200, heading: 315 });
+  expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -2 + 150, y: 1 + 200, heading: 0 });
 });

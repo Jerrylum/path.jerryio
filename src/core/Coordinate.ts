@@ -44,13 +44,21 @@ export class EuclideanTransformation {
     return rtn;
   }
 
-  inverse(): EuclideanTransformation {
-    // create a new instance of EuclideanTransformation such that we can transform the betaOrigin to the alphaOrigin
-    return new EuclideanTransformation({
-      x: this.betaOrigin.x * this.sin - this.betaOrigin.y * this.cos,
-      y: this.betaOrigin.x * this.cos + this.betaOrigin.y * this.sin,
-      heading: -this.betaOrigin.heading
-    });
+  // Inverse transformation method
+  inverseTransform(beta: Coordinate): Coordinate;
+  inverseTransform(beta: CoordinateWithHeading): CoordinateWithHeading;
+
+  inverseTransform(beta: Coordinate | CoordinateWithHeading): Coordinate | CoordinateWithHeading {
+    const x = beta.x * this.cos + beta.y * this.sin + this.betaOrigin.x;
+    const y = -beta.x * this.sin + beta.y * this.cos + this.betaOrigin.y;
+
+    const rtn: any = { x, y };
+
+    if (isCoordinateWithHeading(beta)) {
+      rtn.heading = boundHeading(beta.heading + this.betaOrigin.heading);
+    }
+
+    return rtn;
   }
 }
 
