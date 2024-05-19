@@ -148,16 +148,34 @@ export class CoordinateSystemTransformation {
     return new CoordinateSystemTransformation(system, { width: 0, height: 0 }, { x: 0, y: 0, heading: 0 });
   }
 
-  transform(target: Coordinate): Coordinate;
-  transform(target: CoordinateWithHeading): CoordinateWithHeading;
-  transform(target: Coordinate | CoordinateWithHeading): Coordinate | CoordinateWithHeading {
-    const transformed = this.et.transform(target);
+  transform(alpha: Coordinate): Coordinate;
+  transform(alpha: CoordinateWithHeading): CoordinateWithHeading;
+  transform(alpha: Coordinate | CoordinateWithHeading): Coordinate | CoordinateWithHeading {
+    const transformed = this.et.transform(alpha);
 
     transformed.y *= this.system.yAxisFlip;
 
-    if (isCoordinateWithHeading(target)) {
-      const temp = boundHeading(target.heading - this.headingRotation);
+    if (isCoordinateWithHeading(alpha)) {
+      const temp = boundHeading(alpha.heading - this.headingRotation);
       const heading = boundHeading(temp * this.system.headingDirection);
+
+      return { ...transformed, heading };
+    } else {
+      return transformed;
+    }
+  }
+
+  inverseTransform(beta: Coordinate): Coordinate;
+  inverseTransform(beta: CoordinateWithHeading): CoordinateWithHeading;
+  inverseTransform(beta: Coordinate | CoordinateWithHeading): Coordinate | CoordinateWithHeading {
+    const temp = { ...beta };
+    temp.y *= this.system.yAxisFlip;
+
+    const transformed = this.et.inverseTransform(temp);
+
+    if (isCoordinateWithHeading(beta)) {
+      const temp = boundHeading(beta.heading * this.system.headingDirection);
+      const heading = boundHeading(temp + this.headingRotation);
 
       return { ...transformed, heading };
     } else {

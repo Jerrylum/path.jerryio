@@ -59,6 +59,17 @@ test("CoordinateSystemTransformation original", () => {
   expect(cst.transform({ x: 0, y: 0, heading: 90 })).toEqual({ x: 0, y: 0, heading: 90 });
   expect(cst.transform({ x: 0, y: 0, heading: -45 })).toEqual({ x: 0, y: 0, heading: 360 - 45 });
   expect(cst.transform({ x: 0, y: 0, heading: 270 })).toEqual({ x: 0, y: 0, heading: 270 });
+
+  expect(cst.inverseTransform({ x: 0, y: 0 })).toEqual({ x: 0, y: 0 });
+  expect(cst.inverseTransform({ x: 1, y: 0 })).toEqual({ x: 1, y: 0 });
+  expect(cst.inverseTransform({ x: 1, y: 2 })).toEqual({ x: 1, y: 2 });
+  expect(cst.inverseTransform({ x: 0, y: 2 })).toEqual({ x: 0, y: 2 });
+
+  expect(cst.inverseTransform({ x: 0, y: 0, heading: 0 })).toEqual({ x: 0, y: 0, heading: 0 });
+  expect(cst.inverseTransform({ x: 0, y: 0, heading: 45 })).toEqual({ x: 0, y: 0, heading: 45 });
+  expect(cst.inverseTransform({ x: 0, y: 0, heading: 90 })).toEqual({ x: 0, y: 0, heading: 90 });
+  expect(cst.inverseTransform({ x: 0, y: 0, heading: -45 })).toEqual({ x: 0, y: 0, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: 0, y: 0, heading: 270 })).toEqual({ x: 0, y: 0, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 90", () => {
@@ -77,6 +88,12 @@ test("CoordinateSystemTransformation 90", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: -2, y: 1, heading: 0 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: -2, y: 1, heading: 225 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -2, y: 1, heading: 180 });
+
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 270 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 315 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 0 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 225 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 180 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 180", () => {
@@ -95,6 +112,12 @@ test("CoordinateSystemTransformation 180", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: -1, y: -2, heading: 270 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: -1, y: -2, heading: 135 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -1, y: -2, heading: 90 });
+
+  expect(cst.inverseTransform({ x: -1, y: -2, heading: 180 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: -1, y: -2, heading: 225 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: -1, y: -2, heading: 270 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: -1, y: -2, heading: 135 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: -1, y: -2, heading: 90 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 270", () => {
@@ -113,6 +136,12 @@ test("CoordinateSystemTransformation 270", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: 2, y: -1, heading: 180 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: 2, y: -1, heading: 45 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 2, y: -1, heading: 0 });
+
+  expect(cst.inverseTransform({ x: 2, y: -1, heading: 90 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: 2, y: -1, heading: 135 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: 2, y: -1, heading: 180 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: 2, y: -1, heading: 45 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: 2, y: -1, heading: 0 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 90 & 0", () => {
@@ -131,6 +160,12 @@ test("CoordinateSystemTransformation 90 & 0", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: -2, y: 1, heading: 90 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: -2, y: 1, heading: 315 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -2, y: 1, heading: 270 });
+
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 0 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 45 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 90 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 315 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 270 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 90 & 180", () => {
@@ -149,6 +184,12 @@ test("CoordinateSystemTransformation 90 & 180", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: -2, y: 1, heading: 270 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: -2, y: 1, heading: 135 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -2, y: 1, heading: 90 });
+
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 180 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 225 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 270 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 135 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 90 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 90 & 270", () => {
@@ -167,6 +208,12 @@ test("CoordinateSystemTransformation 90 & 270", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: -2, y: 1, heading: 180 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: -2, y: 1, heading: 45 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -2, y: 1, heading: 0 });
+
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 90 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 135 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 180 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 45 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: -2, y: 1, heading: 0 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 180 & flip & 0", () => {
@@ -185,6 +232,12 @@ test("CoordinateSystemTransformation 180 & flip & 0", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: -1, y: 2, heading: 90 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: -1, y: 2, heading: 315 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -1, y: 2, heading: 270 });
+
+  expect(cst.inverseTransform({ x: -1, y: 2, heading: 0 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: -1, y: 2, heading: 45 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: -1, y: 2, heading: 90 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: -1, y: 2, heading: 315 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: -1, y: 2, heading: 270 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 180 & flip & 90", () => {
@@ -203,6 +256,12 @@ test("CoordinateSystemTransformation 180 & flip & 90", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: -1, y: 2, heading: 0 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: -1, y: 2, heading: 225 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -1, y: 2, heading: 180 });
+
+  expect(cst.inverseTransform({ x: -1, y: 2, heading: 270 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: -1, y: 2, heading: 315 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: -1, y: 2, heading: 0 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: -1, y: 2, heading: 225 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: -1, y: 2, heading: 180 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 180 & flip & 270", () => {
@@ -221,6 +280,12 @@ test("CoordinateSystemTransformation 180 & flip & 270", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: -1, y: 2, heading: 180 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: -1, y: 2, heading: 45 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -1, y: 2, heading: 0 });
+
+  expect(cst.inverseTransform({ x: -1, y: 2, heading: 90 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: -1, y: 2, heading: 135 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: -1, y: 2, heading: 180 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: -1, y: 2, heading: 45 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: -1, y: 2, heading: 0 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 270 & flip & 0 & ccw", () => {
@@ -239,6 +304,12 @@ test("CoordinateSystemTransformation 270 & flip & 0 & ccw", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: 2, y: 1, heading: 270 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: 2, y: 1, heading: 45 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 2, y: 1, heading: 90 });
+
+  expect(cst.inverseTransform({ x: 2, y: 1, heading: 0 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: 2, y: 1, heading: 315 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: 2, y: 1, heading: 270 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: 2, y: 1, heading: 45 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: 2, y: 1, heading: 90 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 270 & flip & 90 & ccw", () => {
@@ -257,6 +328,12 @@ test("CoordinateSystemTransformation 270 & flip & 90 & ccw", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: 2, y: 1, heading: 0 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: 2, y: 1, heading: 135 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 2, y: 1, heading: 180 });
+
+  expect(cst.inverseTransform({ x: 2, y: 1, heading: 90 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: 2, y: 1, heading: 45 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: 2, y: 1, heading: 0 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: 2, y: 1, heading: 135 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: 2, y: 1, heading: 180 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 270 & flip & 180 & ccw", () => {
@@ -275,6 +352,12 @@ test("CoordinateSystemTransformation 270 & flip & 180 & ccw", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: 2, y: 1, heading: 90 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: 2, y: 1, heading: 225 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 2, y: 1, heading: 270 });
+
+  expect(cst.inverseTransform({ x: 2, y: 1, heading: 180 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: 2, y: 1, heading: 135 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: 2, y: 1, heading: 90 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: 2, y: 1, heading: 225 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: 2, y: 1, heading: 270 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 0 & no-flip & 0 & cw & TopRight", () => {
@@ -295,6 +378,12 @@ test("CoordinateSystemTransformation 0 & no-flip & 0 & cw & TopRight", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: 1 - 200, y: 2 - 150, heading: 90 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: 1 - 200, y: 2 - 150, heading: 315 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 1 - 200, y: 2 - 150, heading: 270 });
+
+  expect(cst.inverseTransform({ x: 1 - 200, y: 2 - 150, heading: 0 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: 1 - 200, y: 2 - 150, heading: 45 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: 1 - 200, y: 2 - 150, heading: 90 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: 1 - 200, y: 2 - 150, heading: 315 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: 1 - 200, y: 2 - 150, heading: 270 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 0 & flip & 90 & cw & BottomRight", () => {
@@ -315,6 +404,12 @@ test("CoordinateSystemTransformation 0 & flip & 90 & cw & BottomRight", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: 1 - 200, y: -2 - 150, heading: 0 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: 1 - 200, y: -2 - 150, heading: 225 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 1 - 200, y: -2 - 150, heading: 180 });
+
+  expect(cst.inverseTransform({ x: 1 - 200, y: -2 - 150, heading: 270 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: 1 - 200, y: -2 - 150, heading: 315 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: 1 - 200, y: -2 - 150, heading: 0 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: 1 - 200, y: -2 - 150, heading: 225 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: 1 - 200, y: -2 - 150, heading: 180 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 0 & flip & 180 & cw & BottomLeft", () => {
@@ -335,6 +430,12 @@ test("CoordinateSystemTransformation 0 & flip & 180 & cw & BottomLeft", () => {
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: 1 + 200, y: -2 - 150, heading: 270 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: 1 + 200, y: -2 - 150, heading: 135 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: 1 + 200, y: -2 - 150, heading: 90 });
+
+  expect(cst.inverseTransform({ x: 1 + 200, y: -2 - 150, heading: 180 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: 1 + 200, y: -2 - 150, heading: 225 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: 1 + 200, y: -2 - 150, heading: 270 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: 1 + 200, y: -2 - 150, heading: 135 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: 1 + 200, y: -2 - 150, heading: 90 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 90 & no-flip & 270 & ccw & TopLeft", () => {
@@ -355,6 +456,12 @@ test("CoordinateSystemTransformation 90 & no-flip & 270 & ccw & TopLeft", () => 
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: -2 + 150, y: 1 + 200, heading: 180 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: -2 + 150, y: 1 + 200, heading: 315 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -2 + 150, y: 1 + 200, heading: 0 });
+
+  expect(cst.inverseTransform({ x: -2 + 150, y: 1 + 200, heading: 270 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: -2 + 150, y: 1 + 200, heading: 225 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: -2 + 150, y: 1 + 200, heading: 180 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: -2 + 150, y: 1 + 200, heading: 315 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: -2 + 150, y: 1 + 200, heading: 0 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 0 & no-flip & 0 & ccw & path-beginning & offset", () => {
@@ -375,16 +482,22 @@ test("CoordinateSystemTransformation 0 & no-flip & 0 & ccw & path-beginning & of
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: -409, y: -318, heading: 270 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: -409, y: -318, heading: 45 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -409, y: -318, heading: 90 });
+
+  expect(cst.inverseTransform({ x: -409, y: -318, heading: 0 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: -409, y: -318, heading: 315 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: -409, y: -318, heading: 270 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: -409, y: -318, heading: 45 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: -409, y: -318, heading: 90 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
 
 test("CoordinateSystemTransformation 0 & no-flip & path-beginning & ccw & path-beginning & offset", () => {
   let system: CoordinateSystemUnrelatedToField = {
     axisRotation: AxisRotation.XEastYNorth,
     yAxisFlip: YAxisFlip.NoFlip,
-    headingRotation: HeadingRotation.PathBeginning,
-    headingDirection: HeadingDirection.CounterClockwise,
-    originAnchor: OriginAnchor.PathBeginning,
-    originOffset: { x: 10, y: 20 }
+    headingRotation: HeadingRotation.PathBeginning, // Changed
+    headingDirection: HeadingDirection.CounterClockwise, // Changed
+    originAnchor: OriginAnchor.PathBeginning, // Changed
+    originOffset: { x: 10, y: 20 } // Changed
   };
   let beginning = { x: 400, y: 300, heading: 45 };
 
@@ -395,4 +508,10 @@ test("CoordinateSystemTransformation 0 & no-flip & path-beginning & ccw & path-b
   expect(cst.transform({ x: 1, y: 2, heading: 90 })).closeTo({ x: -409, y: -318, heading: 315 });
   expect(cst.transform({ x: 1, y: 2, heading: -45 })).closeTo({ x: -409, y: -318, heading: 90 });
   expect(cst.transform({ x: 1, y: 2, heading: 270 })).closeTo({ x: -409, y: -318, heading: 135 });
+
+  expect(cst.inverseTransform({ x: -409, y: -318, heading: 45 })).closeTo({ x: 1, y: 2, heading: 0 });
+  expect(cst.inverseTransform({ x: -409, y: -318, heading: 0 })).closeTo({ x: 1, y: 2, heading: 45 });
+  expect(cst.inverseTransform({ x: -409, y: -318, heading: 315 })).closeTo({ x: 1, y: 2, heading: 90 });
+  expect(cst.inverseTransform({ x: -409, y: -318, heading: 90 })).closeTo({ x: 1, y: 2, heading: 360 - 45 });
+  expect(cst.inverseTransform({ x: -409, y: -318, heading: 135 })).closeTo({ x: 1, y: 2, heading: 270 });
 });
