@@ -1,5 +1,6 @@
 import { CoordinateWithHeading } from "./Coordinate";
 import {
+  AxisAnchor,
   AxisRotation,
   CoordinateSystem,
   CoordinateSystemTransformation,
@@ -7,6 +8,7 @@ import {
   CoordinateSystemUnrelatedToFieldAndPath,
   CoordinateSystemUnrelatedToPath,
   Dimension,
+  HeadingAnchor,
   HeadingDirection,
   HeadingRotation,
   OriginAnchor,
@@ -40,8 +42,10 @@ beforeAll(() => {
 
 test("CoordinateSystemTransformation original", () => {
   let system: CoordinateSystemUnrelatedToFieldAndPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XEastYNorth,
     yAxisFlip: YAxisFlip.NoFlip,
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.North,
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
@@ -74,8 +78,10 @@ test("CoordinateSystemTransformation original", () => {
 
 test("CoordinateSystemTransformation 90", () => {
   let system: CoordinateSystemUnrelatedToFieldAndPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XSouthYEast, // Changed
     yAxisFlip: YAxisFlip.NoFlip,
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.East, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
@@ -98,8 +104,10 @@ test("CoordinateSystemTransformation 90", () => {
 
 test("CoordinateSystemTransformation 180", () => {
   let system: CoordinateSystemUnrelatedToFieldAndPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XWestYSouth, // Changed
     yAxisFlip: YAxisFlip.NoFlip,
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.South, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
@@ -122,8 +130,10 @@ test("CoordinateSystemTransformation 180", () => {
 
 test("CoordinateSystemTransformation 270", () => {
   let system: CoordinateSystemUnrelatedToFieldAndPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XNorthYWest, // Changed
     yAxisFlip: YAxisFlip.NoFlip,
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.West, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
@@ -146,8 +156,10 @@ test("CoordinateSystemTransformation 270", () => {
 
 test("CoordinateSystemTransformation 90 & 0", () => {
   let system: CoordinateSystemUnrelatedToFieldAndPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XSouthYEast, // Changed
     yAxisFlip: YAxisFlip.NoFlip,
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.North, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
@@ -170,8 +182,10 @@ test("CoordinateSystemTransformation 90 & 0", () => {
 
 test("CoordinateSystemTransformation 90 & 180", () => {
   let system: CoordinateSystemUnrelatedToFieldAndPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XSouthYEast, // Changed
     yAxisFlip: YAxisFlip.NoFlip,
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.South, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
@@ -194,8 +208,10 @@ test("CoordinateSystemTransformation 90 & 180", () => {
 
 test("CoordinateSystemTransformation 90 & 270", () => {
   let system: CoordinateSystemUnrelatedToFieldAndPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XSouthYEast, // Changed
     yAxisFlip: YAxisFlip.NoFlip,
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.West, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
@@ -218,8 +234,10 @@ test("CoordinateSystemTransformation 90 & 270", () => {
 
 test("CoordinateSystemTransformation 180 & flip & 0", () => {
   let system: CoordinateSystemUnrelatedToFieldAndPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XWestYSouth, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.North, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
@@ -242,8 +260,10 @@ test("CoordinateSystemTransformation 180 & flip & 0", () => {
 
 test("CoordinateSystemTransformation 180 & flip & 90", () => {
   let system: CoordinateSystemUnrelatedToFieldAndPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XWestYSouth, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.East, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
@@ -266,8 +286,10 @@ test("CoordinateSystemTransformation 180 & flip & 90", () => {
 
 test("CoordinateSystemTransformation 180 & flip & 270", () => {
   let system: CoordinateSystemUnrelatedToFieldAndPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XWestYSouth, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.West, // Changed
     headingDirection: HeadingDirection.Clockwise,
     originAnchor: OriginAnchor.FieldCenter,
@@ -290,8 +312,10 @@ test("CoordinateSystemTransformation 180 & flip & 270", () => {
 
 test("CoordinateSystemTransformation 270 & flip & 0 & ccw", () => {
   let system: CoordinateSystemUnrelatedToFieldAndPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XNorthYWest, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.North, // Changed
     headingDirection: HeadingDirection.CounterClockwise, // Changed
     originAnchor: OriginAnchor.FieldCenter,
@@ -314,8 +338,10 @@ test("CoordinateSystemTransformation 270 & flip & 0 & ccw", () => {
 
 test("CoordinateSystemTransformation 270 & flip & 90 & ccw", () => {
   let system: CoordinateSystemUnrelatedToFieldAndPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XNorthYWest, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.East, // Changed
     headingDirection: HeadingDirection.CounterClockwise, // Changed
     originAnchor: OriginAnchor.FieldCenter,
@@ -338,8 +364,10 @@ test("CoordinateSystemTransformation 270 & flip & 90 & ccw", () => {
 
 test("CoordinateSystemTransformation 270 & flip & 180 & ccw", () => {
   let system: CoordinateSystemUnrelatedToFieldAndPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XNorthYWest, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.South, // Changed
     headingDirection: HeadingDirection.CounterClockwise, // Changed
     originAnchor: OriginAnchor.FieldCenter,
@@ -362,8 +390,10 @@ test("CoordinateSystemTransformation 270 & flip & 180 & ccw", () => {
 
 test("CoordinateSystemTransformation 0 & no-flip & 0 & cw & TopRight", () => {
   let system: CoordinateSystemUnrelatedToPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XEastYNorth, // Changed
     yAxisFlip: YAxisFlip.NoFlip, // Changed
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.North, // Changed
     headingDirection: HeadingDirection.Clockwise, // Changed
     originAnchor: OriginAnchor.FieldTopRight, // Changed
@@ -388,8 +418,10 @@ test("CoordinateSystemTransformation 0 & no-flip & 0 & cw & TopRight", () => {
 
 test("CoordinateSystemTransformation 0 & flip & 90 & cw & BottomRight", () => {
   let system: CoordinateSystemUnrelatedToPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XEastYNorth, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.East, // Changed
     headingDirection: HeadingDirection.Clockwise, // Changed
     originAnchor: OriginAnchor.FieldBottomRight, // Changed
@@ -414,8 +446,10 @@ test("CoordinateSystemTransformation 0 & flip & 90 & cw & BottomRight", () => {
 
 test("CoordinateSystemTransformation 0 & flip & 180 & cw & BottomLeft", () => {
   let system: CoordinateSystemUnrelatedToPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XEastYNorth, // Changed
     yAxisFlip: YAxisFlip.Flip, // Changed
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.South, // Changed
     headingDirection: HeadingDirection.Clockwise, // Changed
     originAnchor: OriginAnchor.FieldBottomLeft, // Changed
@@ -440,8 +474,10 @@ test("CoordinateSystemTransformation 0 & flip & 180 & cw & BottomLeft", () => {
 
 test("CoordinateSystemTransformation 90 & no-flip & 270 & ccw & TopLeft", () => {
   let system: CoordinateSystemUnrelatedToPath = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XSouthYEast, // Changed
     yAxisFlip: YAxisFlip.NoFlip, // Changed
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.West, // Changed
     headingDirection: HeadingDirection.CounterClockwise, // Changed
     originAnchor: OriginAnchor.FieldTopLeft, // Changed
@@ -466,8 +502,10 @@ test("CoordinateSystemTransformation 90 & no-flip & 270 & ccw & TopLeft", () => 
 
 test("CoordinateSystemTransformation 0 & no-flip & 0 & ccw & path-beginning & offset", () => {
   let system: CoordinateSystemUnrelatedToField = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XEastYNorth,
     yAxisFlip: YAxisFlip.NoFlip,
+    headingAnchor: HeadingAnchor.Default,
     headingRotation: HeadingRotation.North,
     headingDirection: HeadingDirection.CounterClockwise, // Changed
     originAnchor: OriginAnchor.PathBeginning, // Changed
@@ -492,9 +530,11 @@ test("CoordinateSystemTransformation 0 & no-flip & 0 & ccw & path-beginning & of
 
 test("CoordinateSystemTransformation 0 & no-flip & path-beginning & ccw & path-beginning & offset", () => {
   let system: CoordinateSystemUnrelatedToField = {
+    axisAnchor: AxisAnchor.Default,
     axisRotation: AxisRotation.XEastYNorth,
     yAxisFlip: YAxisFlip.NoFlip,
-    headingRotation: HeadingRotation.PathBeginning, // Changed
+    headingAnchor: HeadingAnchor.PathBeginning,
+    headingRotation: HeadingRotation.North, // Changed
     headingDirection: HeadingDirection.CounterClockwise, // Changed
     originAnchor: OriginAnchor.PathBeginning, // Changed
     originOffset: { x: 10, y: 20 } // Changed

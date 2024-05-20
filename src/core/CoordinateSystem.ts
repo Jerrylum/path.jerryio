@@ -1,4 +1,3 @@
-import { satisfies } from "semver";
 import { Coordinate, CoordinateWithHeading, EuclideanTransformation, isCoordinateWithHeading } from "./Coordinate";
 import { Vector } from "./Path";
 import { boundHeading } from "./Calculation";
@@ -18,6 +17,16 @@ export interface Dimension {
 - Origin Y Offset: number (mm)
 */
 
+export enum AxisAnchor {
+  PathBeginning = "PathBeginning",
+  Default = "Default"
+}
+
+export enum HeadingAnchor {
+  PathBeginning = "PathBeginning",
+  Default = "Default"
+}
+
 export enum AxisRotation {
   XEastYNorth = 0,
   XSouthYEast = 90,
@@ -31,11 +40,10 @@ export enum YAxisFlip {
 }
 
 export enum HeadingRotation {
-  PathBeginning = "PathBeginning",
+  North = 0,
   East = 90,
   South = 180,
-  West = 270,
-  North = 0
+  West = 270
 }
 
 export enum HeadingDirection {
@@ -69,8 +77,10 @@ export type OriginAnchorType =
   | typeof OriginAnchor.FieldBottomRight;
 
 export interface CoordinateSystem {
+  axisAnchor: AxisAnchor;
   axisRotation: AxisRotation;
   yAxisFlip: YAxisFlip;
+  headingAnchor: HeadingAnchor;
   headingRotation: HeadingRotation;
   headingDirection: HeadingDirection;
   originAnchor: OriginAnchorType;
@@ -82,13 +92,25 @@ export interface CoordinateSystemUnrelatedToField extends CoordinateSystem {
 }
 
 export interface CoordinateSystemUnrelatedToPath extends CoordinateSystem {
-  headingRotation: Exclude<HeadingRotation, typeof HeadingRotation.PathBeginning>;
+  axisAnchor: AxisAnchor.Default;
+  headingAnchor: HeadingAnchor.Default;
   originAnchor: Exclude<OriginAnchorType, typeof OriginAnchor.PathBeginning>;
 }
 
 export interface CoordinateSystemUnrelatedToFieldAndPath extends CoordinateSystem {
-  headingRotation: Exclude<HeadingRotation, typeof HeadingRotation.PathBeginning>;
-  originAnchor: Exclude<OriginAnchorType, typeof OriginAnchor.PathBeginning>;
+  axisAnchor: AxisAnchor.Default;
+  headingAnchor: HeadingAnchor.Default;
+  originAnchor: typeof OriginAnchor.FieldCenter;
+}
+
+export interface NamedCoordinateSystem extends CoordinateSystem {
+  name: string;
+  description: string;
+  previewImageUrl: string;
+}
+
+export function getCoordinateSystems(): NamedCoordinateSystem[] {
+  return [];
 }
 
 function getOrigin(
@@ -101,11 +123,19 @@ function getOrigin(
       ? fieldHalf.multiply(new Vector(system.originAnchor.x, system.originAnchor.y))
       : new Vector(pathBeginning.x, pathBeginning.y);
 
-  return { x: originPreOffset.x, y: originPreOffset.y, heading: system.axisRotation };
+  if (system.axisAnchor === "PathBeginning") {
+    return { x: originPreOffset.x, y: originPreOffset.y, heading: pathBeginning.heading + system.axisRotation };
+  } else {
+    return { x: originPreOffset.x, y: originPreOffset.y, heading: system.axisRotation };
+  }
 }
 
 function getHeadingRotation(system: CoordinateSystem, pathBeginning: CoordinateWithHeading) {
-  return system.headingRotation === "PathBeginning" ? pathBeginning.heading : system.headingRotation;
+  if (system.headingAnchor === "PathBeginning") {
+    return pathBeginning.heading + system.headingRotation;
+  } else {
+    return system.headingRotation;
+  }
 }
 
 export class CoordinateSystemTransformation {
@@ -183,3 +213,4 @@ export class CoordinateSystemTransformation {
     }
   }
 }
+ 
