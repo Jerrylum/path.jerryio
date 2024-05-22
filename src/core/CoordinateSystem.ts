@@ -109,8 +109,65 @@ export interface NamedCoordinateSystem extends CoordinateSystem {
   previewImageUrl: string;
 }
 
-export function getCoordinateSystems(): NamedCoordinateSystem[] {
-  return [];
+export function getNamedCoordinateSystems(): NamedCoordinateSystem[] {
+  return [
+    {
+      name: "VEX Gaming Positioning System",
+      description:
+        "The standard coordinate system defined by VEX Robotics. It uses the field center as the origin and aligns the x-axis east and y-axis north. Heading is measured in degrees clockwise from the positive y-axis.",
+      previewImageUrl: "static/coordinate-system-preview-vex-gps.png",
+      axisAnchor: AxisAnchor.Default,
+      axisRotation: AxisRotation.XEastYNorth,
+      yAxisFlip: YAxisFlip.NoFlip,
+      headingAnchor: HeadingAnchor.Default,
+      headingRotation: HeadingRotation.North,
+      headingDirection: HeadingDirection.Clockwise,
+      originAnchor: OriginAnchor.FieldCenter,
+      originOffset: { x: 0, y: 0 }
+    },
+    {
+      name: "Cartesian Plane",
+      description:
+        "A standard Cartesian coordinate system where the origin is at the center of the field. The x-axis points east and the y-axis points north. Heading is measured in degrees counterclockwise from the positive x-axis.",
+      previewImageUrl: "static/coordinate-system-preview-cartesian-plane.png",
+      axisAnchor: AxisAnchor.Default,
+      axisRotation: AxisRotation.XEastYNorth,
+      yAxisFlip: YAxisFlip.NoFlip,
+      headingAnchor: HeadingAnchor.Default,
+      headingRotation: HeadingRotation.East,
+      headingDirection: HeadingDirection.CounterClockwise,
+      originAnchor: OriginAnchor.FieldCenter,
+      originOffset: { x: 0, y: 0 }
+    },
+    {
+      name: "Path-Based Coordinates",
+      description:
+        "This coordinate system is relative to the beginning of a path. The origin is set at the path's starting point, and the axes are aligned to the field's default orientation. It is useful for localized navigation and tasks that are relative to a specific path.",
+      previewImageUrl: "static/coordinate-system-preview-path-relative.png",
+      axisAnchor: AxisAnchor.Default,
+      axisRotation: AxisRotation.XEastYNorth,
+      yAxisFlip: YAxisFlip.NoFlip,
+      headingAnchor: HeadingAnchor.Default,
+      headingRotation: HeadingRotation.North,
+      headingDirection: HeadingDirection.Clockwise,
+      originAnchor: OriginAnchor.PathBeginning,
+      originOffset: { x: 0, y: 0 }
+    },
+    {
+      name: "Path-Based Strict Coordinates",
+      description:
+        "A strict version of the Path-Based Coordinates system. The origin and axes are both anchored to the beginning of the path, ensuring a consistent frame of reference throughout the path's execution.",
+      previewImageUrl: "static/coordinate-system-preview-path-relative-strict-mode.png",
+      axisAnchor: AxisAnchor.PathBeginning,
+      axisRotation: AxisRotation.XEastYNorth,
+      yAxisFlip: YAxisFlip.NoFlip,
+      headingAnchor: HeadingAnchor.PathBeginning,
+      headingRotation: HeadingRotation.North,
+      headingDirection: HeadingDirection.Clockwise,
+      originAnchor: OriginAnchor.PathBeginning,
+      originOffset: { x: 0, y: 0 }
+    }
+  ];
 }
 
 function getOrigin(
@@ -213,4 +270,3 @@ export class CoordinateSystemTransformation {
     }
   }
 }
- 
