@@ -1,0 +1,50 @@
+#CoordinateSystemModal {
+  padding: 16px;
+  width: 768px;
+  max-width: 80%;
+  min-height: 96px;
+  outline: none !important;
+
+  #CoordinateSystem {
+    display: flex;
+    width: 100%;
+    gap: 16px;
+
+    #CoordinateSystems-Body {
+      flex-grow: 1;
+      max-width: calc(60% - 16px);
+
+      #CoordinateSystemsList {
+        flex-grow: 1;
+        min-height: calc(256px - 8px);
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-bottom: 8px; // maybe 16px
+        position: relative;
+
+        #CoordinateSystemsList-Content {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+
+          .CoordinateSystemsList-Item {
+            .CoordinateSystemsList-ItemApplyButton {
+              visibility: hidden;
+            }
+          }
+
+          .CoordinateSystemsList-Item:hover {
+            .CoordinateSystemsList-ItemApplyButton {
+              visibility: inherit;
+            }
+          }
+        }
+      }
+    }
+
+    #CoordinateSystems-PreviewSection {
+    }
+  }
+}
