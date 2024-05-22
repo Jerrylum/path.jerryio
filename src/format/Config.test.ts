@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
 import { Expose, Exclude, plainToClassFromExist, Type } from "class-transformer";
-import { IsBoolean, IsObject, IsPositive, ValidateNested, validate } from "class-validator";
+import { IsBoolean, IsIn, IsObject, IsPositive, ValidateNested, validate } from "class-validator";
 import { BentRateApplicationDirection, Path } from "@core/Path";
 import { UnitOfLength } from "@core/Unit";
 import { GeneralConfig, PathConfig } from "./Config";
@@ -9,6 +9,7 @@ import { Format } from "./Format";
 import { EditableNumberRange, ValidateEditableNumberRange, ValidateNumber } from "@core/Util";
 import { CustomFormat } from "./Format.test";
 import { FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "@core/Asset";
+import { getNamedCoordinateSystems } from "@src/core/CoordinateSystem";
 
 export class CustomGeneralConfig implements GeneralConfig {
   public custom: string = "custom";
@@ -40,6 +41,9 @@ export class CustomGeneralConfig implements GeneralConfig {
   @Expose()
   fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> =
     getDefaultBuiltInFieldImage().getSignatureAndOrigin();
+  @IsIn(getNamedCoordinateSystems().map(s => s.name))
+  @Expose()
+  coordinateSystem: string = "VEX Gaming Positioning System";
 
   constructor() {
     makeAutoObservable(this);

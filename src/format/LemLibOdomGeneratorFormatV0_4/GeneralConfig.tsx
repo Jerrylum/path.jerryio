@@ -12,11 +12,12 @@ import { UnitOfLength } from "@core/Unit";
 import { IS_MAC_OS, getMacHotKeyString, ValidateNumber } from "@core/Util";
 import { Int, CodePointBuffer } from "@src/token/Tokens";
 import { Expose, Type, Exclude } from "class-transformer";
-import { IsPositive, IsBoolean, ValidateNested, IsObject, IsString, MinLength } from "class-validator";
+import { IsPositive, IsBoolean, ValidateNested, IsObject, IsString, MinLength, IsIn } from "class-validator";
 import { observer } from "mobx-react-lite";
 import { GeneralConfig, initGeneralConfig } from "../Config";
 import { Format } from "../Format";
 import { PanelBox } from "@src/app/component.blocks/PanelBox";
+import { getNamedCoordinateSystems } from "@src/core/CoordinateSystem";
 
 interface FormatWithExportCode extends Format {
   exportCode(): string;
@@ -137,6 +138,9 @@ export class GeneralConfigImpl implements GeneralConfig {
   @IsBoolean()
   @Expose()
   relativeCoords: boolean = true;
+  @IsIn(getNamedCoordinateSystems().map(s => s.name))
+  @Expose()
+  coordinateSystem: string = "VEX Gaming Positioning System";
   @Exclude()
   private format_: FormatWithExportCode;
 
