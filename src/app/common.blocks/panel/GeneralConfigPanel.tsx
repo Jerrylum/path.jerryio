@@ -16,6 +16,7 @@ import TuneIcon from "@mui/icons-material/Tune";
 import { isExperimentalFeaturesEnabled } from "@src/core/Preferences";
 import { OpenModalButton } from "@src/app/component.blocks/OpenModalButton";
 import { PanelBox } from "@src/app/component.blocks/PanelBox";
+import { CoordinateSystemModalSymbol } from "../modal/CoordinateSystemModal";
 
 const FormatMenuItem = (props: { format: Format } & MenuItemProps) => {
   const { format, ...rests } = props;
@@ -192,7 +193,9 @@ const GeneralConfigPanelBody = observer((props: {}) => {
         </OpenModalButton>
       </PanelBox>
       <PanelBox>
-        <OpenModalButton onClick={() => {}}>VEX Game Positioning System</OpenModalButton>
+        <OpenModalButton onClick={() => ui.openModal(CoordinateSystemModalSymbol)}>
+          {gc.coordinateSystem}
+        </OpenModalButton>
       </PanelBox>
       {gc.getAdditionalConfigUI()}
     </>

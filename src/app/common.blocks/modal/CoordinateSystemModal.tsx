@@ -21,14 +21,14 @@ import { useMobxStorage } from "@src/core/Hook";
 import "./CoordinateSystemModal.scss";
 import InputIcon from "@mui/icons-material/Input";
 import DoneIcon from "@mui/icons-material/Done";
+import React from "react";
 
 export const CoordinateSystemModalSymbol = Symbol("CoordinateSystemModal");
 
 class CoordinateSystemVariables {
-  selected: NamedCoordinateSystem;
+  selected: NamedCoordinateSystem | null = null;
 
   constructor() {
-    this.selected = getNamedCoordinateSystems()[0];
     makeAutoObservable(this);
   }
 }
@@ -38,7 +38,8 @@ export const CoordinateSystemItem = observer(
     const { variables, system } = props;
     const { app, ui } = getAppStores();
 
-    const isSelected = variables.selected === system;
+    const isSelected = variables.selected?.name === system.name;
+
     const isUsing = system.name === app.gc.coordinateSystem;
 
     const onApply = action(() => {
@@ -85,8 +86,17 @@ export const CoordinateSystemItem = observer(
 
 export const CoordinateSystemList = observer((props: { variables: CoordinateSystemVariables }) => {
   const { variables } = props;
+  const { app } = getAppStores();
 
   const systems = getNamedCoordinateSystems();
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useEffect(
+    action(() => {
+      variables.selected = systems.find(system => system.name === app.gc.coordinateSystem) || systems[0];
+    }),
+    []
+  );
 
   return (
     <Box>
