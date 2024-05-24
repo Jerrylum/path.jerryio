@@ -1,5 +1,5 @@
 import { makeAutoObservable, action, observable, IObservableValue } from "mobx";
-import { Box, Typography, Button, TextField } from "@mui/material";
+import { Typography, Button, TextField } from "@mui/material";
 import { enqueueSuccessSnackbar, enqueueErrorSnackbar } from "@src/app/Notice";
 import { FormEnumSelect } from "@src/app/component.blocks/FormEnumSelect";
 import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFieldImage } from "@core/Asset";

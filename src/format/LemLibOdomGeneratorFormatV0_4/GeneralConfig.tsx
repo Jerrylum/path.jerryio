@@ -1,5 +1,5 @@
 import { makeAutoObservable, action } from "mobx";
-import { Box, Typography, Button } from "@mui/material";
+import { Typography, Button } from "@mui/material";
 import { enqueueSuccessSnackbar, enqueueErrorSnackbar } from "@src/app/Notice";
 import { FormCheckbox } from "@src/app/component.blocks/FormCheckbox";
 import { FormInputField } from "@src/app/component.blocks/FormInputField";

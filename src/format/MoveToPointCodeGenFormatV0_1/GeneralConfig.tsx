@@ -1,5 +1,5 @@
 import { makeAutoObservable, action, observable, IObservableValue } from "mobx";
-import { Typography, TextField, Box, Button } from "@mui/material";
+import { Typography, TextField, Button } from "@mui/material";
 import { enqueueSuccessSnackbar, enqueueErrorSnackbar } from "@src/app/Notice";
 import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFieldImage } from "@core/Asset";
 import { useCustomHotkeys, getEnableOnNonTextInputFieldsHotkeysOptions } from "@core/Hook";
