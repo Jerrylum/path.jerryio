@@ -45,6 +45,26 @@
     }
 
     #CoordinateSystems-PreviewSection {
+      width: 40%;
+      min-width: 256px;
+
+      #CoordinateSystems-ImagePreview {
+        width: 100%;
+        line-height: 0;
+        border: 1px solid var(--text-primary-color);
+        position: relative;
+
+        > img {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          user-select: none;
+          cursor: pointer;
+        }
+      }
     }
   }
 }

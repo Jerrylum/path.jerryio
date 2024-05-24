@@ -118,6 +118,8 @@ export const CoordinateSystemList = observer((props: { variables: CoordinateSyst
 export const CoordinateSystemSection = observer(() => {
   const variables = useMobxStorage(() => new CoordinateSystemVariables(), []);
 
+  const selected = variables.selected;
+
   return (
     <Box>
       <Typography variant="h3" fontSize={18} gutterBottom>
@@ -127,7 +129,19 @@ export const CoordinateSystemSection = observer(() => {
         <Box id="CoordinateSystems-Body">
           <CoordinateSystemList variables={variables} />
         </Box>
-        <Box id="CoordinateSystems-PreviewSection"></Box>
+        {selected && (
+          <Box id="CoordinateSystems-PreviewSection">
+            <Box id="CoordinateSystems-ImagePreview">
+              <svg viewBox="0 0 1 1"></svg>
+              <Box component="img" src={selected.previewImageUrl} alt="" />
+            </Box>
+            <Box minHeight="100px">
+              <Box marginTop="16px">
+                <Typography variant="body1">{selected.name}</Typography>
+              </Box>
+            </Box>
+          </Box>
+        )}
       </Box>
     </Box>
   );
