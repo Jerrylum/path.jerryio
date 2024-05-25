@@ -56,7 +56,7 @@ export const CoordinateSystemItem = observer(
         disablePadding
         secondaryAction={
           !isUsing && (
-            <Tooltip title="Apply This Image">
+            <Tooltip title="Apply This Coordinate System">
               <IconButton edge="end" className="CoordinateSystemsList-ItemApplyButton" onClick={action(onApply)}>
                 <InputIcon fontSize="small" />
               </IconButton>
@@ -138,6 +138,9 @@ export const CoordinateSystemSection = observer(() => {
             <Box minHeight="100px">
               <Box marginTop="16px">
                 <Typography variant="body1">{selected.name}</Typography>
+              </Box>
+              <Box marginTop="16px" minHeight="100px">
+                <Typography variant="body1">{selected.description}</Typography>
               </Box>
             </Box>
           </Box>
