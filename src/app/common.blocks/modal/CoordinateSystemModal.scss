@@ -5,12 +5,12 @@
   min-height: 96px;
   outline: none !important;
 
-  #CoordinateSystem {
+  #CoordinateSystem-Body {
     display: flex;
     width: 100%;
     gap: 16px;
 
-    #CoordinateSystems-Body {
+    #CoordinateSystems-LeftSide {
       flex-grow: 1;
       max-width: calc(60% - 16px);
 

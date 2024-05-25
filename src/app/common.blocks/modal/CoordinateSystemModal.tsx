@@ -3,6 +3,7 @@ import { observer } from "mobx-react-lite";
 import { Modal } from "./Modal";
 import {
   Box,
+  Button,
   Card,
   Chip,
   IconButton,
@@ -32,6 +33,27 @@ class CoordinateSystemVariables {
     makeAutoObservable(this);
   }
 }
+
+export const CoordinateSystemPreview = observer((props: { preview: NamedCoordinateSystem }) => {
+  const { preview } = props;
+
+  return (
+    <Box id="CoordinateSystems-PreviewSection">
+      <Box id="CoordinateSystems-ImagePreview">
+        <svg viewBox="0 0 1 1"></svg>
+        <Box component="img" src={preview.previewImageUrl} alt="" />
+      </Box>
+      <Box minHeight="100px">
+        <Box marginTop="16px">
+          <Typography variant="body1">{preview.name}</Typography>
+        </Box>
+        <Box marginTop="16px" minHeight="100px">
+          <Typography variant="body1">{preview.description}</Typography>
+        </Box>
+      </Box>
+    </Box>
+  );
+});
 
 export const CoordinateSystemItem = observer(
   (props: { variables: CoordinateSystemVariables; system: NamedCoordinateSystem }) => {
@@ -102,7 +124,7 @@ export const CoordinateSystemList = observer((props: { variables: CoordinateSyst
     <Box>
       <Box id="CoordinateSystemsList">
         {/* Using the SVG viewBox solution to allow the use of min-height */}
-        <svg viewBox="0 0 0.6 0.4"></svg>
+        <svg viewBox="0 0 1 1"></svg>
         <Box id="CoordinateSystemsList-Content">
           <List dense>
             {systems.map(system => (
@@ -116,35 +138,50 @@ export const CoordinateSystemList = observer((props: { variables: CoordinateSyst
 });
 
 export const CoordinateSystemSection = observer(() => {
+  const { app, ui } = getAppStores();
+
   const variables = useMobxStorage(() => new CoordinateSystemVariables(), []);
 
   const selected = variables.selected;
+  const hasSelected = !!selected;
+  const isAppliedSelected = selected?.name === getAppStores().app.gc.coordinateSystem;
+
+  const onApply = action(() => {
+    if (!selected) return;
+
+    app.history.execute(
+      `Change coordinate system to ${selected.name}`,
+      new UpdateProperties(app.gc, { coordinateSystem: selected.name })
+    );
+
+    ui.closeModal(CoordinateSystemModalSymbol);
+  });
 
   return (
     <Box>
-      <Typography variant="h3" fontSize={18} gutterBottom>
-        Frontend Coordinate System
-      </Typography>
-      <Box id="CoordinateSystem">
-        <Box id="CoordinateSystems-Body">
+      <Box>
+        <Typography variant="h3" fontSize={18} gutterBottom>
+          Frontend Coordinate System
+        </Typography>
+      </Box>
+      <Box id="CoordinateSystem-Body">
+        <Box id="CoordinateSystems-LeftSide">
           <CoordinateSystemList variables={variables} />
         </Box>
-        {selected && (
-          <Box id="CoordinateSystems-PreviewSection">
-            <Box id="CoordinateSystems-ImagePreview">
-              <svg viewBox="0 0 1 1"></svg>
-              <Box component="img" src={selected.previewImageUrl} alt="" />
-            </Box>
-            <Box minHeight="100px">
-              <Box marginTop="16px">
-                <Typography variant="body1">{selected.name}</Typography>
-              </Box>
-              <Box marginTop="16px" minHeight="100px">
-                <Typography variant="body1">{selected.description}</Typography>
-              </Box>
-            </Box>
-          </Box>
-        )}
+        {selected && <CoordinateSystemPreview preview={selected} />}
+      </Box>
+      <Box marginTop="16px" display="flex" gap="8px" justifyContent="end" alignItems="center">
+        <Typography variant="body2" color="textSecondary">
+          *Apply one does not affect the final output of the file.
+        </Typography>
+        <Button
+          variant="outlined"
+          color="primary"
+          disabled={!hasSelected || isAppliedSelected}
+          disableElevation
+          onClick={onApply}>
+          {isAppliedSelected ? "Applied" : "Apply"}
+        </Button>
       </Box>
     </Box>
   );
