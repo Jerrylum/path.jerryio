@@ -125,6 +125,7 @@ const Root = observer(() => {
   }, [ui]);
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
+  // The Layout component in charge for rendering all UI component (panels, overlays) based on the given layout types
   return (
     <Box
       tabIndex={-1}

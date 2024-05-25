@@ -27,6 +27,7 @@ export enum LayoutType {
 export const LayoutContext = React.createContext<LayoutType>(LayoutType.Classic);
 export const LayoutProvider = LayoutContext.Provider;
 
+/* TBC */
 export function getAvailableLayouts(windowSize: Vector): LayoutType[] {
   const widthForClassic = 16 + 288 + 16 + getFieldCanvasHalfHeight(windowSize) + 16 + 352 + 16;
   const heightForClassic = 600;
@@ -41,6 +42,13 @@ export function getAvailableLayouts(windowSize: Vector): LayoutType[] {
   return [LayoutType.Mobile];
 }
 
+/**
+ * Elect the preferred layout from all available layout types, which found based on the current window size
+ * If the preferred layout is not available, return the first available layout type
+ * @param windowSize - The current window size
+ * @param preferred - The preferred layout type
+ * @returns The elected layout type
+ */
 export function getUsableLayout(windowSize: Vector, preferred: LayoutType): LayoutType {
   const available = getAvailableLayouts(windowSize);
   if (available.includes(preferred)) return preferred;
@@ -81,12 +89,22 @@ export class UserInterface {
     if (symbol === undefined || this.openingModal_?.symbol === symbol) this.openingModal_ = null;
   }
 
+  /**
+   * Register function for register the corresponding builder function of a overlay and ID to the Overlay Builder list.
+   * Return with the ID and disposer function of the corresponding overlay component
+   * @param builder - The function to render the overlay component
+   * @returns The object of ID and disposer function of the corresponding overlay component
+   */
   registerOverlay(builder: OverlayNodeBuilder): { uid: string; disposer: () => void } {
     const uid = makeId(10);
     this.overlayNodeBuilders_.push({ uid, builder });
     return { uid, disposer: () => this.unregisterOverlay(uid) };
   }
 
+  /**
+   * To remove a registered object record of overlay builder via ID from the Overlay Builder list.
+   * @param uid - The ID of the overlay builder to be removed
+   */
   unregisterOverlay(uid: string): void {
     this.overlayNodeBuilders_ = this.overlayNodeBuilders_.filter(obj => obj.uid !== uid);
   }
