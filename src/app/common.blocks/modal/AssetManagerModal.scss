@@ -11,13 +11,12 @@
     margin-left: 8px;
   }
 
-  #FieldImageAssets {
+  #FieldImageAssets-Body {
     display: flex;
     width: 100%;
     gap: 16px;
-    // background-color: red;
 
-    #FieldImageAssets-Body {
+    #FieldImageAssets-LeftSide {
       flex-grow: 1;
       max-width: calc(60% - 16px);
 
