@@ -172,7 +172,7 @@ export const CoordinateSystemSection = observer(() => {
       </Box>
       <Box marginTop="16px" display="flex" gap="8px" justifyContent="end" alignItems="center">
         <Typography variant="body2" color="textSecondary">
-          *Apply one does not affect the final output of the file.
+          Note: the coordinate system you choose does not affect the output file.
         </Typography>
         <Button
           variant="outlined"
