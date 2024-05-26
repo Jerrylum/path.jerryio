@@ -56,7 +56,6 @@ const FormInputField = observer(
       if (event.code === "Enter" || event.code === "NumpadEnter") {
         event.preventDefault();
         element.blur();
-        onConfirm(event);
       } else if (isNumeric && event.code === "ArrowDown") {
         onConfirm(event);
         element.value = parseFloat(getValue()) - 1 + "";
@@ -67,7 +66,6 @@ const FormInputField = observer(
         onConfirm(event);
       } else if (event.code === "Escape") {
         element.value = "";
-        onConfirm(event);
         element.blur();
       }
 
