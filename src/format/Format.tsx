@@ -104,7 +104,7 @@ interface PathFileDataConverter {
 const convertFromV0_1_0ToV0_2_0: PathFileDataConverter = {
   version: new Range("~0.1"),
   convert: (data: Record<string, any>): void => {
-    // Covert old enum number to new enum ratio
+    // Convert old enum number to new enum ratio
     data.gc.uol = {
       1: UnitOfLength.Millimeter,
       2: UnitOfLength.Centimeter,
@@ -196,7 +196,7 @@ const convertFromV0_7_0ToV0_8_0: PathFileDataConverter = {
 const convertFromV0_8_0ToCurrentAppVersion: PathFileDataConverter = {
   version: new Range("~0.8"),
   convert: (data: Record<string, any>): void => {
-    // From v0.7.0 to current app version
+    // From v0.8.0 to current app version
     data.appVersion = APP_VERSION.version;
   }
 };
