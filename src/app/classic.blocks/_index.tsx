@@ -10,6 +10,10 @@ import { PathTreePanel } from "../common.blocks/panel/PathTreePanel";
 import { SpeedCanvasElement } from "../common.blocks/speed-canvas/SpeedCanvasElement";
 import { MousePositionPresentation } from "../common.blocks/MousePositionPresentation";
 
+/**
+ * The ClassisLayout component renders the classic layout.
+ * @returns The rendered classic layout component, including all panels.
+ */
 export const ClassisLayout = observer(() => {
   const { appPreferences, ui } = getAppStores();
 

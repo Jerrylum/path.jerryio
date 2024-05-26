@@ -27,7 +27,11 @@ export enum LayoutType {
 export const LayoutContext = React.createContext<LayoutType>(LayoutType.Classic);
 export const LayoutProvider = LayoutContext.Provider;
 
-/* TBC */
+/**
+ * Get all available layout types based on the current window size
+ * @param windowSize - The current window size
+ * @returns All available layout types
+ */
 export function getAvailableLayouts(windowSize: Vector): LayoutType[] {
   const widthForClassic = 16 + 288 + 16 + getFieldCanvasHalfHeight(windowSize) + 16 + 352 + 16;
   const heightForClassic = 600;
@@ -55,6 +59,9 @@ export function getUsableLayout(windowSize: Vector, preferred: LayoutType): Layo
   return available[0];
 }
 
+/**
+ * The UserInterface class is responsible for managing all overlay and panel components
+ */
 export class UserInterface {
   private overlayNodeBuilders_: { uid: string; builder: OverlayNodeBuilder }[] = [];
   private panelBuilders_: { uid: string; builder: PanelBuilder }[] = [];
@@ -64,18 +71,37 @@ export class UserInterface {
     priority: number;
   } | null = null;
 
+  /**
+   * Get the symbol of the opening modal
+   * @returns The symbol of the opening modal, or null if no modal is opening
+   */
   get openingModal(): Symbol | null {
     return this.openingModal_?.symbol ?? null;
   }
 
+  /**
+   * Get the priority of the opening modal
+   * @returns The priority of the opening modal, or null if no modal is opening
+   */
   get currentOpeningModalPriority(): number | null {
     return this.openingModal_?.priority ?? null;
   }
 
+  /**
+   * Check if a modal is opening
+   * @returns True if a modal is opening, otherwise false
+   */
   get isOpeningModal() {
     return this.openingModal_ !== null;
   }
 
+  /**
+   * Open a modal with a given symbol and priority, the opened modal's symbol and priority will be stored
+   * If the given priority is higher than the current opening modal's priority, the opening modal will be replaced
+   * @param symbol - The symbol of the modal to open
+   * @param priority - The priority of the modal to open, default is 0
+   * @returns True if the modal is opened, otherwise false
+   */
   openModal(symbol: Symbol, priority: number = 0): boolean {
     if (this.openingModal_ === null || this.openingModal_.priority <= priority) {
       this.openingModal_ = { symbol: symbol, priority };
@@ -85,6 +111,11 @@ export class UserInterface {
     }
   }
 
+  /**
+   * Close the opening modal with a given symbol
+   * If the given symbol is not provided, or the symbol is the same as the opening modal, the opening modal will be closed
+   * @param symbol - The symbol of the modal to close
+   */
   closeModal(symbol?: Symbol) {
     if (symbol === undefined || this.openingModal_?.symbol === symbol) this.openingModal_ = null;
   }
@@ -109,6 +140,13 @@ export class UserInterface {
     this.overlayNodeBuilders_ = this.overlayNodeBuilders_.filter(obj => obj.uid !== uid);
   }
 
+  /**
+   * Register function for register the corresponding builder function of a panel and ID to the Panel Builder list.
+   * Return with the ID and disposer function of the corresponding panel component
+   * @param builder - The function to render the panel component
+   * @param index - The index of the panel component in the list
+   * @returns The object of ID and disposer function of the corresponding panel component
+   */
   registerPanel(builder: PanelBuilder, index?: number): { uid: string; disposer: () => void } {
     const uid = makeId(10);
 
@@ -120,14 +158,26 @@ export class UserInterface {
     return { uid, disposer: () => this.unregisterPanel(uid) };
   }
 
+  /**
+   * To remove a registered object record of panel builder via ID from the Panel Builder list.
+   * @param uid - The ID of the panel builder to be removed
+   */
   unregisterPanel(uid: string): void {
     this.panelBuilders_ = this.panelBuilders_.filter(obj => obj.uid !== uid);
   }
 
+  /**
+   * Get all registered overlay builders
+   * @returns The list of all registered overlay builders
+   */
   getAllOverlays(): { uid: string; builder: OverlayNodeBuilder }[] {
     return this.overlayNodeBuilders_;
   }
 
+  /**
+   * Get all registered panel builders
+   * @returns The list of all registered panel builders
+   */
   getAllPanels(): { uid: string; builder: PanelBuilder }[] {
     return this.panelBuilders_;
   }
