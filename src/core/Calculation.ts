@@ -115,7 +115,7 @@ export function getPathPoints(
 }
 
 /**
- * Process the given points with keyframes.
+ * Processes the given points with keyframes.
  *
  * @param path - The path being processed.
  * @param points - The points to apply the keyframes to.
