@@ -21,16 +21,45 @@ export interface Format {
 
   getDescription(): string;
 
+  /**
+   * A initialize function triggered when MainApp changes format
+   * This will register/records all possible disposer to Command listeners and UI rendered for this format
+   * @param app The MainApp component
+   * @param ui The UserInterface component
+   */
   register(app: MainApp, ui: UserInterface): void;
 
+  /**
+   * A dispose function triggered when MainApp changes format
+   * This will call all the disposer to Command listeners and UI rendered for this format
+   */
   unregister(): void;
 
+  /**
+   * Create a new instance of this format
+   * @returns a new instance of this format
+   */
   createNewInstance(): Format;
 
+  /**
+   * Get the general configuration for this format
+   * @returns the general configuration for this format
+   */
   getGeneralConfig(): GeneralConfig;
 
+  /**
+   * Create a path instance with the given segments
+   * @param segments the segments to create the path
+   * @returns the created path instance
+   */
   createPath(...segments: Segment[]): Path;
 
+  /**
+   * Get the points along a path at a uniform density
+   * The points' speed may recalculated based on each format
+   * @param path the path to get the points
+   * @returns the calculation result points along the given path
+   */
   getPathPoints(path: Path): PointCalculationResult;
 
   /**
@@ -104,7 +133,7 @@ interface PathFileDataConverter {
 const convertFromV0_1_0ToV0_2_0: PathFileDataConverter = {
   version: new Range("~0.1"),
   convert: (data: Record<string, any>): void => {
-    // Covert old enum number to new enum ratio
+    // Convert old enum number to new enum ratio
     data.gc.uol = {
       1: UnitOfLength.Millimeter,
       2: UnitOfLength.Centimeter,
@@ -196,7 +225,7 @@ const convertFromV0_7_0ToV0_8_0: PathFileDataConverter = {
 const convertFromV0_8_0ToCurrentAppVersion: PathFileDataConverter = {
   version: new Range("~0.8"),
   convert: (data: Record<string, any>): void => {
-    // From v0.7.0 to current app version
+    // From v0.8.0 to current app version
     data.appVersion = APP_VERSION.version;
   }
 };
