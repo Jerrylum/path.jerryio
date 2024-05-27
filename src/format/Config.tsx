@@ -106,6 +106,13 @@ export interface GeneralConfig extends ConfigSection {
   getAdditionalConfigUI(): React.ReactNode;
 }
 
+/** Common Path Configuration params for all formats
+ * @param path The path to configure
+ * @param lookaheadLimit The lookahead limit of the path, used for determining the lookahead of each points
+ * @param speedLimit The configurable range of speed of the path
+ * @param bentRateApplicableRange The configurable range of bent rate of the path
+ * @param bentRateApplicationDirection The direction of the bent rate range on the speed canvas
+ */
 export interface PathConfig extends ConfigSection {
   path: Path;
   lookaheadLimit?: NumberRange;
