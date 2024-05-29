@@ -23,11 +23,12 @@ import { AppClipboard } from "./Clipboard";
 import { validate } from "class-validator";
 import { FieldEditor } from "./FieldEditor";
 import { SpeedEditor } from "./SpeedEditor";
-import { AssetManager, getDefaultBuiltInFieldImage } from "./Asset";
+import { AssetManager, FieldImageAsset, FieldImageOriginType, FieldImageSignatureAndOrigin, getDefaultBuiltInFieldImage } from "./Asset";
 import { Preferences, getPreference } from "./Preferences";
 import { LemLibFormatV0_4 } from "../format/LemLibFormatV0_4";
 import { LemLibFormatV1_0 } from "../format/LemLibFormatV1_0";
 import { UserInterface } from "./Layout";
+import { CoordinateSystem, Dimension, getNamedCoordinateSystems } from "./CoordinateSystem";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
@@ -158,6 +159,14 @@ export class MainApp {
 
   @computed get gc(): GeneralConfig {
     return this.format.getGeneralConfig();
+  }
+
+  @computed get fieldImageAsset(): FieldImageAsset<FieldImageOriginType> {
+    return assetManager.getAssetBySignature(this.gc.fieldImage.signature) ?? getDefaultBuiltInFieldImage();
+  }
+
+  @computed get coordinateSystem(): CoordinateSystem {
+    return getNamedCoordinateSystems().find(cs => cs.name === this.gc.coordinateSystem) ?? getNamedCoordinateSystems()[0];
   }
 
   isSelected(x: PathTreeItem | string): boolean {
@@ -445,10 +454,11 @@ export class MainApp {
 export type AppStores = typeof appStores;
 
 const ui = new UserInterface();
+const assetManager = new AssetManager();
 
 const appStores = {
   app: new MainApp(),
-  assetManager: new AssetManager(),
+  assetManager,
   confirmation: new Confirmation(),
   ui,
   appPreferences: new Preferences(),

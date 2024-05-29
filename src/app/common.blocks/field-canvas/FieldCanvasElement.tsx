@@ -621,8 +621,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
   const uc = new UnitConverter(UnitOfLength.Millimeter, app.gc.uol);
 
-  const fieldImageAsset =
-    assetManager.getAssetBySignature(app.gc.fieldImage.signature) ?? getDefaultBuiltInFieldImage();
+  const fieldImageAsset = app.fieldImageAsset;
 
   const canvasHeightInPx = (function () {
     if (currentLayoutType === LayoutType.Classic) {
