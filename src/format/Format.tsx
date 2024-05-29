@@ -22,40 +22,43 @@ export interface Format {
   getDescription(): string;
 
   /**
-   * A initialize function triggered when MainApp changes format
-   * This will register/records all possible disposer to Command listeners and UI rendered for this format
-   * @param app The MainApp component
-   * @param ui The UserInterface component
+   * Registers the format with the provided application and user interface.
+   * This method should set up any necessary event listeners, hooks, or UI components specific to the format.
+   * The `register` function should be the first function to call on the format. This is triggered when MainApp changes format.
+   * @param app The MainApp instance
+   * @param ui The UserInterface instances
    */
   register(app: MainApp, ui: UserInterface): void;
 
   /**
-   * A dispose function triggered when MainApp changes format
-   * This will call all the disposer to Command listeners and UI rendered for this format
+   * Unregisters the format from the application.
+   * This should clean up and remove any hooks, event listeners, or UI components that were added during the registration process.
+   * The `unregister` function should be the last function to call on the format. After it is called, the format is expected to be detached from the application. This is triggered when MainApp changes format.
    */
   unregister(): void;
 
   /**
-   * Create a new instance of this format
+   * Creates a new instance of this format
    * @returns a new instance of this format
    */
   createNewInstance(): Format;
 
   /**
-   * Get the general configuration for this format
+   * Gets the general configuration for this format
+   * This method provides access to the general configuration settings to this format.
    * @returns the general configuration for this format
    */
   getGeneralConfig(): GeneralConfig;
 
   /**
-   * Create a path instance with the given segments
+   * Creates a path instance with the given segments
    * @param segments the segments to create the path
    * @returns the created path instance
    */
   createPath(...segments: Segment[]): Path;
 
   /**
-   * Get the points along a path at a uniform density
+   * Calculates the waypoints along a given path
    * The points' speed may recalculated based on each format
    * @param path the path to get the points
    * @returns the calculation result points along the given path
