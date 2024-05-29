@@ -74,6 +74,20 @@ export interface ConfigSection {
   get format(): Format;
 }
 
+/**
+ * Common configuration params for all formats
+ * @param robotWidth Width of the robot in the unit of length
+ * @param robotHeight Height of the robot in the unit of length
+ * @param robotIsHolonomic Whether the robot is holonomic or not, or force the robot to be static
+ * Force Static - The robot's heading aligns with the first end control of the current segment where the robot is located
+ * Holonomic robot - The robot that can move in any direction without turning
+ * @param showRobot Whether to show the robot on the field
+ * @param uol Unit of length
+ * @param pointDensity The spacing between two waypoints on the path
+ * @param controlMagnetDistance The minimal distance for the dragging control to get magnetized to the Magnet Reference Line
+ * @param fieldImage The field image using for the format
+ * @param coordinateSystem The coordinate system used for the format
+ */
 export interface GeneralConfig extends ConfigSection {
   robotWidth: number;
   robotHeight: number;
@@ -84,9 +98,21 @@ export interface GeneralConfig extends ConfigSection {
   controlMagnetDistance: number;
   fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType>;
   coordinateSystem: string;
+  /**
+   * Get the react components as customized additional configuration UI for the format
+   * The customized additional configuration UI will be render at the end of GeneralConfigPanelBody
+   * @returns The customized additional configuration UI as react components
+   */
   getAdditionalConfigUI(): React.ReactNode;
 }
 
+/** Common Path Configuration params for all formats
+ * @param path The path to configure
+ * @param lookaheadLimit The lookahead limit of the path, used for determining the lookahead of each points
+ * @param speedLimit The configurable range of speed of the path
+ * @param bentRateApplicableRange The configurable range of bent rate of the path
+ * @param bentRateApplicationDirection The direction of the bent rate range on the speed canvas
+ */
 export interface PathConfig extends ConfigSection {
   path: Path;
   lookaheadLimit?: NumberRange;

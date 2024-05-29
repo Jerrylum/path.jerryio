@@ -27,21 +27,46 @@ export enum UnitOfAngle {
 
 export type Unit = UnitOfLength | UnitOfAngle;
 
+/**
+ * Quantity class represents a value with a unit
+ * @param value is a number, represents the value of the quantity
+ * @param unit is a Unit, can be UnitOfLength or UnitOfAngle
+ */
 export class Quantity<T extends Unit> {
   constructor(public value: number, public unit: T) {}
 
+  /**
+   * Converts the quantity to a new unit
+   * @param unit, the new unit to convert the quantity value to
+   * @returns the converted value in the new unit
+   */
   to(unit: T): number {
     return new UnitConverter(this.unit, unit).fromAtoB(this.value);
   }
 }
 
+/**
+ * UnitConverter class converts a value from one unit to another
+ * @param alpha is a Unit, the unit of the value to be converted
+ * @param beta is a Unit, the unit to convert the value to
+ */
 export class UnitConverter<T extends Unit> {
   constructor(public alpha: T, public beta: T) {}
 
+  /**
+   * Converts a value from unit alpha to unit beta
+   * @param a, the value to be converted in unit alpha
+   * @returns the converted value in unit beta
+   */
   fromAtoB(a: number): number {
     return (a * this.alpha) / this.beta;
   }
 
+  /**
+   * Converts a value from unit beta to unit alpha
+   * @param b, the value to be converted in unit beta
+   * @returns the converted value in unit alpha
+   */
   fromBtoA(b: number): number {
     return (b * this.beta) / this.alpha;
   }
