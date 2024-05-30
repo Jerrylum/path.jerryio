@@ -19,7 +19,6 @@ import RotateRightIcon from "@mui/icons-material/RotateRight";
 import "./ControlConfigPanel.scss";
 import { PanelBox } from "@src/app/component.blocks/PanelBox";
 import { CoordinateSystemTransformation, getNamedCoordinateSystems } from "@src/core/CoordinateSystem";
-import React from "react";
 
 const ControlConfigPanelBody = observer((props: {}) => {
   const { app } = getAppStores();
@@ -102,12 +101,14 @@ const ControlConfigPanelBody = observer((props: {}) => {
     const referencedPath = app.interestedPath();
     if (referencedPath === undefined) return undefined;
 
-    const cs = getNamedCoordinateSystems().find(system => system.name === app.gc.coordinateSystem);
+    const cs = app.coordinateSystem;
     if (cs === undefined) return undefined;
+
+    const fieldDimension = app.fieldDimension;
 
     const firstControl = referencedPath.segments[0].controls[0];
 
-    return CoordinateSystemTransformation.buildWithoutFieldInfo(cs as any, firstControl); // TODO
+    return new CoordinateSystemTransformation(cs, fieldDimension, firstControl);
   })();
 
   let xDisplayValue: string;
