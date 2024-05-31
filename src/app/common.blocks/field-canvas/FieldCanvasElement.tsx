@@ -30,7 +30,6 @@ import { Box } from "@mui/material";
 import { Instance } from "@popperjs/core";
 import { TouchEventListener } from "@core/TouchEventListener";
 import { CanvasTooltip, Padding0Tooltip } from "@app/component.blocks/CanvasTooltip";
-import { getDefaultBuiltInFieldImage } from "@core/Asset";
 
 function fixControlTooCloseToTheEndControl() {
   // UX: Fix control point too close to the end control point when adding the first new cubic segment
@@ -605,7 +604,7 @@ class MouseInteractiveHandler {
 }
 
 const FieldCanvasElement = observer((props: {}) => {
-  const { app, appPreferences, assetManager } = getAppStores();
+  const { app, appPreferences } = getAppStores();
   const fieldEditor = app.fieldEditor;
 
   const windowSize = useWindowSize(
