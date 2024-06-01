@@ -473,18 +473,15 @@ export class MainApp {
 
 export type AppStores = typeof appStores;
 
-const ui = new UserInterface();
+const appPreferences = new Preferences();
 const assetManager = new AssetManager();
+const clipboard = new AppClipboard();
+const confirmation = new Confirmation();
+const ga = new GoogleAnalytics();
+const ui = new UserInterface();
+const app = new MainApp(); // ALGO: The app must be created last
 
-const appStores = {
-  app: new MainApp(),
-  assetManager,
-  confirmation: new Confirmation(),
-  ui,
-  appPreferences: new Preferences(),
-  ga: new GoogleAnalytics(),
-  clipboard: new AppClipboard()
-} as const;
+const appStores = { app, appPreferences, assetManager, clipboard, confirmation, ga, ui } as const;
 
 export function getAppStores(): AppStores {
   return appStores;
