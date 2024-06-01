@@ -388,7 +388,7 @@ export class MainApp {
       throw new Error("Unable to open the path file due to validation errors.");
     }
 
-    getAppStores().ga.gtag("event", "import_file_format", { format: format.getName() });
+    ga.gtag("event", "import_file_format", { format: format.getName() });
 
     const result = await runInActionAsync(() => promptFieldImage(gc.fieldImage));
     if (result === false) gc.fieldImage = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
