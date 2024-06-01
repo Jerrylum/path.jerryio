@@ -17,6 +17,7 @@ import { isExperimentalFeaturesEnabled } from "@src/core/Preferences";
 import { OpenModalButton } from "@src/app/component.blocks/OpenModalButton";
 import { PanelBox } from "@src/app/component.blocks/PanelBox";
 import { CoordinateSystemModalSymbol } from "../modal/CoordinateSystemModal";
+import { FormButton } from "@src/app/component.blocks/FormButton";
 
 const FormatMenuItem = (props: { format: Format } & MenuItemProps) => {
   const { format, ...rests } = props;
@@ -197,6 +198,21 @@ const GeneralConfigPanelBody = observer((props: {}) => {
           {gc.coordinateSystem}
         </OpenModalButton>
       </PanelBox>
+      {/* {appPreferences.isExperimentalFeaturesEnabled && (
+        <PanelBox>
+          <FormButton
+            onClick={() => {
+              const canvas = document.querySelector(".FieldCanvas canvas") as HTMLCanvasElement;
+              canvas.toBlob(blob => {
+                if (!blob) return;
+                const item = new ClipboardItem({ "image/png": blob });
+                navigator.clipboard.write([item]);
+              });
+            }}>
+            Capture Canvas
+          </FormButton>
+        </PanelBox>
+      )} */}
       {gc.getAdditionalConfigUI()}
     </>
   );

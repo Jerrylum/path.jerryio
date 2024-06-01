@@ -783,7 +783,7 @@ const FieldCanvasElement = observer((props: {}) => {
       }}>
       <Box>
         <Stage
-          className="field-canvas"
+          className="FieldCanvas"
           ref={stageRef}
           width={fcc.widthInPx}
           height={fcc.heightInPx}
