@@ -1,6 +1,5 @@
 import { makeAutoObservable } from "mobx";
 import { Box, Typography } from "@mui/material";
-import { ObserverInput } from "@src/app/component.blocks/ObserverInput";
 import { BentRateApplicationDirection, Path } from "@core/Path";
 import { EditableNumberRange } from "@core/Util";
 import { NumberT, CodePointBuffer } from "@src/token/Tokens";
@@ -60,23 +59,7 @@ const PathConfigPanelBody = observer((props: {}) => {
     return isClassic ? undefined : <Typography>(No selected path)</Typography>;
   }
 
-  return (
-    <>
-      <Box className="Panel-Box">
-        <ObserverInput
-          label="Speed"
-          sx={{ width: "50%" }}
-          getValue={() => pc.speed.toUser() + ""}
-          setValue={(value: string) => {
-            pc.speed = parseFloat(value);
-          }}
-          isValidIntermediate={() => true}
-          isValidValue={(candidate: string) => NumberT.parse(new CodePointBuffer(candidate)) !== null}
-          numeric
-        />
-      </Box>
-    </>
-  );
+  return;
 });
 
 export const PathConfigPanel = (props: PanelBuilderProps): PanelInstanceProps => {

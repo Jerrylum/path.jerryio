@@ -71,51 +71,76 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
     if (path.segments.length === 0) throw new Error("No segment to export");
 
     const uc = new UnitConverter(this.gc.uol, UnitOfLength.Inch);
-    const points = path.segments;
-    if (points.length > 0) {
-      for (const point of points) {
-        if (path.segments.indexOf(point) === 0) {
-          console.log(point.first.heading);
-          let tmpp = point.first.heading > 180 ? point.first.heading - 360 : point.first.heading;
+    const segments = path.segments;
+    if (segments.length > 0) {
+      let tmpp = segments[0].first.heading > 180 ? segments[0].first.heading - 360 : segments[0].first.heading;
 
-          rtn += `${gc.chassisName}.setPos(${Math.round(point.first.x)}, ${Math.round(point.first.y)},${tmpp});\n`;
-          rtn += `${gc.chassisName}.printCoords();\n`;
-        }
-        let pnt = 0;
+      rtn += `${gc.chassisName}.setPos(${Math.round(segments[0].first.x)}, ${Math.round(
+        segments[0].first.y
+      )},${tmpp});\n`;
+      rtn += `${gc.chassisName}.printCoords();\n`;
+
+      for (const seg of segments) {
+        let lead = 0;
         let last = path.controls.at(path.controls.length - 1);
         let dis;
         if (last != null) {
           dis = path.controls.at(0)?.distance(last);
-          if (point.isCubic() && dis != null) {
-            let poin =
-              point.controls[1].distance(point.first) > point.controls[2].distance(point.last)
-                ? point.controls[1]
-                : point.controls[2];
-            if (point.first.heading === 0) {
-              point.first.heading =
-                Math.atan2(point.first.x - poin.x, point.first.y - poin.y) * (180 / 3.14159265358979323846);
+          if (seg.isCubic() && dis != null) {
+            let closestContol =
+              seg.controls[1].distance(seg.first) > seg.controls[2].distance(seg.last)
+                ? seg.controls[1]
+                : seg.controls[2];
+            if (seg.first.heading === 0 || seg.first.heading === 180) {
+              seg.first.heading =
+                Math.atan2(seg.first.x - closestContol.x, seg.first.y - closestContol.y) * (180 / Math.PI);
             }
-            if (point.last.heading === 0) {
-              point.last.heading =
-                Math.atan2(point.last.x - poin.x, point.last.y - poin.y) * (180 / 3.14159265358979323846);
+            if (seg.last.heading === 0 || seg.last.heading === 180) {
+              seg.last.heading =
+                Math.atan2(seg.last.x - closestContol.x, seg.last.y - closestContol.y) * (180 / Math.PI);
             }
-            if (path.segments.indexOf(point) === path.segments.length - 1) {
-              pnt = (point.first.x - poin.x) / (dis * Math.sin(point.first.heading));
+            let numIterations = 0;
+            if (path.segments.indexOf(seg) === path.segments.length - 1) {
+              lead = (seg.first.x - closestContol.x) / (dis * Math.sin(seg.first.heading));
+
+              while (Math.abs(lead) > 1) {
+                numIterations++;
+                if (lead > 3) {
+                  seg.first.heading += 0.5;
+                } else {
+                  seg.first.heading -= 0.5;
+                }
+                lead = (seg.first.x - closestContol.x) / (dis * Math.sin(seg.first.heading));
+                if (numIterations > 200) {
+                  break;
+                }
+              }
             } else {
-              pnt = (point.last.x - poin.x) / (dis * Math.sin(point.last.heading));
+              lead = (seg.last.x - closestContol.x) / (dis * Math.sin(seg.last.heading));
+              console.log("lead", lead);
+              console.log("seg.last.heading", seg.last.heading);
+              while (Math.abs(lead) > 1) {
+                numIterations++;
+                if (lead > 1) {
+                  seg.last.heading += 0.5;
+                } else {
+                  seg.last.heading -= 0.5;
+                }
+                lead = (seg.last.x - closestContol.x) / (dis * Math.sin(seg.last.heading));
+                if (numIterations > 200) {
+                  break;
+                }
+              }
             }
-            console.log(pnt);
           }
         }
-        let tmpp = point.last.heading > 180 ? point.last.heading - 360 : point.last.heading;
-        if (pnt > 1) {
-          pnt /= 10;
-        }
-        arr.push([gc.chassisName, uc.fromAtoB(point.last.x).toUser(), uc.fromAtoB(point.last.y).toUser(), tmpp, pnt]);
+        let tmpp = seg.last.heading > 180 ? seg.last.heading - 360 : seg.last.heading;
+
+        arr.push([gc.chassisName, uc.fromAtoB(seg.last.x).toUser(), uc.fromAtoB(seg.last.y).toUser(), tmpp, lead]);
       }
     }
     for (const s of arr) {
-      rtn += `${s[0]}.moveToBoom( ${s[1]}, ${s[2]}, ${s[3]}, ${s[4]},${gc.movementTimeout / 1000});\n`;
+      rtn += `${s[0]}.moveToBoom( ${s[1]}, ${s[2]}, ${s[3]}, ${s[4]},${gc.movementTimeout});\n`;
     }
     return rtn;
   }
