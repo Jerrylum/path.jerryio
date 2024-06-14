@@ -1,4 +1,7 @@
 {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "jest.runMode": "on-demand"
+    "jest.runMode": "on-demand",
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    }
 }
