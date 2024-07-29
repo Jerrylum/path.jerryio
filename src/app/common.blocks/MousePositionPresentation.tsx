@@ -17,7 +17,8 @@ const MousePosition = observer(() => {
 
   const fieldDimension = app.fieldDimension;
 
-  const firstControl = referencedPath.segments[0].controls[0];
+  const firstControl = referencedPath.segments[0]?.controls[0];
+  if (firstControl === undefined) return undefined;
 
   const cst = new CoordinateSystemTransformation(cs, fieldDimension, firstControl);
   const coordInFCS = cst.transform(coord);
