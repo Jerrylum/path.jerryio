@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { Typography, Box } from "@mui/material";
+import { Typography } from "@mui/material";
 import { FormInputField } from "@src/app/component.blocks/FormInputField";
 import { LayoutContext, LayoutType, PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
 import { getAppStores } from "@core/MainApp";

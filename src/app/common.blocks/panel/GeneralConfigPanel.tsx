@@ -17,7 +17,6 @@ import { isExperimentalFeaturesEnabled } from "@src/core/Preferences";
 import { OpenModalButton } from "@src/app/component.blocks/OpenModalButton";
 import { PanelBox } from "@src/app/component.blocks/PanelBox";
 import { CoordinateSystemModalSymbol } from "../modal/CoordinateSystemModal";
-import { FormButton } from "@src/app/component.blocks/FormButton";
 
 const FormatMenuItem = (props: { format: Format } & MenuItemProps) => {
   const { format, ...rests } = props;

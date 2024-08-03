@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { Box, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { FormInputField } from "@src/app/component.blocks/FormInputField";
 import { BentRateApplicationDirection, Path } from "@core/Path";
 import { EditableNumberRange } from "@core/Util";

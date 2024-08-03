@@ -1,5 +1,5 @@
 import { makeAutoObservable, action } from "mobx";
-import { Typography, Box, Slider } from "@mui/material";
+import { Typography, Slider } from "@mui/material";
 import { RangeSlider } from "@src/app/component.blocks/RangeSlider";
 import { UpdateProperties } from "@core/Command";
 import { LayoutContext, LayoutType, PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
