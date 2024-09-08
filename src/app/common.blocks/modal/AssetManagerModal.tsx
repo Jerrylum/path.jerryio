@@ -223,15 +223,11 @@ export const FieldImageList = observer((props: { variables: FieldImageManagerVar
   return (
     <Box>
       <Box id="FieldImageAssetsList">
-        {/* Using the SVG viewBox solution to allow the use of min-height */}
-        <svg viewBox="0 0 1 1"></svg>
-        <Box id="FieldImageAssetsList-Content">
-          <List dense>
-            {assetManager.assets.map(asset => (
-              <FieldImageAssetItem key={asset.signature} variables={variables} asset={asset} />
-            ))}
-          </List>
-        </Box>
+        <List dense>
+          {assetManager.assets.map(asset => (
+            <FieldImageAssetItem key={asset.signature} variables={variables} asset={asset} />
+          ))}
+        </List>
       </Box>
     </Box>
   );
