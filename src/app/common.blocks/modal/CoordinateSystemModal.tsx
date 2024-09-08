@@ -15,10 +15,11 @@ import {
   Typography
 } from "@mui/material";
 
-import { NamedCoordinateSystem, getNamedCoordinateSystems } from "@src/core/CoordinateSystem";
-import { getAppStores } from "@src/core/MainApp";
-import { UpdateProperties } from "@src/core/Command";
-import { useMobxStorage } from "@src/core/Hook";
+import { NamedCoordinateSystem, getNamedCoordinateSystems } from "@core/CoordinateSystem";
+import { getAppStores } from "@core/MainApp";
+import { UpdateProperties } from "@core/Command";
+import { useMobxStorage } from "@core/Hook";
+import { LayoutContext, LayoutType } from "@core/Layout";
 import "./CoordinateSystemModal.scss";
 import InputIcon from "@mui/icons-material/Input";
 import DoneIcon from "@mui/icons-material/Done";
@@ -39,11 +40,13 @@ export const CoordinateSystemPreview = observer((props: { preview: NamedCoordina
 
   return (
     <Box id="CoordinateSystems-PreviewSection">
-      <Box id="CoordinateSystems-ImagePreview">
-        <svg viewBox="0 0 1 1"></svg>
-        <Box component="img" src={preview.previewImageUrl} alt="" />
+      <Box maxWidth="360px" width="100%">
+        <Box id="CoordinateSystems-ImagePreview">
+          <svg viewBox="0 0 1 1"></svg>
+          <Box component="img" src={preview.previewImageUrl} alt="" />
+        </Box>
       </Box>
-      <Box minHeight="100px">
+      <Box minHeight="100px" width="100%">
         <Box marginTop="16px">
           <Typography variant="body1">{preview.name}</Typography>
         </Box>
@@ -63,6 +66,7 @@ export const CoordinateSystemItem = observer(
     const isSelected = variables.selected?.name === system.name;
 
     const isUsing = system.name === app.gc.coordinateSystem;
+    console.log("isUsing", isUsing, system.name, app.gc.coordinateSystem);
 
     const onApply = action(() => {
       app.history.execute(
@@ -72,12 +76,15 @@ export const CoordinateSystemItem = observer(
       ui.closeModal(CoordinateSystemModalSymbol);
     });
 
+    const isMobileLayout = React.useContext(LayoutContext) === LayoutType.Mobile;
+
     return (
       <ListItem
         className="CoordinateSystemsList-Item"
         disablePadding
         secondaryAction={
-          !isUsing && (
+          !isUsing &&
+          !isMobileLayout && (
             <Tooltip title="Apply This Coordinate System">
               <IconButton edge="end" className="CoordinateSystemsList-ItemApplyButton" onClick={action(onApply)}>
                 <InputIcon fontSize="small" />
@@ -99,7 +106,7 @@ export const CoordinateSystemItem = observer(
               </>
             }
           />
-          {isUsing && <DoneIcon />}
+          {isUsing && !isMobileLayout && <DoneIcon />}
         </ListItemButton>
       </ListItem>
     );
@@ -123,15 +130,11 @@ export const CoordinateSystemList = observer((props: { variables: CoordinateSyst
   return (
     <Box>
       <Box id="CoordinateSystemsList">
-        {/* Using the SVG viewBox solution to allow the use of min-height */}
-        <svg viewBox="0 0 1 1"></svg>
-        <Box id="CoordinateSystemsList-Content">
-          <List dense>
-            {systems.map(system => (
-              <CoordinateSystemItem key={system.name} variables={variables} system={system} />
-            ))}
-          </List>
-        </Box>
+        <List dense>
+          {systems.map(system => (
+            <CoordinateSystemItem key={system.name} variables={variables} system={system} />
+          ))}
+        </List>
       </Box>
     </Box>
   );
@@ -157,12 +160,23 @@ export const CoordinateSystemSection = observer(() => {
     ui.closeModal(CoordinateSystemModalSymbol);
   });
 
+  const onClose = () => {
+    ui.closeModal(CoordinateSystemModalSymbol);
+  };
+
+  const isMobileLayout = React.useContext(LayoutContext) === LayoutType.Mobile;
+
   return (
     <Box>
-      <Box>
-        <Typography variant="h3" fontSize={18} gutterBottom>
+      <Box display="flex" justifyContent="space-between" alignItems="left">
+        <Typography className="CoordinateSystem-Title" variant="h3" fontSize={18} gutterBottom>
           Frontend Coordinate System
         </Typography>
+        {isMobileLayout && (
+          <Box textAlign="right">
+            <Button onClick={onClose}>Back</Button>
+          </Box>
+        )}
       </Box>
       <Box id="CoordinateSystem-Body">
         <Box id="CoordinateSystems-LeftSide">

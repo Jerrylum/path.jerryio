@@ -3,42 +3,42 @@
   width: 768px;
   max-width: 80%;
   min-height: 96px;
+  max-height: 80%;
   outline: none !important;
+  overflow-y: auto;
+  padding-right: calc(16px - 6.4px);
+  display: flex;
+  flex-direction: column;
+  scrollbar-gutter: stable;
 
   #CoordinateSystem-Body {
     display: flex;
     width: 100%;
     gap: 16px;
+    flex-wrap: wrap;
 
     #CoordinateSystems-LeftSide {
-      flex-grow: 1;
-      max-width: calc(60% - 16px);
+      flex-grow: 1000;
+      max-width: 100%;
+      width: 360px;
 
       #CoordinateSystemsList {
         flex-grow: 1;
-        min-height: calc(256px - 8px);
         overflow-x: hidden;
         overflow-y: auto;
         padding-bottom: 8px; // maybe 16px
         position: relative;
+        max-height: 400px;
 
-        #CoordinateSystemsList-Content {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-
-          .CoordinateSystemsList-Item {
-            .CoordinateSystemsList-ItemApplyButton {
-              visibility: hidden;
-            }
+        .CoordinateSystemsList-Item {
+          .CoordinateSystemsList-ItemApplyButton {
+            visibility: hidden;
           }
+        }
 
-          .CoordinateSystemsList-Item:hover {
-            .CoordinateSystemsList-ItemApplyButton {
-              visibility: inherit;
-            }
+        .CoordinateSystemsList-Item:hover {
+          .CoordinateSystemsList-ItemApplyButton {
+            visibility: inherit;
           }
         }
       }
@@ -47,6 +47,10 @@
     #CoordinateSystems-PreviewSection {
       width: 40%;
       min-width: 256px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
 
       #CoordinateSystems-ImagePreview {
         width: 100%;
