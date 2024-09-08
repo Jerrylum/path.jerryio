@@ -3,22 +3,32 @@
   width: 768px;
   max-width: 80%;
   min-height: 96px;
+  max-height: 80%;
   outline: none !important;
+  overflow-y: auto;
+  padding-right: calc(16px - 6.4px);
+  display: flex;
+  flex-direction: column;
+  scrollbar-gutter: stable;
 
-  .FieldImageAssets-FunctionButton {
-    cursor: pointer;
-    padding: 0;
-    margin-left: 8px;
+  .FieldImageAssets-Title {
+    .FieldImageAssets-FunctionButton {
+      cursor: pointer;
+      padding: 0;
+      margin-left: 8px;
+    }
   }
 
   #FieldImageAssets-Body {
     display: flex;
     width: 100%;
     gap: 16px;
+    flex-wrap: wrap;
 
     #FieldImageAssets-LeftSide {
-      flex-grow: 1;
-      max-width: calc(60% - 16px);
+      flex-grow: 1000;
+      max-width: 100%;
+      width: 360px;
 
       #FieldImageAssetsList {
         flex-grow: 1;
@@ -53,6 +63,10 @@
     #FieldImageAssets-PreviewSection {
       width: 40%;
       min-width: 256px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
 
       #FieldImageAssets-AssetImagePreview {
         width: 100%;

@@ -36,6 +36,7 @@ import { FormInputField } from "@app/component.blocks/FormInputField";
 import { NumberUOL } from "@token/Tokens";
 import { makeId, parseFormula, runInActionAsync } from "@core/Util";
 import { UnitOfLength } from "@core/Unit";
+import { LayoutContext, LayoutType } from "@core/Layout";
 import React from "react";
 import { Vector } from "@core/Path";
 import InputIcon from "@mui/icons-material/Input";
@@ -83,6 +84,8 @@ export const FieldImageAssetItem = observer(
     const isSelected = variables.selected === asset;
     const isUsing = asset.signature === app.gc.fieldImage.signature;
 
+    const isMobileLayout = React.useContext(LayoutContext) === LayoutType.Mobile;
+
     const onApply = action(() => {
       app.history.execute(
         `Change field layer`,
@@ -96,7 +99,8 @@ export const FieldImageAssetItem = observer(
         className="FieldImageAssetsList-Item"
         disablePadding
         secondaryAction={
-          !isUsing && (
+          !isUsing &&
+          !isMobileLayout && (
             <Tooltip title="Apply This Image">
               <IconButton edge="end" className="FieldImageAssetsList-ItemApplyButton" onClick={action(onApply)}>
                 <InputIcon fontSize="small" />
@@ -118,7 +122,7 @@ export const FieldImageAssetItem = observer(
               </>
             }
           />
-          {isUsing && <DoneIcon />}
+          {isUsing && !isMobileLayout && <DoneIcon />}
         </ListItemButton>
       </ListItem>
     );
@@ -152,21 +156,23 @@ export const FieldImagePreview = observer((props: { preview: FieldImageAsset<Fie
 
   return (
     <Box id="FieldImageAssets-PreviewSection">
-      <Box id="FieldImageAssets-AssetImagePreview">
-        <svg viewBox="0 0 1 1"></svg>
-        <img key={imageKey} ref={imageRef} alt="" src={source} />
-        <Box id="FieldImageAssets-ReloadButton" onClick={() => setImageKey(makeId(10))}>
-          <Typography variant="body1">Click To Reload</Typography>
-        </Box>
-        {imageState === "failed" && (
-          <Box id="FieldImageAssets-FailedMessage">
-            <Typography variant="body1">
-              Can't load this image. Check your internet connection and try again.
-            </Typography>
+      <Box maxWidth="360px" width="100%">
+        <Box id="FieldImageAssets-AssetImagePreview">
+          <svg viewBox="0 0 1 1"></svg>
+          <img key={imageKey} ref={imageRef} alt="" src={source} />
+          <Box id="FieldImageAssets-ReloadButton" onClick={() => setImageKey(makeId(10))}>
+            <Typography variant="body1">Click To Reload</Typography>
           </Box>
-        )}
+          {imageState === "failed" && (
+            <Box id="FieldImageAssets-FailedMessage">
+              <Typography variant="body1">
+                Can't load this image. Check your internet connection and try again.
+              </Typography>
+            </Box>
+          )}
+        </Box>
       </Box>
-      <Box minHeight="100px">
+      <Box minHeight="100px" width="100%">
         <Box marginTop="16px">
           {preview.isOriginType(FieldImageOriginType.BuiltIn) ? (
             <Typography variant="body1">{preview.displayName}</Typography>
@@ -466,10 +472,16 @@ export const FieldImageSection = observer(() => {
       assetManager.removeAsset(selected);
   });
 
+  const onClose = () => {
+    ui.closeModal(AssetManagerModalSymbol);
+  };
+
+  const isMobileLayout = React.useContext(LayoutContext) === LayoutType.Mobile;
+
   return (
     <Box>
-      <Box>
-        <Typography variant="h3" fontSize={18} gutterBottom>
+      <Box display="flex" justifyContent="space-between" alignItems="left">
+        <Typography className="FieldImageAssets-Title" variant="h3" fontSize={18} gutterBottom>
           Field Image
           <Tooltip title="Create Field Image">
             <IconButton
@@ -481,6 +493,11 @@ export const FieldImageSection = observer(() => {
             </IconButton>
           </Tooltip>
         </Typography>
+        {isMobileLayout && (
+          <Box textAlign="right">
+            <Button onClick={onClose}>Back</Button>
+          </Box>
+        )}
       </Box>
       <Box id="FieldImageAssets-Body">
         <Box id="FieldImageAssets-LeftSide">
