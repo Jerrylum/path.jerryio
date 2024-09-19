@@ -113,7 +113,7 @@ const PathConfigPanelBody = observer((props: {}) => {
             if (Array.isArray(value)) value = value[0];
             app.history.execute(
               `Change path ${pc.path.uid} max deceleration rate`,
-              new UpdateProperties(this as any, { maxDecelerationRate: value })
+              new UpdateProperties(pc, { maxDecelerationRate: value })
             );
           })}
         />
