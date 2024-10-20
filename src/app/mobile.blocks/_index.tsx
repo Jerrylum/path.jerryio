@@ -91,7 +91,7 @@ export const MobileLayout = observer(() => {
               {app.interestedPath() ? (
                 <SpeedCanvasElement extended={true} />
               ) : (
-                <Typography sx={{ textAlign: "center" }}>(No path to display)</Typography>
+                <Typography textAlign="center">(No path to display)</Typography>
               )}
             </Box>
           )}

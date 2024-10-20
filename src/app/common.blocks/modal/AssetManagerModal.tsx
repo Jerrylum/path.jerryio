@@ -17,6 +17,7 @@ import {
   ListItemText,
   Radio,
   RadioGroup,
+  Tooltip,
   Typography
 } from "@mui/material";
 import { action, makeAutoObservable } from "mobx";
@@ -31,14 +32,17 @@ import {
 } from "@core/Asset";
 import { getAppStores } from "@core/MainApp";
 import { useFieldImageAsset, useImageState, useMobxStorage } from "@core/Hook";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { ObserverInput } from "@app/component.blocks/ObserverInput";
+import { FormInputField } from "@app/component.blocks/FormInputField";
 import { NumberUOL } from "@token/Tokens";
 import { makeId, parseFormula, runInActionAsync } from "@core/Util";
 import { UnitOfLength } from "@core/Unit";
+import { LayoutContext, LayoutType } from "@core/Layout";
 import React from "react";
 import { Vector } from "@core/Path";
+import InputIcon from "@mui/icons-material/Input";
 import GetAppIcon from "@mui/icons-material/GetApp";
+import AddIcon from "@mui/icons-material/Add";
+import DoneIcon from "@mui/icons-material/Done";
 import { UpdateProperties } from "@core/Command";
 
 import "./AssetManagerModal.scss";
@@ -75,35 +79,37 @@ class FieldImageManagerVariables {
 export const FieldImageAssetItem = observer(
   (props: { variables: FieldImageManagerVariables; asset: FieldImageAsset<FieldImageOriginType> }) => {
     const { variables, asset } = props;
-    const { app, assetManager } = getAppStores();
+    const { app, ui } = getAppStores();
 
-    const onDelete = () => {
-      if (variables.selected === asset) variables.selected = null;
-      if (app.gc.fieldImage.signature === asset.signature) {
-        app.history.execute(
-          `Use default field layer`,
-          new UpdateProperties(app.gc, { fieldImage: getDefaultBuiltInFieldImage().getSignatureAndOrigin() })
-        );
-      }
+    const isSelected = variables.selected === asset;
+    const isUsing = asset.signature === app.gc.fieldImage.signature;
 
-      if (asset.isOriginType(FieldImageOriginType.External) || asset.isOriginType(FieldImageOriginType.Local))
-        assetManager.removeAsset(asset);
-    };
+    const isMobileLayout = React.useContext(LayoutContext) === LayoutType.Mobile;
+
+    const onApply = action(() => {
+      app.history.execute(
+        `Change field layer`,
+        new UpdateProperties(app.gc, { fieldImage: asset?.getSignatureAndOrigin() })
+      );
+      ui.closeModal(AssetManagerModalSymbol);
+    });
 
     return (
       <ListItem
         className="FieldImageAssetsList-Item"
         disablePadding
-        {...(!asset.isOriginType(FieldImageOriginType.BuiltIn)
-          ? {
-              secondaryAction: (
-                <IconButton edge="end" className="FieldImageAssetsList-ItemDeleteButton" onClick={action(onDelete)}>
-                  <DeleteIcon />
-                </IconButton>
-              )
-            }
-          : {})}>
+        secondaryAction={
+          !isUsing &&
+          !isMobileLayout && (
+            <Tooltip title="Apply This Image">
+              <IconButton edge="end" className="FieldImageAssetsList-ItemApplyButton" onClick={action(onApply)}>
+                <InputIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )
+        }>
         <ListItemButton
+          selected={isSelected}
           onClick={action(() => {
             variables.selected = asset;
           })}>
@@ -116,6 +122,7 @@ export const FieldImageAssetItem = observer(
               </>
             }
           />
+          {isUsing && !isMobileLayout && <DoneIcon />}
         </ListItemButton>
       </ListItem>
     );
@@ -149,26 +156,28 @@ export const FieldImagePreview = observer((props: { preview: FieldImageAsset<Fie
 
   return (
     <Box id="FieldImageAssets-PreviewSection">
-      <Box id="FieldImageAssets-AssetImagePreview">
-        <svg viewBox="0 0 1 1"></svg>
-        <img key={imageKey} ref={imageRef} alt="" src={source} />
-        <Box id="FieldImageAssets-ReloadButton" onClick={() => setImageKey(makeId(10))}>
-          <Typography variant="body1">Click To Reload</Typography>
-        </Box>
-        {imageState === "failed" && (
-          <Box id="FieldImageAssets-FailedMessage">
-            <Typography variant="body1">
-              Can't load this image. Check your internet connection and try again.
-            </Typography>
+      <Box maxWidth="360px" width="100%">
+        <Box id="FieldImageAssets-AssetImagePreview">
+          <svg viewBox="0 0 1 1"></svg>
+          <img key={imageKey} ref={imageRef} alt="" src={source} />
+          <Box id="FieldImageAssets-ReloadButton" onClick={() => setImageKey(makeId(10))}>
+            <Typography variant="body1">Click To Reload</Typography>
           </Box>
-        )}
+          {imageState === "failed" && (
+            <Box id="FieldImageAssets-FailedMessage">
+              <Typography variant="body1">
+                Can't load this image. Check your internet connection and try again.
+              </Typography>
+            </Box>
+          )}
+        </Box>
       </Box>
-      <Box sx={{ minHeight: "100px" }}>
-        <Box sx={{ marginTop: "1em" }}>
+      <Box minHeight="100px" width="100%">
+        <Box marginTop="16px">
           {preview.isOriginType(FieldImageOriginType.BuiltIn) ? (
             <Typography variant="body1">{preview.displayName}</Typography>
           ) : (
-            <ObserverInput
+            <FormInputField
               label="Name"
               fullWidth
               getValue={() => preview.displayName}
@@ -182,7 +191,7 @@ export const FieldImagePreview = observer((props: { preview: FieldImageAsset<Fie
             />
           )}
         </Box>
-        <Box sx={{ marginTop: "0.5em" }}>
+        <Box marginTop="8px">
           {size !== null && (
             <Typography variant="body1">
               Width: {size[0].x.toUser()}px ({size[1].x.toUser()}mm)
@@ -202,45 +211,24 @@ export const FieldImagePreviewPlaceholder = observer(() => {
       <Box id="FieldImageAssets-AssetImagePreview">
         <svg viewBox="0 0 1 1"></svg>
       </Box>
-      <Box sx={{ marginTop: "1em", minHeight: "100px" }}></Box>
+      <Box marginTop="16px" minHeight="100px"></Box>
     </Box>
   );
 });
 
 export const FieldImageList = observer((props: { variables: FieldImageManagerVariables }) => {
   const { assetManager } = getAppStores();
-
   const { variables } = props;
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  React.useEffect(
-    action(() => {
-      variables.selected = assetManager.assets[0] ?? null;
-    }),
-    []
-  );
 
   return (
     <Box>
       <Box id="FieldImageAssetsList">
-        {/* Using the SVG viewBox solution to allow the use of min-height */}
-        <svg viewBox="0 0 0.6 0.4"></svg>
-        <Box id="FieldImageAssetsList-Content">
-          <List dense>
-            {assetManager.assets.map(asset => (
-              <FieldImageAssetItem key={asset.signature} variables={variables} asset={asset} />
-            ))}
-          </List>
-        </Box>
+        <List dense>
+          {assetManager.assets.map(asset => (
+            <FieldImageAssetItem key={asset.signature} variables={variables} asset={asset} />
+          ))}
+        </List>
       </Box>
-      <Button
-        variant="contained"
-        color="primary"
-        disableElevation
-        sx={{ marginTop: "12px" }}
-        onClick={() => variables.newDraft()}>
-        Create
-      </Button>
     </Box>
   );
 });
@@ -313,16 +301,8 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
 
   return (
     <Box>
-      <Box
-        sx={{
-          marginTop: "1em",
-          display: "flex",
-          gap: "12px",
-          flexWrap: "wrap",
-          alignItems: "center",
-          width: "100%"
-        }}>
-        <ObserverInput
+      <Box marginTop="16px" display="flex" gap="12px" flexWrap="wrap" alignItems="center" width="100%">
+        <FormInputField
           label="Name"
           getValue={() => draft.name}
           setValue={(value: string) => {
@@ -334,7 +314,7 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
           sx={{ flexGrow: 1 }}
           onKeyDown={e => e.stopPropagation()}
         />
-        <ObserverInput
+        <FormInputField
           label="Height (mm)"
           getValue={() => draft.heightInMM + ""}
           setValue={(value: string) => {
@@ -349,7 +329,7 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
           onKeyDown={e => e.stopPropagation()}
         />
       </Box>
-      <Box sx={{ marginTop: "1em" }}>
+      <Box marginTop="16px">
         <FormControl>
           <FormLabel id="source-radio-buttons-group-label" sx={{ marginBottom: "4px" }}>
             Source (Choose One)
@@ -363,7 +343,7 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
               value="url"
               control={<Radio />}
               label={
-                <ObserverInput
+                <FormInputField
                   label=""
                   fullWidth
                   placeholder="Image URL"
@@ -426,20 +406,20 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
         </FormControl>
 
         {draft.urlValidateResult?.[1] && (
-          <Typography variant="body1" sx={{ marginTop: "0.5em" }}>
+          <Typography variant="body1" marginTop="8px">
             {draft.urlValidateResult?.[1]}
           </Typography>
         )}
-        <Box sx={{ marginTop: "1em", display: "flex", gap: "12px" }}>
+        <Box marginTop="16px" display="flex" gap="12px">
           <Button
-            variant="contained"
+            variant="outlined"
             color="primary"
             disableElevation
             onClick={action(onSubmit)}
             disabled={variables.selected === null}>
             Submit
           </Button>
-          <Button variant="contained" color="primary" disableElevation onClick={action(() => (variables.draft = null))}>
+          <Button variant="outlined" color="primary" disableElevation onClick={action(() => (variables.draft = null))}>
             Cancel
           </Button>
         </Box>
@@ -449,22 +429,99 @@ export const NewFieldImageForm = observer((props: { variables: FieldImageManager
 });
 
 export const FieldImageSection = observer(() => {
+  const { app, ui, assetManager } = getAppStores();
+
   const variables = useMobxStorage(() => new FieldImageManagerVariables(), []);
 
   const selected = variables.selected;
+  const hasSelected = selected !== null;
+  const isAppliedSelected = selected?.signature === app.gc.fieldImage.signature;
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useEffect(
+    action(() => {
+      variables.selected = assetManager.assets[0] ?? null;
+    }),
+    []
+  );
+
+  const onApply = action(() => {
+    if (selected === null) return;
+    app.history.execute(
+      `Change field layer`,
+      new UpdateProperties(app.gc, { fieldImage: selected?.getSignatureAndOrigin() })
+    );
+    ui.closeModal(AssetManagerModalSymbol);
+  });
+
+  const onDelete = action(() => {
+    if (selected === null) return;
+    variables.selected = null;
+    if (app.gc.fieldImage.signature === selected.signature) {
+      app.history.execute(
+        `Use default field layer`,
+        new UpdateProperties(app.gc, { fieldImage: getDefaultBuiltInFieldImage().getSignatureAndOrigin() })
+      );
+    }
+
+    if (selected.isOriginType(FieldImageOriginType.External) || selected.isOriginType(FieldImageOriginType.Local))
+      assetManager.removeAsset(selected);
+  });
+
+  const onClose = () => {
+    ui.closeModal(AssetManagerModalSymbol);
+  };
+
+  const isMobileLayout = React.useContext(LayoutContext) === LayoutType.Mobile;
 
   return (
     <Box>
-      <Typography variant="h3" fontSize={18} gutterBottom>
-        Field Image
-      </Typography>
-      <Box id="FieldImageAssets">
-        <Box id="FieldImageAssets-Body">
+      <Box display="flex" justifyContent="space-between" alignItems="left">
+        <Typography className="FieldImageAssets-Title" variant="h3" fontSize={18} gutterBottom>
+          Field Image
+          <Tooltip title="Create Field Image">
+            <IconButton
+              className="FieldImageAssets-FunctionButton"
+              onClick={() => {
+                if (variables.draft === null) variables.newDraft();
+              }}>
+              <AddIcon />
+            </IconButton>
+          </Tooltip>
+        </Typography>
+        {isMobileLayout && (
+          <Box textAlign="right">
+            <Button onClick={onClose}>Back</Button>
+          </Box>
+        )}
+      </Box>
+      <Box id="FieldImageAssets-Body">
+        <Box id="FieldImageAssets-LeftSide">
           {!variables.draft && <FieldImageList variables={variables} />}
           {variables.draft && <NewFieldImageForm variables={variables} />}
         </Box>
         {selected ? <FieldImagePreview preview={selected} /> : <FieldImagePreviewPlaceholder />}
       </Box>
+      {!variables.draft && (
+        <Box marginTop="16px" display="flex" gap="8px" justifyContent="end">
+          <Button
+            variant="outlined"
+            color="primary"
+            disabled={!hasSelected || isAppliedSelected}
+            disableElevation
+            onClick={onApply}>
+            {isAppliedSelected ? "Applied" : "Apply"}
+          </Button>
+          <Button
+            variant="outlined"
+            color="primary"
+            disabled={!hasSelected || selected.isOriginType(FieldImageOriginType.BuiltIn)}
+            disableElevation
+            onClick={onDelete}>
+            Delete
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 });

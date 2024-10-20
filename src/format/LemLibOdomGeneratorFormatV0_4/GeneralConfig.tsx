@@ -1,8 +1,8 @@
 import { makeAutoObservable, action } from "mobx";
-import { Box, Typography, Button } from "@mui/material";
+import { Typography, Button } from "@mui/material";
 import { enqueueSuccessSnackbar, enqueueErrorSnackbar } from "@src/app/Notice";
-import { ObserverCheckbox } from "@src/app/component.blocks/ObserverCheckbox";
-import { ObserverInput } from "@src/app/component.blocks/ObserverInput";
+import { FormCheckbox } from "@src/app/component.blocks/FormCheckbox";
+import { FormInputField } from "@src/app/component.blocks/FormInputField";
 import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFieldImage } from "@core/Asset";
 import { UpdateProperties } from "@core/Command";
 import { useCustomHotkeys, getEnableOnNonTextInputFieldsHotkeysOptions } from "@core/Hook";
@@ -12,10 +12,12 @@ import { UnitOfLength } from "@core/Unit";
 import { IS_MAC_OS, getMacHotKeyString, ValidateNumber } from "@core/Util";
 import { Int, CodePointBuffer } from "@src/token/Tokens";
 import { Expose, Type, Exclude } from "class-transformer";
-import { IsPositive, IsBoolean, ValidateNested, IsObject, IsString, MinLength } from "class-validator";
+import { IsPositive, IsBoolean, ValidateNested, IsObject, IsString, MinLength, IsIn } from "class-validator";
 import { observer } from "mobx-react-lite";
 import { GeneralConfig, initGeneralConfig } from "../Config";
 import { Format } from "../Format";
+import { PanelBox } from "@src/app/component.blocks/PanelBox";
+import { getNamedCoordinateSystems } from "@src/core/CoordinateSystem";
 
 interface FormatWithExportCode extends Format {
   exportCode(): string;
@@ -48,53 +50,51 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
 
   return (
     <>
-      <Box className="Panel-Box">
-        <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
-        <Box className="Panel-FlexBox">
-          <ObserverInput
-            label="Chassis Name"
-            getValue={() => config.chassisName}
-            setValue={(value: string) => {
-              app.history.execute(`Change chassis variable name`, new UpdateProperties(config, { chassisName: value }));
-            }}
-            isValidIntermediate={() => true}
-            isValidValue={(candidate: string) => candidate !== ""}
-            sx={{ marginTop: "16px" }}
-          />
-          <ObserverInput
-            label="Movement Timeout"
-            getValue={() => config.movementTimeout.toString()}
-            setValue={(value: string) => {
-              const parsedValue = parseInt(Int.parse(new CodePointBuffer(value))!.value);
-              app.history.execute(
-                `Change default movement timeout to ${parsedValue}`,
-                new UpdateProperties(config, { movementTimeout: parsedValue })
-              );
-            }}
-            isValidIntermediate={() => true}
-            isValidValue={(candidate: string) => Int.parse(new CodePointBuffer(candidate)) !== null}
-            sx={{ marginTop: "16px" }}
-            numeric
-          />
-        </Box>
-        <Box className="Panel-FlexBox">
-          <ObserverCheckbox
-            label="Use Relative Coordinates"
-            checked={config.relativeCoords}
-            onCheckedChange={value => {
-              app.history.execute(
-                `Set using relative coordinates to ${value}`,
-                new UpdateProperties(config, { relativeCoords: value })
-              );
-            }}
-          />
-        </Box>
-        <Box className="Panel-FlexBox" sx={{ marginTop: "32px" }}>
-          <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
-            Copy Code
-          </Button>
-        </Box>
-      </Box>
+      <Typography marginTop="16px">Export Settings</Typography>
+      <PanelBox>
+        <FormInputField
+          label="Chassis Name"
+          getValue={() => config.chassisName}
+          setValue={(value: string) => {
+            app.history.execute(`Change chassis variable name`, new UpdateProperties(config, { chassisName: value }));
+          }}
+          isValidIntermediate={() => true}
+          isValidValue={(candidate: string) => candidate !== ""}
+          sx={{ marginTop: "16px" }}
+        />
+        <FormInputField
+          label="Movement Timeout"
+          getValue={() => config.movementTimeout.toString()}
+          setValue={(value: string) => {
+            const parsedValue = parseInt(Int.parse(new CodePointBuffer(value))!.value);
+            app.history.execute(
+              `Change default movement timeout to ${parsedValue}`,
+              new UpdateProperties(config, { movementTimeout: parsedValue })
+            );
+          }}
+          isValidIntermediate={() => true}
+          isValidValue={(candidate: string) => Int.parse(new CodePointBuffer(candidate)) !== null}
+          sx={{ marginTop: "16px" }}
+          numeric
+        />
+      </PanelBox>
+      <PanelBox>
+        <FormCheckbox
+          label="Use Relative Coordinates"
+          checked={config.relativeCoords}
+          onCheckedChange={value => {
+            app.history.execute(
+              `Set using relative coordinates to ${value}`,
+              new UpdateProperties(config, { relativeCoords: value })
+            );
+          }}
+        />
+      </PanelBox>
+      <PanelBox marginTop="32px">
+        <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
+          Copy Code
+        </Button>
+      </PanelBox>
     </>
   );
 });
@@ -138,6 +138,9 @@ export class GeneralConfigImpl implements GeneralConfig {
   @IsBoolean()
   @Expose()
   relativeCoords: boolean = true;
+  @IsIn(getNamedCoordinateSystems().map(s => s.name))
+  @Expose()
+  coordinateSystem: string = "VEX Gaming Positioning System";
   @Exclude()
   private format_: FormatWithExportCode;
 

@@ -30,7 +30,6 @@ import { Box } from "@mui/material";
 import { Instance } from "@popperjs/core";
 import { TouchEventListener } from "@core/TouchEventListener";
 import { CanvasTooltip, Padding0Tooltip } from "@app/component.blocks/CanvasTooltip";
-import { getDefaultBuiltInFieldImage } from "@core/Asset";
 
 function fixControlTooCloseToTheEndControl() {
   // UX: Fix control point too close to the end control point when adding the first new cubic segment
@@ -605,7 +604,7 @@ class MouseInteractiveHandler {
 }
 
 const FieldCanvasElement = observer((props: {}) => {
-  const { app, appPreferences, assetManager } = getAppStores();
+  const { app, appPreferences } = getAppStores();
   const fieldEditor = app.fieldEditor;
 
   const windowSize = useWindowSize(
@@ -621,8 +620,7 @@ const FieldCanvasElement = observer((props: {}) => {
 
   const uc = new UnitConverter(UnitOfLength.Millimeter, app.gc.uol);
 
-  const fieldImageAsset =
-    assetManager.getAssetBySignature(app.gc.fieldImage.signature) ?? getDefaultBuiltInFieldImage();
+  const fieldImageAsset = app.fieldImageAsset;
 
   const canvasHeightInPx = (function () {
     if (currentLayoutType === LayoutType.Classic) {
@@ -785,7 +783,7 @@ const FieldCanvasElement = observer((props: {}) => {
       }}>
       <Box>
         <Stage
-          className="field-canvas"
+          className="FieldCanvas"
           ref={stageRef}
           width={fcc.widthInPx}
           height={fcc.heightInPx}

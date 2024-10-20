@@ -2,10 +2,10 @@ import { Box, IconButton, Tooltip } from "@mui/material";
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { AnyControl, Control, EndControl } from "@core/Path";
-import { ObserverInput, clampQuantity } from "@app/component.blocks/ObserverInput";
+import { FormInputField, clampQuantity } from "@app/component.blocks/FormInputField";
 import { Quantity, UnitOfAngle, UnitOfLength } from "@core/Unit";
 import { boundHeading, findCentralPoint } from "@core/Calculation";
-import { Coordinate, CoordinateWithHeading, EuclideanTransformation } from "@core/Coordinate";
+import { Coordinate, CoordinateWithHeading, EuclideanTransformation, isCoordinateWithHeading } from "@core/Coordinate";
 import { PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
 import { UpdatePathTreeItems } from "@core/Command";
 import { getAppStores } from "@core/MainApp";
@@ -17,6 +17,8 @@ import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import RotateRightIcon from "@mui/icons-material/RotateRight";
 
 import "./ControlConfigPanel.scss";
+import { PanelBox } from "@src/app/component.blocks/PanelBox";
+import { CoordinateSystemTransformation } from "@src/core/CoordinateSystem";
 
 const ControlConfigPanelBody = observer((props: {}) => {
   const { app } = getAppStores();
@@ -82,34 +84,78 @@ const ControlConfigPanelBody = observer((props: {}) => {
     app.history.execute("Rotate controls right", new UpdatePathTreeItems(selectedControls, updates), 0);
   };
 
+  const clampQuantityValue = function (value: number) {
+    return clampQuantity(
+      value,
+      app.gc.uol,
+      new Quantity(-1000, UnitOfLength.Centimeter),
+      new Quantity(1000, UnitOfLength.Centimeter)
+    );
+  };
+
+  const cst: CoordinateSystemTransformation | undefined = (() => {
+    if (app.selectedEntityCount !== 1) return undefined;
+    const control = app.selectedControl;
+    if (control === undefined) return undefined;
+
+    const referencedPath = app.interestedPath();
+    if (referencedPath === undefined) return undefined;
+
+    const cs = app.coordinateSystem;
+    if (cs === undefined) return undefined;
+
+    const fieldDimension = app.fieldDimension;
+
+    const firstControl = referencedPath.segments[0].controls[0];
+
+    return new CoordinateSystemTransformation(cs, fieldDimension, firstControl);
+  })();
+
+  let xDisplayValue: string;
+  let yDisplayValue: string;
+  let headingDisplayValue: string;
+
+  if (app.selectedEntityCount > 1) {
+    xDisplayValue = "(mixed)";
+    yDisplayValue = "(mixed)";
+    headingDisplayValue = "(mixed)";
+  } else if (cst === undefined) {
+    xDisplayValue = "";
+    yDisplayValue = "";
+    headingDisplayValue = "";
+  } else {
+    const control = app.selectedControl!;
+    const coordInFCS = cst.transform(control);
+    xDisplayValue = coordInFCS.x.toUser().toString();
+    yDisplayValue = coordInFCS.y.toUser().toString();
+    if (isCoordinateWithHeading(coordInFCS)) {
+      headingDisplayValue = coordInFCS.heading.toUser().toString();
+    } else {
+      headingDisplayValue = "";
+    }
+  }
+
   return (
     <Box id="ControlConfigPanel">
-      <Box className="Panel-FlexBox">
-        <ObserverInput
+      <PanelBox marginTop="0">
+        <FormInputField
           label="X"
-          getValue={() => {
-            if (app.selectedEntityCount === 0) return "";
-            if (app.selectedEntityCount > 1) return "(mixed)";
-            const control = app.selectedControl;
-            if (control === undefined) return "";
-            return control.x.toUser().toString();
-          }}
+          getValue={() => xDisplayValue}
           setValue={(value: string) => {
-            if (app.selectedEntityCount !== 1) return;
+            if (cst === undefined) return;
             const control = app.selectedControl;
             if (control === undefined) return;
 
-            const controlUid = control.uid;
-            const finalVal = clampQuantity(
-              parseFormula(value, NumberUOL.parse)!.compute(app.gc.uol),
-              app.gc.uol,
-              new Quantity(-1000, UnitOfLength.Centimeter),
-              new Quantity(1000, UnitOfLength.Centimeter)
-            );
+            const coordInFCS = cst.transform(control);
+            const xValueInFCS = parseFormula(value, NumberUOL.parse)!.compute(app.gc.uol);
+            const newCoord = cst.inverseTransform({ ...coordInFCS, x: xValueInFCS });
+
+            newCoord.x = clampQuantityValue(newCoord.x);
+            newCoord.y = clampQuantityValue(newCoord.y);
 
             app.history.execute(
-              `Update control ${controlUid} x value`,
-              new UpdatePathTreeItems([control], { x: finalVal })
+              `Update control ${control.uid} coordinate`,
+              new UpdatePathTreeItems([control], newCoord)
             );
           }}
           isValidIntermediate={() => true}
@@ -117,31 +163,24 @@ const ControlConfigPanelBody = observer((props: {}) => {
           disabled={app.selectedEntityCount !== 1 || app.selectedControl === undefined}
           numeric
         />
-        <ObserverInput
+        <FormInputField
           label="Y"
-          getValue={() => {
-            if (app.selectedEntityCount === 0) return "";
-            if (app.selectedEntityCount > 1) return "(mixed)";
-            const control = app.selectedControl;
-            if (control === undefined) return "";
-            return control.y.toUser().toString();
-          }}
+          getValue={() => yDisplayValue}
           setValue={(value: string) => {
-            if (app.selectedEntityCount !== 1) return;
+            if (cst === undefined) return;
             const control = app.selectedControl;
             if (control === undefined) return;
 
-            const controlUid = control.uid;
-            const finalVal = clampQuantity(
-              parseFormula(value, NumberUOL.parse)!.compute(app.gc.uol),
-              app.gc.uol,
-              new Quantity(-1000, UnitOfLength.Centimeter),
-              new Quantity(1000, UnitOfLength.Centimeter)
-            );
+            const coordInFCS = cst.transform(control);
+            const yValueInFCS = parseFormula(value, NumberUOL.parse)!.compute(app.gc.uol);
+            const newCoord = cst.inverseTransform({ ...coordInFCS, y: yValueInFCS });
+
+            newCoord.x = clampQuantityValue(newCoord.x);
+            newCoord.y = clampQuantityValue(newCoord.y);
 
             app.history.execute(
-              `Update control ${controlUid} y value`,
-              new UpdatePathTreeItems([control], { y: finalVal })
+              `Update control ${control.uid} coordinate`,
+              new UpdatePathTreeItems([control], newCoord)
             );
           }}
           isValidIntermediate={() => true}
@@ -149,22 +188,20 @@ const ControlConfigPanelBody = observer((props: {}) => {
           disabled={app.selectedEntityCount !== 1 || app.selectedControl === undefined}
           numeric
         />
-        <ObserverInput
+        <FormInputField
           label="Heading"
-          getValue={() => {
-            if (app.selectedEntityCount === 0) return "";
-            if (app.selectedEntityCount > 1) return "(mixed)";
-            const control = app.selectedControl;
-            if (!(control instanceof EndControl)) return "";
-            return control.heading.toUser().toString();
-          }}
+          getValue={() => headingDisplayValue}
           setValue={(value: string) => {
-            if (app.selectedEntityCount !== 1) return;
+            if (cst === undefined) return;
             const control = app.selectedControl;
             if (!(control instanceof EndControl)) return;
 
+            const coordInFCS = cst.transform(control);
+            const headingValueInFCS = parseFormula(value, NumberUOA.parse)!.compute(UnitOfAngle.Degree);
+            const newCoord = cst.inverseTransform({ ...coordInFCS, heading: headingValueInFCS });
+
             const controlUid = control.uid;
-            const finalVal = parseFormula(value, NumberUOA.parse)!.compute(UnitOfAngle.Degree).toUser();
+            const finalVal = newCoord.heading;
 
             app.history.execute(
               `Update control ${controlUid} heading value`,
@@ -179,8 +216,8 @@ const ControlConfigPanelBody = observer((props: {}) => {
           }}
           numeric
         />
-      </Box>
-      <Box className="Panel-FlexBox" sx={{ marginTop: "8px" }}>
+      </PanelBox>
+      <PanelBox>
         <Tooltip title="Rotate Right 90°">
           <IconButton
             edge="end"
@@ -221,7 +258,7 @@ const ControlConfigPanelBody = observer((props: {}) => {
             <FlipIcon sx={{ transform: "rotate(90deg)" }} />
           </IconButton>
         </Tooltip>
-      </Box>
+      </PanelBox>
     </Box>
   );
 });

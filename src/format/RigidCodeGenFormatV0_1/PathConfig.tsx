@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
-import { Box, Typography } from "@mui/material";
-import { ObserverInput } from "@src/app/component.blocks/ObserverInput";
+import { Typography } from "@mui/material";
+import { FormInputField } from "@src/app/component.blocks/FormInputField";
 import { BentRateApplicationDirection, Path } from "@core/Path";
 import { EditableNumberRange } from "@core/Util";
 import { NumberT, CodePointBuffer } from "@src/token/Tokens";
@@ -13,6 +13,7 @@ import { getAppStores } from "@core/MainApp";
 import { observer } from "mobx-react-lite";
 import React from "react";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
+import { PanelBox } from "@src/app/component.blocks/PanelBox";
 
 // observable class
 export class PathConfigImpl implements PathConfig {
@@ -62,8 +63,8 @@ const PathConfigPanelBody = observer((props: {}) => {
 
   return (
     <>
-      <Box className="Panel-Box">
-        <ObserverInput
+      <PanelBox>
+        <FormInputField
           label="Speed"
           sx={{ width: "50%" }}
           getValue={() => pc.speed.toUser() + ""}
@@ -74,7 +75,7 @@ const PathConfigPanelBody = observer((props: {}) => {
           isValidValue={(candidate: string) => NumberT.parse(new CodePointBuffer(candidate)) !== null}
           numeric
         />
-      </Box>
+      </PanelBox>
     </>
   );
 });

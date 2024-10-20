@@ -32,11 +32,11 @@ export class LemLibFormatV1_0 implements Format {
   }
 
   getName(): string {
-    return "LemLib v1.0.0 (mm, m/s)";
+    return "LemLib v1.0";
   }
 
   getDescription(): string {
-    return "Path file for LemLib v1.0 (Experimental)";
+    return "Path file for LemLib v1.0, using mm as the unit of length and m/s as the speed unit.";
   }
 
   register(app: MainApp, ui: UserInterface): void {

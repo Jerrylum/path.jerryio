@@ -1,7 +1,7 @@
 import { makeAutoObservable, action, observable, IObservableValue } from "mobx";
-import { Box, Typography, Button, TextField } from "@mui/material";
+import { Typography, Button, TextField } from "@mui/material";
 import { enqueueSuccessSnackbar, enqueueErrorSnackbar } from "@src/app/Notice";
-import { ObserverEnumSelect } from "@src/app/component.blocks/ObserverEnumSelect";
+import { FormEnumSelect } from "@src/app/component.blocks/FormEnumSelect";
 import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFieldImage } from "@core/Asset";
 import { UpdateProperties } from "@core/Command";
 import { useCustomHotkeys, getEnableOnNonTextInputFieldsHotkeysOptions } from "@core/Hook";
@@ -10,10 +10,12 @@ import { Logger } from "@core/Logger";
 import { UnitOfLength } from "@core/Unit";
 import { IS_MAC_OS, getMacHotKeyString, ValidateNumber } from "@core/Util";
 import { Expose, Exclude, Type } from "class-transformer";
-import { IsPositive, IsBoolean, ValidateNested, IsObject, IsEnum, IsString } from "class-validator";
+import { IsPositive, IsBoolean, ValidateNested, IsObject, IsEnum, IsString, IsIn } from "class-validator";
 import { observer } from "mobx-react-lite";
 import { GeneralConfig, initGeneralConfig } from "../Config";
 import { Format } from "../Format";
+import { PanelBox } from "@src/app/component.blocks/PanelBox";
+import { getNamedCoordinateSystems } from "@src/core/CoordinateSystem";
 
 interface FormatWithExportCode extends Format {
   exportCode(): string;
@@ -91,31 +93,29 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
 
   return (
     <>
-      <Box className="Panel-Box">
-        <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
-        <Box className="Panel-FlexBox">
-          <ObserverEnumSelect
-            sx={{ marginTop: "16px", width: "50%" }}
-            label="Heading Output Type"
-            enumValue={config.headingOutputType}
-            onEnumChange={value => {
-              app.history.execute(
-                `Set using heading output type to ${value}`,
-                new UpdateProperties(config, { headingOutputType: value })
-              );
-            }}
-            enumType={HeadingOutputType}
-          />
-        </Box>
-        <Box className="Panel-FlexBox" sx={{ marginTop: "32px" }}>
-          <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
-            Copy Code
-          </Button>
-          <Button variant="text" onClick={onEditTemplate}>
-            Edit Template
-          </Button>
-        </Box>
-      </Box>
+      <Typography marginTop="16px">Export Settings</Typography>
+      <PanelBox>
+        <FormEnumSelect
+          sx={{ marginTop: "16px", width: "50%" }}
+          label="Heading Output Type"
+          enumValue={config.headingOutputType}
+          onEnumChange={value => {
+            app.history.execute(
+              `Set using heading output type to ${value}`,
+              new UpdateProperties(config, { headingOutputType: value })
+            );
+          }}
+          enumType={HeadingOutputType}
+        />
+      </PanelBox>
+      <PanelBox marginTop="32px">
+        <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
+          Copy Code
+        </Button>
+        <Button variant="text" onClick={onEditTemplate}>
+          Edit Template
+        </Button>
+      </PanelBox>
     </>
   );
 });
@@ -148,6 +148,9 @@ export class GeneralConfigImpl implements GeneralConfig {
   @Expose()
   fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> =
     getDefaultBuiltInFieldImage().getSignatureAndOrigin();
+  @IsIn(getNamedCoordinateSystems().map(s => s.name))
+  @Expose()
+  coordinateSystem: string = "VEX Gaming Positioning System";
   @IsEnum(HeadingOutputType)
   @Expose()
   headingOutputType: HeadingOutputType = HeadingOutputType.Absolute;

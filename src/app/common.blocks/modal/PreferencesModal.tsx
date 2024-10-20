@@ -3,9 +3,9 @@ import { observer } from "mobx-react-lite";
 import { getAppStores } from "@core/MainApp";
 import { AppThemeType } from "@app/Theme";
 import { clamp } from "@core/Util";
-import { ObserverEnumSelect } from "@app/component.blocks/ObserverEnumSelect";
-import { ObserverCheckbox } from "@app/component.blocks/ObserverCheckbox";
-import { ObserverInput } from "@app/component.blocks/ObserverInput";
+import { FormEnumSelect } from "@app/component.blocks/FormEnumSelect";
+import { FormCheckbox } from "@app/component.blocks/FormCheckbox";
+import { FormInputField } from "@app/component.blocks/FormInputField";
 import { Modal } from "./Modal";
 import { enqueueInfoSnackbar } from "@app/Notice";
 import { Logger } from "@core/Logger";
@@ -21,8 +21,10 @@ export const PreferencesModal = observer(() => {
   return (
     <Modal symbol={PreferencesModalSymbol}>
       <Card id="PreferencesModal" className="Modal-Container">
-        <Typography className="PreferencesModal-Title">General</Typography>
-        <ObserverInput
+        <Typography marginY="16px" marginTop="0">
+          General
+        </Typography>
+        <FormInputField
           sx={{ width: "10rem" }}
           label="Max Undo Operations"
           getValue={() => appPreferences.maxHistory.toString()}
@@ -34,8 +36,8 @@ export const PreferencesModal = observer(() => {
 
         <Divider />
 
-        <Typography className="PreferencesModal-Title">Appearance</Typography>
-        <ObserverEnumSelect
+        <Typography marginY="16px">Appearance</Typography>
+        <FormEnumSelect
           sx={{ width: "8rem" }}
           label="Theme"
           enumValue={appPreferences.themeType}
@@ -45,13 +47,13 @@ export const PreferencesModal = observer(() => {
 
         <Divider />
 
-        <Typography className="PreferencesModal-Title">Other</Typography>
-        <ObserverCheckbox
+        <Typography marginY="16px">Other</Typography>
+        <FormCheckbox
           label="Enable Google Analytics"
           checked={appPreferences.isGoogleAnalyticsEnabled}
           onCheckedChange={v => (appPreferences.isGoogleAnalyticsEnabled = v)}
         />
-        <ObserverCheckbox
+        <FormCheckbox
           label="Enable Experimental Features"
           checked={appPreferences.isExperimentalFeaturesEnabled}
           onCheckedChange={v => {

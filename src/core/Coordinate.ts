@@ -22,23 +22,39 @@ export class EuclideanTransformation {
   private sin: number;
   private cos: number;
 
-  constructor(readonly origin: CoordinateWithHeading) {
-    this.theta = fromHeadingInDegreeToAngleInRadian(boundHeading(-origin.heading + 90));
+  constructor(readonly betaOrigin: CoordinateWithHeading) {
+    this.theta = fromHeadingInDegreeToAngleInRadian(boundHeading(-betaOrigin.heading + 90));
     this.sin = Math.sin(this.theta);
     this.cos = Math.cos(this.theta);
   }
 
-  transform(target: Coordinate): Coordinate;
-  transform(target: CoordinateWithHeading): CoordinateWithHeading;
+  transform(alpha: Coordinate): Coordinate;
+  transform(alpha: CoordinateWithHeading): CoordinateWithHeading;
 
-  transform(target: Coordinate | CoordinateWithHeading): Coordinate | CoordinateWithHeading {
+  transform(alpha: Coordinate | CoordinateWithHeading): Coordinate | CoordinateWithHeading {
     const rtn: any = {
-      y: (target.x - this.origin.x) * this.sin + (target.y - this.origin.y) * this.cos,
-      x: (target.x - this.origin.x) * this.cos - (target.y - this.origin.y) * this.sin
+      y: (alpha.x - this.betaOrigin.x) * this.sin + (alpha.y - this.betaOrigin.y) * this.cos,
+      x: (alpha.x - this.betaOrigin.x) * this.cos - (alpha.y - this.betaOrigin.y) * this.sin
     };
 
-    if (isCoordinateWithHeading(target)) {
-      rtn.heading = boundHeading(target.heading - this.origin.heading);
+    if (isCoordinateWithHeading(alpha)) {
+      rtn.heading = boundHeading(alpha.heading - this.betaOrigin.heading);
+    }
+
+    return rtn;
+  }
+
+  inverseTransform(beta: Coordinate): Coordinate;
+  inverseTransform(beta: CoordinateWithHeading): CoordinateWithHeading;
+
+  inverseTransform(beta: Coordinate | CoordinateWithHeading): Coordinate | CoordinateWithHeading {
+    const rtn: any = {
+      y: -beta.x * this.sin + beta.y * this.cos + this.betaOrigin.y,
+      x: beta.x * this.cos + beta.y * this.sin + this.betaOrigin.x
+    };
+
+    if (isCoordinateWithHeading(beta)) {
+      rtn.heading = boundHeading(beta.heading + this.betaOrigin.heading);
     }
 
     return rtn;

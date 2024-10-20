@@ -32,6 +32,7 @@ import { AssetManagerModal } from "./app/common.blocks/modal/AssetManagerModal";
 import { RequireLocalFieldImageModal } from "./app/common.blocks/modal/RequireLocalFieldImageModal";
 import { GeneralConfigPanel } from "./app/common.blocks/panel/GeneralConfigPanel";
 import { ControlConfigPanel } from "./app/common.blocks/panel/ControlConfigPanel";
+import { CoordinateSystemModal } from "./app/common.blocks/modal/CoordinateSystemModal";
 
 const Root = observer(() => {
   const { app, ui, appPreferences, clipboard } = getAppStores();
@@ -117,12 +118,14 @@ const Root = observer(() => {
     ui.registerOverlay(() => <WelcomeModal />);
     ui.registerOverlay(() => <AboutModal />);
     ui.registerOverlay(() => <AssetManagerModal />);
+    ui.registerOverlay(() => <CoordinateSystemModal />);
     ui.registerOverlay(() => <RequireLocalFieldImageModal />);
     ui.registerPanel(GeneralConfigPanel, 0);
     ui.registerPanel(ControlConfigPanel, 1);
   }, [ui]);
 
   // XXX: set key so that the component will be reset when format is changed or app.gc.uol is changed
+  // The Layout component in charge for rendering all UI component (panels, overlays) based on the given layout types
   return (
     <Box
       tabIndex={-1}

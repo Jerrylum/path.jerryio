@@ -4,7 +4,7 @@ import { getAppStores } from "@core/MainApp";
 import { makeAutoObservable, action, when, observable, reaction } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useMobxStorage } from "@core/Hook";
-import { ObserverInput } from "@app/component.blocks/ObserverInput";
+import { FormInputField } from "@app/component.blocks/FormInputField";
 import { Modal } from "./Modal";
 
 import "./ConfirmationModal.scss";
@@ -168,7 +168,7 @@ export const ConfirmationModal = observer(() => {
         </Box>
         {cfm.input !== undefined && (
           <Box className="ConfirmationModal-InputBox">
-            <ObserverInput
+            <FormInputField
               label={cfm.inputLabel}
               getValue={() => cfm.input ?? ""}
               setValue={value => (cfm.input = value)}

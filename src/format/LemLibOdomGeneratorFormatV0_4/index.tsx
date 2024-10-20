@@ -28,7 +28,7 @@ export class LemLibOdomGeneratorFormatV0_4 implements Format {
   }
 
   getName(): string {
-    return "LemLib Odom Code Gen v0.4.x (inch)";
+    return "LemLib Odom Code Gen v0.4";
   }
 
   getDescription(): string {

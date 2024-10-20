@@ -2,21 +2,21 @@ import { Box, ListSubheader, MenuItem, MenuItemProps, Select, SelectChangeEvent,
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Format, getAllDeprecatedFormats, getAllExperimentalFormats, getAllGeneralFormats } from "@format/Format";
-import { ObserverInput, clampQuantity } from "@app/component.blocks/ObserverInput";
+import { FormInputField, clampQuantity } from "@app/component.blocks/FormInputField";
 import { Quantity, UnitOfLength } from "@core/Unit";
 import { UpdateProperties } from "@core/Command";
 import { getAppStores } from "@core/MainApp";
-import { ObserverEnumSelect } from "@app/component.blocks/ObserverEnumSelect";
-import { ObserverCheckbox } from "@app/component.blocks/ObserverCheckbox";
+import { FormEnumSelect } from "@app/component.blocks/FormEnumSelect";
+import { FormCheckbox } from "@app/component.blocks/FormCheckbox";
 import { NumberUOL } from "@token/Tokens";
 import { parseFormula } from "@core/Util";
-import { ObserverItemsSelect } from "@app/component.blocks/ObserverItemsSelect";
-import { FieldImageAsset, FieldImageOriginType } from "@core/Asset";
 import { AssetManagerModalSymbol } from "../modal/AssetManagerModal";
 import { PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
 import TuneIcon from "@mui/icons-material/Tune";
-import "./GeneralConfigPanel.scss";
 import { isExperimentalFeaturesEnabled } from "@src/core/Preferences";
+import { OpenModalButton } from "@src/app/component.blocks/OpenModalButton";
+import { PanelBox } from "@src/app/component.blocks/PanelBox";
+import { CoordinateSystemModalSymbol } from "../modal/CoordinateSystemModal";
 
 const FormatMenuItem = (props: { format: Format } & MenuItemProps) => {
   const { format, ...rests } = props;
@@ -25,7 +25,7 @@ const FormatMenuItem = (props: { format: Format } & MenuItemProps) => {
     <MenuItem {...rests}>
       <Box>
         <Typography variant="body1">{format.getName()}</Typography>
-        <Typography variant="body1" color="grey" sx={{ width: "500px", maxWidth: "90vw", textWrap: "wrap" }}>
+        <Typography variant="body1" color="grey" width="500px" maxWidth="90vw" sx={{ textWrap: "wrap" }}>
           {format.getDescription()}
         </Typography>
       </Box>
@@ -34,7 +34,7 @@ const FormatMenuItem = (props: { format: Format } & MenuItemProps) => {
 };
 
 const GeneralConfigPanelBody = observer((props: {}) => {
-  const { app, assetManager, confirmation, ui, appPreferences } = getAppStores();
+  const { app, confirmation, ui, appPreferences } = getAppStores();
 
   const gc = app.gc;
 
@@ -73,7 +73,7 @@ const GeneralConfigPanelBody = observer((props: {}) => {
   return (
     <>
       <Typography gutterBottom>Format</Typography>
-      <Box className="Panel-Box">
+      <PanelBox>
         <Select
           size="small"
           sx={{ maxWidth: "100%" }}
@@ -92,15 +92,15 @@ const GeneralConfigPanelBody = observer((props: {}) => {
           {isExperimentalFeaturesEnabled() &&
             allExperimentalFormats.map(x => <FormatMenuItem key={x.getName()} format={x} value={findIndex(x)} />)}
         </Select>
-      </Box>
-      <Box className="Panel-FlexBox" sx={{ marginTop: "16px" }}>
-        <ObserverEnumSelect
+      </PanelBox>
+      <PanelBox marginTop="16px">
+        <FormEnumSelect
           label="Unit of Length"
           enumValue={gc.uol}
           onEnumChange={v => app.history.execute(`Set Unit of Length`, new UpdateProperties(gc, { uol: v }))}
           enumType={UnitOfLength}
         />
-        <ObserverInput
+        <FormInputField
           sx={{ width: "7rem" }}
           label="Point Density"
           getValue={() => gc.pointDensity.toUser() + ""}
@@ -121,12 +121,12 @@ const GeneralConfigPanelBody = observer((props: {}) => {
           isValidValue={(candidate: string) => parseFormula(candidate, NumberUOL.parse) !== null}
           numeric
         />
-      </Box>
-      <Typography sx={{ marginTop: "16px" }} gutterBottom>
+      </PanelBox>
+      <Typography marginTop="16px" gutterBottom>
         Robot Visualize
       </Typography>
-      <Box className="Panel-FlexBox">
-        <ObserverInput
+      <PanelBox>
+        <FormInputField
           label="Width"
           getValue={() => gc.robotWidth.toUser() + ""}
           setValue={(value: string) =>
@@ -146,7 +146,7 @@ const GeneralConfigPanelBody = observer((props: {}) => {
           isValidValue={(candidate: string) => parseFormula(candidate, NumberUOL.parse) !== null}
           numeric
         />
-        <ObserverInput
+        <FormInputField
           label="Height"
           getValue={() => gc.robotHeight.toUser() + ""}
           setValue={(value: string) =>
@@ -166,16 +166,16 @@ const GeneralConfigPanelBody = observer((props: {}) => {
           isValidValue={(candidate: string) => parseFormula(candidate, NumberUOL.parse) !== null}
           numeric
         />
-        <ObserverCheckbox
+        <FormCheckbox
           label="Visible"
           title="Toggle Robot Visibility (R)"
           checked={gc.showRobot}
           onCheckedChange={c => (gc.showRobot = c)}
         />
-      </Box>
-      <Box className="Panel-FlexBox">
+      </PanelBox>
+      <PanelBox>
         {typeof gc.robotIsHolonomic === "boolean" && (
-          <ObserverCheckbox
+          <FormCheckbox
             label="Holonomic Drive"
             checked={gc.robotIsHolonomic && true}
             onCheckedChange={c => {
@@ -183,31 +183,35 @@ const GeneralConfigPanelBody = observer((props: {}) => {
             }}
           />
         )}
-      </Box>
-      <Typography sx={{ marginTop: "16px" }} gutterBottom>
-        Field Layer
+      </PanelBox>
+      <Typography marginTop="16px" gutterBottom>
+        Field & Coordinate
       </Typography>
-      <Box className="Panel-FlexBox">
-        <ObserverItemsSelect
-          sx={{ width: "auto" }}
-          label=""
-          selected={gc.fieldImage.signature}
-          items={[
-            ...assetManager.assets.map(asset => ({ key: asset.signature, value: asset, label: asset.displayName })),
-            { key: "open-asset-manager", value: "open-asset-manager", label: "(Custom)" }
-          ]}
-          onSelectItem={(asset: FieldImageAsset<FieldImageOriginType> | string | undefined) => {
-            if (asset === "open-asset-manager") {
-              ui.openModal(AssetManagerModalSymbol);
-            } else if (asset instanceof FieldImageAsset) {
-              app.history.execute(
-                `Change field layer`,
-                new UpdateProperties(gc, { fieldImage: asset?.getSignatureAndOrigin() })
-              );
-            }
-          }}
-        />
-      </Box>
+      <PanelBox>
+        <OpenModalButton onClick={() => ui.openModal(AssetManagerModalSymbol)}>
+          {gc.fieldImage.displayName}
+        </OpenModalButton>
+      </PanelBox>
+      <PanelBox>
+        <OpenModalButton onClick={() => ui.openModal(CoordinateSystemModalSymbol)}>
+          {gc.coordinateSystem}
+        </OpenModalButton>
+      </PanelBox>
+      {/* {appPreferences.isExperimentalFeaturesEnabled && (
+        <PanelBox>
+          <FormButton
+            onClick={() => {
+              const canvas = document.querySelector(".FieldCanvas canvas") as HTMLCanvasElement;
+              canvas.toBlob(blob => {
+                if (!blob) return;
+                const item = new ClipboardItem({ "image/png": blob });
+                navigator.clipboard.write([item]);
+              });
+            }}>
+            Capture Canvas
+          </FormButton>
+        </PanelBox>
+      )} */}
       {gc.getAdditionalConfigUI()}
     </>
   );

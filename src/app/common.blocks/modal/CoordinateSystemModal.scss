@@ -1,0 +1,73 @@
+#CoordinateSystemModal {
+  padding: 16px;
+  width: 768px;
+  max-width: 80%;
+  min-height: 96px;
+  max-height: 80%;
+  outline: none !important;
+  overflow-y: auto;
+  padding-right: calc(16px - 6.4px);
+  display: flex;
+  flex-direction: column;
+  scrollbar-gutter: stable;
+
+  #CoordinateSystem-Body {
+    display: flex;
+    width: 100%;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    #CoordinateSystems-LeftSide {
+      flex-grow: 1000;
+      max-width: 100%;
+      width: 360px;
+
+      #CoordinateSystemsList {
+        flex-grow: 1;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-bottom: 8px; // maybe 16px
+        max-height: 400px;
+
+        .CoordinateSystemsList-Item {
+          .CoordinateSystemsList-ItemApplyButton {
+            visibility: hidden;
+          }
+        }
+
+        .CoordinateSystemsList-Item:hover {
+          .CoordinateSystemsList-ItemApplyButton {
+            visibility: inherit;
+          }
+        }
+      }
+    }
+
+    #CoordinateSystems-PreviewSection {
+      width: 40%;
+      min-width: 256px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      #CoordinateSystems-ImagePreview {
+        width: 100%;
+        line-height: 0;
+        border: 1px solid var(--text-primary-color);
+        position: relative;
+
+        > img {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          user-select: none;
+          cursor: pointer;
+        }
+      }
+    }
+  }
+}

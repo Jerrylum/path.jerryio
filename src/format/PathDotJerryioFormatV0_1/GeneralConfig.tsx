@@ -3,9 +3,10 @@ import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFi
 import { UnitOfLength } from "@core/Unit";
 import { ValidateNumber } from "@core/Util";
 import { Expose, Type, Exclude } from "class-transformer";
-import { IsPositive, IsBoolean, ValidateNested, IsObject } from "class-validator";
+import { IsPositive, IsBoolean, ValidateNested, IsObject, IsIn } from "class-validator";
 import { GeneralConfig, initGeneralConfig } from "../Config";
 import { Format } from "../Format";
+import { getNamedCoordinateSystems } from "@src/core/CoordinateSystem";
 
 // observable class
 export class GeneralConfigImpl implements GeneralConfig {
@@ -36,7 +37,9 @@ export class GeneralConfigImpl implements GeneralConfig {
   @Expose()
   fieldImage: FieldImageSignatureAndOrigin<FieldImageOriginType> =
     getDefaultBuiltInFieldImage().getSignatureAndOrigin();
-
+  @IsIn(getNamedCoordinateSystems().map(s => s.name))
+  @Expose()
+  coordinateSystem: string = "VEX Gaming Positioning System";
   @Exclude()
   private format_: Format;
 

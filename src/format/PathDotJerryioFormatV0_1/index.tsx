@@ -30,11 +30,11 @@ export class PathDotJerryioFormatV0_1 implements Format {
   }
 
   getName(): string {
-    return "path.jerryio v0.1.x (cm, rpm)";
+    return "path.jerryio v0.1";
   }
 
   getDescription(): string {
-    return "The default and official format for path planning purposes and custom library using algorithms like pure pursuit.";
+    return "The default and official format for path planning purposes and custom library. Output is in cm, rpm.";
   }
 
   register(app: MainApp, ui: UserInterface): void {

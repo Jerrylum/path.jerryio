@@ -49,11 +49,9 @@ const HotkeyTypography = observer((props: { hotkey: string | undefined }) => {
         key={index}
         variant="body2"
         color="text.secondary"
-        sx={{
-          width: "1em",
-          textAlign: "center",
-          fontFamily: '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif'
-        }}
+        width="1em"
+        textAlign="center"
+        fontFamily="-apple-system,system-ui,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif"
         children={char}
       />
     );

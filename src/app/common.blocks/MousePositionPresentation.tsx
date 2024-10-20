@@ -1,8 +1,36 @@
 import { observer } from "mobx-react-lite";
 import { getAppStores } from "@core/MainApp";
 import { Box, BoxProps, Typography } from "@mui/material";
+import { CoordinateSystemTransformation } from "@src/core/CoordinateSystem";
 
-export const TravelDistancePresentation = observer(() => {
+const MousePosition = observer(() => {
+  const { app } = getAppStores();
+
+  const coord = app.fieldEditor.mousePosInUOL;
+  if (coord === undefined) return undefined;
+
+  const referencedPath = app.interestedPath();
+  if (referencedPath === undefined) return undefined;
+
+  const cs = app.coordinateSystem;
+  if (cs === undefined) return undefined;
+
+  const fieldDimension = app.fieldDimension;
+
+  const firstControl = referencedPath.segments[0]?.controls[0];
+  if (firstControl === undefined) return undefined;
+
+  const cst = new CoordinateSystemTransformation(cs, fieldDimension, firstControl);
+  const coordInFCS = cst.transform(coord);
+
+  return (
+    <Typography variant="body1" color="white">
+      X: {coordInFCS.x.toUser()}, Y: {coordInFCS.y.toUser()}
+    </Typography>
+  );
+});
+
+const TravelDistance = observer(() => {
   const { app } = getAppStores();
 
   const interestedPath = app.interestedPath();
@@ -36,16 +64,10 @@ export const TravelDistancePresentation = observer(() => {
 });
 
 export const MousePositionPresentation = observer((props: BoxProps) => {
-  const { app } = getAppStores();
-
   return (
     <Box id="MousePositionPresentation" {...props}>
-      {app.fieldEditor.mousePosInUOL && (
-        <Typography variant="body1" color="white">
-          X: {app.fieldEditor.mousePosInUOL.x.toUser()}, Y: {app.fieldEditor.mousePosInUOL.y.toUser()}
-        </Typography>
-      )}
-      <TravelDistancePresentation />
+      <MousePosition />
+      <TravelDistance />
     </Box>
   );
 });

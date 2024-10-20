@@ -13,7 +13,6 @@ import { isExperimentalFeaturesEnabled } from "@core/Preferences";
 import { RigidCodeGenFormatV0_1 } from "./RigidCodeGenFormatV0_1";
 import { MoveToPointCodeGenFormatV0_1 } from "./MoveToPointCodeGenFormatV0_1";
 import { xVecLibBoomerangFormatV0_1 } from "./xVecLibBoomerangFormatV0_1";
-
 export interface Format {
   isInit: boolean;
   uid: string;
@@ -22,16 +21,48 @@ export interface Format {
 
   getDescription(): string;
 
+  /**
+   * Registers the format with the provided application and user interface.
+   * This method should set up any necessary event listeners, hooks, or UI components specific to the format.
+   * The `register` function should be the first function to call on the format. This is triggered when MainApp changes format.
+   * @param app The MainApp instance
+   * @param ui The UserInterface instances
+   */
   register(app: MainApp, ui: UserInterface): void;
 
+  /**
+   * Unregisters the format from the application.
+   * This should clean up and remove any hooks, event listeners, or UI components that were added during the registration process.
+   * The `unregister` function should be the last function to call on the format. After it is called, the format is expected to be detached from the application. This is triggered when MainApp changes format.
+   */
   unregister(): void;
 
+  /**
+   * Creates a new instance of this format
+   * @returns a new instance of this format
+   */
   createNewInstance(): Format;
 
+  /**
+   * Gets the general configuration for this format
+   * This method provides access to the general configuration settings to this format.
+   * @returns the general configuration for this format
+   */
   getGeneralConfig(): GeneralConfig;
 
+  /**
+   * Creates a path instance with the given segments
+   * @param segments the segments to create the path
+   * @returns the created path instance
+   */
   createPath(...segments: Segment[]): Path;
 
+  /**
+   * Calculates the waypoints along a given path
+   * The points' speed may recalculated based on each format
+   * @param path the path to get the points
+   * @returns the calculation result points along the given path
+   */
   getPathPoints(path: Path): PointCalculationResult;
 
   /**
@@ -110,7 +141,7 @@ interface PathFileDataConverter {
 const convertFromV0_1_0ToV0_2_0: PathFileDataConverter = {
   version: new Range("~0.1"),
   convert: (data: Record<string, any>): void => {
-    // Covert old enum number to new enum ratio
+    // Convert old enum number to new enum ratio
     data.gc.uol = {
       1: UnitOfLength.Millimeter,
       2: UnitOfLength.Centimeter,
@@ -177,10 +208,32 @@ const convertFromV0_6_0ToV0_7_0: PathFileDataConverter = {
   }
 };
 
-const convertFromV0_7_0ToCurrentAppVersion: PathFileDataConverter = {
+const convertFromV0_7_0ToV0_8_0: PathFileDataConverter = {
   version: new Range("~0.7"),
   convert: (data: Record<string, any>): void => {
-    // From v0.7.0 to current app version
+    if (data.format === "LemLib v0.4.x (inch, byte-voltage)") {
+      data.format = "LemLib v0.5";
+    } else if (data.format === "path.jerryio v0.1.x (cm, rpm)") {
+      data.format = "path.jerryio v0.1";
+    } else if (data.format === "LemLib Odom Code Gen v0.4.x (inch)") {
+      data.format = "LemLib Odom Code Gen v0.4";
+    } else if (data.format === "LemLib v1.0.0 (mm, m/s)") {
+      data.format = "LemLib v1.0";
+    } else if (data.format === "Move-to-Point Code Gen v0.1.x") {
+      data.format = "Move-to-Point Code Gen v0.1";
+    } else if (data.format === "Rigid Code Gen v0.1.x") {
+      data.format = "Rigid Code Gen v0.1";
+    }
+
+    // From v0.7.0 to v0.8.0
+    data.appVersion = "0.8.0";
+  }
+};
+
+const convertFromV0_8_0ToCurrentAppVersion: PathFileDataConverter = {
+  version: new Range("~0.8"),
+  convert: (data: Record<string, any>): void => {
+    // From v0.8.0 to current app version
     data.appVersion = APP_VERSION.version;
   }
 };
@@ -193,7 +246,8 @@ export function convertPathFileData(data: Record<string, any>): boolean {
     convertFromV0_4_0ToV0_5_0,
     convertFromV0_5_0ToV0_6_0,
     convertFromV0_6_0ToV0_7_0,
-    convertFromV0_7_0ToCurrentAppVersion
+    convertFromV0_7_0ToV0_8_0,
+    convertFromV0_8_0ToCurrentAppVersion
   ]) {
     if (version.test(data.appVersion)) {
       convert(data);

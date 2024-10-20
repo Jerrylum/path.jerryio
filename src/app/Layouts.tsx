@@ -6,6 +6,12 @@ import { ClassisLayout } from "./classic.blocks/_index";
 import { ExclusiveLayout } from "./exclusive.blocks/_index";
 import { MobileLayout } from "./mobile.blocks/_index";
 
+/**
+ * The Layout component renders the corresponding layout based on the given layout type.
+ * All overlays will also be pre-rendered.
+ * @param props.targetLayout - The layout type to render.
+ * @returns The rendered layout component.
+ */
 export const Layout = observer((props: { targetLayout: LayoutType }) => {
   const { targetLayout } = props;
   const { ui } = getAppStores();

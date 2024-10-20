@@ -39,7 +39,7 @@ export class RigidCodeGenFormatV0_1 implements Format {
   }
 
   getName(): string {
-    return "Rigid Code Gen v0.1.x";
+    return "Rigid Code Gen v0.1";
   }
 
   getDescription(): string {

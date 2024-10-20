@@ -13,6 +13,7 @@ import { Hash } from "fast-sha256";
 import { makeAutoObservable, makeObservable, observable } from "mobx";
 import { ValidateNumber, hex, makeId, TextEncoder } from "./Util";
 import localforage from "localforage";
+import { Dimension } from "./CoordinateSystem";
 
 export const DEFAULT_ACCEPT_FILE_EXT = [".png", ".jpg", ".jpeg", ".gif"] as const;
 
@@ -150,6 +151,13 @@ export class FieldImageAsset<TOrigin extends FieldImageOriginType> {
 
   async imageSource() {
     return this.location;
+  }
+
+  async getDimension(): Promise<Dimension> {
+    const img = new Image();
+    img.src = this.location;
+    await img.decode();
+    return { width: img.width, height: img.height };
   }
 
   getOrigin(): FieldImageOriginClass<TOrigin>;

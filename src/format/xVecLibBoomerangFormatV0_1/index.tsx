@@ -8,13 +8,14 @@ import { Format, importPDJDataFromTextFile } from "../Format";
 import { PointCalculationResult, getPathPoints } from "@core/Calculation";
 import { GeneralConfigImpl } from "./GeneralConfig";
 import { PathConfigImpl } from "./PathConfig";
-import { SmartBuffer } from "smart-buffer";
 // observable class
 export class xVecLibBoomerangFormatV0_1 implements Format {
   isInit: boolean = false;
   uid: string;
 
-  protected gc = new GeneralConfigImpl(this);
+  private gc = new GeneralConfigImpl(this);
+
+  private readonly disposers: (() => void)[] = [];
 
   constructor() {
     this.uid = makeId(10);
@@ -34,9 +35,12 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
   register(app: MainApp): void {
     if (this.isInit) return;
     this.isInit = true;
+    this.disposers.push();
   }
 
-  unregister(): void {}
+  unregister(): void {
+    this.disposers.forEach(disposer => disposer());
+  }
 
   getGeneralConfig(): GeneralConfig {
     return this.gc;
@@ -83,14 +87,32 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
       for (const seg of segments) {
         let lead = 0;
         let last = path.controls.at(path.controls.length - 1);
+        let first = path.controls.at(0);
         let dis;
-        if (last != null) {
+        if (last != null && first != null) {
           dis = path.controls.at(0)?.distance(last);
           if (seg.isCubic() && dis != null) {
             let closestContol =
               seg.controls[1].distance(seg.first) > seg.controls[2].distance(seg.last)
                 ? seg.controls[1]
                 : seg.controls[2];
+            if (seg.first === path.controls.at(0)) {
+              seg.first.heading =
+                180 + Math.atan2(seg.first.x - closestContol.x, seg.first.y - closestContol.y) * (180 / Math.PI);
+            }
+            if (
+              seg.controls[1] === closestContol &&
+              (seg.first.heading === 0 || seg.first.heading === 180 || seg.last.heading === 0 || seg.last.heading === 0)
+            ) {
+              seg.controls[2].setXY(seg.last.x, seg.last.y);
+            } else if (
+              seg.first.heading === 0 ||
+              seg.first.heading === 180 ||
+              seg.last.heading === 0 ||
+              seg.last.heading === 0
+            ) {
+              seg.controls[1].setXY(seg.first.x, seg.first.y);
+            }
             if (seg.first.heading === 0 || seg.first.heading === 180) {
               seg.first.heading =
                 Math.atan2(seg.first.x - closestContol.x, seg.first.y - closestContol.y) * (180 / Math.PI);
@@ -117,8 +139,6 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
               }
             } else {
               lead = (seg.last.x - closestContol.x) / (dis * Math.sin(seg.last.heading));
-              console.log("lead", lead);
-              console.log("seg.last.heading", seg.last.heading);
               while (Math.abs(lead) > 1) {
                 numIterations++;
                 if (lead > 1) {

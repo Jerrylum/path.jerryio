@@ -23,11 +23,12 @@ import { AppClipboard } from "./Clipboard";
 import { validate } from "class-validator";
 import { FieldEditor } from "./FieldEditor";
 import { SpeedEditor } from "./SpeedEditor";
-import { AssetManager, getDefaultBuiltInFieldImage } from "./Asset";
+import { AssetManager, FieldImageAsset, FieldImageOriginType, getDefaultBuiltInFieldImage } from "./Asset";
 import { Preferences, getPreference } from "./Preferences";
 import { LemLibFormatV0_4 } from "../format/LemLibFormatV0_4";
 import { LemLibFormatV1_0 } from "../format/LemLibFormatV1_0";
 import { UserInterface } from "./Layout";
+import { CoordinateSystem, Dimension, getNamedCoordinateSystems } from "./CoordinateSystem";
 
 export const APP_VERSION = new SemVer(APP_VERSION_STRING);
 
@@ -46,6 +47,7 @@ export class MainApp {
   private selected: string[] = []; // ALGO: Not using Set because order matters
   private lastInterestedPath: Path | undefined = undefined; // ALGO: For adding controls
   private expanded: string[] = []; // ALGO: Order doesn't matter but anyway
+  private fieldDimension_: Dimension = { width: 0, height: 0 };
 
   public robot = {
     position: new EndControl(0, 0, 0)
@@ -119,6 +121,19 @@ export class MainApp {
       }
     );
 
+    reaction(
+      () => this.fieldImageAsset.signature,
+      () => {
+        this.fieldDimension_ = { width: 0, height: 0 };
+        const signature = this.fieldImageAsset.signature;
+        this.fieldImageAsset.getDimension().then(dimension => {
+          if (signature === this.fieldImageAsset.signature) {
+            runInAction(() => (this.fieldDimension_ = dimension));
+          }
+        });
+      }
+    );
+
     this.newFile();
   }
 
@@ -158,6 +173,20 @@ export class MainApp {
 
   @computed get gc(): GeneralConfig {
     return this.format.getGeneralConfig();
+  }
+
+  @computed get fieldImageAsset(): FieldImageAsset<FieldImageOriginType> {
+    return assetManager.getAssetBySignature(this.gc.fieldImage.signature) ?? getDefaultBuiltInFieldImage();
+  }
+
+  @computed get fieldDimension(): Dimension {
+    return this.fieldDimension_;
+  }
+
+  @computed get coordinateSystem(): CoordinateSystem {
+    return (
+      getNamedCoordinateSystems().find(cs => cs.name === this.gc.coordinateSystem) ?? getNamedCoordinateSystems()[0]
+    );
   }
 
   isSelected(x: PathTreeItem | string): boolean {
@@ -359,7 +388,7 @@ export class MainApp {
       throw new Error("Unable to open the path file due to validation errors.");
     }
 
-    getAppStores().ga.gtag("event", "import_file_format", { format: format.getName() });
+    ga.gtag("event", "import_file_format", { format: format.getName() });
 
     const result = await runInActionAsync(() => promptFieldImage(gc.fieldImage));
     if (result === false) gc.fieldImage = getDefaultBuiltInFieldImage().getSignatureAndOrigin();
@@ -444,17 +473,15 @@ export class MainApp {
 
 export type AppStores = typeof appStores;
 
+const appPreferences = new Preferences();
+const assetManager = new AssetManager();
+const clipboard = new AppClipboard();
+const confirmation = new Confirmation();
+const ga = new GoogleAnalytics();
 const ui = new UserInterface();
+const app = new MainApp(); // ALGO: The app must be created last
 
-const appStores = {
-  app: new MainApp(),
-  assetManager: new AssetManager(),
-  confirmation: new Confirmation(),
-  ui,
-  appPreferences: new Preferences(),
-  ga: new GoogleAnalytics(),
-  clipboard: new AppClipboard()
-} as const;
+const appStores = { app, appPreferences, assetManager, clipboard, confirmation, ga, ui } as const;
 
 export function getAppStores(): AppStores {
   return appStores;

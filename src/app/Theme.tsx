@@ -67,7 +67,7 @@ export const themes = {
           light: "#5C469C",
           main: "#7F47B3",
           dark: "#474AB3",
-          contrastText: "#fff"
+          contrastText: "#FFF"
         },
         background: {
           default: "#1E1E1E",

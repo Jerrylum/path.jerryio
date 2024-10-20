@@ -3,43 +3,49 @@
   width: 768px;
   max-width: 80%;
   min-height: 96px;
+  max-height: 80%;
   outline: none !important;
+  overflow-y: auto;
+  padding-right: calc(16px - 6.4px);
+  display: flex;
+  flex-direction: column;
+  scrollbar-gutter: stable;
 
-  #FieldImageAssets {
+  .FieldImageAssets-Title {
+    .FieldImageAssets-FunctionButton {
+      cursor: pointer;
+      padding: 0;
+      margin-left: 8px;
+    }
+  }
+
+  #FieldImageAssets-Body {
     display: flex;
     width: 100%;
     gap: 16px;
-    // background-color: red;
+    flex-wrap: wrap;
 
-    #FieldImageAssets-Body {
-      flex-grow: 1;
-      max-width: calc(60% - 16px);
+    #FieldImageAssets-LeftSide {
+      flex-grow: 1000;
+      max-width: 100%;
+      width: 360px;
 
       #FieldImageAssetsList {
         flex-grow: 1;
-        min-height: calc(256px - 8px);
         overflow-x: hidden;
         overflow-y: auto;
         padding-bottom: 8px; // maybe 16px
-        position: relative;
+        max-height: 400px;
 
-        #FieldImageAssetsList-Content {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-
-          .FieldImageAssetsList-Item {
-            .FieldImageAssetsList-ItemDeleteButton {
-              visibility: hidden;
-            }
+        .FieldImageAssetsList-Item {
+          .FieldImageAssetsList-ItemApplyButton {
+            visibility: hidden;
           }
+        }
 
-          .FieldImageAssetsList-Item:hover {
-            .FieldImageAssetsList-ItemDeleteButton {
-              visibility: inherit;
-            }
+        .FieldImageAssetsList-Item:hover {
+          .FieldImageAssetsList-ItemApplyButton {
+            visibility: inherit;
           }
         }
       }
@@ -48,6 +54,10 @@
     #FieldImageAssets-PreviewSection {
       width: 40%;
       min-width: 256px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
 
       #FieldImageAssets-AssetImagePreview {
         width: 100%;

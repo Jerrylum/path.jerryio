@@ -1,8 +1,7 @@
 import { makeAutoObservable } from "mobx";
-import { Box, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { BentRateApplicationDirection, Path } from "@core/Path";
 import { EditableNumberRange } from "@core/Util";
-import { NumberT, CodePointBuffer } from "@src/token/Tokens";
 import { Exclude, Expose } from "class-transformer";
 import { IsNumber } from "class-validator";
 import { PathConfig } from "../Config";
