@@ -17,11 +17,12 @@ import { Format } from "../Format";
 import { PanelBox } from "@src/app/component.blocks/PanelBox";
 import { FormInputField } from "@src/app/component.blocks/FormInputField";
 import { getNamedCoordinateSystems } from "@src/core/CoordinateSystem";
+import { FormCheckbox } from "@src/app/component.blocks/FormCheckbox";
 interface FormatWithExportCode extends Format {
   exportCode(): string;
 }
 
-const logger = Logger("xVecLib Boomerang v0.1.0 (inch)");
+const logger = Logger("xVecLib Boomerang v1.0.0 (inch)");
 
 const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
   const { config } = props;
@@ -75,12 +76,41 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
           sx={{ marginTop: "16px" }}
           numeric
         />
+        
       </PanelBox>
-      <PanelBox className="Panel-FlexBox"></PanelBox>
+      
       <PanelBox marginTop="16px">
         <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
           Copy Code
         </Button>
+      </PanelBox>
+      <Typography sx={{ marginTop: "16px" }}>Lead Settings</Typography>
+      <PanelBox className="Panel-FlexBox">
+      <FormInputField
+          label="Iterations to find lead"
+          getValue={() => config.maxIterations.toString()}
+          setValue={(value: string) => {
+            const parsedValue = parseInt(Int.parse(new CodePointBuffer(value))!.value);
+            app.history.execute(
+              `Change max iterations for lead to ${parsedValue}`,
+              new UpdateProperties(config, { maxIterations: parsedValue })
+            );
+          }}
+          isValidIntermediate={() => true}
+          isValidValue={(candidate: string) => Int.parse(new CodePointBuffer(candidate)) !== null}
+          sx={{ marginTop: "16px" }}
+          numeric
+        />
+        <FormCheckbox
+          label="Use broken lead"
+          checked={config.badLead}
+          onCheckedChange={value => {
+            app.history.execute(
+              `Using real(bad) lead's is ${value}`,
+              new UpdateProperties(config, { badLead: value })
+            );
+          }}
+        />
       </PanelBox>
     </>
   );
@@ -120,6 +150,11 @@ export class GeneralConfigImpl implements GeneralConfig {
   @ValidateNumber(num => num >= 0)
   @Expose()
   movementTimeout: number = 5000;
+  @Expose()
+  maxIterations: number = 200;
+  @IsBoolean()
+  @Expose()
+  badLead: boolean = false;
   @IsBoolean()
   @Expose()
   relativeCoords: boolean = true;

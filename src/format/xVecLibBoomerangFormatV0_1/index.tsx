@@ -27,7 +27,7 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
   }
 
   getName(): string {
-    return "xVecLib Boomerang v0.1.0 (inch)";
+    return "xVecLib Boomerang v1.0.0 (inch)";
   }
   getDescription(): string {
     return "Generates a sequence of xVecLib .moveToBoom function calls.";
@@ -133,7 +133,7 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
                   seg.first.heading -= 0.5;
                 }
                 lead = (seg.first.x - closestContol.x) / (dis * Math.sin(seg.first.heading));
-                if (numIterations > 200) {
+                if (numIterations > gc.maxIterations) {
                   break;
                 }
               }
@@ -147,10 +147,15 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
                   seg.last.heading -= 0.5;
                 }
                 lead = (seg.last.x - closestContol.x) / (dis * Math.sin(seg.last.heading));
-                if (numIterations > 200) {
+                if (numIterations > gc.maxIterations) {
                   break;
                 }
               }
+            }
+            if (lead > 1 && !gc.badLead) {
+              lead = 1;
+            } else if (lead < -1 && !gc.badLead) {
+              lead = -1;
             }
           }
         }
