@@ -29,9 +29,11 @@ export class xVecLibBoomerangFormatV0_1 implements Format {
   getName(): string {
     return "xVecLib Boomerang v1.0.0 (inch)";
   }
-  getDescription(): string {
+
+    getDescription(): string {
     return "Generates a sequence of xVecLib .moveToBoom function calls.";
   }
+
   register(app: MainApp): void {
     if (this.isInit) return;
     this.isInit = true;

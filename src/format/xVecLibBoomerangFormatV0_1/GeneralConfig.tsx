@@ -76,17 +76,18 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
           sx={{ marginTop: "16px" }}
           numeric
         />
-        
       </PanelBox>
-      
+
       <PanelBox marginTop="16px">
         <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
           Copy Code
         </Button>
+        <a href="https://xvec.codeberg.page/Path%20Generation"><h3>Documentation</h3></a>
+
       </PanelBox>
       <Typography sx={{ marginTop: "16px" }}>Lead Settings</Typography>
       <PanelBox className="Panel-FlexBox">
-      <FormInputField
+        <FormInputField
           label="Iterations to find lead"
           getValue={() => config.maxIterations.toString()}
           setValue={(value: string) => {
@@ -105,10 +106,7 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
           label="Use broken lead"
           checked={config.badLead}
           onCheckedChange={value => {
-            app.history.execute(
-              `Using real(bad) lead's is ${value}`,
-              new UpdateProperties(config, { badLead: value })
-            );
+            app.history.execute(`Using real(bad) lead's is ${value}`, new UpdateProperties(config, { badLead: value }));
           }}
         />
       </PanelBox>
