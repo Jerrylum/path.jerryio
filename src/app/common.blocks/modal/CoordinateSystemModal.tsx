@@ -66,7 +66,6 @@ export const CoordinateSystemItem = observer(
     const isSelected = variables.selected?.name === system.name;
 
     const isUsing = system.name === app.gc.coordinateSystem;
-    console.log("isUsing", isUsing, system.name, app.gc.coordinateSystem);
 
     const onApply = action(() => {
       app.history.execute(
