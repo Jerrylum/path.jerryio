@@ -92,7 +92,7 @@ export function createExecutionEvent<T extends HistoryEvent<CancellableCommand>>
     isCommandInstanceOf: (constructor: new (...args: any[]) => any): boolean => {
       return event.command instanceof constructor;
     }
-  };
+  } as T;
 }
 
 export class CommandHistory implements ExecutionEventListenersContainer<CancellableCommand> {
