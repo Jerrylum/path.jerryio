@@ -12,6 +12,7 @@ import { LemLibFormatV1_0 } from "./LemLibFormatV1_0";
 import { isExperimentalFeaturesEnabled } from "@core/Preferences";
 import { RigidCodeGenFormatV0_1 } from "./RigidCodeGenFormatV0_1";
 import { MoveToPointCodeGenFormatV0_1 } from "./MoveToPointCodeGenFormatV0_1";
+import { LemLibTarballFormatV0_5 } from "./LemLibTarballFormatV0_5";
 
 export interface Format {
   isInit: boolean;
@@ -112,7 +113,7 @@ export interface Format {
 }
 
 export function getAllGeneralFormats(): Format[] {
-  return [new LemLibFormatV0_4(), new PathDotJerryioFormatV0_1()];
+  return [new LemLibFormatV0_4(), new LemLibTarballFormatV0_5(), new PathDotJerryioFormatV0_1()];
 }
 
 export function getAllDeprecatedFormats(): Format[] {
