@@ -3,9 +3,12 @@ FROM oven/bun:alpine AS builder
 
 WORKDIR /app
 
-COPY . .
+COPY ./package.json ./bun.lockb ./
 
 RUN bun install
+
+COPY . .
+
 RUN bun run build
 
 # Runner stage
