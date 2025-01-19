@@ -125,6 +125,24 @@ By using PATH.JERRYIO, you only need to implement the path file parser and gener
 
 Please visit our [wiki page](https://github.com/Jerrylum/path.jerryio/wiki) to understand how to get started with PATH.JERRYIO.
 
+## Self-hosting
+
+You can self-host PATH.JERRYIO by running the following command:
+
+```bash
+# -d is for detached mode, which will run the container in the background
+docker compose up -d
+```
+
+If a new version is released, you can pull the latest version from GitHub and run the container again:
+
+```bash
+# pull the latest changes from GitHub
+git pull
+# --build is for building the container again
+docker compose up -d --build
+```
+
 ## Contributing
 
 We welcome contributions from everyone. Before you get started, please see our [contributor's guide](./CONTRIBUTING.md).
