@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx";
 import { MainApp, getAppStores } from "@core/MainApp";
 import { clamp, makeId } from "@core/Util";
-import { Control, EndControl, Path, Segment, SpeedKeyframe, Vector } from "@core/Path";
+import { Control, EndControl, Path, Segment, SpeedKeyframe } from "@core/Path";
 import { UnitOfLength, UnitConverter, Quantity } from "@core/Unit";
 import { GeneralConfig, convertFormat } from "../Config";
 import { Format, importPDJDataFromTextFile } from "../Format";
@@ -239,11 +239,6 @@ export class LemLibTarballFormatV0_5 implements Format {
     // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.
 
     let fileContent = "";
-
-    function output(control: Vector, postfix: string = ", ") {
-      fileContent += `${uc.fromAtoB(control.x).toUser()}, ${uc.fromAtoB(control.y).toUser()}${postfix}`;
-    }
-
     const uc = new UnitConverter(this.gc.uol, UnitOfLength.Inch);
 
     let ignoredPaths: string[] = [];
@@ -289,24 +284,6 @@ export class LemLibTarballFormatV0_5 implements Format {
       fileContent += `${uc.fromAtoB(ghostPoint.x).toUser()}, ${uc.fromAtoB(ghostPoint.y).toUser()}, 0\n`;
 
       fileContent += `endData\n`;
-      fileContent += `${(path.pc as PathConfigImpl).maxDecelerationRate}\n`;
-      fileContent += `${path.pc.speedLimit.to}\n`;
-      fileContent += `200\n`; // Not supported
-
-      for (const segment of path.segments) {
-        if (segment.isCubic()) {
-          output(segment.controls[0]);
-          output(segment.controls[1]);
-          output(segment.controls[2]);
-          output(segment.controls[3], "\n");
-        } else if (segment.isLinear()) {
-          const center = segment.controls[0].add(segment.controls[1]).divide(2);
-          output(segment.controls[0]);
-          output(center);
-          output(center);
-          output(segment.controls[1], "\n");
-        }
-      }
     }
 
     fileContent += "#PATH.JERRYIO-DATA " + JSON.stringify(app.exportPDJData());
