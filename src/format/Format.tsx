@@ -109,7 +109,7 @@ export interface Format {
    * @throws Error if the file can not be exported
    * @returns the path file buffer in ArrayBuffer
    */
-  exportFile(): ArrayBuffer;
+  exportFile(): ArrayBufferView<ArrayBufferLike>;
 }
 
 export function getAllGeneralFormats(): Format[] {

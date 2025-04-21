@@ -69,7 +69,7 @@ async function fileNameConfirm(description: string, callback: () => void): Promi
   });
 }
 
-function exportFile(): ArrayBuffer | undefined {
+function exportFile(): ArrayBufferView<ArrayBufferLike> | undefined {
   const { app } = getAppStores();
 
   try {
@@ -80,7 +80,7 @@ function exportFile(): ArrayBuffer | undefined {
   }
 }
 
-async function writeFile(buffer: ArrayBuffer): Promise<boolean> {
+async function writeFile(buffer: ArrayBufferView<ArrayBufferLike>): Promise<boolean> {
   const { app } = getAppStores();
 
   try {
@@ -164,7 +164,7 @@ async function readFileFromInput(): Promise<ArrayBuffer | undefined> {
   return buffer;
 }
 
-function downloadFile(buffer: ArrayBuffer) {
+function downloadFile(buffer: ArrayBufferView<ArrayBufferLike>) {
   const { app } = getAppStores();
 
   const a = document.createElement("a");

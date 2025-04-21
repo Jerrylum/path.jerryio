@@ -52,7 +52,7 @@ export class CustomFormat implements Format {
   importPDJDataFromFile(buffer: ArrayBuffer): Record<string, any> | undefined {
     throw new Error("Method not implemented.");
   }
-  exportFile(): ArrayBuffer {
+  exportFile(): ArrayBufferView<ArrayBufferLike> {
     throw new Error("Method not implemented.");
   }
 }

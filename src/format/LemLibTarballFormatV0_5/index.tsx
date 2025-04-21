@@ -233,7 +233,7 @@ export class LemLibTarballFormatV0_5 implements Format {
     return importPDJDataFromTextFile(buffer);
   }
 
-  exportFile(): ArrayBuffer {
+  exportFile(): ArrayBufferView<ArrayBufferLike> {
     const { app } = getAppStores();
 
     // ALGO: The implementation is adopted from https://github.com/LemLib/Path-Gen under the GPLv3 license.

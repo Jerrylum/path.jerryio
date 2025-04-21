@@ -189,7 +189,7 @@ export class MoveToPointCodeGenFormatV0_1 implements Format {
     return rtn;
   }
 
-  exportFile(): ArrayBuffer {
+  exportFile(): ArrayBufferView<ArrayBufferLike> {
     const { app } = getAppStores();
 
     let fileContent = this.exportCode();

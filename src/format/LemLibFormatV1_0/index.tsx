@@ -135,7 +135,7 @@ export class LemLibFormatV1_0 implements Format {
     return pathFileData;
   }
 
-  exportFile(): ArrayBuffer {
+  exportFile(): ArrayBufferView<ArrayBufferLike> {
     const { app } = getAppStores();
 
     // ALGO: The implementation is adopted from https://github.com/LemLib/path under the MIT license.

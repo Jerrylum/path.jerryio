@@ -466,7 +466,7 @@ export class MainApp {
    * @throws Error if the file can not be exported
    * @returns the path file buffer in ArrayBuffer
    */
-  exportFile(): ArrayBuffer {
+  exportFile(): ArrayBufferView<ArrayBufferLike> {
     return this.format.exportFile();
   }
 }
