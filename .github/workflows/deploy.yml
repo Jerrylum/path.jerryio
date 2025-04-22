@@ -19,7 +19,7 @@ jobs:
       - run: npm run build
         env:
           CI: false
-      - uses: actions/upload-pages-artifact@v1
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: build
 
