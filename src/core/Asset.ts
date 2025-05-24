@@ -447,45 +447,45 @@ const builtInAssets: FieldImageAsset<FieldImageOriginType>[] = [
   createBuiltInFieldImage(
     "V5RC 2025 - High Stakes",
     3690,
-    "/precache/V5RC-HighStakes-H2H-TileColor66_71-2000x2000.png"
+    "/static/V5RC-HighStakes-H2H-TopDownHighlighted-TileColor66_71@4.0+2000px.png"
   ),
   createBuiltInFieldImage(
     "V5RC 2025 - High Stakes (Skills)",
     3690,
-    "/static/V5RC-HighStakes-Skills-TileColor66_71-2000x2000.png"
+    "/static/V5RC-HighStakes-Skills-TopDownHighlighted-TileColor66_71@4.0+2000px.png"
   ),
   createBuiltInFieldImage(
     "VURC 2025 - High Stakes",
     3690,
-    "/static/VURC-HighStakes-H2H-TileColor66_71-2000x2000.png" //
+    "/static/VURC-HighStakes-H2H-TopDownHighlighted-TileColor66_71@4.0+2000px.png"
   ),
   createBuiltInFieldImage(
     "VURC 2025 - High Stakes (Skills)",
     3690,
-    "/static/VURC-HighStakes-Skills-TileColor66_71-2000x2000.png"
+    "/static/VURC-HighStakes-Skills-TopDownHighlighted-TileColor66_71@4.0+2000px.png"
   ),
   createBuiltInFieldImage(
     "V5RC 2024 - Over Under",
     3690,
-    "/static/V5RC-OverUnder-H2H-TileColor66_71-2000x2000.png",
+    "/static/V5RC-OverUnder-H2H-TopDown-TileColor66_71@4.0+2000px.png",
     "VRC 2024 - Over Under"
   ),
   createBuiltInFieldImage(
     "V5RC 2024 - Over Under (Skills)",
     3690,
-    "/static/V5RC-OverUnder-Skills-TileColor66_71-2000x2000.png",
+    "/static/V5RC-OverUnder-Skills-TopDown-TileColor66_71@4.0+2000px.png",
     "VRC 2024 - Over Under (Skill)"
   ),
   createBuiltInFieldImage(
     "VURC 2024 - Over Under",
     3690,
-    "/static/VURC-OverUnder-H2H-TileColor66_71-2000x2000.png",
+    "/static/VURC-OverUnder-H2H-TopDown-TileColor66_71@4.0+2000px.png",
     "VRC 2024 - Over Under (VEX U)"
   ),
   createBuiltInFieldImage(
     "V5RC Field Perimeter",
     3690,
-    "/precache/V5RC-FieldPerimeter-Plain-TileColor66_71-2000x2000.png",
+    "/precache/V5RC-FieldPerimeter-12ft12ft-TopDown-TileColor66_71@1.0.png",
     "VRC Field Perimeter"
   ),
   createBuiltInFieldImage(
@@ -500,9 +500,24 @@ const builtInAssets: FieldImageAsset<FieldImageOriginType>[] = [
     "/static/VIQRC-MixAndMatch-Skills-TopDown-Original@0.1+2000px.png",
     "VIQRC-MixAndMatch-Skills-TopDown-Original"
   ),
-  createBuiltInFieldImage("VIQC 2025 - Rapid Relay", 1920, "/static/VIQC-RapidRelay-8ft6ft-2000x1517.png"),
-  createBuiltInFieldImage("VIQC 2024 - Full Volume", 1920, "/static/VIQC-FullVolume-8ft6ft-2000x1517.png"),
-  createBuiltInFieldImage("VIQC Field Perimeter 8ft×6ft", 1920, "/static/VIQC-FieldPerimeter-8ft6ft-2000x1517.png")
+  createBuiltInFieldImage(
+    "VIQRC 2025 - Rapid Relay",
+    1920,
+    "/static/VIQRC-RapidRelay-All-TopDown-Original+2000px.png",
+    "VIQC 2025 - Rapid Relay"
+  ),
+  createBuiltInFieldImage(
+    "VIQRC 2024 - Full Volume",
+    1920,
+    "/static/VIQRC-FullVolume-All-TopDown-Original+2000px.png",
+    "VIQC 2024 - Full Volume"
+  ),
+  createBuiltInFieldImage(
+    "VIQC Field Perimeter 8ft×6ft",
+    1920,
+    "/static/VIQRC-FieldPerimeter-8ft6ft-TopDown-Original+2000px.png",
+    "VIQC Field Perimeter 8ft×6ft"
+  )
 ];
 
 export function getDefaultBuiltInFieldImage(): FieldImageAsset<FieldImageOriginType> {
