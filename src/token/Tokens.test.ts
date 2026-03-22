@@ -231,6 +231,8 @@ test('NumberT valid case', () => {
   expect(NumberT.parse(cpb("14a"))?.toInt()).toStrictEqual(14);
   expect(new NumberT("0", true, false)).toStrictEqual(NumberT.parse(cpb("0")));
   expect(new NumberT("-0.123", false, true)).toStrictEqual(NumberT.parse(cpb("-0.123")));
+  expect(new NumberT("-0.123", false, true)).toStrictEqual(NumberT.parse(cpb("-.123")));
+  expect(new NumberT("0.123", true, true)).toStrictEqual(NumberT.parse(cpb(".123")));
   expect(new NumberT("-14", false, false)).toStrictEqual(NumberT.parse(cpb("-14")));
   expect(new NumberT("14", true, false)).toStrictEqual(NumberT.parse(cpb("14")));
   expect(new NumberT("3.14", true, true)).toStrictEqual(NumberT.parse(cpb("3.14 ")));
@@ -255,6 +257,7 @@ test('NumberT valid case', () => {
 
 test('NumberT invalid case', () => {
   expect(NumberT.parse(cpb("-"))).toBeNull();
+  expect(NumberT.parse(cpb("."))).toBeNull();
   expect(NumberT.parse(cpb(""))).toBeNull();
   expect(NumberT.parse(cpb(" "))).toBeNull();
   expect(NumberT.parse(cpb("a"))).toBeNull();

@@ -461,7 +461,7 @@ export class NumberT extends Token {
     buffer.savepoint();
 
     let rtn = "";
-    let isPositive: boolean, isDouble: boolean;
+    let isPositive: boolean, isDouble: boolean, omittedLeadingZero: boolean;
 
     const m = Minus.parse(buffer);
 
@@ -474,14 +474,20 @@ export class NumberT extends Token {
 
     const p = Int.parse(buffer);
     if (!p) {
-      return buffer.rollbackAndReturn(null);
+      rtn += "0";
+      omittedLeadingZero = true;
+    } else {
+      rtn += p.value;
+      omittedLeadingZero = false;
     }
-    rtn += p.value;
 
     const f = Frac.parse(buffer);
     isDouble = f !== null;
     if (isDouble) {
       rtn += f!.value;
+    } else if (omittedLeadingZero) {
+      // If there is no integer part and no fractional part, then it's not a valid number
+      return buffer.rollbackAndReturn(null);
     }
 
     return buffer.commitAndReturn(new NumberT(rtn, isPositive, isDouble));
