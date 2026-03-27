@@ -13,6 +13,7 @@ import { isExperimentalFeaturesEnabled } from "@core/Preferences";
 import { RigidCodeGenFormatV0_1 } from "./RigidCodeGenFormatV0_1";
 import { MoveToPointCodeGenFormatV0_1 } from "./MoveToPointCodeGenFormatV0_1";
 import { LemLibTarballFormatV0_5 } from "./LemLibTarballFormatV0_5";
+import { xVecLibBoomerangFormatV0_1 } from "./xVecLibBoomerangFormatV0_1";
 
 export interface Format {
   isInit: boolean;
@@ -122,7 +123,12 @@ export function getAllDeprecatedFormats(): Format[] {
 
 export function getAllExperimentalFormats(): Format[] {
   if (!isExperimentalFeaturesEnabled()) return [];
-  return [new LemLibFormatV1_0(), new RigidCodeGenFormatV0_1(), new MoveToPointCodeGenFormatV0_1()];
+  return [
+    new LemLibFormatV1_0(),
+    new RigidCodeGenFormatV0_1(),
+    new MoveToPointCodeGenFormatV0_1(),
+    new xVecLibBoomerangFormatV0_1()
+  ];
 }
 
 export function getAllFormats(): Format[] {
