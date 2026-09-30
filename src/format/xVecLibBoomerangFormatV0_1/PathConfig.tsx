@@ -1,26 +1,23 @@
 import { makeAutoObservable } from "mobx";
 import { Typography } from "@mui/material";
-import { FormInputField } from "@src/app/component.blocks/FormInputField";
-import { LayoutContext, LayoutType, PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
-import { getAppStores } from "@core/MainApp";
 import { BentRateApplicationDirection, Path } from "@core/Path";
 import { EditableNumberRange } from "@core/Util";
-import { NumberT, CodePointBuffer } from "@src/token/Tokens";
 import { Exclude, Expose } from "class-transformer";
 import { IsNumber } from "class-validator";
-import { observer } from "mobx-react-lite";
-import React from "react";
 import { PathConfig } from "../Config";
 import { Format } from "../Format";
+import { LayoutContext, LayoutType, PanelBuilderProps, PanelInstanceProps } from "@core/Layout";
+import { getAppStores } from "@core/MainApp";
+import { observer } from "mobx-react-lite";
+import React from "react";
 import LinearScaleIcon from "@mui/icons-material/LinearScale";
-import { PanelBox } from "@src/app/component.blocks/PanelBox";
 
 // observable class
 export class PathConfigImpl implements PathConfig {
   @Exclude()
   speedLimit: EditableNumberRange = {
     minLimit: { value: 0, label: "0" },
-    maxLimit: { value: 1, label: "1" },
+    maxLimit: { value: 127, label: "127" },
     step: 1,
     from: 0,
     to: 1
@@ -29,7 +26,7 @@ export class PathConfigImpl implements PathConfig {
   bentRateApplicableRange: EditableNumberRange = {
     minLimit: { value: 0, label: "0" },
     maxLimit: { value: 1, label: "1" },
-    step: 0.001,
+    step: 0.01,
     from: 0,
     to: 1
   };
@@ -61,23 +58,7 @@ const PathConfigPanelBody = observer((props: {}) => {
     return isClassic ? undefined : <Typography>(No selected path)</Typography>;
   }
 
-  return (
-    <>
-      <PanelBox>
-        <FormInputField
-          label="Speed"
-          sx={{ width: "50%" }}
-          getValue={() => pc.speed.toUser() + ""}
-          setValue={(value: string) => {
-            pc.speed = parseFloat(value);
-          }}
-          isValidIntermediate={() => true}
-          isValidValue={(candidate: string) => NumberT.parse(new CodePointBuffer(candidate)) !== null}
-          numeric
-        />
-      </PanelBox>
-    </>
-  );
+  return;
 });
 
 export const PathConfigPanel = (props: PanelBuilderProps): PanelInstanceProps => {

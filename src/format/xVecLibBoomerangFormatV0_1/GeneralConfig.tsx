@@ -1,8 +1,6 @@
 import { makeAutoObservable, action } from "mobx";
 import { Typography, Button } from "@mui/material";
 import { enqueueSuccessSnackbar, enqueueErrorSnackbar } from "@src/app/Notice";
-import { FormCheckbox } from "@src/app/component.blocks/FormCheckbox";
-import { FormInputField } from "@src/app/component.blocks/FormInputField";
 import { FieldImageSignatureAndOrigin, FieldImageOriginType, getDefaultBuiltInFieldImage } from "@core/Asset";
 import { UpdateProperties } from "@core/Command";
 import { useCustomHotkeys, getEnableOnNonTextInputFieldsHotkeysOptions } from "@core/Hook";
@@ -17,13 +15,14 @@ import { observer } from "mobx-react-lite";
 import { GeneralConfig, initGeneralConfig } from "../Config";
 import { Format } from "../Format";
 import { PanelBox } from "@src/app/component.blocks/PanelBox";
+import { FormInputField } from "@src/app/component.blocks/FormInputField";
 import { getNamedCoordinateSystems } from "@src/core/CoordinateSystem";
-
+import { FormCheckbox } from "@src/app/component.blocks/FormCheckbox";
 interface FormatWithExportCode extends Format {
   exportCode(): string;
 }
 
-const logger = Logger("LemLib Odom Code Gen v0.4.x (inch)");
+const logger = Logger("xVecLib Boomerang v1.0.0 (inch)");
 
 const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
   const { config } = props;
@@ -50,8 +49,8 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
 
   return (
     <>
-      <Typography marginTop="16px">Export Settings</Typography>
-      <PanelBox>
+      <Typography sx={{ marginTop: "16px" }}>Export Settings</Typography>
+      <PanelBox className="Panel-FlexBox">
         <FormInputField
           label="Chassis Name"
           getValue={() => config.chassisName}
@@ -78,28 +77,42 @@ const GeneralConfigPanel = observer((props: { config: GeneralConfigImpl }) => {
           numeric
         />
       </PanelBox>
-      <PanelBox>
-        <FormCheckbox
-          label="Use Relative Coordinates"
-          checked={config.relativeCoords}
-          onCheckedChange={value => {
-            app.history.execute(
-              `Set using relative coordinates to ${value}`,
-              new UpdateProperties(config, { relativeCoords: value })
-            );
-          }}
-        />
-      </PanelBox>
-      <PanelBox marginTop="32px">
+
+      <PanelBox marginTop="16px">
         <Button variant="contained" title={`Copy Generated Code (${hotkey})`} onClick={onCopyCode}>
           Copy Code
         </Button>
+        <a href="https://xvec.codeberg.page/Path%20Generation"><h3>Documentation</h3></a>
+
+      </PanelBox>
+      <Typography sx={{ marginTop: "16px" }}>Lead Settings</Typography>
+      <PanelBox className="Panel-FlexBox">
+        <FormInputField
+          label="Iterations to find lead"
+          getValue={() => config.maxIterations.toString()}
+          setValue={(value: string) => {
+            const parsedValue = parseInt(Int.parse(new CodePointBuffer(value))!.value);
+            app.history.execute(
+              `Change max iterations for lead to ${parsedValue}`,
+              new UpdateProperties(config, { maxIterations: parsedValue })
+            );
+          }}
+          isValidIntermediate={() => true}
+          isValidValue={(candidate: string) => Int.parse(new CodePointBuffer(candidate)) !== null}
+          sx={{ marginTop: "16px" }}
+          numeric
+        />
+        <FormCheckbox
+          label="Use broken lead"
+          checked={config.badLead}
+          onCheckedChange={value => {
+            app.history.execute(`Using real(bad) lead's is ${value}`, new UpdateProperties(config, { badLead: value }));
+          }}
+        />
       </PanelBox>
     </>
   );
 });
-
-// observable class
 export class GeneralConfigImpl implements GeneralConfig {
   @IsPositive()
   @Expose()
@@ -135,6 +148,11 @@ export class GeneralConfigImpl implements GeneralConfig {
   @ValidateNumber(num => num >= 0)
   @Expose()
   movementTimeout: number = 5000;
+  @Expose()
+  maxIterations: number = 200;
+  @IsBoolean()
+  @Expose()
+  badLead: boolean = false;
   @IsBoolean()
   @Expose()
   relativeCoords: boolean = true;
